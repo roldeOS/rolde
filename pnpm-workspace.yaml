@@ -1,0 +1,10 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Native deps with prebuilt binaries. pnpm 11 requires an explicit decision
+# on their install scripts; approved so `pnpm install` completes cleanly and
+# sharp's runtime (used by next/image) is fully set up.
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
