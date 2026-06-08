@@ -75,13 +75,15 @@ The Custodian's actual capabilities, as code:
 | Billing reconciliation | Views all tenants' billing status; can issue refunds, comp credits |
 | Code deployment | Pushes platform updates that propagate to all active tenants |
 
-### 1.2 The Steward (Clinic Principal)
+### 1.2 The Caretaker (Clinic Principal)
 
-Each tenant has at least one Steward — the principal clinician (or principal clinical director) responsible for the tenant. A tenant may have multiple Stewards (e.g. a managing partner and a clinical director); each Steward has full Steward-level authority.
+> **Role names — C-word taxonomy (locked 2026-06).** Steward→Caretaker, Practitioner→Clinician, Receptionist→Concierge, Accountant→Cofferer; plus Curator, Chemist, Cunnere. Canonical list + reasoning: `docs/rolde_role_taxonomy.md`. (Incidental references elsewhere in this bible still use the old names pending a sweep.)
+
+Each tenant has at least one Caretaker — the principal clinician (or principal clinical director) responsible for the tenant. A tenant may have multiple Caretakers (e.g. a managing partner and a clinical director); each Caretaker has full Caretaker-level authority.
 
 | Capability | Operationalisation |
 |---|---|
-| User management within tenant | Add/remove/edit users; assign roles (Practitioner, Locum, Nurse, Receptionist, Accountant); cannot grant Steward role to themselves but can grant it to others |
+| User management within tenant | Add/remove/edit users; assign roles (Curator, Clinician, Locum, Nurse, Chemist, Cunnere, Concierge, Cofferer); cannot grant Caretaker role to themselves but can grant it to others |
 | Tenant configuration | Modifies `tenants.config` JSONB (Bible 4.1 §5.5); changes are audit-logged |
 | Module enable/disable | Toggles modules within the tenant's tier; cannot enable modules requiring a higher tier without billing change |
 | Branding configuration | Uploads logo, sets primary colour (used only in appropriate contexts per Bible 4.2 §2.7), edits clinic name and tagline |
@@ -95,7 +97,7 @@ Each tenant has at least one Steward — the principal clinician (or principal c
 | Audit log access | Views their own tenant's audit log |
 | Cannot | View other tenants; modify platform-level config; promote AI models; suspend other tenants |
 
-### 1.3 The Practitioner / Locum / Nurse / Receptionist / Accountant
+### 1.3 The Clinician / Locum / Nurse / Chemist / Cunnere / Curator / Concierge / Cofferer
 
 Each role's specific capabilities are detailed in §7 (Role and Permission Management) and operationalised through RLS policies on every relevant table.
 

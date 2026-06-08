@@ -180,10 +180,11 @@ export type Database = {
         | "locum"
         | "nurse"
         | "concierge"
-        | "accountant"
+        | "cofferer"
         | "patient"
         | "curator"
         | "chemist"
+        | "cunnere"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -318,10 +319,11 @@ export const Constants = {
         "locum",
         "nurse",
         "concierge",
-        "accountant",
+        "cofferer",
         "patient",
         "curator",
         "chemist",
+        "cunnere",
       ],
     },
   },

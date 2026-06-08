@@ -329,14 +329,19 @@ NOT enabled:
 Every authenticated user belongs to exactly one tenant (with the exception of Custodian users, who span tenants). Every user has a role within their tenant.
 
 ```sql
+-- C-word taxonomy (locked 2026-06). Canonical names + reasoning:
+-- docs/rolde_role_taxonomy.md
 CREATE TYPE user_role AS ENUM (
   'custodian',        -- RoDee platform owner (Roland); cross-tenant authority
-  'steward',          -- Clinic principal; controls tenant configuration
-  'practitioner',     -- Doctor, ANP, nurse practitioner; clinical user
+  'caretaker',        -- Clinic principal/owner; controls tenant configuration (was Steward)
+  'curator',          -- Practice manager; day-to-day operational oversight
+  'concierge',        -- Front-desk staff; appointments, payments, registration (was Receptionist)
+  'clinician',        -- Doctor, ANP; clinical user (was Practitioner)
   'locum',            -- Sessional/temporary clinician; time-bounded scope
   'nurse',            -- Nurse without prescribing rights
-  'receptionist',     -- Front-desk staff; appointments, payments, registration
-  'accountant',       -- Read-only access to financial data
+  'chemist',          -- Pharmacist
+  'cunnere',          -- Lab technician (Old English 'one who tests')
+  'cofferer',         -- Accounts / finance (was Accountant)
   'patient'           -- Patient portal user
 );
 
@@ -380,12 +385,15 @@ For each role, the following access is granted by default. Sub-Bibles for specif
 | Role | Read Patient Data | Write Notes | Prescribe | Manage Users | Configure Tenant | Cross-Tenant |
 |---|---|---|---|---|---|---|
 | Custodian | Audit-logged | No (clinical work is for clinicians) | No | Yes (any tenant) | Yes (any tenant) | Yes |
-| Steward | Yes | Yes | If GMC + prescribing_rights | Yes (own tenant) | Yes (own tenant) | No |
-| Practitioner | Yes (assigned + clinic) | Yes | If prescribing_rights | No | No | No |
+| Caretaker | Yes | Yes | If GMC + prescribing_rights | Yes (own tenant) | Yes (own tenant) | No |
+| Curator | Yes (clinic) | No (clinical) | No | Yes (own tenant) | Limited (own tenant) | No |
+| Clinician | Yes (assigned + clinic) | Yes | If prescribing_rights | No | No | No |
 | Locum | Yes (session-scoped) | Yes | If prescribing_rights | No | No | No |
 | Nurse | Yes (assigned + clinic) | Yes (nursing notes) | No | No | No | No |
-| Receptionist | Yes (demographics + appts only) | No (clinical) | No | No | No | No |
-| Accountant | No (financial only) | No | No | No | No | No |
+| Chemist | Yes (meds context) | Yes (pharmacy notes) | No (dispenses, not prescribes) | No | No | No |
+| Cunnere | Yes (investigations) | Yes (lab notes) | No | No | No | No |
+| Concierge | Yes (demographics + appts only) | No (clinical) | No | No | No | No |
+| Cofferer | No (financial only) | No | No | No | No | No |
 | Patient | Yes (own data only) | No | No | No | No | No |
 
 These defaults are encoded in RLS policies on every table.
