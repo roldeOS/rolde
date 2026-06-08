@@ -20,6 +20,9 @@ Greek letters. He is "Roland"; never "sir" / "mate" / "boss".
 - **Verify in the running app before "done."** "Done" is Roland's word, seen working — not compiled.
 - **Numbered requests get numbered answers.** No deferred work. Re-list the ticked checklist
   after each step. Read every word he writes. Reduce steps A→B.
+- **Bibles are a frame, not law** — Roland may change direction based on how the app looks to
+  him; defer to his visual judgment. **Break big tasks into small chunks, finished one-by-one**,
+  and always keep a **ticked checklist** going.
 
 ## Clinical-grade cautions
 - **Patient safety is absolute.** Anything touching prescribing (4.5), documentation (4.6), or
@@ -37,9 +40,11 @@ Greek letters. He is "Roland"; never "sir" / "mate" / "boss".
 - Tailwind v4, CSS-first: theme tokens in `app/globals.css` `@theme` (no `tailwind.config.ts`).
 - **"This is NOT the Next.js you know" — read `node_modules/next/dist/docs/` before writing
   Next code; heed deprecation notices.**
-- Design = Roland Design System (mindate ancestry), re-skinned to RolDe clinical monochrome
-  (Bible 4.2): monochrome chrome, semantic colour ONLY for clinical signal, dark focus ring.
-  IBM Plex Serif headlines + Inter body + IBM Plex Mono.
+- Design = Roland Design System (mindate ancestry), adapted for RolDe. Bible 4.2 (calm
+  clinical monochrome + semantic clinical colour, dark focus ring) is the **starting frame,
+  not law** — Roland's live visual judgment overrides the spec, and a tasteful **splash of
+  colour is his call** (as he did for the mindate Dashboard). Show real pixels early; bend the
+  design to his eye. IBM Plex Serif + Inter + IBM Plex Mono.
 - Never ask Roland to run terminal commands — run them, or hand a complete paste-in block.
 - Schema/state changes live in one canonical, re-runnable file — never ad-hoc in a dashboard.
 - Vercel "Sensitive" env vars are NEVER revealable after creation — never ask Roland to read

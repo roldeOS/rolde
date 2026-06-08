@@ -14,16 +14,174 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      custodian_users: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tenant_users: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          display_name: string
+          gdc_number: string | null
+          gmc_number: string | null
+          id: string
+          invited_at: string | null
+          invited_by: string | null
+          last_login_at: string | null
+          nmc_pin: string | null
+          photo_url: string | null
+          prescribing_rights: boolean
+          role: Database["public"]["Enums"]["user_role"]
+          specialties: string[] | null
+          status: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          display_name: string
+          gdc_number?: string | null
+          gmc_number?: string | null
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          last_login_at?: string | null
+          nmc_pin?: string | null
+          photo_url?: string | null
+          prescribing_rights?: boolean
+          role: Database["public"]["Enums"]["user_role"]
+          specialties?: string[] | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          display_name?: string
+          gdc_number?: string | null
+          gmc_number?: string | null
+          id?: string
+          invited_at?: string | null
+          invited_by?: string | null
+          last_login_at?: string | null
+          nmc_pin?: string | null
+          photo_url?: string | null
+          prescribing_rights?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
+          specialties?: string[] | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_users_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          activated_at: string | null
+          config: Json
+          cqc_registration: string | null
+          created_at: string
+          custom_domain: string | null
+          his_registration: string | null
+          ico_registration: string | null
+          id: string
+          legal_name: string
+          name: string
+          onboarding_step: string | null
+          slug: string
+          status: string
+          stripe_customer_id: string | null
+          subdomain: string
+          subscription_status: string
+          subscription_tier: string
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          config?: Json
+          cqc_registration?: string | null
+          created_at?: string
+          custom_domain?: string | null
+          his_registration?: string | null
+          ico_registration?: string | null
+          id?: string
+          legal_name: string
+          name: string
+          onboarding_step?: string | null
+          slug: string
+          status?: string
+          stripe_customer_id?: string | null
+          subdomain: string
+          subscription_status?: string
+          subscription_tier?: string
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          config?: Json
+          cqc_registration?: string | null
+          created_at?: string
+          custom_domain?: string | null
+          his_registration?: string | null
+          ico_registration?: string | null
+          id?: string
+          legal_name?: string
+          name?: string
+          onboarding_step?: string | null
+          slug?: string
+          status?: string
+          stripe_customer_id?: string | null
+          subdomain?: string
+          subscription_status?: string
+          subscription_tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_user_tenant_ids: { Args: never; Returns: string[] }
+      is_custodian: { Args: never; Returns: boolean }
+      is_steward_of: { Args: { p_tenant_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      user_role:
+        | "custodian"
+        | "steward"
+        | "practitioner"
+        | "locum"
+        | "nurse"
+        | "receptionist"
+        | "accountant"
+        | "patient"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +308,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: [
+        "custodian",
+        "steward",
+        "practitioner",
+        "locum",
+        "nurse",
+        "receptionist",
+        "accountant",
+        "patient",
+      ],
+    },
   },
 } as const
