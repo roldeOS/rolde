@@ -169,19 +169,21 @@ export type Database = {
     }
     Functions: {
       current_user_tenant_ids: { Args: never; Returns: string[] }
+      is_caretaker_of: { Args: { p_tenant_id: string }; Returns: boolean }
       is_custodian: { Args: never; Returns: boolean }
-      is_steward_of: { Args: { p_tenant_id: string }; Returns: boolean }
     }
     Enums: {
       user_role:
         | "custodian"
-        | "steward"
-        | "practitioner"
+        | "caretaker"
+        | "clinician"
         | "locum"
         | "nurse"
-        | "receptionist"
+        | "concierge"
         | "accountant"
         | "patient"
+        | "curator"
+        | "chemist"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -311,13 +313,15 @@ export const Constants = {
     Enums: {
       user_role: [
         "custodian",
-        "steward",
-        "practitioner",
+        "caretaker",
+        "clinician",
         "locum",
         "nurse",
-        "receptionist",
+        "concierge",
         "accountant",
         "patient",
+        "curator",
+        "chemist",
       ],
     },
   },

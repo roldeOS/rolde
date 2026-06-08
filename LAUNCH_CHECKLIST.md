@@ -31,6 +31,12 @@ Pairs with the roadmap's Phase 0 → Phase 1 gate (`docs/bible_4_8_rolde_roadmap
       data; monthly integrity verification.
 - [ ] Full **RLS / tenant-isolation audit** before the first real patient record.
 
+## Roles & access
+- [ ] Review the **role taxonomy backlog** (`docs/rolde_role_taxonomy.md`) for each launch
+      tenant — add the enum values + RLS coverage for the roles they actually need (HCA/Carer,
+      Phlebotomist/Collector, imaging, secretary/Clerk, etc.). Don't add speculatively.
+      _Deferred 2026-06-07._
+
 ---
 *Append new deferrals with a date + where they came from. Nothing leaves this list
 without being done or explicitly cancelled by Roland.*

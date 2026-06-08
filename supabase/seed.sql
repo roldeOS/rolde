@@ -26,9 +26,9 @@ insert into custodian_users (user_id)
 values ('a0000000-0000-4000-8000-000000000001')
 on conflict (user_id) do nothing;
 
--- Stewards (one per clinic)
+-- Caretakers (clinic principal; one per clinic)
 insert into tenant_users (tenant_id, user_id, role, display_name, prescribing_rights, gmc_number, specialties, accepted_at)
 values
-  ('b0000000-0000-4000-8000-000000000001','a0000000-0000-4000-8000-000000000002','steward','Dr Roland Jayasekhar', true, '0000000', array['general_practice','aesthetic_medicine'], now()),
-  ('b0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000003','steward','Dr Drivers Steward',   true, '1111111', array['general_practice'],                      now())
+  ('b0000000-0000-4000-8000-000000000001','a0000000-0000-4000-8000-000000000002','caretaker','Dr Roland Jayasekhar', true, '0000000', array['general_practice','aesthetic_medicine'], now()),
+  ('b0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000003','caretaker','Dr Drivers Caretaker', true, '1111111', array['general_practice'],                      now())
 on conflict (tenant_id, user_id) do nothing;
