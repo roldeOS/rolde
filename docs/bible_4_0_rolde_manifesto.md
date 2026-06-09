@@ -171,8 +171,8 @@ The protagonist of RolDe is **the practising clinician** who sits in front of pa
 
 In priority order:
 
-1. **The solo or small-group private practitioner** — the dermatologist with their own clinic, the GP working independently, the aesthetic doctor running a Doc For Skin equivalent, the orthopaedic surgeon doing private list work
-2. **Small private clinics with 2-10 clinicians** — multi-practitioner teams that need shared scheduling, shared patient records, but not enterprise infrastructure
+1. **The solo or small-group private clinician** — the dermatologist with their own clinic, the GP working independently, the aesthetic doctor running a Doc For Skin equivalent, the orthopaedic surgeon doing private list work
+2. **Small private clinics with 2-10 clinicians** — multi-clinician teams that need shared scheduling, shared patient records, but not enterprise infrastructure
 3. **Specialty-focused clinics** — dermatology clinics, aesthetic clinics, rheumatology clinics, ophthalmology clinics where specialty-specific modules matter
 4. **Eventually, small private hospitals** — once the multi-clinic patterns are proven and RolDe scales gracefully
 5. **One day, NHS-adjacent or NHS clinical services** — once the regulatory and political conditions allow without forcing product compromises
@@ -180,7 +180,7 @@ In priority order:
 ### 5.2 Who RolDe Is Explicitly Not For (At Launch)
 
 - **NHS Trusts and large NHS organisations** — see Section 4.5. Not at launch. Possibly never via the current procurement frameworks.
-- **Beauty therapists performing aesthetic procedures without medical oversight** — RolDe is for clinicians; the design assumes a GMC-registered, GDC-registered, or NMC-registered practitioner is the user
+- **Beauty therapists performing aesthetic procedures without medical oversight** — RolDe is for clinicians; the design assumes a GMC-registered, GDC-registered, or NMC-registered clinician is the user
 - **Clinicians who want to bypass clinical safety** — RolDe will not enable workflows that compromise patient safety even if a customer requests it
 - **Vendors who want to white-label RolDe and remove the brand commitments** — RolDe's commitments are the product; stripping the brand strips the commitments
 

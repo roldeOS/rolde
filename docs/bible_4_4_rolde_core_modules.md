@@ -388,7 +388,7 @@ CREATE TABLE appointments (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id         UUID NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
   patient_id        UUID NOT NULL REFERENCES patients(id) ON DELETE RESTRICT,
-  practitioner_id   UUID NOT NULL REFERENCES auth.users(id),
+  clinician_id   UUID NOT NULL REFERENCES auth.users(id),
   
   -- Time
   scheduled_start   TIMESTAMPTZ NOT NULL,
@@ -439,7 +439,7 @@ CREATE TABLE appointments (
 
 CREATE INDEX idx_appointments_tenant_date ON appointments(tenant_id, scheduled_start) WHERE status NOT IN ('cancelled');
 CREATE INDEX idx_appointments_patient ON appointments(patient_id);
-CREATE INDEX idx_appointments_practitioner_date ON appointments(practitioner_id, scheduled_start);
+CREATE INDEX idx_appointments_clinician_date ON appointments(clinician_id, scheduled_start);
 ```
 
 ### 3.2 The Services Catalogue
@@ -489,7 +489,7 @@ The calendar surface has multiple views:
 | Day | Today's appointments, clinician-by-clinician columns | Clinicians on dashboard |
 | Week | Week-at-a-glance, clinician-by-clinician | Concierges, Caretakers |
 | Month | Month-overview, all appointments | Caretakers (planning view) |
-| Clinician | Single practitioner's day, hour-by-hour grid | Locums, single-practitioner clinics |
+| Clinician | Single clinician's day, hour-by-hour grid | Locums, single-clinician clinics |
 | Resource | Bed/room/chair occupancy (for inpatient/treatment-room clinics) | Clinic types with rooms (per Bible 4.3 §5.5 module config) |
 
 DESIGN NEEDED: Calendar grid component visual treatment — Roland to specify whether shadcn/ui calendar suffices or custom.
@@ -498,14 +498,14 @@ DESIGN NEEDED: Calendar grid component visual treatment — Roland to specify wh
 
 When a patient books an appointment (via public widget or admin), available slots are computed by:
 
-1. Filter to practitioners with the required role/specialty for the chosen service
-2. For each candidate practitioner:
+1. Filter to clinicians with the required role/specialty for the chosen service
+2. For each candidate clinician:
    a. Get their working hours (per `tenants.config.scheduling` + their personal availability overrides)
    b. Subtract approved absences (from `absence_requests` table per Bible 4.3 §8.2)
    c. Subtract existing appointments
    d. Subtract buffer time (before/after each existing appointment per service config)
    e. Generate available slots aligned to the service's duration + buffer
-3. Combine slots across practitioners (or show per-practitioner if "Specific practitioner" selected)
+3. Combine slots across clinicians (or show per-clinician if "Specific clinician" selected)
 4. Filter to slots starting >= now + minimum-booking-notice (per tenant config)
 5. Return up to N earliest slots
 
@@ -734,7 +734,7 @@ export const ReferralLetterPayload = z.object({
   specialty: z.string(),
   recipient_type: z.enum(['rolde_network', 'external_email', 'paper_print']),
   recipient_clinic: z.string().nullable(),
-  recipient_practitioner: z.string().nullable(),
+  recipient_clinician: z.string().nullable(),
   pdf_url: z.string().url().nullable(),
   status: z.enum(['draft', 'approved', 'sent', 'acknowledged', 'failed']),
 });
@@ -1269,7 +1269,7 @@ If the clinician dismisses the card, the trigger is logged but no letter is sent
 2. Verifies receiving tenant exists and is active
 3. Verifies receiving Caretaker has accepted "receivership of referral letters" from sending tenant (per Bible 4.3 §5.9 institutional consent)
 4. If acceptance not yet given: status → `failed`, sending Caretaker notified, prompt to either configure relationship or fall back to email
-5. If accepted: creates a `incoming_referral` record in receiving tenant's database; receiving tenant's notifications system fires; receiving practitioner sees in their dashboard
+5. If accepted: creates a `incoming_referral` record in receiving tenant's database; receiving tenant's notifications system fires; receiving clinician sees in their dashboard
 
 ```sql
 CREATE TABLE incoming_referrals (
@@ -1279,8 +1279,8 @@ CREATE TABLE incoming_referrals (
   -- Source
   sending_tenant_id             UUID NOT NULL REFERENCES tenants(id),
   sending_letter_id             UUID NOT NULL,  -- Reference ID; not FK because cross-tenant
-  sending_practitioner_name     TEXT NOT NULL,
-  sending_practitioner_gmc      TEXT,
+  sending_clinician_name     TEXT NOT NULL,
+  sending_clinician_gmc      TEXT,
   
   -- Patient (cross-tenant data — no FK)
   patient_first_name            TEXT NOT NULL,
@@ -1337,7 +1337,7 @@ Critical: this table holds patient demographics in the receiving tenant's databa
 For in-network referrals only:
 
 1. Receiving tenant's incoming_referrals shows status `pending`
-2. Receiving practitioner / Concierge reviews
+2. Receiving clinician / Concierge reviews
 3. Either accepts (creates patient + offers appointment slots) or declines (with reason)
 4. If accepts: receiving tenant's calendar surfaces available slots
 5. Available slots are fed back to sending tenant via the network protocol
@@ -2021,7 +2021,7 @@ The core modules are "built" when:
 
 ### 15.2 The Calendar Acceptance
 
-- [ ] Day, week, month, practitioner views all render
+- [ ] Day, week, month, clinician views all render
 - [ ] Slot availability algorithm respects working hours, absences, existing appointments
 - [ ] Booking via public widget creates appointment
 - [ ] Booking via admin creates appointment

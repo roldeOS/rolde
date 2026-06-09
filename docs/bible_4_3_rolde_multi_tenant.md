@@ -77,7 +77,7 @@ The Custodian's actual capabilities, as code:
 
 ### 1.2 The Caretaker (Clinic Principal)
 
-> **Role names — C-word taxonomy (locked 2026-06).** Steward→Caretaker, Practitioner→Clinician, Receptionist→Concierge, Accountant→Cofferer; plus Curator, Chemist, Cunnere. Canonical list + reasoning: `docs/rolde_role_taxonomy.md`. (Swept bible-wide 2026-06.)
+> **Role names follow the C-word taxonomy.** Canonical list + reasoning: `docs/rolde_role_taxonomy.md`.
 
 Each tenant has at least one Caretaker — the principal clinician (or principal clinical director) responsible for the tenant. A tenant may have multiple Caretakers (e.g. a managing partner and a clinical director); each Caretaker has full Caretaker-level authority.
 
@@ -261,7 +261,7 @@ User clicks email link → returns to onboarding at Step 3.
 |   |                 |  |   ★ Most chosen |              |
 |   |   Solo or       |  |                 |              |
 |   |   small clinic  |  |   Multi-        |              |
-|   |   Up to 3 users |  |   practitioner  |              |
+|   |   Up to 3 users |  |   clinician  |              |
 |   |                 |  |   Up to 15 users|              |
 |   |   [Choose]      |  |   [Choose]      |              |
 |   +-----------------+  +-----------------+              |
@@ -513,7 +513,7 @@ If "Add user" clicked, a small modal:
 |   Name      [_______________]   |
 |   Role      [Clinician   ▼]  |
 |                                  |
-|   For practitioners:             |
+|   For clinicians:             |
 |   GMC number  [_____________]   |
 |   Specialties [_____________]   |
 |   Prescribing rights  [✓]        |
@@ -1215,7 +1215,7 @@ Two layers:
 **Database layer (RLS)**: Enforces tenant isolation and basic role-based access. Cannot be bypassed by application bugs.
 
 ```sql
-CREATE POLICY practitioner_read_clinical_notes ON clinical_notes
+CREATE POLICY clinician_read_clinical_notes ON clinical_notes
   FOR SELECT
   USING (
     tenant_id = current_setting('app.current_tenant_id')::UUID
@@ -1229,7 +1229,7 @@ CREATE POLICY practitioner_read_clinical_notes ON clinical_notes
   );
 ```
 
-**Application layer (server actions, API routes)**: Additional checks for role-specific business logic (e.g. "only practitioners with prescribing rights can issue prescriptions").
+**Application layer (server actions, API routes)**: Additional checks for role-specific business logic (e.g. "only clinicians with prescribing rights can issue prescriptions").
 
 ```typescript
 // src/lib/auth/permissions.ts

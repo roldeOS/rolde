@@ -1628,7 +1628,7 @@ interface AmbientSession {
   consultation_id: string;
   patient_id: string;
   tenant_id: string;
-  practitioner_id: string;
+  clinician_id: string;
   
   context_snapshot: {
     // Initial context loaded at session start
@@ -2053,7 +2053,7 @@ async def draft_discharge_summary(consultation_id: str, tenant_id: str) -> str:
     response = await run_inference(model_with_global_lora, prompt, max_tokens=2000)
     
     # Apply per-user language LoRA if available (§9)
-    user_lora = await load_user_lora(consultation.practitioner_id)
+    user_lora = await load_user_lora(consultation.clinician_id)
     if user_lora:
         response = await apply_user_style(response, user_lora)
     

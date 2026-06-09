@@ -87,7 +87,7 @@ This is the website's spine. Every section either reinforces it or supports the 
 
 ### 2.1 Primary Persona: The Frustrated Clinician
 
-A doctor (GP, specialist, aesthetic practitioner, occupational health doctor) who:
+A doctor (GP, specialist, aesthetic clinician, occupational health doctor) who:
 - Currently uses an EMR they dislike (most likely SystmOne, EMIS, Vision in UK; Epic or athena in private sector)
 - Has experienced the friction: 30+ clicks to write a consultation note, ten template fields they don't need, prescription workflow that requires switching screens
 - Spends 1-2 hours after clinic finishing notes
@@ -728,7 +728,7 @@ Each card: short headline + 2-line description. Icon at top of each card (Lucide
 |                                                                 |
 |              + Scheduling                                       |
 |                Modal-driven booking widget proven over 4,500+   |
-|                appointments. Multi-location. Multi-practitioner.|
+|                appointments. Multi-location. Multi-clinician.|
 |                Bibles 4.1, 6                                    |
 |                                                                 |
 |              + Billing and Payments                             |

@@ -39,5 +39,32 @@ build apply here too (full detail: `docs/jarvis_universal_brief.md` §7 and
 
 ---
 
+## 1. Renamed a role's labels but left the old word in code identifiers — assumed shallow scope — 2026-06-08
+
+**Symptom:** During the role rename to the C-word taxonomy, the sweep updated the display labels
+and the enum VALUES, but I deliberately left the old word embedded in code identifiers — a
+foreign-key column id, indexes, a policy name, request fields — reasoning to myself that
+"identifiers are a separate decision." Roland does not want the old word in the code, EVER, and
+rightly called it a half-baked, assumed-scope change.
+
+**Root cause:** I made a scope assumption instead of asking. A rename has a shallow form (labels
+only) and a deep form (labels + every identifier). I silently chose shallow and never surfaced
+the choice.
+
+**Fix:** Eradicated the old word from every spec + prose — identifiers became the new form
+(`<role>_id`, indexes, policy names, fields) — verified by a repo-wide grep dropping to zero
+outside two flagged historical files. Flagged the only legitimate survivors (immutable migration
+history; the original interview transcript) for Roland's explicit decision instead of editing
+them silently.
+
+**Trigger:** ANY rename — a role, an entity, a column, a concept. Sweep the IDENTIFIERS (columns,
+indexes, policies, fields, file names), not just the display labels. And whenever a change has a
+shallow-vs-deep scope, ASK Roland which he wants — never assume the shallow one.
+
+**Lesson:** Roland wants things clean and cleared, never half-baked. "Don't assume — ASK" is
+absolute. A rename that leaves the old word lurking in code is a regression even when the UI looks right.
+
+---
+
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or
 when a diagnosed regression is worth locking and Roland approves the entry.*

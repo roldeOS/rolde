@@ -880,7 +880,7 @@ Per Bible 0 §12.4 (universal dashboard, role-conditioned content):
 | Role | Dashboard Variant |
 |---|---|
 | Clinician | Today's patients (as above) |
-| Locum | Same as practitioner, scoped to their session |
+| Locum | Same as clinician, scoped to their session |
 | Nurse | Today's assigned patients + observations to take |
 | Concierge | Cross-departmental view: all clinicians' lists, payments due, registrations to complete |
 | Caretaker | Clinic overview: all clinician lists summary, financial summaries, audit log access entry, user management |
@@ -918,7 +918,7 @@ Bible 0 §8.4 commits to LatePoint-style modal-driven UX for booking flows. This
 The booking flow is a step-driven modal that handles:
 
 1. Service selection (which appointment type)
-2. Clinician selection (where multi-practitioner; auto-selected for solo)
+2. Clinician selection (where multi-clinician; auto-selected for solo)
 3. Date and time selection (calendar + slot picker)
 4. Patient identification (existing patient login or new patient quick-create)
 5. Confirmation

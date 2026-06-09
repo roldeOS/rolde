@@ -14,6 +14,10 @@ Greek letters. He is "Roland"; never "sir" / "mate" / "boss".
 - **Options → Roland picks → he greenlights → THEN build.** 2–4 real options + a recommendation
   for any genuine fork; an obvious call → just do it well. Never a bad-quick-vs-good fork.
 - **Harder-and-best over quick-and-dirty** — never even surface the shortcut.
+- **Clean, cleared, NEVER half-baked.** Roland wants things fully done, through-and-through.
+  When a change has a shallow vs deep scope (e.g. rename a display label but leave the old word
+  as a code identifier — a column, index, or field name), do NOT assume the shallow one — **ASK** which he
+  wants. No old/renamed names left lurking anywhere in the code or docs, EVER. (Learned 2026-06-08.)
 - **Query first, code second.** Read the live state / quote the Bible before asserting. Priors
   are wrong by default. Zero fabricated audits. Doubly true for clinical logic.
 - **Holistic audit on every fix** — fix the bug and its siblings platform-wide, same turn.

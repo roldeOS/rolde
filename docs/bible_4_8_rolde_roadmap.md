@@ -142,7 +142,7 @@ The first deployable version of RolDe. The first paying tenant goes live. The fi
 | Multi-tenant authentication | Bible 4.3 §3 | Caretaker, Clinician, Locum, Nurse, Concierge, Cofferer, Patient roles |
 | Tenant onboarding | Bible 4.3 §2 | Self-service for Caretaker; Roland onboards Doc For Skin first |
 | Patient management | Bible 4.4 §2 | Demographics, allergies, alerts, search |
-| Calendar and scheduling | Bible 4.4 §3 | Day/week/month/practitioner views |
+| Calendar and scheduling | Bible 4.4 §3 | Day/week/month/clinician views |
 | Public booking widget | Bible 4.1 §10 | Embeddable; no JavaScript framework lock-in |
 | Clinical notes / patient feed | Bible 4.4 §4 + Bible 4.6 | All 19+ feed entry types; Draft/Final workflow |
 | Clinical orders (unified) | Bible 4.5 | Prescriptions, labs, radiology, procedures, referrals |

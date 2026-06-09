@@ -1043,7 +1043,7 @@ export async function openConsultation(input: {
     tenant_id: tenantId,
     patient_id: input.patientId,
     appointment_id: input.appointmentId,
-    practitioner_id: user.id,
+    clinician_id: user.id,
     status: 'active',
     opened_at: new Date(),
   });
@@ -1083,7 +1083,7 @@ CREATE TABLE consultations (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id         UUID NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT,
   patient_id        UUID NOT NULL REFERENCES patients(id) ON DELETE RESTRICT,
-  practitioner_id   UUID NOT NULL REFERENCES auth.users(id),
+  clinician_id   UUID NOT NULL REFERENCES auth.users(id),
   appointment_id    UUID REFERENCES appointments(id),
   
   status            consultation_status NOT NULL DEFAULT 'active',
@@ -1110,7 +1110,7 @@ CREATE TABLE consultations (
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_consultations_practitioner ON consultations(practitioner_id, opened_at DESC);
+CREATE INDEX idx_consultations_clinician ON consultations(clinician_id, opened_at DESC);
 CREATE INDEX idx_consultations_patient ON consultations(patient_id, opened_at DESC);
 CREATE INDEX idx_consultations_active ON consultations(tenant_id) WHERE status = 'active';
 ```

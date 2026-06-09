@@ -18,10 +18,10 @@ _Last updated 2026-06-08. All names LOCKED._
 | Enum value | Name | Conventional role | Why named so |
 |---|---|---|---|
 | `custodian` | **Custodian** | Super Admin | Keeper of the keys to the whole platform; guards every clinic's world. |
-| `caretaker` | **Caretaker** | Admin | Looks after a single clinic with full authority — its principal/owner *(was Steward)*. |
+| `caretaker` | **Caretaker** | Admin | Looks after a single clinic with full authority — its principal/owner. |
 | `curator` | **Curator** | Practice manager | Curates the clinic's day-to-day order — people, schedules, records. |
-| `concierge` | **Concierge** | Receptionist / support | Front of house; greets + guides patients, handles bookings *(was Receptionist)*. |
-| `clinician` | **Clinician** | Doctor / clinician | The professional who delivers clinical care — broader + truer than "Practitioner". |
+| `concierge` | **Concierge** | Receptionist / support | Front of house; greets + guides patients, handles bookings. |
+| `clinician` | **Clinician** | Doctor / clinician | The professional who delivers clinical care. |
 | `locum` | **Clinician – Locum** | Sessional clinician | Same clinical role, engaged sessionally; time-bounded scope. |
 | `nurse` | **Nurse** | Nurse | Kept — NMC-protected title; renaming a regulated profession would diminish it. |
 | `chemist` | **Chemist** | Pharmacist | The UK's everyday word for the pharmacist — understood instantly. |

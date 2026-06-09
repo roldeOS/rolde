@@ -333,15 +333,15 @@ Every authenticated user belongs to exactly one tenant (with the exception of Cu
 -- docs/rolde_role_taxonomy.md
 CREATE TYPE user_role AS ENUM (
   'custodian',        -- RoDee platform owner (Roland); cross-tenant authority
-  'caretaker',        -- Clinic principal/owner; controls tenant configuration (was Steward)
+  'caretaker',        -- Clinic principal/owner; controls tenant configuration
   'curator',          -- Practice manager; day-to-day operational oversight
-  'concierge',        -- Front-desk staff; appointments, payments, registration (was Receptionist)
-  'clinician',        -- Doctor, ANP; clinical user (was Practitioner)
+  'concierge',        -- Front-desk staff; appointments, payments, registration
+  'clinician',        -- Doctor, ANP; clinical user
   'locum',            -- Sessional/temporary clinician; time-bounded scope
   'nurse',            -- Nurse without prescribing rights
   'chemist',          -- Pharmacist
   'cunnere',          -- Lab technician (Old English 'one who tests')
-  'cofferer',         -- Accounts / finance (was Accountant)
+  'cofferer',         -- Accounts / finance
   'patient'           -- Patient portal user
 );
 
@@ -352,8 +352,8 @@ CREATE TABLE tenant_users (
   role        user_role NOT NULL,
   
   -- Clinician-specific fields
-  gmc_number          TEXT,    -- For practitioners with GMC registration
-  gdc_number          TEXT,    -- For dental practitioners
+  gmc_number          TEXT,    -- For clinicians with GMC registration
+  gdc_number          TEXT,    -- For dental clinicians
   nmc_pin             TEXT,    -- For nurses
   prescribing_rights  BOOLEAN NOT NULL DEFAULT false,
   specialties         TEXT[],  -- e.g. ARRAY['general_practice', 'aesthetic_medicine']
@@ -875,7 +875,7 @@ Per-tenant customisation of the widget is configured via the Caretaker settings:
 - Primary brand colour
 - Logo
 - Available services (subset of full service list)
-- Specific practitioners exposed
+- Specific clinicians exposed
 - Booking confirmation message
 - Optional pre-screening questions before booking confirmed
 
