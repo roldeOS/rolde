@@ -15,7 +15,7 @@ export async function getSessionContext() {
 
   const { data: membership } = await supabase
     .from("tenant_users")
-    .select("display_name, role, tenants(name, slug)")
+    .select("tenant_id, display_name, role, tenants(name, slug)")
     .eq("user_id", user.id)
     .eq("status", "active")
     .order("created_at", { ascending: true })

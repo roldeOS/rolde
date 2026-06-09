@@ -29,6 +29,143 @@ export type Database = {
         }
         Relationships: []
       }
+      patients: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          blood_group: string | null
+          city: string | null
+          country: string
+          created_at: string
+          created_by: string | null
+          date_of_birth: string
+          deceased_at: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          email: string | null
+          emergency_name: string | null
+          emergency_phone: string | null
+          emergency_relationship: string | null
+          ethnicity: string | null
+          first_name: string
+          gender_identity: string | null
+          has_active_alerts: boolean
+          id: string
+          last_name: string
+          nhs_number: string | null
+          occupation: string | null
+          phone_landline: string | null
+          phone_mobile: string | null
+          portal_activated_at: string | null
+          portal_invited_at: string | null
+          postcode: string | null
+          preferred_contact: string
+          preferred_name: string | null
+          pronouns: string | null
+          registered_gp_address: string | null
+          registered_gp_name: string | null
+          registered_gp_practice: string | null
+          sex_at_birth: string
+          status: string
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          blood_group?: string | null
+          city?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          date_of_birth: string
+          deceased_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          emergency_name?: string | null
+          emergency_phone?: string | null
+          emergency_relationship?: string | null
+          ethnicity?: string | null
+          first_name: string
+          gender_identity?: string | null
+          has_active_alerts?: boolean
+          id?: string
+          last_name: string
+          nhs_number?: string | null
+          occupation?: string | null
+          phone_landline?: string | null
+          phone_mobile?: string | null
+          portal_activated_at?: string | null
+          portal_invited_at?: string | null
+          postcode?: string | null
+          preferred_contact?: string
+          preferred_name?: string | null
+          pronouns?: string | null
+          registered_gp_address?: string | null
+          registered_gp_name?: string | null
+          registered_gp_practice?: string | null
+          sex_at_birth: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          blood_group?: string | null
+          city?: string | null
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          date_of_birth?: string
+          deceased_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          emergency_name?: string | null
+          emergency_phone?: string | null
+          emergency_relationship?: string | null
+          ethnicity?: string | null
+          first_name?: string
+          gender_identity?: string | null
+          has_active_alerts?: boolean
+          id?: string
+          last_name?: string
+          nhs_number?: string | null
+          occupation?: string | null
+          phone_landline?: string | null
+          phone_mobile?: string | null
+          portal_activated_at?: string | null
+          portal_invited_at?: string | null
+          postcode?: string | null
+          preferred_contact?: string
+          preferred_name?: string | null
+          pronouns?: string | null
+          registered_gp_address?: string | null
+          registered_gp_name?: string | null
+          registered_gp_practice?: string | null
+          sex_at_birth?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patients_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_users: {
         Row: {
           accepted_at: string | null

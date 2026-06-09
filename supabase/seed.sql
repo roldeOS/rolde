@@ -59,3 +59,12 @@ values
   ('b0000000-0000-4000-8000-000000000001','a0000000-0000-4000-8000-000000000002','caretaker','Dr Roland Jayasekhar', true, '0000000', array['general_practice','aesthetic_medicine'], now()),
   ('b0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000003','caretaker','Dr Drivers Caretaker',  true, '1111111', array['general_practice'], now())
 on conflict (tenant_id, user_id) do nothing;
+
+-- Dev patients: three at Doc For Skin, one at Doc For Drivers (proves isolation).
+insert into patients (id, tenant_id, first_name, last_name, date_of_birth, sex_at_birth, email, phone_mobile, created_by)
+values
+  ('c0000000-0000-4000-8000-000000000001','b0000000-0000-4000-8000-000000000001','Sarah','Jones','1985-03-12','female','sarah.jones@example.com','07700900001','a0000000-0000-4000-8000-000000000002'),
+  ('c0000000-0000-4000-8000-000000000002','b0000000-0000-4000-8000-000000000001','John','Smith','1972-11-05','male','john.smith@example.com','07700900002','a0000000-0000-4000-8000-000000000002'),
+  ('c0000000-0000-4000-8000-000000000003','b0000000-0000-4000-8000-000000000001','Aisha','Khan','1990-07-21','female','aisha.khan@example.com','07700900003','a0000000-0000-4000-8000-000000000002'),
+  ('c0000000-0000-4000-8000-000000000004','b0000000-0000-4000-8000-000000000002','David','Brown','1968-01-30','male','david.brown@example.com','07700900004','a0000000-0000-4000-8000-000000000003')
+on conflict (id) do nothing;

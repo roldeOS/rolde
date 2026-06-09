@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getSessionContext } from "@/lib/auth";
 import { SignOutButton } from "@/components/SignOutButton";
 
@@ -24,10 +25,15 @@ export default async function Home() {
           {clinic} · {role}
         </p>
 
-        <p className="mt-8 text-sm text-muted">
-          Signed in as {ctx?.user.email}
-        </p>
-        <div className="mt-6">
+        <Link
+          href="/patients"
+          className="mt-8 inline-flex h-11 items-center rounded-md bg-foreground px-5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+        >
+          View patients →
+        </Link>
+
+        <p className="mt-8 text-sm text-muted">Signed in as {ctx?.user.email}</p>
+        <div className="mt-4">
           <SignOutButton />
         </div>
       </div>
