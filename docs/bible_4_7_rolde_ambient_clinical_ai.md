@@ -465,7 +465,7 @@ CREATE INDEX idx_rag_global_embedding ON rag_global_corpus USING ivfflat (embedd
 CREATE INDEX idx_rag_global_active ON rag_global_corpus(domain) WHERE superseded_at IS NULL;
 CREATE INDEX idx_rag_global_source ON rag_global_corpus(source) WHERE superseded_at IS NULL;
 
--- Tenant-specific corpus (local protocols uploaded by Steward)
+-- Tenant-specific corpus (local protocols uploaded by Caretaker)
 CREATE TABLE rag_tenant_corpus (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id       UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -1003,7 +1003,7 @@ async def generate_clinical_response(
 
 ### 8.4 The Tenant Protocol Upload Flow
 
-When a Steward uploads a local protocol (Bible 4.3 §5.10):
+When a Caretaker uploads a local protocol (Bible 4.3 §5.10):
 
 1. Document uploaded to `tenant-private` bucket
 2. OCR + text extraction (per Bible 4.6 §6)
@@ -1011,7 +1011,7 @@ When a Steward uploads a local protocol (Bible 4.3 §5.10):
 4. Each chunk embedded via PubMedBERT
 5. Chunks inserted into `rag_tenant_corpus` with tenant_id scoping
 6. RLS ensures only this tenant's queries retrieve these chunks
-7. Steward sees confirmation: *"Protocol available to your clinic's AI within 5 minutes"*
+7. Caretaker sees confirmation: *"Protocol available to your clinic's AI within 5 minutes"*
 
 The protocol begins influencing this tenant's AI suggestions immediately. It does NOT trigger any training, model update, or change to other tenants.
 
@@ -1033,7 +1033,7 @@ When a tenant's local protocol contradicts the global corpus (e.g. tenant uses d
 |  3 days as first-line.                  |
 |                                         |
 |  Your clinic's protocol takes priority  |
-|  here per Steward configuration.        |
+|  here per Caretaker configuration.        |
 |                                         |
 |  Sources:                                |
 |  • Edinburgh local antibiotic protocol  |
@@ -1943,7 +1943,7 @@ If accuracy is consistently below 85%, voice ambient AI is gated for that tenant
 ### 16.4 The Three Consent Layers
 
 Per Bible 4.6 §9.2:
-1. **Tenant-level**: Steward enables voice module
+1. **Tenant-level**: Caretaker enables voice module
 2. **Patient-level**: patient signs consent during onboarding
 3. **Consultation-level**: clinician confirms patient awareness before recording
 

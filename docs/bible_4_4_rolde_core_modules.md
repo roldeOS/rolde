@@ -19,14 +19,14 @@ This is the **implementation specification for RolDe's universal clinical module
 - Letters (referral, discharge, sick notes, GP letters, fit-for-work)
 - The OCR pipeline (incoming scanned documents → structured feed entries)
 - The continuous patient monitoring service (background watching)
-- The audit log surface (how Steward and Custodian view audit data)
+- The audit log surface (how Caretaker and Custodian view audit data)
 
 **Loading order for Claude Code sessions**:
 1. Bible 0 v1.2 — group defaults
 2. Bible 4.0 — RolDe constitution
 3. Bible 4.1 — architecture (multi-tenant, schemas, file storage)
 4. Bible 4.2 — design system (consultation screen layout, AI panel)
-5. Bible 4.3 — multi-tenant foundation (Steward admin, roles)
+5. Bible 4.3 — multi-tenant foundation (Caretaker admin, roles)
 6. This Bible 4.4 — core modules
 7. Bible 4.5/4.6/4.7 — module-specific Bibles when relevant
 
@@ -83,7 +83,7 @@ Each module is a logical area, not a strict code boundary. Modules share infrast
 
 The boundary discipline is in:
 - Each module has its own database tables (with cross-module foreign keys explicit)
-- Each module has its own Steward admin configuration page (where applicable)
+- Each module has its own Caretaker admin configuration page (where applicable)
 - Each module has its own permission rules
 - Each module has its own Bible section (here in 4.4 or in a dedicated Bible like 4.5/4.6)
 
@@ -247,7 +247,7 @@ CREATE INDEX idx_alerts_patient_active ON patient_alerts(patient_id) WHERE statu
 
 ### 2.4 The Patient Search
 
-The search bar in the Steward admin and at the top of Today's Patients dashboard. Powered by PostgreSQL pg_trgm (Bible 4.1 §2.1).
+The search bar in the Caretaker admin and at the top of Today's Patients dashboard. Powered by PostgreSQL pg_trgm (Bible 4.1 §2.1).
 
 ```sql
 -- Trigram extension already enabled per Bible 4.1
@@ -311,9 +311,9 @@ Search is fast (trigram index + tenant_id index) and returns within 100ms even o
 
 Two paths a patient enters RolDe:
 
-**Path 1: Receptionist creates patient**
+**Path 1: Concierge creates patient**
 
-In Steward / Receptionist admin:
+In Caretaker / Concierge admin:
 1. Click "+ New patient"
 2. Modal opens with minimum-required fields: first_name, last_name, date_of_birth, sex_at_birth, contact (email or phone)
 3. Optional fields collapsed under "Add more details"
@@ -369,7 +369,7 @@ Every change to demographic fields is audit-logged with before/after diff (Bible
 
 ## 3. The Calendar and Scheduling Module
 
-The calendar is the Receptionist's primary surface and underpins the dashboard's "Today's patients" list (Bible 4.2 §6.2).
+The calendar is the Concierge's primary surface and underpins the dashboard's "Today's patients" list (Bible 4.2 §6.2).
 
 ### 3.1 The Appointment Schema
 
@@ -407,7 +407,7 @@ CREATE TABLE appointments (
   
   -- Notes
   reason            TEXT,                             -- Patient-stated reason
-  notes             TEXT,                             -- Receptionist or clinician notes
+  notes             TEXT,                             -- Concierge or clinician notes
   
   -- Linkage
   parent_appointment_id  UUID REFERENCES appointments(id),  -- For follow-ups (links to original)
@@ -462,7 +462,7 @@ CREATE TABLE services (
   fee_pence         INTEGER,                          -- Standard fee for this service; NULL = variable
   
   -- Permission
-  requires_role          user_role[] NOT NULL DEFAULT ARRAY['practitioner', 'locum'],
+  requires_role          user_role[] NOT NULL DEFAULT ARRAY['clinician', 'locum'],
   requires_specialty     TEXT[],
   available_to_public    BOOLEAN NOT NULL DEFAULT true,  -- Show in public booking widget
   
@@ -486,10 +486,10 @@ The calendar surface has multiple views:
 
 | View | Purpose | Default For |
 |---|---|---|
-| Day | Today's appointments, clinician-by-clinician columns | Practitioners on dashboard |
-| Week | Week-at-a-glance, clinician-by-clinician | Receptionists, Stewards |
-| Month | Month-overview, all appointments | Stewards (planning view) |
-| Practitioner | Single practitioner's day, hour-by-hour grid | Locums, single-practitioner clinics |
+| Day | Today's appointments, clinician-by-clinician columns | Clinicians on dashboard |
+| Week | Week-at-a-glance, clinician-by-clinician | Concierges, Caretakers |
+| Month | Month-overview, all appointments | Caretakers (planning view) |
+| Clinician | Single practitioner's day, hour-by-hour grid | Locums, single-practitioner clinics |
 | Resource | Bed/room/chair occupancy (for inpatient/treatment-room clinics) | Clinic types with rooms (per Bible 4.3 §5.5 module config) |
 
 DESIGN NEEDED: Calendar grid component visual treatment — Roland to specify whether shadcn/ui calendar suffices or custom.
@@ -543,7 +543,7 @@ Background job (pg_cron daily) sends appointment reminders:
 - **24 hours before**: SMS reminder (if phone provided + tenant has SMS module enabled)
 - **Day of**: Optional 2-hour-before SMS for premium tier
 
-Reminder content tenant-configurable in Steward admin.
+Reminder content tenant-configurable in Caretaker admin.
 
 ### 3.7 The No-Show Handling
 
@@ -924,7 +924,7 @@ CREATE TABLE feed_entry_versions (
 );
 ```
 
-**Deleting a feed entry**: Soft delete only (Bible 4.1 §5.3). Deleted entries hidden from default queries but visible to Steward audit view ("Show deleted" toggle in Bible 4.2 §4.4).
+**Deleting a feed entry**: Soft delete only (Bible 4.1 §5.3). Deleted entries hidden from default queries but visible to Caretaker audit view ("Show deleted" toggle in Bible 4.2 §4.4).
 
 Hard delete is reserved for: GDPR right-to-erasure + Custodian-initiated cleanup. Always audit-logged with reason.
 
@@ -1019,7 +1019,7 @@ CREATE TABLE letters (
   pdf_url           TEXT,                                   -- Generated PDF in storage
   sent_at           TIMESTAMPTZ,
   delivered_at      TIMESTAMPTZ,
-  acknowledged_at   TIMESTAMPTZ,                            -- For RolDe-network: receiving Steward acknowledgment
+  acknowledged_at   TIMESTAMPTZ,                            -- For RolDe-network: receiving Caretaker acknowledgment
   
   -- Failure handling
   failure_reason    TEXT,
@@ -1267,8 +1267,8 @@ If the clinician dismisses the card, the trigger is logged but no letter is sent
 
 1. Edge Function `deliver_via_rolde_network` invoked
 2. Verifies receiving tenant exists and is active
-3. Verifies receiving Steward has accepted "receivership of referral letters" from sending tenant (per Bible 4.3 §5.9 institutional consent)
-4. If acceptance not yet given: status → `failed`, sending Steward notified, prompt to either configure relationship or fall back to email
+3. Verifies receiving Caretaker has accepted "receivership of referral letters" from sending tenant (per Bible 4.3 §5.9 institutional consent)
+4. If acceptance not yet given: status → `failed`, sending Caretaker notified, prompt to either configure relationship or fall back to email
 5. If accepted: creates a `incoming_referral` record in receiving tenant's database; receiving tenant's notifications system fires; receiving practitioner sees in their dashboard
 
 ```sql
@@ -1324,7 +1324,7 @@ Critical: this table holds patient demographics in the receiving tenant's databa
 3. Sent via Resend (Bible 4.1 §2.1) to configured recipient address
 4. Status → `sent` on successful send
 5. If bounce: status → `failed`, retry up to 3 times with exponential backoff
-6. After 3 failures: notify Steward, prompt for alternative routing
+6. After 3 failures: notify Caretaker, prompt for alternative routing
 
 **For paper-print fallback (recipient_type = 'paper_print')**:
 
@@ -1337,7 +1337,7 @@ Critical: this table holds patient demographics in the receiving tenant's databa
 For in-network referrals only:
 
 1. Receiving tenant's incoming_referrals shows status `pending`
-2. Receiving practitioner / Receptionist reviews
+2. Receiving practitioner / Concierge reviews
 3. Either accepts (creates patient + offers appointment slots) or declines (with reason)
 4. If accepts: receiving tenant's calendar surfaces available slots
 5. Available slots are fed back to sending tenant via the network protocol
@@ -1363,23 +1363,23 @@ Patient experience: minimal friction. They didn't have to call anyone, navigate 
 
 For two RolDe tenants to refer to each other, mutual acceptance must be configured:
 
-1. Sending Steward configures receiving tenant in Letter Routing settings (Bible 4.3 §5.9)
-2. Sending Steward sees: "Status: Pending receiving clinic acceptance"
-3. Receiving Steward receives notification: "Doc For Skin (Edinburgh) has requested to refer rheumatology patients to your clinic. Accept?"
-4. Receiving Steward reviews sending clinic's profile, accepts (or declines)
+1. Sending Caretaker configures receiving tenant in Letter Routing settings (Bible 4.3 §5.9)
+2. Sending Caretaker sees: "Status: Pending receiving clinic acceptance"
+3. Receiving Caretaker receives notification: "Doc For Skin (Edinburgh) has requested to refer rheumatology patients to your clinic. Accept?"
+4. Receiving Caretaker reviews sending clinic's profile, accepts (or declines)
 5. Once accepted, both tenants can refer/receive between each other
 
-This is institutional consent (Bible 4.0 §10.1, Bible 4.3 §6.5). Patient consent for each individual referral is captured at consultation time (clinician's approval implicitly includes patient agreement; patient consent forms can be required by Steward config).
+This is institutional consent (Bible 4.0 §10.1, Bible 4.3 §6.5). Patient consent for each individual referral is captured at consultation time (clinician's approval implicitly includes patient agreement; patient consent forms can be required by Caretaker config).
 
 ### 6.9 The Network Decline / Revocation
 
-A receiving Steward can decline future referrals from a sending clinic at any time:
+A receiving Caretaker can decline future referrals from a sending clinic at any time:
 
 - Sets status of relationship to `declined`
 - Existing in-flight referrals continue to be processed
 - New referrals from that sending tenant are rejected at delivery with friendly message: "This receiving clinic is no longer accepting referrals via RolDe. Try alternative routing."
 
-Symmetric: sending Steward can revoke a relationship if the receiving clinic is providing poor service.
+Symmetric: sending Caretaker can revoke a relationship if the receiving clinic is providing poor service.
 
 ---
 
@@ -1644,7 +1644,7 @@ export async function warfarinINROverdueCheck(tenantId: string) {
 Alerts surface in three places:
 
 1. **Bottom alert strip on consultation screen** (Bible 4.2 §3.8) — when the patient is opened and has open alerts
-2. **Dashboard alert section** — Stewards and Practitioners see a summary card on their dashboard listing open alerts assigned to them
+2. **Dashboard alert section** — Caretakers and Clinicians see a summary card on their dashboard listing open alerts assigned to them
 3. **Per-patient alert list** — visible on the patient detail page (§2.6 — Alerts tab)
 
 The constitutional commitment (Bible 4.2 §6.4 — calm test): alerts are factual, brief, dismissible. No urgency-creating language. No exclamation marks. No flashing.
@@ -1659,7 +1659,7 @@ Per Bible 4.2 §5.8: critical-severity alerts surface even when the clinician ha
 
 Critical alerts also notify outside the patient's open consultation:
 - Email to the patient's primary clinician
-- SMS to assigned Practitioner if tenant has SMS module + opt-in
+- SMS to assigned Clinician if tenant has SMS module + opt-in
 - Persistent dashboard banner
 
 ### 8.7 The Alert Resolution
@@ -1700,11 +1700,11 @@ More rules added incrementally. The rule catalogue is extensible — Custodian c
 
 Bible 4.1 §5.4 specifies the audit_log table. Bible 4.3 §5.12 / §15 specifies who can see audit data. This section specifies how it's surfaced.
 
-### 9.1 The Audit Log Page (Steward View)
+### 9.1 The Audit Log Page (Caretaker View)
 
-`<subdomain>.rolde.app/admin/audit-log` (Steward only)
+`<subdomain>.rolde.app/admin/audit-log` (Caretaker only)
 
-Shows all audit log entries for the Steward's tenant (Bible 4.3 §5.12 layout). Filters:
+Shows all audit log entries for the Caretaker's tenant (Bible 4.3 §5.12 layout). Filters:
 
 - **By actor**: filter to specific user
 - **By action type**: e.g. only show prescription events
@@ -1716,7 +1716,7 @@ Export to CSV always available. Export action itself audit-logged.
 
 ### 9.2 The Patient-Specific Audit View
 
-`<subdomain>.rolde.app/patients/<id>/audit` (Steward + assigned clinicians only)
+`<subdomain>.rolde.app/patients/<id>/audit` (Caretaker + assigned clinicians only)
 
 Shows audit log filtered to that single patient. Used for:
 - Subject Access Requests (SAR) — show patient who has accessed their record
@@ -1768,7 +1768,7 @@ Each list view (Patients, Appointments, Letters, Audit Log) has consistent filte
 - Type filter (where applicable)
 - Search-within-results
 - Sort selector
-- Saved filter presets (Steward can save commonly-used filter combinations)
+- Saved filter presets (Caretaker can save commonly-used filter combinations)
 
 ---
 
@@ -1783,7 +1783,7 @@ Clinical work generates artefacts that may need to be printed or exported.
 | Letter PDF | When recipient_type is paper_print, or clinician opts to print extra copy |
 | Prescription | NHS pharmacies that don't accept digital; clinic-stock dispensing receipt |
 | Patient summary | Patient leaving clinic wants paper record |
-| Appointment confirmation | Receptionist printing for patient |
+| Appointment confirmation | Concierge printing for patient |
 | Consent form | Patient signing on paper (rare; usually digital) |
 
 All print targets render to PDF via the same PDF pipeline (§5.5). Clinic logo and details auto-included.
@@ -1794,8 +1794,8 @@ All print targets render to PDF via the same PDF pipeline (§5.5). Clinic logo a
 |---|---|
 | Patient full record (JSON + PDF archive) | Subject Access Request; tenant migration |
 | Audit log CSV | Compliance reporting |
-| Appointment schedule | Practitioner taking schedule home |
-| Financial summary | Steward / Accountant for reconciliation |
+| Appointment schedule | Clinician taking schedule home |
+| Financial summary | Caretaker / Cofferer for reconciliation |
 
 Exports always audit-logged.
 
@@ -1820,16 +1820,16 @@ How RolDe notifies users of relevant events.
 |---|---|---|
 | Appointment reminder (48h before) | Email | Patient |
 | Appointment reminder (24h before) | SMS + Email | Patient |
-| Patient arrived | In-app | Practitioner |
-| New incoming referral | Email + In-app | Practitioner, Steward |
+| Patient arrived | In-app | Clinician |
+| New incoming referral | Email + In-app | Clinician, Caretaker |
 | Letter sent successfully | In-app | Author |
-| Letter delivery failed | Email + In-app | Author, Steward |
-| Critical monitoring alert | Email + SMS + In-app | Practitioner, Steward |
-| Payment received | In-app | Steward, Accountant |
-| Payment failed | Email + In-app | Steward |
-| Custodian accessed your tenant | Email | Steward (transparency commitment per Bible 4.3 §6.6) |
+| Letter delivery failed | Email + In-app | Author, Caretaker |
+| Critical monitoring alert | Email + SMS + In-app | Clinician, Caretaker |
+| Payment received | In-app | Caretaker, Cofferer |
+| Payment failed | Email + In-app | Caretaker |
+| Custodian accessed your tenant | Email | Caretaker (transparency commitment per Bible 4.3 §6.6) |
 | Absence approved/denied | In-app | Requesting user |
-| User invitation accepted | In-app | Steward who invited |
+| User invitation accepted | In-app | Caretaker who invited |
 
 ### 12.3 The Notification Schema
 
@@ -1900,7 +1900,7 @@ When unread count > 0, a small dot indicator (NOT a number, NOT a red counter �
 
 Permissions specific to core modules. Inherits from Bible 4.3 §7.
 
-| Capability | Custodian | Steward | Practitioner | Locum | Nurse | Receptionist | Accountant | Patient |
+| Capability | Custodian | Caretaker | Clinician | Locum | Nurse | Concierge | Cofferer | Patient |
 |---|---|---|---|---|---|---|---|---|
 | Read patient list | A | Yes | Yes | Yes (session) | Yes | Yes | No | No |
 | Create patient | A | Yes | Yes | Yes | Yes | Yes | No | Self-register only |
@@ -1908,8 +1908,8 @@ Permissions specific to core modules. Inherits from Bible 4.3 §7.
 | Read clinical notes | A | Yes | Yes | Yes | Yes | No | No | No |
 | Write clinical notes | No | Yes | Yes | Yes | Yes | No | No | No |
 | Edit own clinical note (24h) | No | Yes | Yes | Yes | Yes | No | No | No |
-| Edit other's clinical note | No | Steward only | No | No | No | No | No | No |
-| Soft-delete clinical note | No | Steward only | No | No | No | No | No | No |
+| Edit other's clinical note | No | Caretaker only | No | No | No | No | No | No |
+| Soft-delete clinical note | No | Caretaker only | No | No | No | No | No | No |
 | Generate letter | No | Yes | Yes | Yes | Yes | No | No | No |
 | Approve and send letter | No | Yes | Yes | Yes | If specific permission | No | No | No |
 | Read letter | A | Yes | Yes (own + assigned patients) | Yes | Yes | Yes (metadata only) | No | Self only |
@@ -1928,7 +1928,7 @@ A = Audit-logged Custodian elevation pattern.
 
 ## 14. Module Configuration (Per-Tenant)
 
-Each module has Steward-configurable settings stored in `tenants.config` JSONB (Bible 4.3 §9).
+Each module has Caretaker-configurable settings stored in `tenants.config` JSONB (Bible 4.3 §9).
 
 ### 14.1 Patient Management Configuration
 
@@ -2012,7 +2012,7 @@ The core modules are "built" when:
 
 ### 15.1 The Patient Management Acceptance
 
-- [ ] Patient creation via Receptionist admin works
+- [ ] Patient creation via Concierge admin works
 - [ ] Patient self-registration via public booking widget works
 - [ ] Patient search returns results in < 200ms
 - [ ] Patient detail page displays all tabs correctly
@@ -2053,7 +2053,7 @@ The core modules are "built" when:
 - [ ] All 6 pipeline steps tested end-to-end
 - [ ] In-network referral: Doc For Drivers → Doc For Skin works
 - [ ] External email referral: PDF arrives at recipient
-- [ ] Network acceptance flow (Steward-to-Steward consent) works
+- [ ] Network acceptance flow (Caretaker-to-Caretaker consent) works
 - [ ] Appointment intelligence surfaces real slots from receiving tenant
 - [ ] Patient receives appointment confirmation email/SMS
 

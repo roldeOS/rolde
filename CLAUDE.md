@@ -25,6 +25,9 @@ Greek letters. He is "Roland"; never "sir" / "mate" / "boss".
   and always keep a **ticked checklist** going.
 - **Research & web search: Jarvis does it himself — NO fan-out agent swarms** (Roland: "only
   you do the search"). Keep orchestration lean; don't spin up dozens of agents for research.
+- **Stay current as we go** — clean up old/dead code AND update the bibles in the SAME pass
+  that changes behaviour; never let stale docs or cruft accumulate. Roland: this "keeps us
+  current and live" and avoids hitting the mess after building a lot on top of it.
 
 ## Clinical-grade cautions
 - **Patient safety is absolute.** Anything touching prescribing (4.5), documentation (4.6), or

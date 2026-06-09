@@ -316,7 +316,7 @@ CREATE INDEX idx_versions_entry ON feed_entry_versions(entry_id, edited_at DESC)
 ### 3.4 The Delete Behaviour
 
 Soft delete only (Bible 4.1 §5.3). The entry is hidden from default queries but visible to:
-- Steward via "Show deleted" toggle in audit view
+- Caretaker via "Show deleted" toggle in audit view
 - Custodian via cross-tenant queries (audit-logged)
 
 Hard delete is reserved for:
@@ -325,9 +325,9 @@ Hard delete is reserved for:
 
 Both hard-delete cases are extremely rare in production. The default operational pattern is: entries are never deleted; they are corrected with addenda.
 
-### 3.5 The Steward Override
+### 3.5 The Caretaker Override
 
-A Steward can edit/delete another clinician's note in exceptional circumstances (e.g. a junior clinician records something inappropriate; a clinician records into the wrong patient's record). This is:
+A Caretaker can edit/delete another clinician's note in exceptional circumstances (e.g. a junior clinician records something inappropriate; a clinician records into the wrong patient's record). This is:
 
 - Audit-logged with both actors' identities
 - Notification sent to the original author
@@ -485,7 +485,7 @@ Per Bible 4.1 §8.5 / Bible 4.2 §15:
 
 1. Photo uploaded → lands in `patient-photos/<tenant>/raw/<photo_id>.jpg`
 2. Edge Function `watermark_photo` triggered
-3. Watermark applied per Steward configuration (text, position, opacity)
+3. Watermark applied per Caretaker configuration (text, position, opacity)
 4. Watermarked version stored at `patient-photos/<tenant>/watermarked/<photo_id>.jpg`
 5. Patient feed references the watermarked version
 6. Raw version retained for high-quality export with audit-logged access
@@ -599,12 +599,12 @@ Click any thumbnail → opens carousel at that angle. Click "Compare side-by-sid
 Per Bible 4.4 §13 and Bible 4.3 §5.8:
 
 - Photos are clinician-visible by default
-- Patients do NOT see photos in their patient portal by default (Steward can configure exceptions per data type)
+- Patients do NOT see photos in their patient portal by default (Caretaker can configure exceptions per data type)
 - Photos are NEVER promoted to ambient AI suggestions visible to patients
 
 This default-no-patient-access protects patient confidentiality (some patients don't want to see clinical photos of themselves) and protects the clinician's clinical record from being misinterpreted out of context.
 
-Steward can grant patient access on a per-photo-type basis (e.g. "Allow patients to see their own aesthetic before/after photos").
+Caretaker can grant patient access on a per-photo-type basis (e.g. "Allow patients to see their own aesthetic before/after photos").
 
 ### 4.11 The Storage Cost Considerations
 
@@ -620,7 +620,7 @@ Storage cost considerations:
 
 Photo retention policy in tenant config:
 - Default: indefinite (clinical records retained per UK regulations, typically 7+ years)
-- Steward can configure per-clinic retention if appropriate (rare; mostly defaults to "keep forever")
+- Caretaker can configure per-clinic retention if appropriate (rare; mostly defaults to "keep forever")
 
 ---
 
@@ -1162,7 +1162,7 @@ When a consultation closes, the statistics are computed and stored:
 
 These statistics power:
 
-- Per-clinician productivity metrics (Steward admin)
+- Per-clinician productivity metrics (Caretaker admin)
 - Per-tenant usage metrics (Custodian dashboard)
 - AI effectiveness metrics (does the AI's value scale with consultation complexity?)
 
@@ -1193,7 +1193,7 @@ Per Cluster D3 — voice ambient AI listens to the consultation and generates do
 
 Voice recording requires explicit patient consent. Three layers:
 
-1. **Tenant-level**: Steward enables voice ambient AI module in clinic settings
+1. **Tenant-level**: Caretaker enables voice ambient AI module in clinic settings
 2. **Patient-level**: patient signs consent during onboarding (or in-clinic)
 3. **Consultation-level**: clinician confirms patient is aware before each recording session
 
@@ -1224,7 +1224,7 @@ Encryption: per-tenant encryption key applied at rest (additional layer beyond S
 
 Retention default: 30 days, then auto-deleted via pg_cron job. Transcript retained in feed entry indefinitely.
 
-Steward can extend retention up to 1 year for specific cases (e.g. medico-legal documentation needs).
+Caretaker can extend retention up to 1 year for specific cases (e.g. medico-legal documentation needs).
 
 ### 9.5 The Phase 1 Fallback
 
@@ -1256,7 +1256,7 @@ Every change to a feed entry is tracked. Bible 4.4 §4.6 introduced this; this s
 
 | Entry Type | Versioned? | Edit Window |
 |---|---|---|
-| Clinical note | Yes | 24h by author; Steward override always |
+| Clinical note | Yes | 24h by author; Caretaker override always |
 | Vital signs | Yes | 24h by author |
 | Prescription | Drafts only | While status='draft' |
 | Lab order / Radiology order | Drafts only | While status='draft' |
@@ -1316,13 +1316,13 @@ When a clinician edits a note:
 
 Edit history is reconstructable from `feed_entry_versions`. Audit log shows what *happened*. Both retained indefinitely.
 
-### 10.4 The Steward Edit Override
+### 10.4 The Caretaker Edit Override
 
-A Steward editing another clinician's note (per §3.5):
+A Caretaker editing another clinician's note (per §3.5):
 
 - Audit log entry: action='clinical_note.steward_override_edit'
 - Notification sent to original author
-- Edit history shows Steward as the editor with explicit Steward badge in UI
+- Edit history shows Caretaker as the editor with explicit Caretaker badge in UI
 - Reason for override required and stored
 
 ### 10.5 The Reason Required For Edits
@@ -1393,7 +1393,7 @@ JSON archive structure:
     "tenant": "Doc For Skin",
     "patient_id": "uuid",
     "exported_at": "2026-05-10T14:32:00Z",
-    "exported_by": "Roland Jayasekhar (Steward)",
+    "exported_by": "Roland Jayasekhar (Caretaker)",
     "export_reason": "Subject Access Request",
     "format_version": "1.0"
   },
@@ -1452,7 +1452,7 @@ Bible 4.1 §2.1 specified pg_trgm + tsvector. This section operationalises docum
 |---|---|
 | Within a single patient's feed | All feed entries' text content (notes, OCR'd text, AI summaries, structured payloads) |
 | Across all of a clinician's patients | Same, scoped to their assigned patients |
-| Across the entire tenant | Same, Steward-only (or specific elevated roles) |
+| Across the entire tenant | Same, Caretaker-only (or specific elevated roles) |
 | Custodian cross-tenant | Audit-logged access only |
 
 ### 12.2 The Search Index
@@ -1499,11 +1499,11 @@ Hits are highlighted in context. Click result → navigates to that entry in the
 
 ### 12.4 The Tenant-Wide Search
 
-For Stewards and elevated roles:
+For Caretakers and elevated roles:
 
 - Search across all patients' records
 - Useful for: "Find all patients on warfarin", "Find all aesthetic patients with complications", "Find unactioned referrals"
-- Permission required: explicit Steward role + audit logging on each tenant-wide search query
+- Permission required: explicit Caretaker role + audit logging on each tenant-wide search query
 
 ### 12.5 The Search Performance
 
@@ -1521,7 +1521,7 @@ Achieved via:
 
 Inherits from Bible 4.4 §13. Documentation-specific capabilities:
 
-| Capability | Custodian | Steward | Practitioner | Locum | Nurse | Receptionist | Accountant | Patient |
+| Capability | Custodian | Caretaker | Clinician | Locum | Nurse | Concierge | Cofferer | Patient |
 |---|---|---|---|---|---|---|---|---|
 | Write clinical note | No | Yes | Yes | Yes | Yes | No | No | No |
 | Edit own note (24h) | No | Yes | Yes | Yes | Yes | No | No | No |
@@ -1530,7 +1530,7 @@ Inherits from Bible 4.4 §13. Documentation-specific capabilities:
 | Hard delete (GDPR) | A | Request only | No | No | No | No | No | Request only (own) |
 | Upload photo | No | Yes | Yes | Yes | Yes | No | No | Self via portal (Phase 2) |
 | Annotate photo | No | Yes | Yes | Yes | Yes (assigned) | No | No | No |
-| View photos | A | Yes | Yes (assigned) | Yes | Yes (assigned) | No | No | No (default; Steward can grant) |
+| View photos | A | Yes | Yes (assigned) | Yes | Yes (assigned) | No | No | No (default; Caretaker can grant) |
 | Upload document | No | Yes | Yes | Yes | Yes | Yes | No | Yes (review queue) |
 | OCR document | A | Yes (auto) | Yes (auto) | Yes (auto) | Yes (auto) | No | No | N/A |
 | Manually correct OCR | No | Yes | Yes | Yes | Yes | No | No | No |
@@ -1626,7 +1626,7 @@ A = Audit-logged Custodian elevation pattern.
 - [ ] Edit reason required and stored
 - [ ] Version history available via "(edited)" link
 - [ ] Diff visualisation correct
-- [ ] Steward override audit-logged with notification to author
+- [ ] Caretaker override audit-logged with notification to author
 
 ### 15.3 The Photo Management Acceptance
 
@@ -1635,7 +1635,7 @@ A = Audit-logged Custodian elevation pattern.
 - [ ] Upload from camera works (browser camera API)
 - [ ] Upload from mobile via QR works
 - [ ] Annotation tools (pin, arrow, circle, text) all functional
-- [ ] Watermarking pipeline runs correctly per Steward config
+- [ ] Watermarking pipeline runs correctly per Caretaker config
 - [ ] Carousel viewer works with all 5 angles
 - [ ] Side-by-side comparison with previous set works
 - [ ] Photos appear correctly in feed
@@ -1680,7 +1680,7 @@ A = Audit-logged Custodian elevation pattern.
 
 - [ ] Within-patient search returns results in <200ms
 - [ ] Search hits highlighted in context
-- [ ] Tenant-wide search works for Stewards
+- [ ] Tenant-wide search works for Caretakers
 - [ ] Tenant-wide search audit-logged
 
 ### 15.9 The Operational Acceptance

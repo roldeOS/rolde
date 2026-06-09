@@ -317,7 +317,7 @@ All RolDe-powered products use Supabase Auth as the single authentication provid
 Authentication methods enabled:
 - **Email + password** (default for all roles)
 - **Email magic link** (alternative for clinicians who prefer passwordless)
-- **OAuth via Google** (optional, configured per-tenant by Steward)
+- **OAuth via Google** (optional, configured per-tenant by Caretaker)
 - **OAuth via Microsoft** (optional, for clinics with M365 ecosystem)
 
 NOT enabled:
@@ -402,7 +402,7 @@ These defaults are encoded in RLS policies on every table.
 
 Patients authenticate at `patient.<clinicname>.rolde.app` using a separate auth flow:
 
-1. When a patient is created (by Receptionist or via self-booking), credentials are auto-generated
+1. When a patient is created (by Concierge or via self-booking), credentials are auto-generated
 2. The patient receives a welcome email with login link (Bible 0 §12.6)
 3. First login forces password reset
 4. Subsequent logins use email + password OR magic link
@@ -414,7 +414,7 @@ Patient sessions are scoped to their own data only. RLS policies ensure a patien
 
 - **Session duration**: 8 hours of inactivity for clinical users; 30 minutes for patient portal
 - **Refresh tokens**: rotated on each use (security best practice)
-- **MFA**: optional in Phase 1, mandatory for Steward role in Phase 2, mandatory for prescribing actions even in Phase 1 (re-authenticate with password before prescribing)
+- **MFA**: optional in Phase 1, mandatory for Caretaker role in Phase 2, mandatory for prescribing actions even in Phase 1 (re-authenticate with password before prescribing)
 - **Audit on auth events**: every login, logout, failed login, password change, MFA event logged to `auth_audit_log` table
 
 ---
@@ -572,7 +572,7 @@ This is one of the most important architectural decisions in RolDe and was a sou
                   | - Database CRUD via  |
                   |   Supabase           |
                   | - Patient portal     |
-                  | - Steward admin      |
+                  | - Caretaker admin      |
                   +----------------------+
                             |
                             | HTTPS API call
@@ -596,7 +596,7 @@ This is one of the most important architectural decisions in RolDe and was a sou
                     Browser receives streamed AI output
 ```
 
-Vercel never touches the LLM. Vercel doesn't have GPUs. Vercel can't run Gemma 4. But Vercel happily hosts everything else, and "everything else" is most of RolDe — the consultation UI, the booking flows, the patient portal, the Steward admin, the marketing site, the public clinic websites that embed the booking widget.
+Vercel never touches the LLM. Vercel doesn't have GPUs. Vercel can't run Gemma 4. But Vercel happily hosts everything else, and "everything else" is most of RolDe — the consultation UI, the booking flows, the patient portal, the Caretaker admin, the marketing site, the public clinic websites that embed the booking widget.
 
 The AI is a separate microservice the web app talks to.
 
@@ -754,8 +754,8 @@ All RolDe-powered products store files via Supabase Storage (S3-compatible, RLS-
 | Bucket | Purpose | Access |
 |---|---|---|
 | `tenant-public` | Tenant logos, public branding assets | Public read |
-| `tenant-private` | Steward-managed confidential files (legal docs, contracts) | Tenant + Custodian only |
-| `patient-documents` | OCR'd letters, scanned reports, uploaded files attached to patients | Tenant clinicians + patient (where Steward authorises) |
+| `tenant-private` | Caretaker-managed confidential files (legal docs, contracts) | Tenant + Custodian only |
+| `patient-documents` | OCR'd letters, scanned reports, uploaded files attached to patients | Tenant clinicians + patient (where Caretaker authorises) |
 | `patient-photos` | Aesthetic photography, clinical photography (5-photo standard for Doc For Skin) | Tenant clinicians only (NOT patients by default) |
 | `consent-forms` | Signed consent PDFs | Tenant + patient (own only) |
 | `letter-pdfs` | Generated referral letters, discharge summaries (final approved versions) | Tenant + patient (where applicable) |
@@ -793,7 +793,7 @@ Aesthetic photographs uploaded to `patient-photos` are watermarked automatically
 
 When a photo is uploaded:
 1. Original raw file uploaded to `patient-photos/<tenant>/raw/<photo_id>.jpg`
-2. Edge Function triggered, applies watermark per Steward configuration
+2. Edge Function triggered, applies watermark per Caretaker configuration
 3. Watermarked version stored at `patient-photos/<tenant>/watermarked/<photo_id>.jpg`
 4. Patient feed references the watermarked version
 5. Raw version retained for high-quality export (audit-logged access only)
@@ -855,7 +855,7 @@ The Embeddable Booking Widget is a JavaScript snippet that any external website 
 
 ### 10.2 The Embed Code
 
-A clinic's Steward generates an embed code from their tenant settings:
+A clinic's Caretaker generates an embed code from their tenant settings:
 
 ```html
 <div id="rolde-booking-widget" data-tenant="docforskin"></div>
@@ -871,7 +871,7 @@ The widget JavaScript:
 
 ### 10.3 The Widget Customisation
 
-Per-tenant customisation of the widget is configured via the Steward settings:
+Per-tenant customisation of the widget is configured via the Caretaker settings:
 - Primary brand colour
 - Logo
 - Available services (subset of full service list)
@@ -930,7 +930,7 @@ Vercel handles wildcard subdomain routing. The Next.js middleware (§3.5) resolv
 
 Tenants can optionally serve their RolDe instance via a custom domain (e.g. `app.docforskin.com` instead of `docforskin.rolde.app`). Configuration:
 
-1. Tenant's Steward enters custom domain in tenant settings
+1. Tenant's Caretaker enters custom domain in tenant settings
 2. RolDe issues DNS instructions (CNAME to `cname.rolde.app`)
 3. Vercel auto-provisions SSL certificate via Let's Encrypt
 4. Middleware resolves custom domain to tenant_id (alternative to subdomain resolution)
@@ -1078,7 +1078,7 @@ RolDe is healthcare software handling sensitive patient data. The threat model:
 | Threat | Likelihood | Impact | Mitigation |
 |---|---|---|---|
 | Casual unauthorised access (compromised user password) | Medium | High | MFA for clinical roles; session timeouts; password complexity rules |
-| Targeted phishing of Steward credentials | Low-Medium | High | MFA mandatory for Steward; audit log review; suspicious-login detection |
+| Targeted phishing of Caretaker credentials | Low-Medium | High | MFA mandatory for Caretaker; audit log review; suspicious-login detection |
 | SQL injection / web vulnerabilities | Low (Next.js + parameterised queries) | High | Code review; dependency scanning; security headers |
 | Insider threat (Custodian misuse of cross-tenant access) | Low | High | Every Custodian access audit-logged; immutable audit log |
 | Lost/stolen device with active session | Medium | Medium | Session timeout; remote logout capability; device-aware session invalidation |
@@ -1105,7 +1105,7 @@ For Phase 1 launch:
 - [x] Code review on every pull request before merge
 
 For Phase 2:
-- [ ] MFA mandatory for all clinical roles (not just Steward)
+- [ ] MFA mandatory for all clinical roles (not just Caretaker)
 - [ ] WAF rules via Cloudflare
 - [ ] Penetration test by independent security firm
 - [ ] Bug bounty programme (when scale justifies)
@@ -1115,7 +1115,7 @@ For Phase 2:
 - ICO registration as Data Controller (RolDe Ltd) and as Data Processor (acting on behalf of tenant clinics who are themselves Data Controllers for their patients)
 - DPA template offered to every tenant during onboarding (auto-generated, lawyer-reviewed)
 - Privacy policy on `rolde.app` and on every tenant subdomain
-- Right to access: patients can request all their data via patient portal; tenants can request all clinic data via Steward admin
+- Right to access: patients can request all their data via patient portal; tenants can request all clinic data via Caretaker admin
 - Right to erasure: requests handled via Custodian, audit-logged, hard-delete pattern with audit trail
 - Data residency: all data in EU/UK regions (Supabase EU region; Vercel EU edge nodes; Cloudflare EU/UK)
 
@@ -1306,7 +1306,7 @@ This Bible defines success at the architectural level. RolDe's architecture is "
 - [ ] Subdomain routing works: `docforskin.rolde.app` resolves to Doc For Skin tenant context
 - [ ] Custom domain support deferred to Phase 2 (acceptable)
 - [ ] Patient portal subdomain routing works: `patient.docforskin.rolde.app`
-- [ ] Auth flows tested for all roles (Custodian, Steward, Practitioner, Receptionist, Patient)
+- [ ] Auth flows tested for all roles (Custodian, Caretaker, Clinician, Concierge, Patient)
 - [ ] Audit log captures every clinically-significant action
 - [ ] AI server reachable via Cloudflare Tunnel at `ai.rolde.app`
 - [ ] Web app gracefully degrades when AI server is offline

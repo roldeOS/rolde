@@ -101,7 +101,7 @@ The patient — their name, their critical flags, their vital state — never le
 
 ### 1.5 Defaults Reflect The Common Case
 
-Default sort orders, default panel positions, default selections — all calibrated to what a clinician needs most often. Customisation is possible (Steward configures clinic defaults; user adjusts personal defaults), but the out-of-box experience matches the common case so well that 80% of users never need to adjust anything.
+Default sort orders, default panel positions, default selections — all calibrated to what a clinician needs most often. Customisation is possible (Caretaker configures clinic defaults; user adjusts personal defaults), but the out-of-box experience matches the common case so well that 80% of users never need to adjust anything.
 
 ### 1.6 The Aesthetic Coherence
 
@@ -269,7 +269,7 @@ Cards have subtle shadows. Critical cards have red-tinged borders (per Bible 0 �
 
 ### 2.7 The Tenant Branding Tokens
 
-Per-tenant branding overrides specific tokens (configured via Steward settings, stored in tenant config JSONB per Bible 4.1 §5.5):
+Per-tenant branding overrides specific tokens (configured via Caretaker settings, stored in tenant config JSONB per Bible 4.1 §5.5):
 
 ```css
 /* Tenant overrides (loaded at runtime per tenant) */
@@ -363,7 +363,7 @@ Width breakdown:
 - Letters (document icon)
 - Investigations (microscope icon)
 - Reports (chart icon)
-- Settings (cog icon — leads to Steward admin if user has Steward role)
+- Settings (cog icon — leads to Caretaker admin if user has Caretaker role)
 - Profile (user icon, bottom-aligned)
 
 **DESIGN NEEDED**: Each navigation icon at 24×24px. Roland designs icons matching Bible 0's "Apple-esque monochrome" aesthetic. Outlined style preferred over filled.
@@ -474,7 +474,7 @@ Explicit refusals for the consultation screen:
 - **No notifications popup.** Alerts go to the bottom strip, not floating modals.
 - **No tour guides on first use.** A short page describing the layout once, but no persistent UI elements teaching the interface.
 - **No "What's new?" panels.** Updates announced in a separate Update Notes area accessed from settings.
-- **No marketing content within the work area.** Upsells live in the Steward admin, not in the consultation flow.
+- **No marketing content within the work area.** Upsells live in the Caretaker admin, not in the consultation flow.
 - **No "engagement" mechanics.** No streaks, no completion percentages, no gamification of clinical work.
 
 ---
@@ -490,7 +490,7 @@ Every entry type lives in the same feed, in chronological order:
 | Entry Type | Visual Treatment | Source |
 |---|---|---|
 | Clinical note | Plain card with timestamped text | Clinician typed in bottom-left input |
-| Vital signs | Card with structured key-value layout | Receptionist or nurse recorded |
+| Vital signs | Card with structured key-value layout | Concierge or nurse recorded |
 | Prescription | Card with drug name, dose, status indicator | Created via Prescribing tab |
 | Lab order | Card with test names, status (pending/received) | Created via Labs tab |
 | Lab result | Card with synthesised interpretation + raw values on expand | Auto-generated when results arrive |
@@ -572,7 +572,7 @@ Every feed card has the same anatomical structure:
 - Thumbnail strip showing all 5 angles (frontal, L oblique, L lateral, R oblique, R lateral)
 - Click any thumbnail opens carousel viewer (full-screen, can swipe between angles, can compare to previous session)
 - Annotations visible as overlays
-- Watermark visible per Steward configuration
+- Watermark visible per Caretaker configuration
 - DESIGN NEEDED: Photo card thumbnail strip layout — Roland to specify exact dimensions and arrangement.
 
 **Consent form (signed)**:
@@ -603,7 +603,7 @@ A search bar at the top of the feed:
 - Free-text search across all feed entries (PostgreSQL tsvector — Bible 4.1 §2.1)
 - Filter chips below: All / Notes / Prescriptions / Results / Photos / Letters / AI
 - Date range picker (collapsed by default; expands when needed)
-- "Show deleted" toggle (Custodian and Steward only — soft-deleted entries appear greyed)
+- "Show deleted" toggle (Custodian and Caretaker only — soft-deleted entries appear greyed)
 
 ### 4.5 The Feed Performance
 
@@ -879,11 +879,11 @@ Per Bible 0 §12.4 (universal dashboard, role-conditioned content):
 
 | Role | Dashboard Variant |
 |---|---|
-| Practitioner | Today's patients (as above) |
+| Clinician | Today's patients (as above) |
 | Locum | Same as practitioner, scoped to their session |
 | Nurse | Today's assigned patients + observations to take |
-| Receptionist | Cross-departmental view: all clinicians' lists, payments due, registrations to complete |
-| Steward | Clinic overview: all clinician lists summary, financial summaries, audit log access entry, user management |
+| Concierge | Cross-departmental view: all clinicians' lists, payments due, registrations to complete |
+| Caretaker | Clinic overview: all clinician lists summary, financial summaries, audit log access entry, user management |
 | Custodian (Roland) | Cross-tenant platform view: tenant onboarding queue, AI update status, billing health, usage dashboard |
 | Patient (portal) | Own appointments (past and upcoming), own results, own consents, "Reschedule" / "Book new" actions |
 
@@ -918,7 +918,7 @@ Bible 0 §8.4 commits to LatePoint-style modal-driven UX for booking flows. This
 The booking flow is a step-driven modal that handles:
 
 1. Service selection (which appointment type)
-2. Practitioner selection (where multi-practitioner; auto-selected for solo)
+2. Clinician selection (where multi-practitioner; auto-selected for solo)
 3. Date and time selection (calendar + slot picker)
 4. Patient identification (existing patient login or new patient quick-create)
 5. Confirmation
@@ -1065,7 +1065,7 @@ Per Bible 0 §12.6 / Bible 4.0 §9.7:
 - Other patients' data (obviously)
 - Internal clinic communications
 
-Steward configures per-data-type visibility (e.g. "lab results visible to patients with 24-hour delay for clinician review").
+Caretaker configures per-data-type visibility (e.g. "lab results visible to patients with 24-hour delay for clinician review").
 
 ---
 
@@ -1352,11 +1352,11 @@ Each specialty variant gets a small extension to this Bible 4.2 (Section 14.x) w
 
 ## 15. The Watermarking System (Aesthetic Photography)
 
-Specifically for Doc For Skin and any future aesthetic clinic. Per Cluster D Roland specification: photos are watermarked automatically; Steward controls watermark settings.
+Specifically for Doc For Skin and any future aesthetic clinic. Per Cluster D Roland specification: photos are watermarked automatically; Caretaker controls watermark settings.
 
 ### 15.1 The Watermark Configuration
 
-Per-tenant configuration (in Steward settings):
+Per-tenant configuration (in Caretaker settings):
 
 ```json
 {
@@ -1383,7 +1383,7 @@ Per-tenant configuration (in Steward settings):
 
 ### 15.3 The Watermark Position
 
-Default position: bottom-right corner, ~5% inset from edges. Steward can choose: bottom-right, bottom-left, top-right, top-left, or centre.
+Default position: bottom-right corner, ~5% inset from edges. Caretaker can choose: bottom-right, bottom-left, top-right, top-left, or centre.
 
 DESIGN NEEDED: Watermark visual treatment specifics — Roland to design exact font, opacity, positioning.
 
@@ -1459,7 +1459,7 @@ Where to find detailed implementation specifications for each visual element:
 | Doc For Drivers DVLA layout | §14.1 | Bible 5 |
 | Per-tenant branding | §2.7 | Bible 4.3 |
 | Auth screens | (inheriting Bible 0 §8.4 booking flow style) | Bible 4.3 |
-| Steward admin | (using component patterns §9) | Bible 4.3 |
+| Caretaker admin | (using component patterns §9) | Bible 4.3 |
 
 ---
 
@@ -1493,7 +1493,7 @@ The design system is "built" for Phase 1 when:
 - [ ] Consultation screen layout built and renders correctly
 - [ ] Patient feed renders all entry types correctly
 - [ ] AI panel renders cards with correct severity treatments
-- [ ] Dashboard renders for at least three role variants (Practitioner, Receptionist, Steward)
+- [ ] Dashboard renders for at least three role variants (Clinician, Concierge, Caretaker)
 - [ ] Booking flow renders complete 6-step flow
 - [ ] Patient portal renders with mobile-first responsive layout
 - [ ] All layouts meet performance budgets (Bible 4.1 §16.1)
@@ -1508,9 +1508,9 @@ The design system is "built" for Phase 1 when:
 ### 18.5 The Integration-Level Acceptance
 
 - [ ] Roland uses the consultation screen for an actual consultation and reports satisfaction
-- [ ] Receptionist (test user) navigates the dashboard variant and completes registration without instruction
+- [ ] Concierge (test user) navigates the dashboard variant and completes registration without instruction
 - [ ] Patient (test user, mobile) completes a booking via the patient portal without instruction
-- [ ] Steward (Roland) configures tenant branding and verifies it propagates correctly
+- [ ] Caretaker (Roland) configures tenant branding and verifies it propagates correctly
 
 When all 18.1-18.5 criteria pass, RolDe Phase 1 design system is complete.
 
@@ -1524,7 +1524,7 @@ When a future Claude Code session is implementing a RolDe feature, it loads Bibl
 
 When in doubt about a visual decision: *does it pass the Steve Jobs design test (Bible 0 §8.7)?* If the clinician would notice the design — for any reason other than recognising "this works" — it's wrong.
 
-The next sub-Bible to draft is **4.3 — RolDe Multi-Tenant Foundation** (the Steward admin panel, tenant onboarding wizard, billing integration, role and permission management).
+The next sub-Bible to draft is **4.3 — RolDe Multi-Tenant Foundation** (the Caretaker admin panel, tenant onboarding wizard, billing integration, role and permission management).
 
 — Roland Manoj Jayasekhar, with Devipangaj
 RoDee, May 2026

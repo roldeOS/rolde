@@ -546,7 +546,7 @@ Different private pharmacies have different capabilities. RolDe supports:
 - **API-based delivery** (where pharmacy partner has API): direct order submission
 - **Print fallback**: same as NHS
 
-Per pharmacy-partner configuration in Steward admin (Bible 4.3 §5.7).
+Per pharmacy-partner configuration in Caretaker admin (Bible 4.3 §5.7).
 
 **Clinic Stock**:
 
@@ -760,7 +760,7 @@ Updated each time a clinician prescribes a drug. The "Recently used" section in 
 
 ## 5. The Pharmacy Integration Layer
 
-Tenants configure their pharmacy partners in Steward admin (Bible 4.3 §5.7).
+Tenants configure their pharmacy partners in Caretaker admin (Bible 4.3 §5.7).
 
 ### 5.1 The Pharmacy Partner Schema
 
@@ -1128,7 +1128,7 @@ A repeat prescription is a regular prescription with `is_repeat = true` and addi
 
 When a patient requests a repeat (via patient portal or by contacting the clinic):
 
-1. Receptionist or clinician opens patient → Repeat Prescriptions tab
+1. Concierge or clinician opens patient → Repeat Prescriptions tab
 2. List of active repeats with `repeats_remaining > 0` and not past `repeat_authorised_until`
 3. Click "Issue repeat" → creates new prescription order
 4. New order inherits all clinical content from the parent
@@ -1330,7 +1330,7 @@ Lab results arrive asynchronously after the order. RolDe needs to receive, displ
 | **API webhook** | When provider supports integration |
 | **Email + parsing** | Provider emails report PDF; OCR'd via §7 of Bible 4.4 |
 | **HL7 / FHIR** | Future Phase 3+ — for NHS-grade integration |
-| **Manual entry** | Receptionist or clinician types result from phone or paper |
+| **Manual entry** | Concierge or clinician types result from phone or paper |
 
 ### 9.2 The Result Linking
 
@@ -1549,7 +1549,7 @@ For clinics that require patient payment before fulfilling orders. Premium-tier 
 
 ### 12.1 The Configuration
 
-Enabled in Steward admin → Modules → Payment-gating:
+Enabled in Caretaker admin → Modules → Payment-gating:
 
 ```json
 {
@@ -1598,12 +1598,12 @@ If an order is cancelled after payment:
 | Order Status | Can Cancel? | By Whom |
 |---|---|---|
 | draft | Yes (just delete) | Author or any clinician |
-| approved | Yes (before send) | Author or Steward |
-| sending | Yes (best-effort cancellation) | Author or Steward |
-| sent | Provider-dependent | Author or Steward (with provider notification) |
-| in_progress | Provider-dependent | Steward only |
+| approved | Yes (before send) | Author or Caretaker |
+| sending | Yes (best-effort cancellation) | Author or Caretaker |
+| sent | Provider-dependent | Author or Caretaker (with provider notification) |
+| in_progress | Provider-dependent | Caretaker only |
 | completed | No (cannot uncomplete) | — |
-| failed | Mark cancelled (closure) | Author or Steward |
+| failed | Mark cancelled (closure) | Author or Caretaker |
 
 ### 13.2 The Cancellation Pipeline
 
@@ -1669,7 +1669,7 @@ ORDER AUDIT TRAIL
 10 May 16:42  Pharmacy confirmation received        system
               External ref: LP-20260510-1432
 10 May 16:42  Status: in_progress                   
-11 May 09:15  Marked dispensed                      by Lisa Wong (Receptionist)
+11 May 09:15  Marked dispensed                      by Lisa Wong (Concierge)
               Status: completed                     
 ```
 
@@ -1689,12 +1689,12 @@ Each Custodian query audit-logged (Bible 4.3 §6.6).
 
 Inherits from Bible 4.4 §13, with these specific orders-related capabilities:
 
-| Capability | Custodian | Steward | Practitioner | Locum | Nurse | Receptionist | Accountant | Patient |
+| Capability | Custodian | Caretaker | Clinician | Locum | Nurse | Concierge | Cofferer | Patient |
 |---|---|---|---|---|---|---|---|---|
 | Create draft prescription | No | If GMC + rights | If GMC + rights | If GMC + rights | No | No | No | No |
 | Approve and send prescription | No | If GMC + rights | If GMC + rights | If GMC + rights | No | No | No | No |
 | Override allergy block | No | If GMC + rights | If GMC + rights | If GMC + rights | No | No | No | No |
-| Issue Schedule 2/3 controlled drug | No | If GMC + rights | If GMC + rights | No (Steward review required) | No | No | No | No |
+| Issue Schedule 2/3 controlled drug | No | If GMC + rights | If GMC + rights | No (Caretaker review required) | No | No | No | No |
 | Issue repeat prescription | No | If GMC + rights | If GMC + rights | If GMC + rights | No | No | No | No |
 | Authorise repeat (set repeats_remaining) | No | If GMC + rights | If GMC + rights | If GMC + rights | No | No | No | Self-request only |
 | Create draft lab order | No | If clinical role | If clinical role | If clinical role | If clinical role | No | No | No |
@@ -1707,7 +1707,7 @@ Inherits from Bible 4.4 §13, with these specific orders-related capabilities:
 
 A = Audit-logged Custodian elevation pattern.
 
-Locum prescribers cannot issue Schedule 2/3 CDs without Steward review (additional safeguard for sessional clinicians).
+Locum prescribers cannot issue Schedule 2/3 CDs without Caretaker review (additional safeguard for sessional clinicians).
 
 ---
 

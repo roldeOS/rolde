@@ -139,8 +139,8 @@ The first deployable version of RolDe. The first paying tenant goes live. The fi
 
 | Capability | Bible Source | Notes |
 |---|---|---|
-| Multi-tenant authentication | Bible 4.3 §3 | Steward, Practitioner, Locum, Nurse, Receptionist, Accountant, Patient roles |
-| Tenant onboarding | Bible 4.3 §2 | Self-service for Steward; Roland onboards Doc For Skin first |
+| Multi-tenant authentication | Bible 4.3 §3 | Caretaker, Clinician, Locum, Nurse, Concierge, Cofferer, Patient roles |
+| Tenant onboarding | Bible 4.3 §2 | Self-service for Caretaker; Roland onboards Doc For Skin first |
 | Patient management | Bible 4.4 §2 | Demographics, allergies, alerts, search |
 | Calendar and scheduling | Bible 4.4 §3 | Day/week/month/practitioner views |
 | Public booking widget | Bible 4.1 §10 | Embeddable; no JavaScript framework lock-in |
@@ -150,7 +150,7 @@ The first deployable version of RolDe. The first paying tenant goes live. The fi
 | Closed-loop referral pipeline | Bible 4.4 §6 | All 6 steps including in-network and external email |
 | OCR pipeline (Tesseract) | Bible 4.4 §7 + Bible 4.6 §6 | Phase 1 uses Tesseract; Phase 1.5 upgrades to Gemma 4 vision |
 | Continuous patient monitoring | Bible 4.4 §8 + Bible 4.7 §12 | All 12 Phase 1 rules |
-| Audit log surface | Bible 4.4 §9 + Bible 4.3 §5.12 | Steward + Custodian views |
+| Audit log surface | Bible 4.4 §9 + Bible 4.3 §5.12 | Caretaker + Custodian views |
 | Notifications | Bible 4.4 §12 | Email + in-app; SMS optional per tenant |
 | Print and export | Bible 4.6 §11 | PDF for letters/timeline; JSON archive for SAR |
 | Search within documentation | Bible 4.6 §12 | Patient-scoped <200ms; tenant-wide audit-logged |
@@ -158,7 +158,7 @@ The first deployable version of RolDe. The first paying tenant goes live. The fi
 | Stripe Connect payments | Bible 4.3 §4.6 | Patient pays clinic; 0% RolDe platform fee |
 | Subscription tiers | Bible 4.3 §16 | Starter, Professional, Premium |
 | Custodian admin | Bible 4.3 §6 | Cross-tenant management; AI management; correction queue |
-| Custodian access notifications | Bible 4.3 §6.6 | Stewards notified when RolDe Ltd accesses their data |
+| Custodian access notifications | Bible 4.3 §6.6 | Caretakers notified when RolDe Ltd accesses their data |
 | AI ambient suggestions | Bible 4.7 §13 | Real-time cards in AI panel |
 | AI direct queries | Bible 4.7 §14 | Reactive mode; citation-required |
 | AI confidence indicators | Bible 4.7 §15 | Confidence bar on every response; "I don't know" pattern |
@@ -528,7 +528,7 @@ All Phase 1. Tokens, components, patterns. Future visual evolution at Phase 2/3 
 
 | §1-2 — Tenant model + onboarding | Phase 1 |
 | §3 — Lifecycle | Phase 1 |
-| §4-5 — Roles + Steward admin | Phase 1 |
+| §4-5 — Roles + Caretaker admin | Phase 1 |
 | §6 — Custodian admin | Phase 1 |
 | §7 — Permissions | Phase 1 |
 | §8 — Absences | Phase 1 |
@@ -647,7 +647,7 @@ Phase 1.4 — Phase 1 Stable + Phase 1.5 Planning
 **Capability target**: A clinic Roland doesn't personally run goes live.
 
 - An Edinburgh contact (private GP, aesthetic colleague, or specialist) onboards
-- Steward self-service onboarding flow validates
+- Caretaker self-service onboarding flow validates
 - Real production usage by clinicians who didn't write the platform
 - First Validated Correction Pipeline submission from external clinician
 - First "real customer" feedback informs Phase 1.5 planning

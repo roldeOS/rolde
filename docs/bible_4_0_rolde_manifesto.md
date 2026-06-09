@@ -181,7 +181,7 @@ In priority order:
 
 - **NHS Trusts and large NHS organisations** — see Section 4.5. Not at launch. Possibly never via the current procurement frameworks.
 - **Beauty therapists performing aesthetic procedures without medical oversight** — RolDe is for clinicians; the design assumes a GMC-registered, GDC-registered, or NMC-registered practitioner is the user
-- **Practitioners who want to bypass clinical safety** — RolDe will not enable workflows that compromise patient safety even if a customer requests it
+- **Clinicians who want to bypass clinical safety** — RolDe will not enable workflows that compromise patient safety even if a customer requests it
 - **Vendors who want to white-label RolDe and remove the brand commitments** — RolDe's commitments are the product; stripping the brand strips the commitments
 
 ### 5.3 The Personal Protagonist
@@ -236,7 +236,7 @@ If a design decision makes the clinician work extra, that is not good design. Ev
 
 ### Principle 3: Authority Comes From Sources, Not From Voices
 
-Clinical truth comes from authoritative sources: NICE, SIGN, eMC, Royal Colleges, peer-reviewed evidence. Clinicians are users of clinical truth, not arbiters of it. Individual clinician opinion does not override sourced guidance, even within a single clinic. Tenant-local guidelines (Steward-uploaded) inform that clinic's behaviour but do not propagate globally.
+Clinical truth comes from authoritative sources: NICE, SIGN, eMC, Royal Colleges, peer-reviewed evidence. Clinicians are users of clinical truth, not arbiters of it. Individual clinician opinion does not override sourced guidance, even within a single clinic. Tenant-local guidelines (Caretaker-uploaded) inform that clinic's behaviour but do not propagate globally.
 
 ### Principle 4: RolDe Drafts Autonomously, Sends Nothing Autonomously
 
@@ -256,7 +256,7 @@ Everything lives in the patient feed (Bible 0 §8.9). Notes, photos, consents, l
 
 ### Principle 8: Configuration Per Tenant, Not One-Size-Fits-All
 
-Each clinic is wired during onboarding to its own reality — its own pharmacy integrations, its own payment flows, its own specialty modules, its own consent forms by procedure type, its own letter routing. RolDe is an operating system, not a fixed product. The Custodian/Steward two-tier authority model (Bible 0 §12.1) operationalises this.
+Each clinic is wired during onboarding to its own reality — its own pharmacy integrations, its own payment flows, its own specialty modules, its own consent forms by procedure type, its own letter routing. RolDe is an operating system, not a fixed product. The Custodian/Caretaker two-tier authority model (Bible 0 §12.1) operationalises this.
 
 ### Principle 9: Training Data Is The Crown Jewel
 
@@ -399,7 +399,7 @@ RolDe is **a network of independent clinics, not a shared health record system.*
 
 When a referral flows from one RolDe clinic to another, the patient identity and clinical context are shared in the moment of referral, with explicit consent at two levels:
 
-- **Institutional consent**: the receiving clinic's Steward must have explicitly accepted "receivership of referral letters" from the sending clinic
+- **Institutional consent**: the receiving clinic's Caretaker must have explicitly accepted "receivership of referral letters" from the sending clinic
 - **Individual consent**: the patient must have agreed to the referral
 
 This architectural choice is right for clinical safety, GDPR compliance, and tenant data isolation. The network is a permission graph between clinics, not a federated database.
@@ -411,7 +411,7 @@ The flagship feature that distinguishes RolDe from every other EMR. Specified in
 1. **Trigger detection** — Ambient AI infers a referral is needed from the consultation
 2. **Letter generation** — Ambient AI assembles the referral letter from the existing record
 3. **Clinician approval** — Doctor reviews, edits, approves
-4. **Delivery (closed loop)** — Routed to receiving RolDe instance OR emailed PDF (configured in Steward settings)
+4. **Delivery (closed loop)** — Routed to receiving RolDe instance OR emailed PDF (configured in Caretaker settings)
 5. **Appointment intelligence** — Where receiving clinic uses RolDe, real-time slots surfaced
 6. **Patient communication** — Confirmed appointment auto-emailed/SMS'd to the patient
 
@@ -428,7 +428,7 @@ This is not an artificially-engineered network effect. It is the structural cons
 When a RolDe clinic refers to a service outside the RolDe network (NHS, external private clinic), the pipeline degrades gracefully:
 
 - Letter generated → exported as PDF → optionally password-protected → emailed to receiving service
-- Receiving service email configured in Steward settings (e.g., "rheumatology referrals → xyz@email.com")
+- Receiving service email configured in Caretaker settings (e.g., "rheumatology referrals → xyz@email.com")
 - Pipeline ends at PDF email delivery — which is the realistic limit when the receiver isn't on RolDe
 
 The same drafting workflow, the same clinician approval gate, the same audit trail. The only difference is the delivery method.
