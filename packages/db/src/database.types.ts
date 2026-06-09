@@ -176,15 +176,15 @@ export type Database = {
       user_role:
         | "custodian"
         | "caretaker"
+        | "curator"
+        | "concierge"
         | "clinician"
         | "locum"
         | "nurse"
-        | "concierge"
-        | "cofferer"
-        | "patient"
-        | "curator"
         | "chemist"
         | "cunnere"
+        | "cofferer"
+        | "patient"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -315,15 +315,15 @@ export const Constants = {
       user_role: [
         "custodian",
         "caretaker",
+        "curator",
+        "concierge",
         "clinician",
         "locum",
         "nurse",
-        "concierge",
-        "cofferer",
-        "patient",
-        "curator",
         "chemist",
         "cunnere",
+        "cofferer",
+        "patient",
       ],
     },
   },

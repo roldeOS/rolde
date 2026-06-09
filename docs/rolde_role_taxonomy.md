@@ -20,7 +20,7 @@ _Last updated 2026-06-08. All names LOCKED._
 | `custodian` | **Custodian** | Super Admin | Keeper of the keys to the whole platform; guards every clinic's world. |
 | `caretaker` | **Caretaker** | Admin | Looks after a single clinic with full authority — its principal/owner. |
 | `curator` | **Curator** | Practice manager | Curates the clinic's day-to-day order — people, schedules, records. |
-| `concierge` | **Concierge** | Receptionist / support | Front of house; greets + guides patients, handles bookings. |
+| `concierge` | **Concierge** | Front desk / support | Front of house; greets + guides patients, handles bookings. |
 | `clinician` | **Clinician** | Doctor / clinician | The professional who delivers clinical care. |
 | `locum` | **Clinician – Locum** | Sessional clinician | Same clinical role, engaged sessionally; time-bounded scope. |
 | `nurse` | **Nurse** | Nurse | Kept — NMC-protected title; renaming a regulated profession would diminish it. |

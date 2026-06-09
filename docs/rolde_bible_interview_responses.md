@@ -52,7 +52,7 @@ Emotional state extracted: Unburdened. Trust. The clinician at end of day did me
 
 ## Bible 4.0 Foundation Paragraph (Composed from Cluster A)
 
-RolDe is a healthcare operating system designed, architected, and built by a practising doctor — Roland Manoj Jayasekhar, with Devi as his soulmate behind the work. It exists because thirty years of healthcare software has been built by people who don't practise medicine, with clinicians as advisors rather than authors. The result has been universally clunky, cognitively expensive software that fights clinicians instead of supporting them. RolDe inverts this. Every decision is measured against a single standard: does it respect the clinician's time and attention, or does it add to their load? RolDe's job is to disappear into the background — to handle referrals, letters, results, scheduling, communication, prescribing, and clinical documentation so seamlessly that the clinician doesn't think about software during a consultation, and doesn't think about software at the end of a 12-hour shift. RolDe will not pursue the NHS at launch because NHS bureaucracy is a tar pit. Instead it will serve practising clinicians in private settings — dermatologists, GPs, aesthetic practitioners, orthopaedic surgeons — anyone who delivers healthcare and is tired of fighting their software. The five-year reputation: RolDe is the platform that finally understood what healthcare software needs to be.
+RolDe is a healthcare operating system designed, architected, and built by a practising doctor — Roland Manoj Jayasekhar, with Devi as his soulmate behind the work. It exists because thirty years of healthcare software has been built by people who don't practise medicine, with clinicians as advisors rather than authors. The result has been universally clunky, cognitively expensive software that fights clinicians instead of supporting them. RolDe inverts this. Every decision is measured against a single standard: does it respect the clinician's time and attention, or does it add to their load? RolDe's job is to disappear into the background — to handle referrals, letters, results, scheduling, communication, prescribing, and clinical documentation so seamlessly that the clinician doesn't think about software during a consultation, and doesn't think about software at the end of a 12-hour shift. RolDe will not pursue the NHS at launch because NHS bureaucracy is a tar pit. Instead it will serve practising clinicians in private settings — dermatologists, GPs, aesthetic clinicians, orthopaedic surgeons — anyone who delivers healthcare and is tired of fighting their software. The five-year reputation: RolDe is the platform that finally understood what healthcare software needs to be.
 
 ---
 
@@ -140,11 +140,11 @@ Tested constraint: every dashboard variant measured against — does this leave 
 
 ### B5 — Universal Dashboard, Role-Conditioned Content
 
-Critical architectural answer: receptionist does NOT see a fundamentally different UI from doctor. Every role sees a dashboard. Dashboard CONTENT conditioned by role:
+Critical architectural answer: concierge does NOT see a fundamentally different UI from doctor. Every role sees a dashboard. Dashboard CONTENT conditioned by role:
 - Doctor: their patients today, their clinical work
-- Receptionist: cross-departmental view, all appointments, all clinicians' availability, patient registration, payment processing
+- Concierge: cross-departmental view, all appointments, all clinicians' availability, patient registration, payment processing
 - Nurse: their assigned patients, their tasks, observations to take
-- Solo practitioner: same dashboard, wears all hats
+- Solo clinician: same dashboard, wears all hats
 
 Ten-bed clinics need different dashboard variant — visual representation of bed occupancy. Outpatient clinics use appointment-list dashboard. Dashboard configurable based on clinic type, set during onboarding.
 
@@ -173,7 +173,7 @@ Doc For Skin website is urgent + barebones — basic appointment + payment + not
 
 Architectural implication: RolDe appointment widget must be embeddable into any external website. One widget, multiple host sites, all flowing into one dashboard. Bible 4.4 specifies widget architecture.
 
-### C2 — Custodian/Steward Two-Tier Model
+### C2 — Custodian/Caretaker Two-Tier Model
 
 Custodian (Roland) — "like God":
 - Controls all clinics under RolDe
@@ -183,9 +183,9 @@ Custodian (Roland) — "like God":
 - Manages central AI updates, corpus, model versioning
 - Owns rolde.app marketing site, onboarding flow, billing infrastructure
 
-Steward (clinic principal) — clinic-level God:
+Caretaker (clinic principal) — clinic-level God:
 - Owns tenant's full configuration
-- Adds/removes users (doctors, nurses, receptionists, accountants)
+- Adds/removes users (doctors, nurses, concierges, cofferers)
 - Sets up clinic identity (name, logo, branding)
 - Configures referral pipelines (which receiving services, which email routing)
 - Configures pharmacy integration
@@ -199,7 +199,7 @@ Self-serve SaaS onboarding flow:
 2. Picks modules + payment plan
 3. Completes payment
 4. Gets allocated subdomain (e.g. mycliniclondon.rolde.app)
-5. Receives first Steward credentials
+5. Receives first Caretaker credentials
 6. Logs in, configures clinic, adds users, enables modules
 
 rolde.app marketing site is the entry funnel for every future clinic customer — not just brochureware, the front of the onboarding pipeline.
@@ -207,7 +207,7 @@ rolde.app marketing site is the entry funnel for every future clinic customer �
 ### C3 — Clinic-to-Clinic Data Movement
 
 Within RolDe network (both clinics use RolDe):
-- Steward of receiving clinic explicitly accepts "receivership of referral letters" from sending clinic (institutional consent)
+- Caretaker of receiving clinic explicitly accepts "receivership of referral letters" from sending clinic (institutional consent)
 - Patient consent obtained at consultation level (patient agrees to referral)
 - Patient identity shared in referral letter
 - Letter flows through RolDe-internal routing
@@ -215,7 +215,7 @@ Within RolDe network (both clinics use RolDe):
 - Network effect activates
 
 Outside RolDe network (referral to NHS or external private clinic):
-- Steward configures receiving service in clinic settings (e.g. "rheumatology referrals → xyz@email.com")
+- Caretaker configures receiving service in clinic settings (e.g. "rheumatology referrals → xyz@email.com")
 - Letter generated → exported as PDF → optionally password-protected → emailed
 - Pipeline ends at PDF email delivery
 
@@ -230,7 +230,7 @@ Configuration domains explicitly named:
 - Lab/imaging integrations
 - Payment flow (private only, NHS only, hybrid, insurance for US market)
 - Specialties (research deliverable: list of major UK clinical specialties for auto-population)
-- Practitioner roster (doctors, nurses, receptionists, accountants and scopes)
+- Clinician roster (doctors, nurses, concierges, cofferers and scopes)
 - Letter templates — ASSIGNED TO AMBIENT AI (NOT user-editable; ambient AI generates from source data per situation; no "letter template library" to manage)
 - Consent forms — wired to settings, displayed by relevant specialty, RolDe-branded but compliant with regulated/approved bodies (BAAPS, BAD, BMA, Royal Colleges, GMC sources)
 - Audit/compliance levels — extensive research needed
@@ -293,14 +293,14 @@ Citation handling: doctor clicks citation expansion within AI panel, sees which 
 ### C7 — Patient Portal
 
 Architecture:
-- Patient receives credentials when registered (by Receptionist or via self-registration on public booking site)
+- Patient receives credentials when registered (by Concierge or via self-registration on public booking site)
 - Patient logs in at patient.<clinicname>.rolde.app (subdomain-of-subdomain pattern)
 - QR code alternative for quick mobile access
 - Forgot-password and standard auth flows
-- Patient sees: discharge summaries, lab results, radiology results (whatever Steward authorises), past and upcoming appointments
+- Patient sees: discharge summaries, lab results, radiology results (whatever Caretaker authorises), past and upcoming appointments
 - Patient can: reschedule appointments, view their own data
 - Patient cannot (rule of thumb): see doctor's clinical notes
-- Steward controls visibility settings per-data-type
+- Caretaker controls visibility settings per-data-type
 
 
 ---
@@ -365,7 +365,7 @@ Within bottom-right 30%, there's also a section where doctor can ask specific qu
 Privacy commitment confirmed:
 - AI suggestions never visible to patient via patient portal
 - Patient notes (clinical reasoning, AI suggestions, drafts) are clinician-only
-- Patient sees only: appointments, results, discharge summaries (Steward-controlled visibility)
+- Patient sees only: appointments, results, discharge summaries (Caretaker-controlled visibility)
 
 ### D3 — Voice Ambient AI + Patient Onboarding Email Pattern
 
@@ -377,7 +377,7 @@ Voice ambient AI:
 
 THE PATIENT ONBOARDING EMAIL ARCHITECTURE (substantial decision):
 
-When patient is registered (by Receptionist or via self-booking), automatic welcome email sent. Email configured by each clinic in Steward settings. Email contains:
+When patient is registered (by Concierge or via self-booking), automatic welcome email sent. Email configured by each clinic in Caretaker settings. Email contains:
 - Booking confirmation, time, location
 - Pre-baked welcome content per clinic
 - CRITICAL: button taking patient to pre-consultation onboarding screen
@@ -452,7 +452,7 @@ Bible 4.7 specifies legitimate sources, respects copyright/access restrictions.
 
 ### D6 — Guideline Gap Log + AI Update Publishing + Tenant-Local Guidelines
 
-Steward can upload local clinic-specific guidelines:
+Caretaker can upload local clinic-specific guidelines:
 - Local microbial protocols
 - Trust-specific protocols
 - House protocols diverging from national guidelines for legitimate local reasons
@@ -484,7 +484,7 @@ Modal opens on top of patient dashboard:
 - Annotation capability for documentation
 - Save commits photos to patient notes timeline (timestamped, user-stamped)
 - Photos appear in feed; clicking opens carousel gallery view
-- Watermarking applied automatically (Steward-controlled in settings)
+- Watermarking applied automatically (Caretaker-controlled in settings)
 - "Before" and "after" treatment relationship preserved
 
 ### EVERYTHING-IN-THE-FEED PRINCIPLE (CONSTITUTIONAL)

@@ -1,7 +1,7 @@
 -- ============================================================================
 -- RolDe — DEV SEED (rolde-dev only; never production).
 -- Idempotent (ON CONFLICT DO NOTHING) so it is safe to re-run.
--- Two clinics, two Stewards, and Roland's Custodian identity — enough to
+-- Two clinics, two Caretakers, and Roland's Custodian identity — enough to
 -- exercise tenant isolation. Real users arrive via Supabase Auth signup later.
 -- ============================================================================
 
@@ -11,7 +11,7 @@ insert into auth.users (instance_id, id, aud, role, email, created_at, updated_a
 values
   ('00000000-0000-0000-0000-000000000000','a0000000-0000-4000-8000-000000000001','authenticated','authenticated','roland.custodian@dev.rolde.local', now(), now()),
   ('00000000-0000-0000-0000-000000000000','a0000000-0000-4000-8000-000000000002','authenticated','authenticated','roland.skin@dev.rolde.local',      now(), now()),
-  ('00000000-0000-0000-0000-000000000000','a0000000-0000-4000-8000-000000000003','authenticated','authenticated','steward.drivers@dev.rolde.local',  now(), now())
+  ('00000000-0000-0000-0000-000000000000','a0000000-0000-4000-8000-000000000003','authenticated','authenticated','caretaker.drivers@dev.rolde.local',  now(), now())
 on conflict (id) do nothing;
 
 -- Clinics
