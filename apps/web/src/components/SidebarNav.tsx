@@ -16,12 +16,6 @@ import {
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { cn } from "@/lib/utils";
 
-/**
- * Sidebar nav — RDS signature pattern (squircle CardIcon badges). The module
- * set = Bible 4.2 §3.3 nav rail + the standard clinic-software (HIS) modules
- * (scheduling, investigations, e-prescribing, letters, billing, reporting).
- * Active route gets a subtle dark wash; hover uses the ONE --hover token.
- */
 const NAV: {
   href: string;
   label: string;
@@ -39,7 +33,7 @@ const NAV: {
   { href: "/settings", label: "Settings", icon: Settings, tone: "neutral" },
 ];
 
-export function SidebarNav() {
+export function SidebarNav({ collapsed }: { collapsed: boolean }) {
   const pathname = usePathname();
   return (
     <nav className="flex flex-col gap-0.5 px-2">
@@ -50,15 +44,17 @@ export function SidebarNav() {
           <Link
             key={item.href}
             href={item.href}
+            title={collapsed ? item.label : undefined}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors",
+              "flex items-center gap-2 rounded-lg py-1.5 text-sm font-medium transition-colors",
+              collapsed ? "justify-center px-0" : "px-2",
               active
                 ? "bg-foreground/6 text-foreground"
                 : "text-muted-foreground hover:bg-hover hover:text-foreground",
             )}
           >
             <CardIcon icon={item.icon} tone={item.tone} variant="badge" size="sm" />
-            {item.label}
+            {!collapsed && item.label}
           </Link>
         );
       })}
