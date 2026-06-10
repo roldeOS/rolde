@@ -10,8 +10,9 @@
 :root {
   --radius: 0.625rem;
 
-  /* Surfaces */
-  --background: #fcf6e6;            /* creamish-yellow pastel (Roland 2026-06-10) */
+  /* Surfaces — the MAIN CONTENT CARD IS NEVER COLOURED (Roland 2026-06-10).
+     Neutral canvas; the white cards float on it. */
+  --background: #fafafa;            /* neutral content canvas — never tinted */
   --card: #ffffff;                  /* floating cards */
   --card-foreground: #18181b;
 
@@ -38,19 +39,18 @@
   --signal-info: #0284c7;
   --destructive: #dc2626;
 
-  /* Clinic accent — pastel bright SUNNY tones evoking positivity (Roland
-     2026-06-10; sample palette coolors.co/fec5bb-...-fec89a). ONE warm colour
-     family drives the sidebar tint AND the --hover wash. Becomes a per-clinic
-     setting in the Caretaker's Settings dashboard (tenants.config branding). */
-  --clinic-accent: #fec89a; /* warm apricot */
+  /* Clinic accent — creamish-yellow pastel (Roland 2026-06-10). ONE warm colour
+     family drives the SIDEBAR tint AND the --hover wash (never the main card).
+     Becomes a per-clinic Caretaker setting (tenants.config branding). */
+  --clinic-accent: #f4dc9a; /* soft butter-yellow */
 
   /* The ONE hover token (RDS rule) — the clinic accent at a soft wash. */
-  --hover: rgb(254 200 154 / 0.3);
+  --hover: rgb(244 220 154 / 0.5);
 
-  /* Sidebar — the clinic accent as a sunny pastel field (palette tint) */
-  --sidebar: #ffe5d9;
+  /* Sidebar — the clinic accent as a creamish-yellow pastel field */
+  --sidebar: #fcf4db;
   --sidebar-foreground: #18181b;
-  --sidebar-border: #ffd7ba;
+  --sidebar-border: #f0e4bd;
 }
 
 @theme inline {
@@ -107,10 +107,11 @@ body {
     0 5px 14px -2px rgba(0, 0, 0, 0.18);
 }
 
-/* Glass header (Roland 2026-06-10): card headers + the topbar share one frosted
-   treatment — content scrolls UNDER and blurs through. mindate "Glass" recipe. */
+/* Glass header (Roland 2026-06-10): card headers + the topbar share ONE frosted
+   treatment. Kept fairly OPAQUE so the header text never merges with the content
+   blurring underneath — readable first, glassy second. */
 .glass {
-  background: color-mix(in oklab, var(--card) 60%, transparent);
-  backdrop-filter: blur(8px) saturate(180%);
-  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  background: color-mix(in oklab, var(--card) 85%, transparent);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
 }

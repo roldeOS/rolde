@@ -95,7 +95,7 @@ export function CommandMenu() {
           onClick={close}
         >
           <div
-            className="w-full max-w-lg overflow-hidden rounded-xl border border-border bg-card shadow-float"
+            className="w-full max-w-lg overflow-hidden rounded-xl bg-card shadow-float"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-2 border-b border-border px-3">

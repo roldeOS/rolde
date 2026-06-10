@@ -184,7 +184,7 @@ export function ClinicalNotesFeed({
           <button
             onClick={() => setSortDesc((v) => !v)}
             title={sortDesc ? "Newest first" : "Oldest first"}
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+            className="flex size-7 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
           >
             <ArrowDownUp className="size-4" />
           </button>
@@ -193,7 +193,7 @@ export function ClinicalNotesFeed({
               onClick={() => setFilterOpen((v) => !v)}
               title="Filter"
               className={cn(
-                "flex h-7 items-center gap-1 rounded-lg px-1.5 text-muted-foreground transition-colors hover:bg-hover hover:text-foreground",
+                "flex h-7 items-center gap-1 rounded-lg bg-card px-1.5 text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow",
                 filterCount > 0 && "text-info",
               )}
             >
@@ -248,7 +248,7 @@ export function ClinicalNotesFeed({
           <button
             onClick={onToggleMaximize}
             title={maximized ? "Restore" : "Expand"}
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+            className="flex size-7 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
           >
             {maximized ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           </button>

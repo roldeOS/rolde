@@ -57,7 +57,7 @@ export function OrdersPanel({
           <button
             onClick={onToggleMaximize}
             title={maximized ? "Restore" : "Expand"}
-            className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+            className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
           >
             {maximized ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           </button>

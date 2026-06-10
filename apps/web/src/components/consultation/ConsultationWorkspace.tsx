@@ -29,15 +29,18 @@ type OrderEntry = { id: string; entry_type: string };
  * borderless, floating cards — responsive (2×2 on desktop, stacked on
  * mobile/tablet). The composer is the single place for new / edit / amend.
  */
+// ONE row-split per preset is applied to BOTH columns, so the top two cards end
+// at the same level and the bottom two do too — visually symmetric (Roland
+// 2026-06-10). Only deliberate actions (writing, manual maximise) break it.
 const PRESETS = {
-  consult: { left: 0.68, right: 0.72, col: 0.52 },
-  document: { left: 0.4, right: 0.72, col: 0.56 },
-  review: { left: 0.82, right: 0.7, col: 0.5 },
+  consult: { split: 0.68, col: 0.5 },
+  document: { split: 0.45, col: 0.55 },
+  review: { split: 0.82, col: 0.5 },
 } as const;
 type Mode = "split" | "top" | "bottom";
 const COMPOSE_LEFT = 0.42;
 const EDIT_WINDOW_MS = 60 * 60 * 1000;
-const COMPOSER_NAME = "Compose"; // ← Roland to choose the final name
+const COMPOSER_NAME = "Scribe"; // the writing card (Roland 2026-06-10)
 
 type EditTarget = { id: string; original: string; locked: boolean } | null;
 
@@ -70,15 +73,17 @@ export function ConsultationWorkspace({
 
   const p = PRESETS[view];
   const active = composing || !!editTarget;
+  // At rest both columns use the SAME split → symmetric. Writing grows the
+  // composer (left only); manual maximise affects one column. Both deliberate.
   const leftTop = active
     ? COMPOSE_LEFT
     : leftMode === "top"
       ? 0.85
       : leftMode === "bottom"
         ? 0.22
-        : p.left;
+        : p.split;
   const rightTop =
-    rightMode === "top" ? 0.85 : rightMode === "bottom" ? 0.25 : p.right;
+    rightMode === "top" ? 0.85 : rightMode === "bottom" ? 0.25 : p.split;
   const dur = ready ? "duration-300" : "duration-0";
   const grow = (n: number) => ({ flexGrow: n * 100, flexBasis: 0 });
 
@@ -181,7 +186,7 @@ export function ConsultationWorkspace({
                     setLeftMode((m) => (m === "bottom" ? "split" : "bottom"))
                   }
                   title={leftMode === "bottom" ? "Restore" : "Expand"}
-                  className="ml-auto flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                  className="ml-auto flex size-7 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                 >
                   {leftMode === "bottom" ? (
                     <Minimize2 className="size-4" />

@@ -58,22 +58,31 @@ arbitrary pixel sizes.
 
 ## 3. Colour
 
-3.1 **Clinic accent — pastel bright SUNNY tones evoking positivity** (Roland 2026-06-10; sample
-palette coolors.co/palette/fec5bb-fcd5ce-fae1dd-f8edeb-e8e8e4-d8e2dc-ece4db-ffe5d9-ffd7ba-fec89a).
-ONE warm colour family drives BOTH the sidebar tint AND the `--hover` wash. **This becomes a
+3.1 **Clinic accent — creamish-yellow pastel** (Roland 2026-06-10; earlier sunny-peach revised).
+ONE warm colour family drives the **SIDEBAR tint** AND the `--hover` wash. **This becomes a
 per-clinic setting controlled by each clinic's Caretaker in their Settings dashboard**
 (tenants.config branding) — until then it is tuned in globals.css `--clinic-accent`.
 
-3.2 Chrome stays calm monochrome; semantic colour reserved for clinical signal (Bible 4.2 §2.2).
+3.2 **THE MAIN CONTENT CARD IS NEVER COLOURED** (Roland 2026-06-10, emphatic). `--background`
+stays a neutral canvas; the clinic accent lives on the SIDEBAR only. White cards float on the
+neutral content card. Chrome stays calm monochrome; semantic colour reserved for clinical
+signal (Bible 4.2 §2.2).
+
+3.3 **No borders — floating instead** (Roland 2026-06-10). Cards/panels/dropdowns use
+`.shadow-float` (hairline + lift), never an explicit `border`. Toolbar icons (sort/filter/
+export/maximise) are floating white chips (`bg-card shadow-sm ring-black/[0.05]`), mindate-style.
+
+3.4 **Glass headers** (topbar + all 4 consultation cards) share ONE `.glass` treatment kept
+fairly OPAQUE (~85% card) so header text never merges with content blurring underneath.
 
 ## 4. Consultation screen — the four-card layout
 
-4.1 (Roland 2026-06-10, matching Bible 4.2 §3.1) — top strip (patient context, never scrolls
-away), then FOUR cards: **top-left ~75% = clinical record** (a card of entry cards: notes,
-prescriptions, lab results…), **bottom-left ~25% = note composer card**, **top-right ~75% =
-investigations + orders, tabbed** (Labs / Radiology / Prescribing / Procedures / Letters),
-**bottom-right ~25% = the RolDe panel** ("RolDe says…", Bible 4.2 §5; wordmark header, status
-dot, "Ask RolDe anything…" input).
+4.1 (Roland 2026-06-10, matching Bible 4.2 §3.1) — patient identity lives in the topbar
+breadcrumb (+ glassy island); then FOUR symmetric cards: **top-left = Clinical Notes**,
+**bottom-left = Scribe** (the writing card — edit/amend happen here), **top-right =
+Investigations + Orders, tabbed**, **bottom-right = the RolDe panel** ("RolDe says…", Inter not
+serif). Both columns share ONE row-split so the top two cards end level and the bottom two end
+level (visually symmetric). View presets (Consult/Document/Review) live in the topbar.
 
 ---
 

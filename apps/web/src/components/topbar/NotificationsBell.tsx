@@ -26,7 +26,7 @@ export function NotificationsBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 rounded-xl border border-border bg-card p-1.5 shadow-float">
+        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 rounded-xl bg-card p-1.5 shadow-float">
           <p className="px-2.5 py-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
             Notifications
           </p>
