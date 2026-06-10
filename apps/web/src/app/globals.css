@@ -38,13 +38,19 @@
   --signal-info: #0284c7;
   --destructive: #dc2626;
 
-  /* The ONE hover token (RDS rule) — calm dark wash, not mindate gold. */
-  --hover: rgb(24 24 27 / 0.05);
+  /* Clinic accent — pastel bright SUNNY tones evoking positivity (Roland
+     2026-06-10; sample palette coolors.co/fec5bb-...-fec89a). ONE warm colour
+     family drives the sidebar tint AND the --hover wash. Becomes a per-clinic
+     setting in the Caretaker's Settings dashboard (tenants.config branding). */
+  --clinic-accent: #fec89a; /* warm apricot */
 
-  /* Sidebar — soft clinical off-white */
-  --sidebar: #f4f4f5;
+  /* The ONE hover token (RDS rule) — the clinic accent at a soft wash. */
+  --hover: rgb(254 200 154 / 0.3);
+
+  /* Sidebar — the clinic accent as a sunny pastel field (palette tint) */
+  --sidebar: #ffe5d9;
   --sidebar-foreground: #18181b;
-  --sidebar-border: #e4e4e7;
+  --sidebar-border: #ffd7ba;
 }
 
 @theme inline {
@@ -71,8 +77,12 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-border: var(--sidebar-border);
 
+  /* FONT LAW (Roland 2026-06-10, APPROVALS §2): IBM Plex Serif is ONLY for the
+     RolDe wordmark/icon (font-wordmark; SVG logo to come). Inter EVERYWHERE else
+     — headings included. */
   --font-sans: var(--font-inter);
-  --font-heading: var(--font-plex-serif);
+  --font-heading: var(--font-inter);
+  --font-wordmark: var(--font-plex-serif);
   --font-mono: var(--font-plex-mono);
 
   --radius-sm: calc(var(--radius) * 0.6);

@@ -56,7 +56,11 @@ Greek letters. He is "Roland"; never "sir" / "mate" / "boss".
   clinical monochrome + semantic clinical colour, dark focus ring) is the **starting frame,
   not law** — Roland's live visual judgment overrides the spec, and a tasteful **splash of
   colour is his call** (as he did for the mindate Dashboard). Show real pixels early; bend the
-  design to his eye. IBM Plex Serif + Inter + IBM Plex Mono.
+  design to his eye.
+- **FONT LAW (APPROVALS §2): IBM Plex Serif ONLY for the RolDe wordmark/icon** (`font-wordmark`;
+  Roland will supply an SVG). **Inter everywhere else — headings included.** Plex Mono for code.
+- **Clinic accent = pastel sunny tones** (sidebar + the one `--hover` token, same colour family)
+  — a per-clinic Caretaker setting eventually; `--clinic-accent` in globals.css until then.
 - Never ask Roland to run terminal commands — run them, or hand a complete paste-in block.
 - Schema/state changes live in one canonical, re-runnable file — never ad-hoc in a dashboard.
 - Vercel "Sensitive" env vars are NEVER revealable after creation — never ask Roland to read

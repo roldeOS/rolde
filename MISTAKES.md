@@ -66,5 +66,26 @@ absolute. A rename that leaves the old word lurking in code is a regression even
 
 ---
 
+## 2. Used IBM Plex Serif for headings — Roland's law: serif is for the wordmark ONLY — 2026-06-10
+
+**Symptom:** The first UI pass set IBM Plex Serif on page headings, card titles and patient
+names. Roland: the serif is ONLY for the RolDe wordmark/icon (SVG to come); Inter everywhere
+else — "the IBM font should be nowhere" else.
+
+**Root cause:** Followed Bible 4.2's literal token sheet (serif headings) without checking
+Roland's living standard — mindate APPROVALS §2.1 already locked the same rule there ("Plex
+Serif reserved ONLY for the wordmark"). The bibles are a frame; Roland's standards override.
+
+**Fix:** `--font-heading` → Inter; added `--font-wordmark` (Plex Serif) used exclusively by the
+RolDe wordmark (sidebar, login, AI-panel header). Locked as APPROVALS §2.
+
+**Trigger:** Any font/typography choice. Check the FONT LAW (APPROVALS §2) first; a bible's
+font spec does NOT outrank Roland's standards. Serif = wordmark only.
+
+**Lesson:** Cross-product taste rules (mindate's ledgers) are precedent for RolDe. When a bible
+and Roland's established taste conflict, ask or follow the taste — never silently follow the doc.
+
+---
+
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or
 when a diagnosed regression is worth locking and Roland approves the entry.*

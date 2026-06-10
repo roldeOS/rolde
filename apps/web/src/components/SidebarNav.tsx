@@ -2,15 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  CalendarDays,
+  FlaskConical,
+  Pill,
+  Mail,
+  Receipt,
+  BarChart3,
+  Settings,
+} from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { cn } from "@/lib/utils";
 
 /**
- * Sidebar nav — RDS signature pattern (mindate APPROVALS §1.9): every nav item's
- * icon is a CardIcon "badge" squircle (white rounded-square + soft shadow +
- * tinted icon). Active route gets a subtle dark wash; hover gets the one
- * --hover token. No coloured indicators, no shouting.
+ * Sidebar nav — RDS signature pattern (squircle CardIcon badges). The module
+ * set = Bible 4.2 §3.3 nav rail + the standard clinic-software (HIS) modules
+ * (scheduling, investigations, e-prescribing, letters, billing, reporting).
+ * Active route gets a subtle dark wash; hover uses the ONE --hover token.
  */
 const NAV: {
   href: string;
@@ -20,6 +30,13 @@ const NAV: {
 }[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, tone: "brand" },
   { href: "/patients", label: "Patients", icon: Users, tone: "info" },
+  { href: "/calendar", label: "Calendar", icon: CalendarDays, tone: "success" },
+  { href: "/investigations", label: "Investigations", icon: FlaskConical, tone: "info" },
+  { href: "/prescribing", label: "Prescribing", icon: Pill, tone: "warning" },
+  { href: "/letters", label: "Letters", icon: Mail, tone: "neutral" },
+  { href: "/billing", label: "Billing", icon: Receipt, tone: "warning" },
+  { href: "/reports", label: "Reports", icon: BarChart3, tone: "neutral" },
+  { href: "/settings", label: "Settings", icon: Settings, tone: "neutral" },
 ];
 
 export function SidebarNav() {
@@ -28,9 +45,7 @@ export function SidebarNav() {
     <nav className="flex flex-col gap-0.5 px-2">
       {NAV.map((item) => {
         const active =
-          item.href === "/"
-            ? pathname === "/"
-            : pathname.startsWith(item.href);
+          item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
         return (
           <Link
             key={item.href}

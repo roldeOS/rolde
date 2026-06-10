@@ -36,12 +36,11 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
       <div className="w-full max-w-sm rounded-xl bg-card p-8 shadow-float">
-        <p className="text-center font-heading text-2xl font-semibold tracking-tight">
+        {/* Wordmark — the ONLY place IBM Plex Serif lives. */}
+        <p className="text-center font-wordmark text-2xl font-semibold tracking-tight">
           RolDe
         </p>
-        <h1 className="mt-6 text-center font-heading text-lg font-medium">
-          Sign in
-        </h1>
+        <h1 className="mt-6 text-center text-lg font-medium">Sign in</h1>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div>
