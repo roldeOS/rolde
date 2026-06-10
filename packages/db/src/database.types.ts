@@ -29,6 +29,141 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_alerts: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          patient_id: string
+          priority: Database["public"]["Enums"]["alert_priority"]
+          resolved_at: string | null
+          resolved_by: string | null
+          resolved_reason: string | null
+          status: string
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          patient_id: string
+          priority?: Database["public"]["Enums"]["alert_priority"]
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_reason?: string | null
+          status?: string
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          patient_id?: string
+          priority?: Database["public"]["Enums"]["alert_priority"]
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_reason?: string | null
+          status?: string
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_alerts_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_alerts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_allergies: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          id: string
+          notes: string | null
+          patient_id: string
+          reaction: string
+          reported_by: string | null
+          severity: Database["public"]["Enums"]["allergy_severity"]
+          status: string
+          substance: string
+          tenant_id: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          reaction: string
+          reported_by?: string | null
+          severity: Database["public"]["Enums"]["allergy_severity"]
+          status?: string
+          substance: string
+          tenant_id: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          reaction?: string
+          reported_by?: string | null
+          severity?: Database["public"]["Enums"]["allergy_severity"]
+          status?: string
+          substance?: string
+          tenant_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_allergies_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_allergies_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_feed_entries: {
         Row: {
           appointment_id: string | null
@@ -389,6 +524,8 @@ export type Database = {
       is_custodian: { Args: never; Returns: boolean }
     }
     Enums: {
+      alert_priority: "info" | "warning" | "critical"
+      allergy_severity: "low" | "moderate" | "severe" | "life_threatening"
       feed_entry_type:
         | "clinical_note"
         | "vital_signs"
@@ -548,6 +685,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      alert_priority: ["info", "warning", "critical"],
+      allergy_severity: ["low", "moderate", "severe", "life_threatening"],
       feed_entry_type: [
         "clinical_note",
         "vital_signs",

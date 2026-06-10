@@ -80,6 +80,23 @@ export default async function ConsultationPage({
     .is("deleted_at", null)
     .order("created_at", { ascending: true });
 
+  // Safety flags — allergies + active alerts for the top strip (Bible 4.2 §3.2:
+  // red text with red dot indicator, NEVER hidden).
+  const { data: allergies } = await supabase
+    .from("patient_allergies")
+    .select("id, substance, reaction, severity")
+    .eq("patient_id", id)
+    .eq("status", "active")
+    .is("deleted_at", null)
+    .order("severity", { ascending: false });
+
+  const { data: alerts } = await supabase
+    .from("patient_alerts")
+    .select("id, title, priority")
+    .eq("patient_id", id)
+    .eq("status", "active")
+    .order("priority", { ascending: false });
+
   const { data: members } = await supabase
     .from("tenant_users")
     .select("user_id, display_name");
@@ -110,6 +127,33 @@ export default async function ConsultationPage({
             {fmtDob(patient.date_of_birth)} · {age(patient.date_of_birth)}y ·{" "}
             <span className="capitalize">{patient.sex_at_birth}</span>
           </span>
+
+          {/* Critical flags — never hidden (Bible 4.2 §3.2) */}
+          {(allergies?.length ?? 0) > 0 && (
+            <span
+              className="flex items-center gap-1.5 text-sm font-medium text-critical"
+              title={allergies!
+                .map((a) => `${a.substance} — ${a.reaction} (${a.severity.replace(/_/g, " ")})`)
+                .join("; ")}
+            >
+              <span className="size-2 shrink-0 rounded-full bg-critical" />
+              {allergies!.map((a) => a.substance).join(" · ")}
+            </span>
+          )}
+          {(alerts ?? []).map((al) => (
+            <span
+              key={al.id}
+              className={
+                al.priority === "critical"
+                  ? "rounded-full bg-critical/10 px-2 py-0.5 text-xs font-medium text-critical"
+                  : al.priority === "warning"
+                    ? "rounded-full bg-warning/12 px-2 py-0.5 text-xs font-medium text-warning"
+                    : "rounded-full bg-info/10 px-2 py-0.5 text-xs font-medium text-info"
+              }
+            >
+              {al.title}
+            </span>
+          ))}
         </div>
         {patient.nhs_number && (
           <span className="font-mono text-xs text-muted-foreground">

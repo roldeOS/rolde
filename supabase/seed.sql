@@ -60,6 +60,18 @@ values
   ('b0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000003','caretaker','Dr Drivers Caretaker',  true, '1111111', array['general_practice'], now())
 on conflict (tenant_id, user_id) do nothing;
 
+-- Dev allergies + alert for Sarah Jones (top-strip safety flags).
+insert into patient_allergies (id, tenant_id, patient_id, substance, reaction, severity, reported_by, created_by)
+values
+  ('e0000000-0000-4000-8000-000000000001','b0000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000001','Penicillin','Anaphylaxis','life_threatening','patient','a0000000-0000-4000-8000-000000000002'),
+  ('e0000000-0000-4000-8000-000000000002','b0000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000001','Latex','Rash','moderate','patient','a0000000-0000-4000-8000-000000000002')
+on conflict (id) do nothing;
+
+insert into patient_alerts (id, tenant_id, patient_id, category, title, priority, created_by)
+values
+  ('e0000000-0000-4000-8000-000000000011','b0000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000001','safety','Needle phobia','warning','a0000000-0000-4000-8000-000000000002')
+on conflict (id) do nothing;
+
 -- Dev feed entries for Sarah Jones (Doc For Skin) — two clinical notes.
 insert into patient_feed_entries (id, tenant_id, patient_id, entry_type, payload, created_by, created_at)
 values

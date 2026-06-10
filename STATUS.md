@@ -1,7 +1,7 @@
 # RolDe — Build Status
 
 A living tracker of what's built vs what's left. ✅ done · ◑ partial · ◻ not started.
-Scope = Phase 1 (Bible 4.8 §3.1) unless noted. _Last updated 2026-06-10._
+Scope = Phase 1 (Bible 4.8 §3.1) unless noted. _Last updated 2026-06-10 (evening)._
 
 ---
 
@@ -22,7 +22,16 @@ Scope = Phase 1 (Bible 4.8 §3.1) unless noted. _Last updated 2026-06-10._
 - ✅ Tenant context (from membership) + Welcome screen
 - ✅ `patients` table (full schema) + RLS + list + create UI
 - ✅ `patient_feed_entries` (polymorphic) + RLS + **consultation screen + chronological feed + note composer** (type → save → lands in feed)
-- ✅ Design frame: calm monochrome, IBM Plex Serif + Inter
+
+## ✅ Clinic UI — Roland Design System inherited (2026-06-10)
+- ✅ RDS primitives ported from mindate source: tonal Button, floating Card,
+  CardIcon squircles (clinical tones), CardHeaderRow, 5-tier typography
+- ✅ **FONT LAW** (APPROVALS §2): Plex Serif ONLY for the RolDe wordmark (SVG from Roland pending); Inter everywhere else
+- ✅ **Sunny clinic accent** (APPROVALS §3): pastel warm palette drives sidebar + the one `--hover` token; per-clinic Caretaker setting later
+- ✅ Shell v2 (APPROVALS §1): overall content card + floating glass topbar + sidebar-only outside; ◻ bottom save-bar (PageActionBar) — with the first dirty-tracking form
+- ✅ HIS sidebar nav: Dashboard · Patients · Calendar · Investigations · Prescribing · Letters · Billing · Reports · Settings (stubs cite their Bibles)
+- ✅ **Four-card consultation screen** (APPROVALS §4): clinical record 75 / composer 25 / tabbed orders 75 / RolDe panel 25 (offline state)
+- ◑ Allergies + alerts (Bible 4.4 §2.2–2.3): migration + seed + top-strip flags written; **applying to rolde-dev blocked by an MCP-gateway outage** — apply + verify next
 
 ---
 
