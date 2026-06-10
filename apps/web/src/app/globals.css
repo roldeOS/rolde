@@ -39,18 +39,19 @@
   --signal-info: #0284c7;
   --destructive: #dc2626;
 
-  /* Clinic accent — creamish-yellow pastel (Roland 2026-06-10). ONE warm colour
-     family drives the SIDEBAR tint AND the --hover wash (never the main card).
-     Becomes a per-clinic Caretaker setting (tenants.config branding). */
-  --clinic-accent: #f4dc9a; /* soft butter-yellow */
+  /* Clinic accent — elegant honey-cream paper (Roland 2026-06-10; mindate-website
+     ancestry). This is the COMMON BACKGROUND — a textured coloured "paper" the
+     white content card floats on; the nav sits directly on it (no separate
+     sidebar surface). Per-clinic Caretaker setting eventually. */
+  --clinic-accent: #d4a843; /* honey gold — accents */
 
-  /* The ONE hover token (RDS rule) — the clinic accent at a soft wash. */
-  --hover: rgb(244 220 154 / 0.5);
+  /* The ONE hover token (RDS rule) — honey-gold at a soft wash. */
+  --hover: rgb(212 168 67 / 0.14);
 
-  /* Sidebar — the clinic accent as a creamish-yellow pastel field */
-  --sidebar: #fcf4db;
-  --sidebar-foreground: #18181b;
-  --sidebar-border: #f0e4bd;
+  /* The paper — honey-cream; with the .grain texture overlay it gains life. */
+  --sidebar: #f0d9b5;
+  --sidebar-foreground: #2c2c2e;
+  --sidebar-border: #e3c89e;
 }
 
 @theme inline {
@@ -114,4 +115,27 @@ body {
   background: color-mix(in oklab, var(--card) 85%, transparent);
   backdrop-filter: blur(10px) saturate(160%);
   -webkit-backdrop-filter: blur(10px) saturate(160%);
+}
+
+/* Film-grain texture for the honey-cream paper (Roland 2026-06-10; ported from
+   mindate-website). A faint warm wash + multiplied fractal-noise grain gives the
+   flat paper life. Sits behind the nav + the floating white card; parent must be
+   `relative isolate`. */
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(60% 55% at 18% 12%, rgba(212, 168, 67, 0.12), transparent 60%),
+    radial-gradient(55% 50% at 88% 92%, rgba(216, 123, 74, 0.08), transparent 60%);
+}
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
 }

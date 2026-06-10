@@ -64,7 +64,9 @@ export function AppFrame({
 
   return (
     <TopbarProvider>
-      <div className="flex h-screen overflow-hidden bg-sidebar">
+      <div className="relative isolate flex h-screen overflow-hidden bg-sidebar">
+        {/* The honey-cream paper's film-grain texture (behind everything) */}
+        <div className="grain" />
         {/* Mobile backdrop */}
         {mobileOpen && (
           <div
@@ -75,11 +77,11 @@ export function AppFrame({
 
         <aside
           className={cn(
-            "z-50 flex shrink-0 flex-col bg-sidebar transition-transform duration-200 ease-out lg:transition-[width]",
-            // mobile: off-canvas drawer
+            // On desktop the sidebar IS the paper (transparent — the textured
+            // paper shows through). On mobile it's an opaque off-canvas drawer.
+            "z-50 flex shrink-0 flex-col bg-sidebar transition-transform duration-200 ease-out lg:bg-transparent lg:transition-[width]",
             "fixed inset-y-0 left-0 w-56 -translate-x-full lg:static lg:translate-x-0",
             mobileOpen && "translate-x-0 shadow-2xl",
-            // desktop: collapsible width
             collapsed ? "lg:w-14" : "lg:w-48",
             !ready && "lg:transition-none",
           )}
