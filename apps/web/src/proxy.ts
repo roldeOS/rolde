@@ -2,12 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 /**
- * Every request: refresh the Supabase session, then gate.
+ * Runs on every request (Next 16 "proxy" convention; was `middleware`).
+ * Refresh the Supabase session, then gate:
  * - Not signed in + not on /login  → redirect to /login
  * - Signed in + on /login          → redirect to /
  * (Subdomain→tenant resolution lands here next — Bible 4.1 §3.5.)
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { supabaseResponse, user } = await updateSession(request);
   const isLogin = request.nextUrl.pathname === "/login";
 
