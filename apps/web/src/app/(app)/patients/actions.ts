@@ -19,11 +19,17 @@ export async function createPatient(formData: FormData) {
   const last_name = String(formData.get("last_name") ?? "").trim();
   const date_of_birth = String(formData.get("date_of_birth") ?? "");
   const sex_at_birth = String(formData.get("sex_at_birth") ?? "");
-  const email = String(formData.get("email") ?? "").trim() || null;
-  const phone_mobile = String(formData.get("phone_mobile") ?? "").trim() || null;
+  const email = String(formData.get("email") ?? "").trim();
+  const phone_mobile = String(formData.get("phone_mobile") ?? "").trim();
+  const nhs_number = String(formData.get("nhs_number") ?? "").trim() || null;
 
-  if (!first_name || !last_name || !date_of_birth || !sex_at_birth) {
-    throw new Error("First name, last name, date of birth and sex are required.");
+  // Registration minimum (Roland 2026-06-11; GMC/CQC/NHS PDS): name, DOB, sex,
+  // mobile and email are ALL required. The RolDe patient number auto-assigns.
+  if (
+    !first_name || !last_name || !date_of_birth || !sex_at_birth ||
+    !phone_mobile || !email
+  ) {
+    throw new Error("All fields are required to register a patient.");
   }
 
   const supabase = await createClient();
@@ -35,6 +41,7 @@ export async function createPatient(formData: FormData) {
     sex_at_birth,
     email,
     phone_mobile,
+    nhs_number,
     created_by: ctx?.user.id ?? null,
   });
   if (error) throw new Error(error.message);

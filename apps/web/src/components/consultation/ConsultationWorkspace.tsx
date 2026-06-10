@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { PenLine, Maximize2, Minimize2, Strikethrough } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
+import { SectionExplainer } from "@/components/ui/SectionExplainer";
 import { OrdersPanel } from "@/components/OrdersPanel";
 import { AiPanel } from "@/components/AiPanel";
 import {
@@ -181,6 +182,15 @@ export function ConsultationWorkspace({
               <div className="glass sticky top-0 z-10 flex items-center gap-2 px-4 py-2.5">
                 <CardIcon icon={PenLine} tone="brand" variant="badge" size="sm" />
                 <span className="text-sm font-semibold">{composerTitle}</span>
+                <SectionExplainer
+                  label="Scribe"
+                  description="Where you write. New notes, edits and amendments all happen here — the card adapts to what you're doing."
+                  terms={[
+                    { term: "New note", definition: "Type and Save — it lands in Clinical Notes, stamped with your role." },
+                    { term: "Edit", definition: "Within 1 hour of writing, your note loads here fully editable." },
+                    { term: "Amend", definition: "After an hour the note locks; add an amendment and optionally strike the original (it's never deleted)." },
+                  ]}
+                />
                 <button
                   onClick={() =>
                     setLeftMode((m) => (m === "bottom" ? "split" : "bottom"))

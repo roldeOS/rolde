@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FlaskConical, Maximize2, Minimize2 } from "lucide-react";
 import { CardIcon } from "@/components/ui/CardIcon";
+import { SectionExplainer } from "@/components/ui/SectionExplainer";
 import { cn } from "@/lib/utils";
 
 type Entry = { id: string; entry_type: string };
@@ -37,6 +38,15 @@ export function OrdersPanel({
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="glass sticky top-0 z-10 flex items-center gap-1 px-3 py-2.5">
         <CardIcon icon={FlaskConical} tone="info" variant="badge" size="sm" />
+        <SectionExplainer
+          label="Investigations & Orders"
+          description="Request investigations and treatments, and review what's come back — grouped by type in the tabs."
+          terms={[
+            { term: "Labs / Radiology", definition: "Order tests and read results as they return." },
+            { term: "Prescribing", definition: "Prescribe medicines with built-in drug-safety checks." },
+            { term: "Procedures / Letters", definition: "Consents, photos, referrals and letters." },
+          ]}
+        />
         <div className="flex min-w-0 flex-1 gap-0.5 overflow-x-auto">
           {TABS.map((t) => (
             <button

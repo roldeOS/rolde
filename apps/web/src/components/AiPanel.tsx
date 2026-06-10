@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import { SectionExplainer } from "@/components/ui/SectionExplainer";
 
 /**
  * The ambient AI panel (Bible 4.7; Roland 2026-06-10 — "the silent clerk").
@@ -19,6 +20,14 @@ export function AiPanel() {
           {/* Inter here — NOT the serif wordmark (Roland 2026-06-10). */}
           <span className="text-sm font-semibold tracking-tight">RolDe</span>
           <span className="text-xs text-muted-foreground">says…</span>
+          <SectionExplainer
+            label="RolDe says…"
+            description="Ambient AI — a silent clerk. It watches as you work and gently surfaces suggestions; it never interrupts, and nothing it drafts is sent without your say-so."
+            terms={[
+              { term: "Suggestions", definition: "Investigations to consider, a draft letter ready for review, a safety note." },
+              { term: "Ask RolDe", definition: "A small box at the foot for the occasional direct question — secondary to the ambient stream." },
+            ]}
+          />
         </span>
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <span className="size-2 rounded-full bg-border" />

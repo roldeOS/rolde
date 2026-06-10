@@ -64,9 +64,7 @@ export function AppFrame({
 
   return (
     <TopbarProvider>
-      <div className="relative isolate flex h-screen overflow-hidden bg-sidebar">
-        {/* The honey-cream paper's film-grain texture (behind everything) */}
-        <div className="grain" />
+      <div className="flex h-screen overflow-hidden bg-sidebar">
         {/* Mobile backdrop */}
         {mobileOpen && (
           <div

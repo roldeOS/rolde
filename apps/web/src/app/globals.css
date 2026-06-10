@@ -39,19 +39,19 @@
   --signal-info: #0284c7;
   --destructive: #dc2626;
 
-  /* Clinic accent — elegant honey-cream paper (Roland 2026-06-10; mindate-website
-     ancestry). This is the COMMON BACKGROUND — a textured coloured "paper" the
-     white content card floats on; the nav sits directly on it (no separate
-     sidebar surface). Per-clinic Caretaker setting eventually. */
-  --clinic-accent: #d4a843; /* honey gold — accents */
+  /* Clinic accent — an elegant, calm PLAIN pastel (Roland 2026-06-11: no grain,
+     plain colours). This is the COMMON BACKGROUND — a coloured "paper" the white
+     content card floats on; the nav sits directly on it (no separate sidebar
+     surface). Per-clinic Caretaker setting eventually. */
+  --clinic-accent: #8aa896; /* sage-deep — accents */
 
-  /* The ONE hover token (RDS rule) — honey-gold at a soft wash. */
-  --hover: rgb(212 168 67 / 0.14);
+  /* The ONE hover token (RDS rule) — the accent at a soft wash. */
+  --hover: rgb(138 168 150 / 0.2);
 
-  /* The paper — honey-cream; with the .grain texture overlay it gains life. */
-  --sidebar: #f0d9b5;
+  /* The paper — a soft elegant sage pastel. */
+  --sidebar: #d8e2dc;
   --sidebar-foreground: #2c2c2e;
-  --sidebar-border: #e3c89e;
+  --sidebar-border: #c8d6ce;
 }
 
 @theme inline {
@@ -112,30 +112,7 @@ body {
    treatment. Kept fairly OPAQUE so the header text never merges with the content
    blurring underneath — readable first, glassy second. */
 .glass {
-  background: color-mix(in oklab, var(--card) 85%, transparent);
-  backdrop-filter: blur(10px) saturate(160%);
-  -webkit-backdrop-filter: blur(10px) saturate(160%);
-}
-
-/* Film-grain texture for the honey-cream paper (Roland 2026-06-10; ported from
-   mindate-website). A faint warm wash + multiplied fractal-noise grain gives the
-   flat paper life. Sits behind the nav + the floating white card; parent must be
-   `relative isolate`. */
-.grain {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    radial-gradient(60% 55% at 18% 12%, rgba(212, 168, 67, 0.12), transparent 60%),
-    radial-gradient(55% 50% at 88% 92%, rgba(216, 123, 74, 0.08), transparent 60%);
-}
-.grain::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 160px 160px;
-  opacity: 0.5;
-  mix-blend-mode: multiply;
+  background: color-mix(in oklab, var(--card) 92%, transparent);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
 }

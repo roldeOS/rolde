@@ -277,6 +277,7 @@ export type Database = {
           last_name: string
           nhs_number: string | null
           occupation: string | null
+          patient_number: string | null
           phone_landline: string | null
           phone_mobile: string | null
           portal_activated_at: string | null
@@ -319,6 +320,7 @@ export type Database = {
           last_name: string
           nhs_number?: string | null
           occupation?: string | null
+          patient_number?: string | null
           phone_landline?: string | null
           phone_mobile?: string | null
           portal_activated_at?: string | null
@@ -361,6 +363,7 @@ export type Database = {
           last_name?: string
           nhs_number?: string | null
           occupation?: string | null
+          patient_number?: string | null
           phone_landline?: string | null
           phone_mobile?: string | null
           portal_activated_at?: string | null
@@ -473,6 +476,8 @@ export type Database = {
           legal_name: string
           name: string
           onboarding_step: string | null
+          patient_number_next: number
+          patient_number_prefix: string | null
           slug: string
           status: string
           stripe_customer_id: string | null
@@ -493,6 +498,8 @@ export type Database = {
           legal_name: string
           name: string
           onboarding_step?: string | null
+          patient_number_next?: number
+          patient_number_prefix?: string | null
           slug: string
           status?: string
           stripe_customer_id?: string | null
@@ -513,6 +520,8 @@ export type Database = {
           legal_name?: string
           name?: string
           onboarding_step?: string | null
+          patient_number_next?: number
+          patient_number_prefix?: string | null
           slug?: string
           status?: string
           stripe_customer_id?: string | null

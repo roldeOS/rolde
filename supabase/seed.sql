@@ -42,10 +42,10 @@ where u.email like '%@dev.rolde.local'
   and not exists (select 1 from auth.identities i where i.user_id = u.id and i.provider = 'email');
 
 -- Clinics
-insert into tenants (id, slug, name, legal_name, subdomain, status, activated_at)
+insert into tenants (id, slug, name, legal_name, subdomain, status, activated_at, patient_number_prefix)
 values
-  ('b0000000-0000-4000-8000-000000000001','docforskin','Doc For Skin','Doc For Skin Ltd','docforskin','active', now()),
-  ('b0000000-0000-4000-8000-000000000002','docfordrivers','Doc For Drivers','Doc For Drivers Ltd','docfordrivers','active', now())
+  ('b0000000-0000-4000-8000-000000000001','docforskin','Doc For Skin','Doc For Skin Ltd','docforskin','active', now(), 'DFS'),
+  ('b0000000-0000-4000-8000-000000000002','docfordrivers','Doc For Drivers','Doc For Drivers Ltd','docfordrivers','active', now(), 'DFD')
 on conflict (id) do nothing;
 
 -- Roland as the platform Custodian

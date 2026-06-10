@@ -19,6 +19,7 @@ import {
   CornerDownRight,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
+import { SectionExplainer } from "@/components/ui/SectionExplainer";
 import { useClickAway } from "@/lib/useClickAway";
 import { cn } from "@/lib/utils";
 
@@ -180,6 +181,16 @@ export function ClinicalNotesFeed({
         <span className="rounded-full bg-info/10 px-1.5 text-xs font-medium text-info tabular-nums">
           {filtered.length}
         </span>
+        <SectionExplainer
+          label="Clinical Notes"
+          description="The patient's record — every note, verbatim, newest at the bottom. Scroll up to load older entries."
+          terms={[
+            { term: "Sort", definition: "Flip between oldest-first and newest-first." },
+            { term: "Filter", definition: "Narrow by note type or author." },
+            { term: "Edit (pencil)", definition: "Opens your own note in Scribe — editable for 1 hour, then amend-only." },
+            { term: "Expand", definition: "Give the record more room; the latest note stays in view." },
+          ]}
+        />
         <div className="ml-auto flex items-center gap-0.5">
           <button
             onClick={() => setSortDesc((v) => !v)}
