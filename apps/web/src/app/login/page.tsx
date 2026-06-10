@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+
+const inputClass =
+  "mt-1 h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/20";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,7 +20,10 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     if (error) {
       setError(error.message);
       setLoading(false);
@@ -27,18 +34,21 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-8 shadow-sm">
-        <p className="text-center font-serif text-2xl font-semibold tracking-tight">
+    <main className="flex min-h-screen items-center justify-center p-6">
+      <div className="w-full max-w-sm rounded-xl bg-card p-8 shadow-float">
+        <p className="text-center font-heading text-2xl font-semibold tracking-tight">
           RolDe
         </p>
-        <h1 className="mt-6 text-center font-serif text-lg font-medium text-foreground">
+        <h1 className="mt-6 text-center font-heading text-lg font-medium">
           Sign in
         </h1>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium">
+            <label
+              htmlFor="email"
+              className="block text-xs font-medium text-muted-foreground"
+            >
               Email
             </label>
             <input
@@ -48,11 +58,14 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 h-11 w-full rounded-md border border-border bg-surface px-3 text-sm outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/15"
+              className={inputClass}
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium">
+            <label
+              htmlFor="password"
+              className="block text-xs font-medium text-muted-foreground"
+            >
               Password
             </label>
             <input
@@ -62,22 +75,18 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 h-11 w-full rounded-md border border-border bg-surface px-3 text-sm outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/15"
+              className={inputClass}
             />
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="h-11 w-full rounded-md bg-foreground text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
             {loading ? "Signing in…" : "Sign in"}
-          </button>
+          </Button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-muted">
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           The clinical operating system.
         </p>
       </div>

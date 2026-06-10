@@ -1,8 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { CardIcon } from "@/components/ui/CardIcon";
 
+/** Sidebar-footer sign-out row — RDS pattern (signature badge + tinted icon). */
 export function SignOutButton() {
   const router = useRouter();
   async function signOut() {
@@ -13,8 +16,9 @@ export function SignOutButton() {
   return (
     <button
       onClick={signOut}
-      className="h-10 rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-neutral-100"
+      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
     >
+      <CardIcon icon={LogOut} tone="critical" variant="badge" size="sm" />
       Sign out
     </button>
   );

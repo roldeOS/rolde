@@ -1,31 +1,98 @@
 @import "tailwindcss";
 
-/* RolDe — calm clinical monochrome (Bible 4.2). The starting frame; colour is
-   layered in deliberately where it carries clinical signal (or where Roland calls it). */
+/* ============================================================================
+   RolDe — design tokens. Structure inherited from the Roland Design System
+   (mindate dashboard); skinned to RolDe's calm clinical monochrome (Bible 4.2):
+   near-black chrome, semantic colour ONLY for clinical signal, dark focus ring.
+   Change a value once here — it is right everywhere.
+   ========================================================================== */
+
 :root {
-  --background: #fafafa; /* page */
-  --surface: #ffffff; /* cards */
-  --foreground: #18181b; /* near-black text + brand accent */
-  --muted: #71717a; /* secondary text */
-  --border: #e4e4e7; /* hairlines */
-  --ring: #18181b; /* dark focus ring (not blue) */
+  --radius: 0.625rem;
+
+  /* Surfaces */
+  --background: #fafafa;            /* page (neutral-50) */
+  --card: #ffffff;                  /* floating cards */
+  --card-foreground: #18181b;
+
+  /* Text */
+  --foreground: #18181b;            /* near-black — also the brand accent */
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+
+  /* Chrome */
+  --border: #e4e4e7;
+  --input: #d4d4d8;
+  --ring: #18181b;                  /* dark focus ring — never blue (Bible 4.2) */
+
+  /* Primary action = monochrome */
+  --primary: #18181b;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+
+  /* Clinical signal (Bible 4.2 §2.2) — the ONLY colour in the chrome */
+  --signal-critical: #dc2626;
+  --signal-warning: #d97706;
+  --signal-success: #059669;
+  --signal-info: #0284c7;
+  --destructive: #dc2626;
+
+  /* The ONE hover token (RDS rule) — calm dark wash, not mindate gold. */
+  --hover: rgb(24 24 27 / 0.05);
+
+  /* Sidebar — soft clinical off-white */
+  --sidebar: #f4f4f5;
+  --sidebar-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
   --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
+  --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-hover: var(--hover);
+  --color-critical: var(--signal-critical);
+  --color-warning: var(--signal-warning);
+  --color-success: var(--signal-success);
+  --color-info: var(--signal-info);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-border: var(--sidebar-border);
 
   --font-sans: var(--font-inter);
-  --font-serif: var(--font-plex-serif);
+  --font-heading: var(--font-plex-serif);
   --font-mono: var(--font-plex-mono);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Floating card/table lift (RDS standard, Roland 2026-06-09): borderless, a
+   faint all-around hairline + a defined (not over-feathered) lift. Tune the
+   float in ONE place here. */
+.shadow-float {
+  box-shadow:
+    0 0 0 0.75px rgba(0, 0, 0, 0.07),
+    0 5px 14px -2px rgba(0, 0, 0, 0.18);
 }

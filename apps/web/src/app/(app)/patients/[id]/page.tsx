@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Button } from "@/components/ui/button";
 import { saveNote } from "../actions";
 
 function fmtDob(d: string) {
@@ -60,25 +61,28 @@ export default async function ConsultationPage({
   );
 
   return (
-    <div className="flex flex-1 flex-col">
-      {/* Top strip — always-visible patient context */}
-      <header className="border-b border-border bg-surface px-6 py-3">
+    <div className="flex h-full flex-col">
+      {/* Top strip — always-visible patient context (Bible 4.2 §3.2) */}
+      <header className="shrink-0 border-b border-border bg-card px-6 py-3">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Link href="/patients" className="text-sm text-muted hover:underline">
+            <Link
+              href="/patients"
+              className="text-sm text-muted-foreground hover:underline"
+            >
               ← Patients
             </Link>
             <span className="h-4 w-px bg-border" />
-            <span className="font-serif text-lg font-semibold tracking-tight">
+            <span className="font-heading text-lg font-semibold tracking-tight">
               {patient.first_name} {patient.last_name}
             </span>
-            <span className="text-sm text-muted">
+            <span className="text-sm text-muted-foreground">
               {fmtDob(patient.date_of_birth)} · {age(patient.date_of_birth)}y ·{" "}
               <span className="capitalize">{patient.sex_at_birth}</span>
             </span>
           </div>
           {patient.nhs_number && (
-            <span className="font-mono text-xs text-muted">
+            <span className="font-mono text-xs text-muted-foreground">
               NHS {patient.nhs_number}
             </span>
           )}
@@ -86,54 +90,56 @@ export default async function ConsultationPage({
       </header>
 
       {/* Feed — oldest top, newest bottom (Bible 4.2 §3.4) */}
-      <div className="mx-auto w-full max-w-3xl flex-1 space-y-3 p-6">
-        {!entries || entries.length === 0 ? (
-          <p className="rounded-xl border border-border bg-surface p-10 text-center text-muted">
-            No entries yet. The next note you save appears here.
-          </p>
-        ) : (
-          entries.map((e) => {
-            const text = (e.payload as { text?: string } | null)?.text ?? "";
-            return (
-              <article
-                key={e.id}
-                className="rounded-xl border border-border bg-surface p-4 shadow-sm"
-              >
-                <div className="flex items-center justify-between text-xs text-muted">
-                  <span className="font-medium capitalize">
-                    {e.entry_type.replace(/_/g, " ")}
-                  </span>
-                  <span>{fmtTime(e.created_at)}</span>
-                </div>
-                <p className="mt-2 whitespace-pre-wrap text-sm text-foreground">
-                  {text}
-                </p>
-                <p className="mt-2 text-xs text-muted">
-                  {authorOf.get(e.created_by ?? "") ?? "—"}
-                </p>
-              </article>
-            );
-          })
-        )}
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-3xl space-y-3 p-6">
+          {!entries || entries.length === 0 ? (
+            <p className="rounded-xl bg-card p-10 text-center text-muted-foreground shadow-float">
+              No entries yet. The next note you save will appear here.
+            </p>
+          ) : (
+            entries.map((e) => {
+              const text = (e.payload as { text?: string } | null)?.text ?? "";
+              return (
+                <article
+                  key={e.id}
+                  className="rounded-xl bg-card p-4 shadow-float"
+                >
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="font-medium capitalize">
+                      {e.entry_type.replace(/_/g, " ")}
+                    </span>
+                    <span>{fmtTime(e.created_at)}</span>
+                  </div>
+                  <p className="mt-2 text-sm whitespace-pre-wrap text-foreground">
+                    {text}
+                  </p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {authorOf.get(e.created_by ?? "") ?? "—"}
+                  </p>
+                </article>
+              );
+            })
+          )}
+        </div>
       </div>
 
-      {/* Note composer — server action; works without client JS */}
-      <div className="border-t border-border bg-surface px-6 py-4">
-        <form action={saveNote} className="mx-auto flex max-w-3xl items-end gap-3">
+      {/* Note composer — server action; resilient without client JS */}
+      <div className="shrink-0 border-t border-border bg-card px-6 py-4">
+        <form
+          action={saveNote}
+          className="mx-auto flex max-w-3xl items-end gap-3"
+        >
           <input type="hidden" name="patient_id" value={patient.id} />
           <textarea
             name="text"
             required
             rows={2}
             placeholder={`Note for ${patient.first_name}…`}
-            className="flex-1 resize-none rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/15"
+            className="flex-1 resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/20"
           />
-          <button
-            type="submit"
-            className="h-10 rounded-md bg-foreground px-5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          >
+          <Button type="submit" size="lg">
             Save
-          </button>
+          </Button>
         </form>
       </div>
     </div>
