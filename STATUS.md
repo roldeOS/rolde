@@ -31,7 +31,11 @@ Scope = Phase 1 (Bible 4.8 §3.1) unless noted. _Last updated 2026-06-10 (evenin
 - ✅ Shell v2 (APPROVALS §1): overall content card + floating glass topbar + sidebar-only outside; ◻ bottom save-bar (PageActionBar) — with the first dirty-tracking form
 - ✅ HIS sidebar nav: Dashboard · Patients · Calendar · Investigations · Prescribing · Letters · Billing · Reports · Settings (stubs cite their Bibles)
 - ✅ **Four-card consultation screen** (APPROVALS §4): clinical record 75 / composer 25 / tabbed orders 75 / RolDe panel 25 (offline state)
-- ◑ Allergies + alerts (Bible 4.4 §2.2–2.3): migration + seed + top-strip flags written; **applying to rolde-dev blocked by an MCP-gateway outage** — apply + verify next
+- ✅ **Resizable workspace** (APPROVALS §4): contextual (composer grows on focus) + presets (Consult/Document/Review) + bounded manual maximise; persisted. Verified live.
+- ✅ **Clinical Notes feed**: verbatim, newest-bottom, progressive scroll-up load, filter (type/author) + sort. Verified live.
+- ✅ **Allergies + alerts** (Bible 4.4 §2.2–2.3): migration + RLS + trigger-maintained `has_active_alerts`; seeded; **red allergy zone live in the glass topbar**. Verified live.
+- ✅ **Note editing** (Bible 4.6): author-only (RLS-enforced) edit ≤1h with "· edited" tag; strikethrough (preserved); amendments (linked, "↳ Amendment"). Verified live.
+- ✅ Topbar dynamic-island shows the patient address (seeded).
 
 ---
 

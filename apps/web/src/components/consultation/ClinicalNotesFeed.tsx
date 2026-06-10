@@ -15,10 +15,16 @@ import {
   Maximize2,
   Minimize2,
   Check,
+  Pencil,
+  CornerDownRight,
+  Strikethrough,
+  X,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
+import { Button } from "@/components/ui/button";
 import { useClickAway } from "@/lib/useClickAway";
 import { cn } from "@/lib/utils";
+import { editNote, strikeNote, amendNote } from "@/app/(app)/patients/actions";
 
 export type FeedEntry = {
   id: string;
@@ -26,7 +32,9 @@ export type FeedEntry = {
   payload: { text?: string } | null;
   created_at: string;
   created_by: string | null;
-  updated_at: string;
+  edited_at: string | null;
+  struck_at: string | null;
+  related_entry_id: string | null;
 };
 export type Author = { name: string; role: string };
 
@@ -59,29 +67,30 @@ function fmtTime(ts: string) {
 }
 
 const PAGE = 25;
+const EDIT_WINDOW_MS = 60 * 60 * 1000;
 
-/**
- * Clinical Notes feed (Roland 2026-06-10): verbatim entries (no AI summary),
- * newest at the BOTTOM (chat-style), progressively loading OLDER entries as you
- * scroll up — never the whole 30,000 at once. Filter by type + author, sort
- * by time. A header maximise toggle drives the workspace layout.
- */
 export function ClinicalNotesFeed({
   entries,
   authors,
+  currentUserId,
+  patientId,
   maximized,
   onToggleMaximize,
 }: {
   entries: FeedEntry[];
   authors: Record<string, Author>;
+  currentUserId: string;
+  patientId: string;
   maximized: boolean;
   onToggleMaximize: () => void;
 }) {
-  const [sortDesc, setSortDesc] = useState(false); // false = newest at bottom
+  const [sortDesc, setSortDesc] = useState(false);
   const [typeF, setTypeF] = useState<Set<string>>(new Set());
   const [authF, setAuthF] = useState<Set<string>>(new Set());
   const [visible, setVisible] = useState(PAGE);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [amendingId, setAmendingId] = useState<string | null>(null);
   const filterRef = useClickAway<HTMLDivElement>(
     useCallback(() => setFilterOpen(false), []),
   );
@@ -108,26 +117,21 @@ export function ClinicalNotesFeed({
     [entries, typeF, authF],
   );
   const ordered = useMemo(() => {
-    const a = [...filtered].sort((x, y) =>
-      x.created_at < y.created_at ? -1 : 1,
-    );
+    const a = [...filtered].sort((x, y) => (x.created_at < y.created_at ? -1 : 1));
     return sortDesc ? a.reverse() : a;
   }, [filtered, sortDesc]);
 
-  // Newest-at-bottom: older entries live at the TOP, revealed on scroll-up.
   const windowed = sortDesc
     ? ordered.slice(0, visible)
     : ordered.slice(Math.max(0, ordered.length - visible));
   const moreOlder = ordered.length > visible;
 
-  // Anchor to the bottom on first paint (newest visible).
   useEffect(() => {
     if (!sortDesc && scrollRef.current)
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keep the viewport stable when older entries prepend (no jump).
   useLayoutEffect(() => {
     if (scrollRef.current && prevH.current) {
       const delta = scrollRef.current.scrollHeight - prevH.current;
@@ -136,7 +140,6 @@ export function ClinicalNotesFeed({
     }
   });
 
-  // Reveal more when the "older" sentinel scrolls into view.
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el || !moreOlder) return;
@@ -160,6 +163,23 @@ export function ClinicalNotesFeed({
     fn(next);
   }
   const filterCount = typeF.size + authF.size;
+
+  // Server-action wrappers that also close the inline editor on success.
+  async function doEdit(fd: FormData) {
+    await editNote(fd);
+    setEditingId(null);
+  }
+  async function doAmend(fd: FormData) {
+    await amendNote(fd);
+    setAmendingId(null);
+  }
+  async function doStrike(id: string, strike: boolean) {
+    const fd = new FormData();
+    fd.set("entry_id", id);
+    fd.set("patient_id", patientId);
+    fd.set("strike", String(strike));
+    await strikeNote(fd);
+  }
 
   const sentinel = moreOlder ? (
     <div ref={sentinelRef} className="py-2 text-center text-xs text-muted-foreground">
@@ -245,11 +265,7 @@ export function ClinicalNotesFeed({
             title={maximized ? "Restore" : "Expand"}
             className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
           >
-            {maximized ? (
-              <Minimize2 className="size-4" />
-            ) : (
-              <Maximize2 className="size-4" />
-            )}
+            {maximized ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           </button>
         </div>
       </div>
@@ -270,25 +286,136 @@ export function ClinicalNotesFeed({
               e.entry_type === "clinical_note"
                 ? noteKind(author?.role)
                 : { label: e.entry_type.replace(/_/g, " "), tone: "neutral" as CardIconTone };
+            const mine = !!currentUserId && e.created_by === currentUserId;
+            const struck = !!e.struck_at;
+            const withinWindow =
+              Date.now() - new Date(e.created_at).getTime() < EDIT_WINDOW_MS;
+            const canEdit = mine && !struck && withinWindow;
+
             return (
               <article key={e.id} className="rounded-lg border border-border bg-card p-3">
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${TONE_BADGE[kind.tone]}`}
-                  >
-                    {kind.label}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-1.5">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${TONE_BADGE[kind.tone]}`}
+                    >
+                      {kind.label}
+                    </span>
+                    {e.related_entry_id && (
+                      <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+                        <CornerDownRight className="size-3" /> Amendment
+                      </span>
+                    )}
                   </span>
-                  {/* The "· edited" tag arrives WITH the editing feature (Bible 4.6),
-                      keyed off a real edit signal — not updated_at, which the
-                      feed's updated-at trigger and back-dated seeds both pollute. */}
                   <span className="text-xs text-muted-foreground">
                     {fmtTime(e.created_at)}
+                    {e.edited_at && <span className="ml-1 italic">· edited</span>}
+                    {struck && (
+                      <span className="ml-1 font-medium text-warning">· struck</span>
+                    )}
                   </span>
                 </div>
-                <p className="mt-2 text-sm whitespace-pre-wrap">{text}</p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {author?.name ?? "—"}
-                </p>
+
+                {editingId === e.id ? (
+                  <form action={doEdit} className="mt-2 space-y-2">
+                    <input type="hidden" name="entry_id" value={e.id} />
+                    <input type="hidden" name="patient_id" value={patientId} />
+                    <textarea
+                      name="text"
+                      defaultValue={text}
+                      required
+                      rows={3}
+                      className="w-full resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingId(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" size="sm">
+                        Save edit
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <p
+                    className={cn(
+                      "mt-2 text-sm whitespace-pre-wrap",
+                      struck && "text-muted-foreground line-through",
+                    )}
+                  >
+                    {text}
+                  </p>
+                )}
+
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {author?.name ?? "—"}
+                  </span>
+                  {mine && editingId !== e.id && (
+                    <div className="flex items-center gap-0.5">
+                      {canEdit && (
+                        <button
+                          onClick={() => setEditingId(e.id)}
+                          title="Edit (within 1 hour)"
+                          className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                        >
+                          <Pencil className="size-3.5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setAmendingId(amendingId === e.id ? null : e.id)}
+                        title="Add amendment"
+                        className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                      >
+                        <CornerDownRight className="size-3.5" />
+                      </button>
+                      <button
+                        onClick={() => doStrike(e.id, !struck)}
+                        title={struck ? "Remove strikethrough" : "Strike through"}
+                        className={cn(
+                          "flex size-6 items-center justify-center rounded-md transition-colors hover:bg-hover",
+                          struck
+                            ? "text-warning"
+                            : "text-muted-foreground hover:text-foreground",
+                        )}
+                      >
+                        <Strikethrough className="size-3.5" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {amendingId === e.id && (
+                  <form action={doAmend} className="mt-2 space-y-2 border-t border-border pt-2">
+                    <input type="hidden" name="parent_id" value={e.id} />
+                    <input type="hidden" name="patient_id" value={patientId} />
+                    <textarea
+                      name="text"
+                      required
+                      rows={2}
+                      placeholder="Amendment…"
+                      className="w-full resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setAmendingId(null)}
+                      >
+                        <X className="size-3.5" /> Cancel
+                      </Button>
+                      <Button type="submit" size="sm">
+                        Add amendment
+                      </Button>
+                    </div>
+                  </form>
+                )}
               </article>
             );
           })

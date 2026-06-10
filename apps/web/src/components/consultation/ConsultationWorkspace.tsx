@@ -42,11 +42,13 @@ export function ConsultationWorkspace({
   feedEntries,
   orderEntries,
   authors,
+  currentUserId,
 }: {
   patient: { id: string; firstName: string };
   feedEntries: FeedEntry[];
   orderEntries: OrderEntry[];
   authors: Record<string, Author>;
+  currentUserId: string;
 }) {
   const [preset, setPreset] = useState<Preset>("consult");
   const [leftMode, setLeftMode] = useState<Mode>("split");
@@ -141,6 +143,8 @@ export function ConsultationWorkspace({
             <ClinicalNotesFeed
               entries={feedEntries}
               authors={authors}
+              currentUserId={currentUserId}
+              patientId={patient.id}
               maximized={leftMode === "top"}
               onToggleMaximize={() =>
                 setLeftMode((m) => (m === "top" ? "split" : "top"))

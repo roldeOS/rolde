@@ -91,3 +91,7 @@ values
   ('c0000000-0000-4000-8000-000000000003','b0000000-0000-4000-8000-000000000001','Aisha','Khan','1990-07-21','female','aisha.khan@example.com','07700900003','a0000000-0000-4000-8000-000000000002'),
   ('c0000000-0000-4000-8000-000000000004','b0000000-0000-4000-8000-000000000002','David','Brown','1968-01-30','male','david.brown@example.com','07700900004','a0000000-0000-4000-8000-000000000003')
 on conflict (id) do nothing;
+
+-- Sarah Jones — an address (drives the topbar dynamic-island).
+update patients set address_line1 = '14 Marchmont Street', city = 'Edinburgh', postcode = 'EH9 1HL'
+where id = 'c0000000-0000-4000-8000-000000000001';

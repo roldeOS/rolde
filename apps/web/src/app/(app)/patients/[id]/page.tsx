@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionContext } from "@/lib/auth";
 import { TopbarPatientSync } from "@/components/topbar/TopbarContext";
 import { ConsultationWorkspace } from "@/components/consultation/ConsultationWorkspace";
 import type { FeedEntry, Author } from "@/components/consultation/ClinicalNotesFeed";
@@ -32,6 +33,8 @@ export default async function ConsultationPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const ctx = await getSessionContext();
+  const currentUserId = ctx?.user.id ?? "";
 
   const { data: patient } = await supabase
     .from("patients")
@@ -46,7 +49,9 @@ export default async function ConsultationPage({
 
   const { data: entries } = await supabase
     .from("patient_feed_entries")
-    .select("id, entry_type, payload, created_at, created_by, updated_at")
+    .select(
+      "id, entry_type, payload, created_at, created_by, edited_at, struck_at, related_entry_id",
+    )
     .eq("patient_id", id)
     .is("deleted_at", null)
     .order("created_at", { ascending: true });
@@ -113,6 +118,7 @@ export default async function ConsultationPage({
         feedEntries={feedEntries}
         orderEntries={orderEntries}
         authors={authors}
+        currentUserId={currentUserId}
       />
     </>
   );

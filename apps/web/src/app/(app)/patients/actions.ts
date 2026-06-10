@@ -68,3 +68,99 @@ export async function saveNote(formData: FormData) {
 
   revalidatePath(`/patients/${patientId}`);
 }
+
+const EDIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour (Roland 2026-06-10)
+
+/**
+ * Edit a note in place — ONLY by its author, ONLY within the hour after it was
+ * written (Bible 4.6). After that the note locks; changes become amendments.
+ * Author-only is also enforced at the database (RLS feed_update policy); the
+ * time window is enforced here.
+ */
+export async function editNote(formData: FormData) {
+  const entryId = String(formData.get("entry_id") ?? "");
+  const patientId = String(formData.get("patient_id") ?? "");
+  const text = String(formData.get("text") ?? "").trim();
+  if (!entryId || !text) return;
+
+  const ctx = await getSessionContext();
+  const userId = ctx?.user.id;
+  if (!userId) throw new Error("Not signed in.");
+
+  const supabase = await createClient();
+  const { data: entry } = await supabase
+    .from("patient_feed_entries")
+    .select("created_by, created_at, struck_at")
+    .eq("id", entryId)
+    .maybeSingle();
+  if (!entry) throw new Error("Note not found.");
+  if (entry.created_by !== userId)
+    throw new Error("You can only edit your own notes.");
+  if (entry.struck_at) throw new Error("A struck note can't be edited.");
+  if (Date.now() - new Date(entry.created_at).getTime() > EDIT_WINDOW_MS)
+    throw new Error("The edit window has closed. Add an amendment instead.");
+
+  const { error } = await supabase
+    .from("patient_feed_entries")
+    .update({
+      payload: { text, word_count: text.split(/\s+/).filter(Boolean).length },
+      edited_at: new Date().toISOString(),
+      updated_by: userId,
+    })
+    .eq("id", entryId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/patients/${patientId}`);
+}
+
+/** Toggle a strikethrough on a note — author-only (RLS-enforced). Never deletes. */
+export async function strikeNote(formData: FormData) {
+  const entryId = String(formData.get("entry_id") ?? "");
+  const patientId = String(formData.get("patient_id") ?? "");
+  const strike = String(formData.get("strike") ?? "") === "true";
+
+  const ctx = await getSessionContext();
+  const userId = ctx?.user.id;
+  if (!userId) throw new Error("Not signed in.");
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("patient_feed_entries")
+    .update({
+      struck_at: strike ? new Date().toISOString() : null,
+      struck_by: strike ? userId : null,
+    })
+    .eq("id", entryId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/patients/${patientId}`);
+}
+
+/**
+ * Add an amendment — a new note linked to an earlier one (related_entry_id).
+ * How you correct the record once the edit window has closed; the original
+ * stays put.
+ */
+export async function amendNote(formData: FormData) {
+  const parentId = String(formData.get("parent_id") ?? "");
+  const patientId = String(formData.get("patient_id") ?? "");
+  const text = String(formData.get("text") ?? "").trim();
+  if (!parentId || !patientId || !text) return;
+
+  const ctx = await getSessionContext();
+  const tenantId = ctx?.membership?.tenant_id;
+  if (!tenantId) throw new Error("No clinic context for this user.");
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("patient_feed_entries").insert({
+    tenant_id: tenantId,
+    patient_id: patientId,
+    entry_type: "clinical_note",
+    payload: { text, word_count: text.split(/\s+/).filter(Boolean).length },
+    related_entry_id: parentId,
+    created_by: ctx?.user.id ?? null,
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/patients/${patientId}`);
+}

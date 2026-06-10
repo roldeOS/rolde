@@ -173,12 +173,15 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           document_url: string | null
+          edited_at: string | null
           entry_type: Database["public"]["Enums"]["feed_entry_type"]
           id: string
           patient_id: string
           payload: Json
           related_entry_id: string | null
           status: string
+          struck_at: string | null
+          struck_by: string | null
           tenant_id: string
           updated_at: string
           updated_by: string | null
@@ -191,12 +194,15 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           document_url?: string | null
+          edited_at?: string | null
           entry_type: Database["public"]["Enums"]["feed_entry_type"]
           id?: string
           patient_id: string
           payload: Json
           related_entry_id?: string | null
           status?: string
+          struck_at?: string | null
+          struck_by?: string | null
           tenant_id: string
           updated_at?: string
           updated_by?: string | null
@@ -209,12 +215,15 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           document_url?: string | null
+          edited_at?: string | null
           entry_type?: Database["public"]["Enums"]["feed_entry_type"]
           id?: string
           patient_id?: string
           payload?: Json
           related_entry_id?: string | null
           status?: string
+          struck_at?: string | null
+          struck_by?: string | null
           tenant_id?: string
           updated_at?: string
           updated_by?: string | null
