@@ -60,6 +60,17 @@ values
   ('b0000000-0000-4000-8000-000000000002','a0000000-0000-4000-8000-000000000003','caretaker','Dr Drivers Caretaker',  true, '1111111', array['general_practice'], now())
 on conflict (tenant_id, user_id) do nothing;
 
+-- Dev feed entries for Sarah Jones (Doc For Skin) — two clinical notes.
+insert into patient_feed_entries (id, tenant_id, patient_id, entry_type, payload, created_by, created_at)
+values
+  ('d0000000-0000-4000-8000-000000000001','b0000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000001','clinical_note',
+   jsonb_build_object('text','New patient consultation. Presents with concerns about facial pigmentation following sun exposure. No significant past medical history; not on regular medications. On examination — scattered solar lentigines across cheeks and forehead. Discussed options: topical treatment vs laser. Patient keen to start treatment.','word_count',46),
+   'a0000000-0000-4000-8000-000000000002', now() - interval '2 days'),
+  ('d0000000-0000-4000-8000-000000000002','b0000000-0000-4000-8000-000000000001','c0000000-0000-4000-8000-000000000001','clinical_note',
+   jsonb_build_object('text','Reviewed. Started on a topical retinoid with strict SPF50 advice. Baseline photographs taken. Review in 6 weeks.','word_count',18),
+   'a0000000-0000-4000-8000-000000000002', now() - interval '1 hour')
+on conflict (id) do nothing;
+
 -- Dev patients: three at Doc For Skin, one at Doc For Drivers (proves isolation).
 insert into patients (id, tenant_id, first_name, last_name, date_of_birth, sex_at_birth, email, phone_mobile, created_by)
 values

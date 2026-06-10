@@ -42,3 +42,29 @@ export async function createPatient(formData: FormData) {
   revalidatePath("/patients");
   redirect("/patients");
 }
+
+/**
+ * Save a clinical note into a patient's feed. The clinic comes from the caller's
+ * membership; RLS independently enforces they can only write into their own clinic.
+ */
+export async function saveNote(formData: FormData) {
+  const patientId = String(formData.get("patient_id") ?? "");
+  const text = String(formData.get("text") ?? "").trim();
+  if (!patientId || !text) return;
+
+  const ctx = await getSessionContext();
+  const tenantId = ctx?.membership?.tenant_id;
+  if (!tenantId) throw new Error("No clinic context for this user.");
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("patient_feed_entries").insert({
+    tenant_id: tenantId,
+    patient_id: patientId,
+    entry_type: "clinical_note",
+    payload: { text, word_count: text.split(/\s+/).filter(Boolean).length },
+    created_by: ctx?.user.id ?? null,
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/patients/${patientId}`);
+}

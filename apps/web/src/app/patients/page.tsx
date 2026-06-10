@@ -65,7 +65,12 @@ export default async function PatientsPage() {
               {patients.map((p) => (
                 <tr key={p.id} className="border-b border-border last:border-0">
                   <td className="p-3 font-medium">
-                    {p.last_name}, {p.first_name}
+                    <Link
+                      href={`/patients/${p.id}`}
+                      className="hover:underline"
+                    >
+                      {p.last_name}, {p.first_name}
+                    </Link>
                   </td>
                   <td className="p-3 tabular-nums">
                     {fmtDob(p.date_of_birth)}{" "}

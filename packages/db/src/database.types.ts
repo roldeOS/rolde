@@ -29,6 +29,85 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_feed_entries: {
+        Row: {
+          appointment_id: string | null
+          consultation_id: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          document_url: string | null
+          entry_type: Database["public"]["Enums"]["feed_entry_type"]
+          id: string
+          patient_id: string
+          payload: Json
+          related_entry_id: string | null
+          status: string
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          consultation_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          document_url?: string | null
+          entry_type: Database["public"]["Enums"]["feed_entry_type"]
+          id?: string
+          patient_id: string
+          payload: Json
+          related_entry_id?: string | null
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          consultation_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          document_url?: string | null
+          entry_type?: Database["public"]["Enums"]["feed_entry_type"]
+          id?: string
+          patient_id?: string
+          payload?: Json
+          related_entry_id?: string | null
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_feed_entries_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_feed_entries_related_entry_id_fkey"
+            columns: ["related_entry_id"]
+            isOneToOne: false
+            referencedRelation: "patient_feed_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_feed_entries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address_line1: string | null
@@ -310,6 +389,26 @@ export type Database = {
       is_custodian: { Args: never; Returns: boolean }
     }
     Enums: {
+      feed_entry_type:
+        | "clinical_note"
+        | "vital_signs"
+        | "prescription"
+        | "lab_order"
+        | "lab_result"
+        | "radiology_order"
+        | "radiology_result"
+        | "photo_set"
+        | "consent_signed"
+        | "referral_letter"
+        | "discharge_summary"
+        | "sick_note"
+        | "gp_letter"
+        | "scanned_document"
+        | "ai_promotion"
+        | "consultation_summary"
+        | "appointment_record"
+        | "allergy_recorded"
+        | "alert_recorded"
       user_role:
         | "custodian"
         | "caretaker"
@@ -449,6 +548,27 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      feed_entry_type: [
+        "clinical_note",
+        "vital_signs",
+        "prescription",
+        "lab_order",
+        "lab_result",
+        "radiology_order",
+        "radiology_result",
+        "photo_set",
+        "consent_signed",
+        "referral_letter",
+        "discharge_summary",
+        "sick_note",
+        "gp_letter",
+        "scanned_document",
+        "ai_promotion",
+        "consultation_summary",
+        "appointment_record",
+        "allergy_recorded",
+        "alert_recorded",
+      ],
       user_role: [
         "custodian",
         "caretaker",
