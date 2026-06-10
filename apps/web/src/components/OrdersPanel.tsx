@@ -1,14 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { FlaskConical, Maximize2, Minimize2 } from "lucide-react";
+import { CardIcon } from "@/components/ui/CardIcon";
 import { cn } from "@/lib/utils";
 
-type Entry = {
-  id: string;
-  entry_type: string;
-  payload: unknown;
-  created_at: string;
-};
+type Entry = { id: string; entry_type: string };
 
 /**
  * Investigations + Orders pane (Bible 4.2 §3.6) — the top-right quadrant of the
@@ -24,20 +21,29 @@ const TABS: { key: string; label: string; types: string[]; coming: string }[] = 
   { key: "letters", label: "Letters", types: ["referral_letter", "discharge_summary", "sick_note", "gp_letter"], coming: "Letters and the closed-loop referral pipeline arrive with Bible 4.4 §5–6." },
 ];
 
-export function OrdersPanel({ entries }: { entries: Entry[] }) {
+export function OrdersPanel({
+  entries,
+  maximized,
+  onToggleMaximize,
+}: {
+  entries: Entry[];
+  maximized?: boolean;
+  onToggleMaximize?: () => void;
+}) {
   const [tab, setTab] = useState("labs");
   const active = TABS.find((t) => t.key === tab)!;
   const rows = entries.filter((e) => active.types.includes(e.entry_type));
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex shrink-0 gap-1 border-b border-border px-4 pb-2">
+      <div className="flex shrink-0 items-center gap-1 border-b border-border px-3 pb-2">
+        <CardIcon icon={FlaskConical} tone="info" variant="badge" size="sm" />
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
             className={cn(
-              "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors",
+              "rounded-lg px-2 py-1 text-xs font-medium transition-colors",
               tab === t.key
                 ? "bg-foreground/6 text-foreground"
                 : "text-muted-foreground hover:bg-hover hover:text-foreground",
@@ -46,6 +52,19 @@ export function OrdersPanel({ entries }: { entries: Entry[] }) {
             {t.label}
           </button>
         ))}
+        {onToggleMaximize && (
+          <button
+            onClick={onToggleMaximize}
+            title={maximized ? "Restore" : "Expand"}
+            className="ml-auto flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+          >
+            {maximized ? (
+              <Minimize2 className="size-4" />
+            ) : (
+              <Maximize2 className="size-4" />
+            )}
+          </button>
+        )}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-4">
         {rows.length === 0 ? (

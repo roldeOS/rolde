@@ -1,0 +1,300 @@
+"use client";
+
+import {
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useCallback,
+} from "react";
+import {
+  FileText,
+  ArrowDownUp,
+  ListFilter,
+  Maximize2,
+  Minimize2,
+  Check,
+} from "lucide-react";
+import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
+import { useClickAway } from "@/lib/useClickAway";
+import { cn } from "@/lib/utils";
+
+export type FeedEntry = {
+  id: string;
+  entry_type: string;
+  payload: { text?: string } | null;
+  created_at: string;
+  created_by: string | null;
+  updated_at: string;
+};
+export type Author = { name: string; role: string };
+
+/** A clinical note's title + colour follows the AUTHOR's role (Roland 2026-06-10). */
+function noteKind(role: string | undefined): { label: string; tone: CardIconTone } {
+  if (role === "nurse") return { label: "Nurse Note", tone: "success" };
+  if (role === "chemist") return { label: "Pharmacy Note", tone: "warning" };
+  if (role === "cunnere") return { label: "Lab Note", tone: "info" };
+  if (["caretaker", "clinician", "locum", "custodian"].includes(role ?? ""))
+    return { label: "Clinician Note", tone: "info" };
+  return { label: "Note", tone: "neutral" };
+}
+const TONE_BADGE: Record<CardIconTone, string> = {
+  critical: "bg-critical/10 text-critical",
+  warning: "bg-warning/12 text-warning",
+  success: "bg-success/10 text-success",
+  info: "bg-info/10 text-info",
+  neutral: "bg-slate-500/10 text-slate-600",
+  brand: "bg-foreground/8 text-foreground",
+};
+
+function fmtTime(ts: string) {
+  return new Date(ts).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+const PAGE = 25;
+
+/**
+ * Clinical Notes feed (Roland 2026-06-10): verbatim entries (no AI summary),
+ * newest at the BOTTOM (chat-style), progressively loading OLDER entries as you
+ * scroll up — never the whole 30,000 at once. Filter by type + author, sort
+ * by time. A header maximise toggle drives the workspace layout.
+ */
+export function ClinicalNotesFeed({
+  entries,
+  authors,
+  maximized,
+  onToggleMaximize,
+}: {
+  entries: FeedEntry[];
+  authors: Record<string, Author>;
+  maximized: boolean;
+  onToggleMaximize: () => void;
+}) {
+  const [sortDesc, setSortDesc] = useState(false); // false = newest at bottom
+  const [typeF, setTypeF] = useState<Set<string>>(new Set());
+  const [authF, setAuthF] = useState<Set<string>>(new Set());
+  const [visible, setVisible] = useState(PAGE);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const filterRef = useClickAway<HTMLDivElement>(
+    useCallback(() => setFilterOpen(false), []),
+  );
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const prevH = useRef(0);
+
+  const presentTypes = useMemo(
+    () => [...new Set(entries.map((e) => e.entry_type))],
+    [entries],
+  );
+  const presentAuthors = useMemo(
+    () => [...new Set(entries.map((e) => e.created_by).filter(Boolean))] as string[],
+    [entries],
+  );
+
+  const filtered = useMemo(
+    () =>
+      entries.filter(
+        (e) =>
+          (typeF.size === 0 || typeF.has(e.entry_type)) &&
+          (authF.size === 0 || authF.has(e.created_by ?? "")),
+      ),
+    [entries, typeF, authF],
+  );
+  const ordered = useMemo(() => {
+    const a = [...filtered].sort((x, y) =>
+      x.created_at < y.created_at ? -1 : 1,
+    );
+    return sortDesc ? a.reverse() : a;
+  }, [filtered, sortDesc]);
+
+  // Newest-at-bottom: older entries live at the TOP, revealed on scroll-up.
+  const windowed = sortDesc
+    ? ordered.slice(0, visible)
+    : ordered.slice(Math.max(0, ordered.length - visible));
+  const moreOlder = ordered.length > visible;
+
+  // Anchor to the bottom on first paint (newest visible).
+  useEffect(() => {
+    if (!sortDesc && scrollRef.current)
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Keep the viewport stable when older entries prepend (no jump).
+  useLayoutEffect(() => {
+    if (scrollRef.current && prevH.current) {
+      const delta = scrollRef.current.scrollHeight - prevH.current;
+      if (delta > 0 && !sortDesc) scrollRef.current.scrollTop += delta;
+      prevH.current = 0;
+    }
+  });
+
+  // Reveal more when the "older" sentinel scrolls into view.
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !moreOlder) return;
+    const ob = new IntersectionObserver(
+      (es) => {
+        if (es[0].isIntersecting) {
+          prevH.current = scrollRef.current?.scrollHeight ?? 0;
+          setVisible((v) => v + PAGE);
+        }
+      },
+      { root: scrollRef.current },
+    );
+    ob.observe(el);
+    return () => ob.disconnect();
+  }, [moreOlder]);
+
+  function toggle(set: Set<string>, key: string, fn: (s: Set<string>) => void) {
+    const next = new Set(set);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    fn(next);
+  }
+  const filterCount = typeF.size + authF.size;
+
+  const sentinel = moreOlder ? (
+    <div ref={sentinelRef} className="py-2 text-center text-xs text-muted-foreground">
+      Loading older notes…
+    </div>
+  ) : null;
+
+  return (
+    <>
+      <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-2.5">
+        <CardIcon icon={FileText} tone="info" variant="badge" size="sm" />
+        <span className="text-sm font-semibold">Clinical Notes</span>
+        <span className="rounded-full bg-info/10 px-1.5 text-xs font-medium text-info tabular-nums">
+          {filtered.length}
+        </span>
+        <div className="ml-auto flex items-center gap-0.5">
+          <button
+            onClick={() => setSortDesc((v) => !v)}
+            title={sortDesc ? "Newest first" : "Oldest first"}
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+          >
+            <ArrowDownUp className="size-4" />
+          </button>
+          <div ref={filterRef} className="relative">
+            <button
+              onClick={() => setFilterOpen((v) => !v)}
+              title="Filter"
+              className={cn(
+                "flex h-7 items-center gap-1 rounded-lg px-1.5 text-muted-foreground transition-colors hover:bg-hover hover:text-foreground",
+                filterCount > 0 && "text-info",
+              )}
+            >
+              <ListFilter className="size-4" />
+              {filterCount > 0 && (
+                <span className="text-xs font-medium tabular-nums">{filterCount}</span>
+              )}
+            </button>
+            {filterOpen && (
+              <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-56 rounded-xl border border-border bg-card p-2 shadow-float">
+                <p className="px-1 pb-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                  Type
+                </p>
+                {presentTypes.map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => toggle(typeF, t, setTypeF)}
+                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm capitalize transition-colors hover:bg-hover"
+                  >
+                    {t.replace(/_/g, " ")}
+                    {typeF.has(t) && <Check className="size-3.5 text-info" />}
+                  </button>
+                ))}
+                <div className="my-1.5 h-px bg-border" />
+                <p className="px-1 pb-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                  Author
+                </p>
+                {presentAuthors.map((a) => (
+                  <button
+                    key={a}
+                    onClick={() => toggle(authF, a, setAuthF)}
+                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-hover"
+                  >
+                    {authors[a]?.name ?? "Unknown"}
+                    {authF.has(a) && <Check className="size-3.5 text-info" />}
+                  </button>
+                ))}
+                {filterCount > 0 && (
+                  <button
+                    onClick={() => {
+                      setTypeF(new Set());
+                      setAuthF(new Set());
+                    }}
+                    className="mt-1.5 w-full rounded-lg px-2 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:bg-hover"
+                  >
+                    Clear filters
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={onToggleMaximize}
+            title={maximized ? "Restore" : "Expand"}
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+          >
+            {maximized ? (
+              <Minimize2 className="size-4" />
+            ) : (
+              <Maximize2 className="size-4" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      <div ref={scrollRef} className="min-h-0 flex-1 space-y-2.5 overflow-y-auto p-4">
+        {!sortDesc && sentinel}
+        {windowed.length === 0 ? (
+          <p className="py-6 text-center text-xs text-muted-foreground">
+            {filterCount > 0
+              ? "No notes match the filter."
+              : "No notes yet. The next one you save appears here."}
+          </p>
+        ) : (
+          windowed.map((e) => {
+            const text = e.payload?.text ?? "";
+            const author = e.created_by ? authors[e.created_by] : undefined;
+            const kind =
+              e.entry_type === "clinical_note"
+                ? noteKind(author?.role)
+                : { label: e.entry_type.replace(/_/g, " "), tone: "neutral" as CardIconTone };
+            return (
+              <article key={e.id} className="rounded-lg border border-border bg-card p-3">
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${TONE_BADGE[kind.tone]}`}
+                  >
+                    {kind.label}
+                  </span>
+                  {/* The "· edited" tag arrives WITH the editing feature (Bible 4.6),
+                      keyed off a real edit signal — not updated_at, which the
+                      feed's updated-at trigger and back-dated seeds both pollute. */}
+                  <span className="text-xs text-muted-foreground">
+                    {fmtTime(e.created_at)}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm whitespace-pre-wrap">{text}</p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {author?.name ?? "—"}
+                </p>
+              </article>
+            );
+          })
+        )}
+        {sortDesc && sentinel}
+      </div>
+    </>
+  );
+}
