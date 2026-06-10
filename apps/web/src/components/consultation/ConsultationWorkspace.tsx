@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PenLine, Maximize2, Minimize2, RotateCcw } from "lucide-react";
+import { PenLine, Maximize2, Minimize2, Strikethrough } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { OrdersPanel } from "@/components/OrdersPanel";
@@ -11,31 +11,35 @@ import {
   type FeedEntry,
   type Author,
 } from "@/components/consultation/ClinicalNotesFeed";
-import { saveNote } from "@/app/(app)/patients/actions";
+import { useTopbar } from "@/components/topbar/TopbarContext";
+import {
+  saveNote,
+  editNote,
+  strikeNote,
+  amendNote,
+} from "@/app/(app)/patients/actions";
 import { cn } from "@/lib/utils";
 
 type OrderEntry = { id: string; entry_type: string };
 
 /**
- * The consultation workspace (Roland 2026-06-10, "paramount"). Three layers of
- * control, each more deliberate than the last — power without a wrecked layout:
- *
- *   1. CONTEXTUAL (automatic) — focus the composer and it grows; blur and it
- *      springs back. You never get stuck at "50% typing space".
- *   2. PRESETS (a toggle up top) — Consult / Document / Review reshape the grid.
- *   3. MANUAL (a maximise icon per card) — bounded expand/restore.
- *
- * All splits are flex-grow ratios with min-heights as guardrails and smooth
- * transitions, so every state lands somewhere calm. Choice persists per browser.
+ * The consultation workspace (Roland 2026-06-10). The view preset (Consult /
+ * Document / Review) is driven from the TOPBAR; here we apply it as flex-grow
+ * ratios + contextual growth (composer expands while writing). Four glassy,
+ * borderless, floating cards — responsive (2×2 on desktop, stacked on
+ * mobile/tablet). The composer is the single place for new / edit / amend.
  */
 const PRESETS = {
-  consult: { label: "Consult", left: 0.68, right: 0.72, col: 0.52 },
-  document: { label: "Document", left: 0.4, right: 0.72, col: 0.56 },
-  review: { label: "Review", left: 0.82, right: 0.7, col: 0.5 },
+  consult: { left: 0.68, right: 0.72, col: 0.52 },
+  document: { left: 0.4, right: 0.72, col: 0.56 },
+  review: { left: 0.82, right: 0.7, col: 0.5 },
 } as const;
-type Preset = keyof typeof PRESETS;
 type Mode = "split" | "top" | "bottom";
-const COMPOSE_LEFT = 0.42; // composer prominence while actively typing
+const COMPOSE_LEFT = 0.42;
+const EDIT_WINDOW_MS = 60 * 60 * 1000;
+const COMPOSER_NAME = "Compose"; // ← Roland to choose the final name
+
+type EditTarget = { id: string; original: string; locked: boolean } | null;
 
 export function ConsultationWorkspace({
   patient,
@@ -50,34 +54,23 @@ export function ConsultationWorkspace({
   authors: Record<string, Author>;
   currentUserId: string;
 }) {
-  const [preset, setPreset] = useState<Preset>("consult");
+  const { view } = useTopbar();
   const [leftMode, setLeftMode] = useState<Mode>("split");
   const [rightMode, setRightMode] = useState<Mode>("split");
   const [composing, setComposing] = useState(false);
   const [ready, setReady] = useState(false);
 
-  useEffect(() => {
-    try {
-      const s = JSON.parse(localStorage.getItem("rolde:workspace") ?? "{}");
-      if (s.preset && s.preset in PRESETS) setPreset(s.preset);
-      if (s.leftMode) setLeftMode(s.leftMode);
-      if (s.rightMode) setRightMode(s.rightMode);
-    } catch {
-      /* ignore */
-    }
-    setReady(true);
-  }, []);
+  const [editTarget, setEditTarget] = useState<EditTarget>(null);
+  const [draft, setDraft] = useState("");
+  const [strikeOriginal, setStrikeOriginal] = useState(false);
+  const [pending, setPending] = useState(false);
 
-  useEffect(() => {
-    if (ready)
-      localStorage.setItem(
-        "rolde:workspace",
-        JSON.stringify({ preset, leftMode, rightMode }),
-      );
-  }, [preset, leftMode, rightMode, ready]);
+  useEffect(() => setReady(true), []);
+  useEffect(() => setLeftMode("split"), [view]);
 
-  const p = PRESETS[preset];
-  const leftTop = composing
+  const p = PRESETS[view];
+  const active = composing || !!editTarget;
+  const leftTop = active
     ? COMPOSE_LEFT
     : leftMode === "top"
       ? 0.85
@@ -87,141 +80,198 @@ export function ConsultationWorkspace({
   const rightTop =
     rightMode === "top" ? 0.85 : rightMode === "bottom" ? 0.25 : p.right;
   const dur = ready ? "duration-300" : "duration-0";
-  const overridden = leftMode !== "split" || rightMode !== "split";
-
-  function choosePreset(k: Preset) {
-    setPreset(k);
-    setLeftMode("split");
-    setRightMode("split");
-  }
-
   const grow = (n: number) => ({ flexGrow: n * 100, flexBasis: 0 });
 
+  const mode: "new" | "edit" | "amend" = !editTarget
+    ? "new"
+    : editTarget.locked
+      ? "amend"
+      : "edit";
+
+  function handleEdit(e: FeedEntry) {
+    const locked = Date.now() - new Date(e.created_at).getTime() > EDIT_WINDOW_MS;
+    const original = e.payload?.text ?? "";
+    setEditTarget({ id: e.id, original, locked });
+    setDraft(locked ? "" : original);
+    setStrikeOriginal(false);
+  }
+
+  function discard() {
+    setDraft("");
+    setEditTarget(null);
+    setStrikeOriginal(false);
+  }
+
+  async function submit() {
+    if (!draft.trim() || pending) return;
+    setPending(true);
+    try {
+      const fd = new FormData();
+      fd.set("patient_id", patient.id);
+      if (mode === "new") {
+        fd.set("text", draft);
+        await saveNote(fd);
+      } else if (mode === "edit") {
+        fd.set("entry_id", editTarget!.id);
+        fd.set("text", draft);
+        await editNote(fd);
+      } else {
+        if (strikeOriginal) {
+          const sf = new FormData();
+          sf.set("entry_id", editTarget!.id);
+          sf.set("patient_id", patient.id);
+          sf.set("strike", "true");
+          await strikeNote(sf);
+        }
+        fd.set("parent_id", editTarget!.id);
+        fd.set("text", draft);
+        await amendNote(fd);
+      }
+      discard();
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const composerTitle =
+    mode === "edit" ? "Editing note" : mode === "amend" ? "Amending note" : COMPOSER_NAME;
+  const saveLabel =
+    mode === "edit" ? "Save edit" : mode === "amend" ? "Save amendment" : "Save note";
+
   return (
-    <div className="flex h-full min-h-0 flex-col gap-2 p-4 pt-2">
-      {/* Preset toolbar (Layer 2) */}
-      <div className="flex shrink-0 items-center gap-2">
-        <div className="flex items-center gap-0.5 rounded-lg border border-border bg-card p-0.5">
-          {(Object.keys(PRESETS) as Preset[]).map((k) => (
-            <button
-              key={k}
-              onClick={() => choosePreset(k)}
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden">
+        <div className="flex flex-col gap-3 lg:h-full lg:flex-row">
+          {/* Left column */}
+          <div className="flex flex-col gap-3 lg:min-h-0" style={grow(p.col)}>
+            {/* Clinical Notes */}
+            <section
+              style={grow(leftTop)}
               className={cn(
-                "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
-                preset === k && !overridden
-                  ? "bg-foreground/8 text-foreground"
-                  : "text-muted-foreground hover:bg-hover hover:text-foreground",
+                "flex min-h-[55vh] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[140px]",
+                dur,
               )}
             >
-              {PRESETS[k].label}
-            </button>
-          ))}
-        </div>
-        {overridden && (
-          <button
-            onClick={() => {
-              setLeftMode("split");
-              setRightMode("split");
-            }}
-            className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <RotateCcw className="size-3" /> Reset layout
-          </button>
-        )}
-      </div>
-
-      <div className="flex min-h-0 flex-1 gap-3">
-        {/* Left column */}
-        <div className="flex min-w-0 flex-col gap-3" style={grow(p.col)}>
-          <section
-            style={grow(leftTop)}
-            className={cn(
-              "flex min-h-[140px] flex-col overflow-hidden rounded-xl bg-card shadow-float transition-[flex-grow] ease-out",
-              dur,
-            )}
-          >
-            <ClinicalNotesFeed
-              entries={feedEntries}
-              authors={authors}
-              currentUserId={currentUserId}
-              patientId={patient.id}
-              maximized={leftMode === "top"}
-              onToggleMaximize={() =>
-                setLeftMode((m) => (m === "top" ? "split" : "top"))
-              }
-            />
-          </section>
-
-          <section
-            style={grow(1 - leftTop)}
-            className={cn(
-              "flex min-h-[92px] flex-col overflow-hidden rounded-xl bg-card shadow-float transition-[flex-grow] ease-out",
-              dur,
-            )}
-          >
-            <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-2.5">
-              <CardIcon icon={PenLine} tone="brand" variant="badge" size="sm" />
-              <span className="text-sm font-semibold">New note</span>
-              <button
-                onClick={() =>
-                  setLeftMode((m) => (m === "bottom" ? "split" : "bottom"))
+              <ClinicalNotesFeed
+                entries={feedEntries}
+                authors={authors}
+                currentUserId={currentUserId}
+                maximized={leftMode === "top"}
+                onToggleMaximize={() =>
+                  setLeftMode((m) => (m === "top" ? "split" : "top"))
                 }
-                title={leftMode === "bottom" ? "Restore" : "Expand"}
-                className="ml-auto flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-              >
-                {leftMode === "bottom" ? (
-                  <Minimize2 className="size-4" />
-                ) : (
-                  <Maximize2 className="size-4" />
-                )}
-              </button>
-            </div>
-            <form
-              action={saveNote}
-              className="flex min-h-0 flex-1 flex-col gap-2 p-4"
-            >
-              <input type="hidden" name="patient_id" value={patient.id} />
-              <textarea
-                name="text"
-                required
-                onFocus={() => setComposing(true)}
-                onBlur={() => setComposing(false)}
-                placeholder={`Note for ${patient.firstName}…`}
-                className="min-h-0 w-full flex-1 resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/20"
+                onEditNote={handleEdit}
+                activeId={editTarget?.id ?? null}
               />
-              <div className="flex shrink-0 justify-end">
-                <Button type="submit">Save note</Button>
-              </div>
-            </form>
-          </section>
-        </div>
+            </section>
 
-        {/* Right column */}
-        <div className="flex min-w-0 flex-col gap-3" style={grow(1 - p.col)}>
-          <section
-            style={grow(rightTop)}
-            className={cn(
-              "flex min-h-[140px] flex-col overflow-hidden rounded-xl bg-card pt-2.5 shadow-float transition-[flex-grow] ease-out",
-              dur,
-            )}
-          >
-            <OrdersPanel
-              entries={orderEntries}
-              maximized={rightMode === "top"}
-              onToggleMaximize={() =>
-                setRightMode((m) => (m === "top" ? "split" : "top"))
-              }
-            />
-          </section>
-          <section
-            style={grow(1 - rightTop)}
-            className={cn(
-              "flex min-h-[92px] flex-col overflow-hidden rounded-xl bg-card pt-2.5 pb-3 shadow-float transition-[flex-grow] ease-out",
-              dur,
-            )}
-          >
-            <AiPanel />
-          </section>
+            {/* Composer — borderless, the whole white space; Save + Discard */}
+            <section
+              style={grow(1 - leftTop)}
+              className={cn(
+                "flex min-h-[220px] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[92px]",
+                dur,
+              )}
+            >
+              <div className="glass sticky top-0 z-10 flex items-center gap-2 px-4 py-2.5">
+                <CardIcon icon={PenLine} tone="brand" variant="badge" size="sm" />
+                <span className="text-sm font-semibold">{composerTitle}</span>
+                <button
+                  onClick={() =>
+                    setLeftMode((m) => (m === "bottom" ? "split" : "bottom"))
+                  }
+                  title={leftMode === "bottom" ? "Restore" : "Expand"}
+                  className="ml-auto flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                >
+                  {leftMode === "bottom" ? (
+                    <Minimize2 className="size-4" />
+                  ) : (
+                    <Maximize2 className="size-4" />
+                  )}
+                </button>
+              </div>
+
+              <div className="flex min-h-0 flex-1 flex-col px-4 pb-3">
+                {mode === "amend" && (
+                  <div className="mb-2 rounded-lg bg-muted/50 p-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        Original (locked after 1 hour)
+                      </span>
+                      <button
+                        onClick={() => setStrikeOriginal((v) => !v)}
+                        className={cn(
+                          "flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs transition-colors hover:bg-hover",
+                          strikeOriginal ? "text-warning" : "text-muted-foreground",
+                        )}
+                      >
+                        <Strikethrough className="size-3.5" />
+                        {strikeOriginal ? "Will strike" : "Strike out"}
+                      </button>
+                    </div>
+                    <p
+                      className={cn(
+                        "mt-1 text-sm",
+                        strikeOriginal && "text-muted-foreground line-through",
+                      )}
+                    >
+                      {editTarget?.original}
+                    </p>
+                  </div>
+                )}
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onFocus={() => setComposing(true)}
+                  onBlur={() => setComposing(false)}
+                  placeholder={
+                    mode === "amend"
+                      ? "Amendment…"
+                      : `Note for ${patient.firstName}…`
+                  }
+                  className="min-h-0 w-full flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+                <div className="flex shrink-0 items-center justify-end gap-2 pt-1">
+                  {(editTarget || draft) && (
+                    <Button variant="ghost" size="sm" onClick={discard}>
+                      Discard
+                    </Button>
+                  )}
+                  <Button size="sm" onClick={submit} disabled={pending || !draft.trim()}>
+                    {saveLabel}
+                  </Button>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {/* Right column */}
+          <div className="flex flex-col gap-3 lg:min-h-0" style={grow(1 - p.col)}>
+            <section
+              style={grow(rightTop)}
+              className={cn(
+                "flex min-h-[40vh] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[140px]",
+                dur,
+              )}
+            >
+              <OrdersPanel
+                entries={orderEntries}
+                maximized={rightMode === "top"}
+                onToggleMaximize={() =>
+                  setRightMode((m) => (m === "top" ? "split" : "top"))
+                }
+              />
+            </section>
+            <section
+              style={grow(1 - rightTop)}
+              className={cn(
+                "flex min-h-[200px] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[92px]",
+                dur,
+              )}
+            >
+              <AiPanel />
+            </section>
+          </div>
         </div>
       </div>
     </div>

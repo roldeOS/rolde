@@ -24,7 +24,7 @@ export function Recents() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+        className="flex size-8 items-center justify-center rounded-lg text-info transition-colors hover:bg-info/10"
         aria-label="Recent patients"
       >
         <Clock className="size-[18px]" />

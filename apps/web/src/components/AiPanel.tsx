@@ -13,13 +13,11 @@ import { Sparkles } from "lucide-react";
 export function AiPanel() {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex shrink-0 items-center justify-between px-4 pb-2">
+      <div className="glass sticky top-0 z-10 flex shrink-0 items-center justify-between px-4 py-2.5">
         <span className="flex items-center gap-1.5">
           <Sparkles className="size-3.5 text-info" />
-          {/* The RolDe wordmark — serif allowed here only. */}
-          <span className="font-wordmark text-sm font-semibold tracking-tight">
-            RolDe
-          </span>
+          {/* Inter here — NOT the serif wordmark (Roland 2026-06-10). */}
+          <span className="text-sm font-semibold tracking-tight">RolDe</span>
           <span className="text-xs text-muted-foreground">says…</span>
         </span>
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -40,11 +38,11 @@ export function AiPanel() {
       </div>
 
       {/* Secondary: the ask field, deliberately understated. */}
-      <div className="shrink-0 px-4 pt-2">
+      <div className="shrink-0 px-4 py-3">
         <input
           disabled
           placeholder="Ask RolDe…"
-          className="h-8 w-full rounded-lg border border-input bg-card px-3 text-xs outline-none disabled:opacity-50"
+          className="h-8 w-full rounded-lg bg-muted/60 px-3 text-xs outline-none disabled:opacity-60"
         />
       </div>
     </div>

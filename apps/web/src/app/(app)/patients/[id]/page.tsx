@@ -39,7 +39,7 @@ export default async function ConsultationPage({
   const { data: patient } = await supabase
     .from("patients")
     .select(
-      "id, first_name, last_name, date_of_birth, sex_at_birth, nhs_number, address_line1, address_line2, city, postcode",
+      "id, first_name, last_name, date_of_birth, sex_at_birth, nhs_number, phone_mobile, email, address_line1, address_line2, city, postcode",
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -101,6 +101,8 @@ export default async function ConsultationPage({
           age: age(patient.date_of_birth),
           sex: patient.sex_at_birth,
           nhs: patient.nhs_number,
+          phone: patient.phone_mobile,
+          email: patient.email,
           addressLines,
           allergies: (allergies ?? []).map((a) => ({
             substance: a.substance,

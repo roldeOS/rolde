@@ -3,20 +3,19 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { PanelLeft, ChevronRight } from "lucide-react";
-import { useTopbar } from "./TopbarContext";
-import { PatientChip } from "./PatientChip";
+import { useTopbar, type WorkspaceView } from "./TopbarContext";
+import { PatientIsland } from "./PatientIsland";
 import { CommandMenu } from "./CommandMenu";
 import { Recents } from "./Recents";
 import { NotificationsBell } from "./NotificationsBell";
 import { ProfileMenu } from "./ProfileMenu";
+import { cn } from "@/lib/utils";
 
 /**
- * The glass topbar (mindate "Glass" recipe, Roland 2026-06-10):
- *   bg-card/30 backdrop-blur-sm backdrop-saturate-200 backdrop-brightness-105,
- *   ≈18% card where backdrop-filter is supported. Content scrolls UNDER it.
- *
- * Left  — sidebar toggle + page-path breadcrumb.
- * Right — patient chip (allergy-red zone) · search · recents · bell · profile.
+ * The glass topbar (Roland 2026-06-10). Left — sidebar toggle + page-path
+ * breadcrumb, with the patient identity (and its island) living IN the
+ * breadcrumb (no duplicate chip). Right — the workspace view-selector (on a
+ * patient), search, recents, bell, profile (the action icons carry colour).
  */
 const SECTION: [RegExp, string][] = [
   [/^\/$/, "Dashboard"],
@@ -28,6 +27,12 @@ const SECTION: [RegExp, string][] = [
   [/^\/billing/, "Billing"],
   [/^\/reports/, "Reports"],
   [/^\/settings/, "Settings"],
+];
+
+const VIEWS: { key: WorkspaceView; label: string }[] = [
+  { key: "consult", label: "Consult" },
+  { key: "document", label: "Document" },
+  { key: "review", label: "Review" },
 ];
 
 export function Topbar({
@@ -42,22 +47,16 @@ export function Topbar({
   onToggleSidebar: () => void;
 }) {
   const pathname = usePathname();
-  const { patient } = useTopbar();
+  const { patient, view, setView } = useTopbar();
   const section = SECTION.find(([re]) => re.test(pathname))?.[1] ?? "RolDe";
-  const sectionHref =
-    section === "Dashboard" ? "/" : `/${section.toLowerCase()}`;
-  const leaf =
-    pathname === "/patients/new"
-      ? "New patient"
-      : patient
-        ? `${patient.firstName} ${patient.lastName}`
-        : null;
+  const sectionHref = section === "Dashboard" ? "/" : `/${section.toLowerCase()}`;
+  const onConsult = !!patient;
 
   return (
-    <div className="sticky top-0 z-40 px-4 pt-3">
-      <div className="flex h-11 items-center justify-between gap-3 rounded-xl border border-border/60 bg-card/30 px-2.5 shadow-sm backdrop-blur-sm backdrop-saturate-200 backdrop-brightness-105 supports-[backdrop-filter]:bg-card/18">
+    <div className="sticky top-0 z-40 px-3 pt-3 sm:px-4">
+      <div className="glass flex h-11 items-center justify-between gap-2 rounded-xl border border-border/40 px-2 shadow-sm">
         {/* Left — toggle + breadcrumb */}
-        <nav className="flex min-w-0 items-center gap-1" aria-label="Breadcrumb">
+        <nav className="flex min-w-0 items-center gap-0.5" aria-label="Breadcrumb">
           <button
             onClick={onToggleSidebar}
             className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
@@ -71,19 +70,37 @@ export function Topbar({
           >
             {section}
           </Link>
-          {leaf && (
-            <>
-              <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
-              <span className="truncate px-1.5 py-1 text-sm text-muted-foreground">
-                {leaf}
-              </span>
-            </>
+          {(onConsult || pathname === "/patients/new") && (
+            <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
           )}
+          {pathname === "/patients/new" && (
+            <span className="px-1.5 py-1 text-sm text-muted-foreground">
+              New patient
+            </span>
+          )}
+          {onConsult && <PatientIsland />}
         </nav>
 
-        {/* Right — patient chip · search · recents · bell · profile */}
+        {/* Right — view-selector · search · recents · bell · profile */}
         <div className="flex shrink-0 items-center gap-1.5">
-          <PatientChip />
+          {onConsult && (
+            <div className="hidden items-center gap-0.5 rounded-lg border border-border/50 bg-card/50 p-0.5 sm:flex">
+              {VIEWS.map((v) => (
+                <button
+                  key={v.key}
+                  onClick={() => setView(v.key)}
+                  className={cn(
+                    "rounded-md px-2 py-1 text-xs font-medium transition-colors",
+                    view === v.key
+                      ? "bg-foreground/8 text-foreground"
+                      : "text-muted-foreground hover:bg-hover hover:text-foreground",
+                  )}
+                >
+                  {v.label}
+                </button>
+              ))}
+            </div>
+          )}
           <CommandMenu />
           <Recents />
           <NotificationsBell />

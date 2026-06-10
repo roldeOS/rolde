@@ -1,17 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { LogOut } from "lucide-react";
 import { SidebarNav } from "@/components/SidebarNav";
 import { Topbar } from "@/components/topbar/Topbar";
 import { TopbarProvider } from "@/components/topbar/TopbarContext";
+import { CardIcon } from "@/components/ui/CardIcon";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 /**
  * The clinic app frame (Roland 2026-06-10):
- *  - a COLLAPSIBLE sidebar (expanded w-48 ↔ icon rail w-14) — the toggle lives
- *    in the topbar; the state is remembered per browser. Collapsing frees the
- *    horizontal space the consultation screen needs.
- *  - ONE overall content card holding the glass topbar + the scrolling page.
+ *  - DESKTOP: a collapsible sidebar (expanded w-48 ↔ icon rail w-14), the toggle
+ *    in the topbar, remembered per browser.
+ *  - MOBILE/TABLET (<lg): the sidebar is an off-canvas drawer (industry standard
+ *    — Linear/Notion/Gmail) — hidden, slid in over a backdrop by the same toggle.
+ *  - ONE overall content card holds the glass topbar + the scrolling page.
  */
 export function AppFrame({
   clinic,
@@ -24,7 +29,10 @@ export function AppFrame({
   role: string;
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -32,46 +40,94 @@ export function AppFrame({
     setReady(true);
   }, []);
 
+  // Close the mobile drawer on navigation.
+  useEffect(() => setMobileOpen(false), [pathname]);
+
+  async function signOut() {
+    await createClient().auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
   function toggle() {
-    setCollapsed((c) => {
-      const next = !c;
-      localStorage.setItem("rolde:sidebar", next ? "collapsed" : "expanded");
-      return next;
-    });
+    // Desktop collapses the rail; mobile slides the drawer.
+    if (window.matchMedia("(min-width: 1024px)").matches) {
+      setCollapsed((c) => {
+        const next = !c;
+        localStorage.setItem("rolde:sidebar", next ? "collapsed" : "expanded");
+        return next;
+      });
+    } else {
+      setMobileOpen((o) => !o);
+    }
   }
 
   return (
     <TopbarProvider>
       <div className="flex h-screen overflow-hidden bg-sidebar">
+        {/* Mobile backdrop */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-foreground/20 lg:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+
         <aside
           className={cn(
-            "flex shrink-0 flex-col transition-[width] duration-200 ease-out",
-            collapsed ? "w-14" : "w-48",
-            !ready && "duration-0",
+            "z-50 flex shrink-0 flex-col bg-sidebar transition-transform duration-200 ease-out lg:transition-[width]",
+            // mobile: off-canvas drawer
+            "fixed inset-y-0 left-0 w-56 -translate-x-full lg:static lg:translate-x-0",
+            mobileOpen && "translate-x-0 shadow-2xl",
+            // desktop: collapsible width
+            collapsed ? "lg:w-14" : "lg:w-48",
+            !ready && "lg:transition-none",
           )}
         >
-          <div className={cn("pt-5 pb-4", collapsed ? "px-0 text-center" : "px-4")}>
+          <div
+            className={cn(
+              "pt-5 pb-4",
+              collapsed ? "px-4 lg:px-0 lg:text-center" : "px-4",
+            )}
+          >
             {/* Wordmark — the ONLY place IBM Plex Serif lives (SVG to come). */}
             <p className="font-wordmark text-xl font-semibold tracking-tight">
-              {collapsed ? "R" : "RolDe"}
+              <span className={collapsed ? "lg:hidden" : ""}>RolDe</span>
+              <span className={collapsed ? "hidden lg:inline" : "hidden"}>R</span>
             </p>
-            {!collapsed && (
-              <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                {clinic}
-              </p>
-            )}
+            <p
+              className={cn(
+                "mt-0.5 truncate text-xs text-muted-foreground",
+                collapsed && "lg:hidden",
+              )}
+            >
+              {clinic}
+            </p>
           </div>
           <SidebarNav collapsed={collapsed} />
           <div className="mt-auto px-2 py-3">
-            {!collapsed && (
-              <p className="px-2 text-center text-[10px] text-muted-foreground">
-                © {new Date().getFullYear()} RolDe Ltd
-              </p>
-            )}
+            <button
+              onClick={signOut}
+              className={cn(
+                "flex w-full items-center gap-2 rounded-lg py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground",
+                collapsed ? "px-2 lg:justify-center lg:px-0" : "px-2",
+              )}
+            >
+              <CardIcon icon={LogOut} tone="critical" variant="badge" size="sm" />
+              <span className={collapsed ? "lg:hidden" : ""}>Sign out</span>
+            </button>
+            <p
+              className={cn(
+                "mt-3 px-2 text-center text-[10px] text-muted-foreground",
+                collapsed && "lg:hidden",
+              )}
+            >
+              © {new Date().getFullYear()} RolDe Ltd
+            </p>
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 p-2 pl-0">
+        <main className="min-w-0 flex-1 p-2 pl-2 lg:pl-0">
           <div className="h-full overflow-hidden rounded-xl bg-background shadow-float">
             <div className="flex h-full flex-col overflow-y-auto" data-app-scroll>
               <Topbar

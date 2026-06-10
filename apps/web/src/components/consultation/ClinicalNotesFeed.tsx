@@ -17,14 +17,10 @@ import {
   Check,
   Pencil,
   CornerDownRight,
-  Strikethrough,
-  X,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
-import { Button } from "@/components/ui/button";
 import { useClickAway } from "@/lib/useClickAway";
 import { cn } from "@/lib/utils";
-import { editNote, strikeNote, amendNote } from "@/app/(app)/patients/actions";
 
 export type FeedEntry = {
   id: string;
@@ -38,7 +34,6 @@ export type FeedEntry = {
 };
 export type Author = { name: string; role: string };
 
-/** A clinical note's title + colour follows the AUTHOR's role (Roland 2026-06-10). */
 function noteKind(role: string | undefined): { label: string; tone: CardIconTone } {
   if (role === "nurse") return { label: "Nurse Note", tone: "success" };
   if (role === "chemist") return { label: "Pharmacy Note", tone: "warning" };
@@ -67,30 +62,36 @@ function fmtTime(ts: string) {
 }
 
 const PAGE = 25;
-const EDIT_WINDOW_MS = 60 * 60 * 1000;
 
+/**
+ * Clinical Notes feed (Roland 2026-06-10): verbatim entries, newest at the
+ * BOTTOM, older loaded on scroll-up. A glassy sticky header (notes blur under
+ * it). Notes are borderless floating tiles. Editing does NOT happen here — a
+ * single pencil hands the note up to the composer (the "intelligent context
+ * change"); strike/amend live there too.
+ */
 export function ClinicalNotesFeed({
   entries,
   authors,
   currentUserId,
-  patientId,
   maximized,
   onToggleMaximize,
+  onEditNote,
+  activeId,
 }: {
   entries: FeedEntry[];
   authors: Record<string, Author>;
   currentUserId: string;
-  patientId: string;
   maximized: boolean;
   onToggleMaximize: () => void;
+  onEditNote: (e: FeedEntry) => void;
+  activeId: string | null;
 }) {
   const [sortDesc, setSortDesc] = useState(false);
   const [typeF, setTypeF] = useState<Set<string>>(new Set());
   const [authF, setAuthF] = useState<Set<string>>(new Set());
   const [visible, setVisible] = useState(PAGE);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [amendingId, setAmendingId] = useState<string | null>(null);
   const filterRef = useClickAway<HTMLDivElement>(
     useCallback(() => setFilterOpen(false), []),
   );
@@ -164,23 +165,6 @@ export function ClinicalNotesFeed({
   }
   const filterCount = typeF.size + authF.size;
 
-  // Server-action wrappers that also close the inline editor on success.
-  async function doEdit(fd: FormData) {
-    await editNote(fd);
-    setEditingId(null);
-  }
-  async function doAmend(fd: FormData) {
-    await amendNote(fd);
-    setAmendingId(null);
-  }
-  async function doStrike(id: string, strike: boolean) {
-    const fd = new FormData();
-    fd.set("entry_id", id);
-    fd.set("patient_id", patientId);
-    fd.set("strike", String(strike));
-    await strikeNote(fd);
-  }
-
   const sentinel = moreOlder ? (
     <div ref={sentinelRef} className="py-2 text-center text-xs text-muted-foreground">
       Loading older notes…
@@ -188,8 +172,9 @@ export function ClinicalNotesFeed({
   ) : null;
 
   return (
-    <>
-      <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-2.5">
+    <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+      {/* Glassy sticky header — notes scroll under it and blur through */}
+      <div className="glass sticky top-0 z-10 flex items-center gap-2 px-4 py-2.5">
         <CardIcon icon={FileText} tone="info" variant="badge" size="sm" />
         <span className="text-sm font-semibold">Clinical Notes</span>
         <span className="rounded-full bg-info/10 px-1.5 text-xs font-medium text-info tabular-nums">
@@ -218,7 +203,7 @@ export function ClinicalNotesFeed({
               )}
             </button>
             {filterOpen && (
-              <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-56 rounded-xl border border-border bg-card p-2 shadow-float">
+              <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-56 rounded-xl bg-card p-2 shadow-float">
                 <p className="px-1 pb-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
                   Type
                 </p>
@@ -270,7 +255,7 @@ export function ClinicalNotesFeed({
         </div>
       </div>
 
-      <div ref={scrollRef} className="min-h-0 flex-1 space-y-2.5 overflow-y-auto p-4">
+      <div className="space-y-2.5 px-4 pb-4 pt-1">
         {!sortDesc && sentinel}
         {windowed.length === 0 ? (
           <p className="py-6 text-center text-xs text-muted-foreground">
@@ -288,12 +273,15 @@ export function ClinicalNotesFeed({
                 : { label: e.entry_type.replace(/_/g, " "), tone: "neutral" as CardIconTone };
             const mine = !!currentUserId && e.created_by === currentUserId;
             const struck = !!e.struck_at;
-            const withinWindow =
-              Date.now() - new Date(e.created_at).getTime() < EDIT_WINDOW_MS;
-            const canEdit = mine && !struck && withinWindow;
 
             return (
-              <article key={e.id} className="rounded-lg border border-border bg-card p-3">
+              <article
+                key={e.id}
+                className={cn(
+                  "rounded-xl bg-card p-3 shadow-sm ring-1 transition-shadow",
+                  activeId === e.id ? "ring-info/50" : "ring-black/[0.04]",
+                )}
+              >
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex items-center gap-1.5">
                     <span
@@ -315,113 +303,34 @@ export function ClinicalNotesFeed({
                     )}
                   </span>
                 </div>
-
-                {editingId === e.id ? (
-                  <form action={doEdit} className="mt-2 space-y-2">
-                    <input type="hidden" name="entry_id" value={e.id} />
-                    <input type="hidden" name="patient_id" value={patientId} />
-                    <textarea
-                      name="text"
-                      defaultValue={text}
-                      required
-                      rows={3}
-                      className="w-full resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                    />
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditingId(null)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit" size="sm">
-                        Save edit
-                      </Button>
-                    </div>
-                  </form>
-                ) : (
-                  <p
-                    className={cn(
-                      "mt-2 text-sm whitespace-pre-wrap",
-                      struck && "text-muted-foreground line-through",
-                    )}
-                  >
-                    {text}
-                  </p>
-                )}
-
+                <p
+                  className={cn(
+                    "mt-2 text-sm whitespace-pre-wrap",
+                    struck && "text-muted-foreground line-through",
+                  )}
+                >
+                  {text}
+                </p>
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">
                     {author?.name ?? "—"}
                   </span>
-                  {mine && editingId !== e.id && (
-                    <div className="flex items-center gap-0.5">
-                      {canEdit && (
-                        <button
-                          onClick={() => setEditingId(e.id)}
-                          title="Edit (within 1 hour)"
-                          className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-                        >
-                          <Pencil className="size-3.5" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => setAmendingId(amendingId === e.id ? null : e.id)}
-                        title="Add amendment"
-                        className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-                      >
-                        <CornerDownRight className="size-3.5" />
-                      </button>
-                      <button
-                        onClick={() => doStrike(e.id, !struck)}
-                        title={struck ? "Remove strikethrough" : "Strike through"}
-                        className={cn(
-                          "flex size-6 items-center justify-center rounded-md transition-colors hover:bg-hover",
-                          struck
-                            ? "text-warning"
-                            : "text-muted-foreground hover:text-foreground",
-                        )}
-                      >
-                        <Strikethrough className="size-3.5" />
-                      </button>
-                    </div>
+                  {mine && (
+                    <button
+                      onClick={() => onEditNote(e)}
+                      title="Open in composer"
+                      className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                    >
+                      <Pencil className="size-3.5" />
+                    </button>
                   )}
                 </div>
-
-                {amendingId === e.id && (
-                  <form action={doAmend} className="mt-2 space-y-2 border-t border-border pt-2">
-                    <input type="hidden" name="parent_id" value={e.id} />
-                    <input type="hidden" name="patient_id" value={patientId} />
-                    <textarea
-                      name="text"
-                      required
-                      rows={2}
-                      placeholder="Amendment…"
-                      className="w-full resize-none rounded-lg border border-input bg-card px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                    />
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setAmendingId(null)}
-                      >
-                        <X className="size-3.5" /> Cancel
-                      </Button>
-                      <Button type="submit" size="sm">
-                        Add amendment
-                      </Button>
-                    </div>
-                  </form>
-                )}
               </article>
             );
           })
         )}
         {sortDesc && sentinel}
       </div>
-    </>
+    </div>
   );
 }

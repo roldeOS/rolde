@@ -17,19 +17,44 @@ export type TopbarPatient = {
   age: number;
   sex: string;
   nhs: string | null;
+  phone: string | null;
+  email: string | null;
   addressLines: string[];
   allergies: { substance: string; reaction: string; severity: string }[];
   alerts: { title: string; priority: string }[];
 } | null;
 
+export type WorkspaceView = "consult" | "document" | "review";
+
 const Ctx = createContext<{
   patient: TopbarPatient;
   setPatient: (p: TopbarPatient) => void;
-}>({ patient: null, setPatient: () => {} });
+  view: WorkspaceView;
+  setView: (v: WorkspaceView) => void;
+}>({
+  patient: null,
+  setPatient: () => {},
+  view: "consult",
+  setView: () => {},
+});
 
 export function TopbarProvider({ children }: { children: React.ReactNode }) {
   const [patient, setPatient] = useState<TopbarPatient>(null);
-  const value = useMemo(() => ({ patient, setPatient }), [patient]);
+  const [view, setViewState] = useState<WorkspaceView>("consult");
+
+  useEffect(() => {
+    const v = localStorage.getItem("rolde:view");
+    if (v === "consult" || v === "document" || v === "review") setViewState(v);
+  }, []);
+  const setView = (v: WorkspaceView) => {
+    setViewState(v);
+    localStorage.setItem("rolde:view", v);
+  };
+
+  const value = useMemo(
+    () => ({ patient, setPatient, view, setView }),
+    [patient, view],
+  );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

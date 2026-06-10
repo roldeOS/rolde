@@ -8,10 +8,9 @@ import { cn } from "@/lib/utils";
 type Entry = { id: string; entry_type: string };
 
 /**
- * Investigations + Orders pane (Bible 4.2 §3.6) — the top-right quadrant of the
- * consultation screen. Tabs: Labs / Radiology / Prescribing / Procedures /
- * Letters. Each tab lists that family's feed entries; ordering itself arrives
- * with the Clinical Orders module (Bible 4.5).
+ * Investigations + Orders pane (Bible 4.2 §3.6) — top-right quadrant. Glassy
+ * sticky tab header (content blurs under). Tabs: Labs / Radiology / Prescribing
+ * / Procedures / Letters; ordering arrives with Bible 4.5.
  */
 const TABS: { key: string; label: string; types: string[]; coming: string }[] = [
   { key: "labs", label: "Labs", types: ["lab_order", "lab_result"], coming: "Lab ordering arrives with Bible 4.5." },
@@ -35,38 +34,37 @@ export function OrdersPanel({
   const rows = entries.filter((e) => active.types.includes(e.entry_type));
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex shrink-0 items-center gap-1 border-b border-border px-3 pb-2">
+    <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="glass sticky top-0 z-10 flex items-center gap-1 px-3 py-2.5">
         <CardIcon icon={FlaskConical} tone="info" variant="badge" size="sm" />
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={cn(
-              "rounded-lg px-2 py-1 text-xs font-medium transition-colors",
-              tab === t.key
-                ? "bg-foreground/6 text-foreground"
-                : "text-muted-foreground hover:bg-hover hover:text-foreground",
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
+        <div className="flex min-w-0 flex-1 gap-0.5 overflow-x-auto">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={cn(
+                "shrink-0 rounded-lg px-2 py-1 text-xs font-medium transition-colors",
+                tab === t.key
+                  ? "bg-foreground/6 text-foreground"
+                  : "text-muted-foreground hover:bg-hover hover:text-foreground",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
         {onToggleMaximize && (
           <button
             onClick={onToggleMaximize}
             title={maximized ? "Restore" : "Expand"}
-            className="ml-auto flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+            className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
           >
-            {maximized ? (
-              <Minimize2 className="size-4" />
-            ) : (
-              <Maximize2 className="size-4" />
-            )}
+            {maximized ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           </button>
         )}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+
+      <div className="px-4 pb-4 pt-1">
         {rows.length === 0 ? (
           <p className="py-6 text-center text-xs text-muted-foreground">
             Nothing in {active.label.toLowerCase()} yet. {active.coming}
@@ -74,7 +72,7 @@ export function OrdersPanel({
         ) : (
           <div className="space-y-2">
             {rows.map((e) => (
-              <div key={e.id} className="rounded-lg border border-border p-3 text-sm">
+              <div key={e.id} className="rounded-xl bg-card p-3 text-sm shadow-sm ring-1 ring-black/[0.04]">
                 <span className="font-medium capitalize">
                   {e.entry_type.replace(/_/g, " ")}
                 </span>
