@@ -81,6 +81,20 @@ pending counsel; structure + versioning are built.
 big centred wordmark + tagline ABOVE a borderless floating card (`shadow-float`), with the
 `Footer` (Made with ♥ + copyright) pinned to the viewport bottom so the block sits dead-centre.
 
+1.11 **JOURNEY breadcrumb trail** (Roland 2026-06-11). The topbar-left breadcrumb is the path the
+user WALKED, rooted at the Dashboard, so they can step back to where they started — e.g. 🏠 ›
+Patients › Sarah Jones, then jumping to Legal extends it to 🏠 › 👥 › Sarah Jones › Legal & Safety.
+Revisiting a crumb truncates back to it; the Dashboard resets the root. Dashboard is icon-only once
+the trail grows; only the last two crumbs keep labels (older collapse to icons). The terminal
+patient crumb keeps the rich PatientIsland. `lib/useNavTrail.ts` + `topbar/Topbar.tsx`; sessionStorage-backed.
+
+1.12 **Conversational save bar** (Roland 2026-06-11, ported from mindate). ONE shared bottom bar
+(`components/ui/PageActionBar.tsx`, `PageActionBarProvider` mounted in AppFrame) that SPEAKS — e.g.
+"RolDe has a note ready for Sarah's record" → "RolDe is saving…" → "RolDe saved this to Sarah's
+record." It reveals only when there's something to do, floats on a shadow (NO border), and is
+driven by any form via `usePageActionBar` (+ `useSavedFlash` for the confirmation, which is
+sessionStorage-backed so it survives a server-action revalidate). First wired to the Scribe note.
+
 ## 2. Typography — FONT LAW
 
 2.1 **IBM Plex Serif is ONLY for the RolDe wordmark/icon** (`font-wordmark`; Roland supplies an
@@ -119,14 +133,14 @@ Pick by WHERE the card sits:
   patient island, popovers, dialogs (the ONLY tier with a long diffuse lift).
 This is the canonical answer to "what floating params for a card within a card."
 
-3.6 **Floating fields = PURE ELEVATION, ZERO border** (Roland 2026-06-11). `.field-float` has NO
-outline — not even a hairline. It floats on a layered drop shadow (contact + ambient + wide
-diffuse) like macOS Spotlight on white. **Active state is a border-less ELEVATION LIFT**: on focus
-the shadow grows/deepens + a soft diffuse dark halo (blurred, 0-spread → a glow, NEVER a hard
-ring), so the field rises toward you. No ring, no box, ever. The green-tick `.tick-squircle` is a
-frosted emerald chip with **NO border** either (fill + tiny lift only). Canonical in
-`components/ui/form.tsx`; full spec Bible 4.2 §D.3. *(Alt active-state treatments — soft sage glow,
-Material underline — are on the menu if Roland prefers; elevation-lift is the locked default.)*
+3.6 **Floating fields = PURE ELEVATION, ZERO border; active = SAGE GLOW** (Roland 2026-06-11).
+`.field-float` has NO outline — not even a hairline. It floats on a layered drop shadow (contact +
+ambient + wide diffuse) like macOS Spotlight on white. **Active/focus = the resting float UNCHANGED
++ a soft SAGE glow** (the clinic accent, blurred — never a hard ring/box). The earlier "elevation
+lift" on focus is RETIRED — Roland: the extra shadow "felt icky". The green-tick `.tick-squircle`
+is a frosted emerald chip with **NO border** (fill + tiny lift only). The section `(i)` explainer
+has **NO hover** state (Roland: same as mindate). Canonical in `components/ui/form.tsx`; full spec
+Bible 4.2 §D.3.
 
 3.7 **Universal search = the mindate command palette** (Roland 2026-06-11). Scrim is a
 barely-there blur (`bg-foreground/5 backdrop-blur-sm`) — NEVER a dark/"black bar". White

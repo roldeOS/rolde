@@ -222,7 +222,7 @@ export function ClinicalNotesFeed({
             { term: "Expand", definition: "Give the record more room; the latest note stays in view." },
           ]}
         />
-        <div className="ml-auto flex items-center gap-0.5">
+        <div className="ml-auto flex items-center gap-1.5">
           <button
             onClick={() => setSortDesc((v) => !v)}
             title={sortDesc ? "Newest first" : "Oldest first"}

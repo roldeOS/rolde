@@ -1648,3 +1648,24 @@ dictation / ambient listening (Bible 4.7) is live we MUST surface legal + safety
 These live as routed pages, linked from a persistent footer (app + auth screens) and
 shown at signup + at the point of ambient capture. Tracked as a Wave-0/5 compliance item
 in Bible 4.8 §15. (Not legal advice — flag for counsel review before go-live.)
+
+## D.9 Journey breadcrumb (topbar trail)
+The topbar-left breadcrumb is a JOURNEY trail (the path walked), not a static URL hierarchy —
+rooted at the Dashboard so the clinician can step back to where they started. `lib/useNavTrail.ts`
+maintains a sessionStorage stack: revisiting a crumb truncates back to it, a new page appends, the
+Dashboard resets the root, capped at 6. Render rules: Dashboard is icon-only once the trail grows;
+only the last two crumbs show labels (older ones collapse to icons with a title tooltip); the
+terminal patient crumb keeps the rich PatientIsland (name + allergy flag + island). Example flow:
+🏠 › Patients › Sarah Jones, then → Legal extends to 🏠 › 👥 › Sarah Jones › Legal & Safety.
+
+## D.10 Conversational save bar (PageActionBar)
+Ported from mindate. ONE shared bottom bar, `PageActionBarProvider` mounted once in AppFrame; any
+form drives it via `usePageActionBar({ dirty, saving, message, saveLabel, onSave, onDiscard, error })`
+and confirms a save with `useSavedFlash()(message)`. It floats on a shadow (NO border), reveals only
+when there's something to do, and SPEAKS in RolDe's voice: "RolDe has a note ready for Sarah's
+record" (dirty) → "RolDe is saving…" → "RolDe saved this to Sarah's record" (a brief confirmation
+that then fades). States: dirty / saving / saved / failed (Retry). The saved confirmation is
+sessionStorage-backed so it survives the form remount a server-action `revalidatePath` triggers.
+A `beforeunload` guard protects a dirty form on refresh/close. TO ADD (Fable): the in-app
+navigation discard dialog (mindate has it — intercept internal links while dirty), and wire the bar
+to every future dirty form (patient edit, settings, prescribing…). First wired: the Scribe note.

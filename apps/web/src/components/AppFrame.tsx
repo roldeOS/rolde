@@ -6,6 +6,7 @@ import { LogOut, PanelLeftClose, PanelLeft, Heart } from "lucide-react";
 import { SidebarNav } from "@/components/SidebarNav";
 import { Topbar } from "@/components/topbar/Topbar";
 import { TopbarProvider } from "@/components/topbar/TopbarContext";
+import { PageActionBarProvider } from "@/components/ui/PageActionBar";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -171,7 +172,9 @@ export function AppFrame({
                 role={role}
                 onToggleSidebar={toggle}
               />
-              <div className="min-h-0 flex-1">{children}</div>
+              <div className="min-h-0 flex-1">
+                <PageActionBarProvider>{children}</PageActionBarProvider>
+              </div>
             </div>
           </div>
         </main>

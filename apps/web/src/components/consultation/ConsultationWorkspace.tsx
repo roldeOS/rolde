@@ -13,6 +13,7 @@ import {
   type Author,
 } from "@/components/consultation/ClinicalNotesFeed";
 import { useTopbar } from "@/components/topbar/TopbarContext";
+import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import {
   saveNote,
   editNote,
@@ -68,6 +69,10 @@ export function ConsultationWorkspace({
   const [draft, setDraft] = useState("");
   const [strikeOriginal, setStrikeOriginal] = useState(false);
   const [pending, setPending] = useState(false);
+  // Conversational "saved" flash lives in the provider so it survives the
+  // remount a save's revalidate triggers (Roland 2026-06-11).
+  const flashSaved = useSavedFlash();
+  const who = patient.firstName;
 
   useEffect(() => setReady(true), []);
   useEffect(() => setLeftMode("split"), [view]);
@@ -134,6 +139,7 @@ export function ConsultationWorkspace({
         await amendNote(fd);
       }
       discard();
+      flashSaved(`RolDe saved this to ${who}’s record.`);
     } finally {
       setPending(false);
     }
@@ -143,6 +149,22 @@ export function ConsultationWorkspace({
     mode === "edit" ? "Editing note" : mode === "amend" ? "Amending note" : COMPOSER_NAME;
   const saveLabel =
     mode === "edit" ? "Save edit" : mode === "amend" ? "Save amendment" : "Save note";
+
+  // Conversational bottom save bar (Roland 2026-06-11). It SPEAKS — "RolDe has
+  // a note ready for Sarah's record" → "RolDe saved this to Sarah's record."
+  usePageActionBar({
+    dirty: !!draft.trim() && !pending,
+    saving: pending,
+    message:
+      mode === "edit"
+        ? `You’re editing a note in ${who}’s record.`
+        : mode === "amend"
+          ? `You’re amending a note in ${who}’s record.`
+          : `RolDe has a note ready for ${who}’s record.`,
+    saveLabel,
+    onSave: submit,
+    onDiscard: editTarget || draft ? discard : undefined,
+  });
 
   return (
     <div className="flex h-full min-h-0 flex-col">

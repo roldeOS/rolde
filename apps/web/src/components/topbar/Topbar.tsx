@@ -1,34 +1,68 @@
 "use client";
 
 import Link from "next/link";
+import { Fragment } from "react";
 import { usePathname } from "next/navigation";
-import { PanelLeft, ChevronRight } from "lucide-react";
+import {
+  PanelLeft,
+  ChevronRight,
+  LayoutDashboard,
+  Users,
+  User,
+  UserPlus,
+  CalendarDays,
+  FlaskConical,
+  Pill,
+  Mail,
+  Receipt,
+  BarChart3,
+  Settings,
+  Scale,
+  type LucideIcon,
+} from "lucide-react";
 import { useTopbar, type WorkspaceView } from "./TopbarContext";
 import { PatientIsland } from "./PatientIsland";
 import { CommandMenu } from "./CommandMenu";
 import { Recents } from "./Recents";
 import { NotificationsBell } from "./NotificationsBell";
 import { ProfileMenu } from "./ProfileMenu";
+import { useNavTrail, type TrailEntry } from "@/lib/useNavTrail";
 import { cn } from "@/lib/utils";
 
 /**
- * The glass topbar (Roland 2026-06-10). Left — sidebar toggle + page-path
- * breadcrumb, with the patient identity (and its island) living IN the
- * breadcrumb (no duplicate chip). Right — the workspace view-selector (on a
- * patient), search, recents, bell, profile (the action icons carry colour).
+ * The glass topbar (Roland 2026-06-10/11). Left — sidebar toggle + the JOURNEY
+ * breadcrumb (useNavTrail): the path the user actually walked, rooted at the
+ * Dashboard, so they can step back. The patient identity (+ its island) is the
+ * terminal crumb when on a patient. Right — view-selector, search, recents,
+ * bell, profile.
  */
-const SECTION: [RegExp, string][] = [
-  [/^\/$/, "Dashboard"],
-  [/^\/patients/, "Patients"],
-  [/^\/calendar/, "Calendar"],
-  [/^\/investigations/, "Investigations"],
-  [/^\/prescribing/, "Prescribing"],
-  [/^\/letters/, "Letters"],
-  [/^\/billing/, "Billing"],
-  [/^\/reports/, "Reports"],
-  [/^\/settings/, "Settings"],
-  [/^\/legal/, "Legal & Safety"],
+const SECTIONS: { re: RegExp; label: string; kind: string }[] = [
+  { re: /^\/$/, label: "Dashboard", kind: "dashboard" },
+  { re: /^\/patients/, label: "Patients", kind: "patients" },
+  { re: /^\/calendar/, label: "Calendar", kind: "calendar" },
+  { re: /^\/investigations/, label: "Investigations", kind: "investigations" },
+  { re: /^\/prescribing/, label: "Prescribing", kind: "prescribing" },
+  { re: /^\/letters/, label: "Letters", kind: "letters" },
+  { re: /^\/billing/, label: "Billing", kind: "billing" },
+  { re: /^\/reports/, label: "Reports", kind: "reports" },
+  { re: /^\/settings/, label: "Settings", kind: "settings" },
+  { re: /^\/legal/, label: "Legal & Safety", kind: "legal" },
 ];
+
+const KIND_ICON: Record<string, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  patients: Users,
+  patient: User,
+  "new-patient": UserPlus,
+  calendar: CalendarDays,
+  investigations: FlaskConical,
+  prescribing: Pill,
+  letters: Mail,
+  billing: Receipt,
+  reports: BarChart3,
+  settings: Settings,
+  legal: Scale,
+};
 
 const VIEWS: { key: WorkspaceView; label: string }[] = [
   { key: "consult", label: "Consult" },
@@ -49,9 +83,38 @@ export function Topbar({
 }) {
   const pathname = usePathname();
   const { patient, view, setView } = useTopbar();
-  const section = SECTION.find(([re]) => re.test(pathname))?.[1] ?? "RolDe";
-  const sectionHref = section === "Dashboard" ? "/" : `/${section.toLowerCase()}`;
   const onConsult = !!patient;
+
+  // ── Build the CURRENT page entry + cold-load parents for the journey trail ──
+  const isPatientDetail =
+    /^\/patients\/[^/]+$/.test(pathname) && pathname !== "/patients/new";
+  const firstSeg = pathname === "/" ? "/" : "/" + pathname.split("/")[1];
+  const sectionMatch = SECTIONS.find((s) => s.re.test(pathname));
+
+  let trailCurrent: TrailEntry | null = null;
+  let parents: TrailEntry[] = [];
+  if (pathname === "/patients/new") {
+    trailCurrent = { href: pathname, label: "New patient", kind: "new-patient" };
+    parents = [{ href: "/patients", label: "Patients", kind: "patients" }];
+  } else if (isPatientDetail) {
+    parents = [{ href: "/patients", label: "Patients", kind: "patients" }];
+    // null until the name resolves, so we never push a placeholder crumb.
+    trailCurrent = patient
+      ? {
+          href: pathname,
+          label: `${patient.firstName} ${patient.lastName}`,
+          kind: "patient",
+        }
+      : null;
+  } else if (sectionMatch) {
+    trailCurrent = {
+      href: sectionMatch.kind === "dashboard" ? "/" : firstSeg,
+      label: sectionMatch.label,
+      kind: sectionMatch.kind,
+    };
+  }
+
+  const trail = useNavTrail(trailCurrent, parents);
 
   return (
     <div className="sticky top-0 z-40 px-3 pt-3 sm:px-4">
@@ -59,7 +122,7 @@ export function Topbar({
           top-highlight ("wet glass lip") + a soft drop shadow so it reads as a
           bar floating over the page, not a flat seam. */}
       <div className="glass flex h-11 items-center justify-between gap-3 rounded-xl border border-white/50 px-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_8px_22px_-10px_rgba(0,0,0,0.22)]">
-        {/* Left — toggle + breadcrumb */}
+        {/* Left — toggle + JOURNEY breadcrumb trail */}
         <nav className="flex min-w-0 items-center gap-0.5" aria-label="Breadcrumb">
           {/* MOBILE menu button only — desktop sidebar-collapse now lives in
               the sidebar header (Roland 2026-06-11, industry standard). */}
@@ -70,21 +133,60 @@ export function Topbar({
           >
             <PanelLeft className="size-[18px]" />
           </button>
-          <Link
-            href={sectionHref}
-            className="shrink-0 rounded-md px-1.5 py-1 text-sm font-medium transition-colors hover:bg-hover"
-          >
-            {section}
-          </Link>
-          {(onConsult || pathname === "/patients/new") && (
-            <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
-          )}
-          {pathname === "/patients/new" && (
-            <span className="px-1.5 py-1 text-sm text-muted-foreground">
-              New patient
-            </span>
-          )}
-          {onConsult && <PatientIsland />}
+
+          {trail.map((seg, i) => {
+            const isLast = i === trail.length - 1;
+            // Dashboard root is icon-only once the trail grows; otherwise show
+            // the label only for the last two crumbs (older ones collapse to
+            // icons to save room) — Roland 2026-06-11.
+            const showLabel =
+              i === 0 ? trail.length === 1 : i >= trail.length - 2;
+            const Icon = KIND_ICON[seg.kind] ?? User;
+
+            // Terminal patient crumb keeps the rich PatientIsland (name +
+            // allergy flag + click-to-open island).
+            if (isLast && seg.kind === "patient" && patient) {
+              return (
+                <Fragment key={seg.href}>
+                  {i > 0 && (
+                    <ChevronRight className="size-3.5 shrink-0 text-muted-foreground/50" />
+                  )}
+                  <PatientIsland />
+                </Fragment>
+              );
+            }
+
+            const inner = (
+              <>
+                <Icon className="size-4 shrink-0" />
+                {showLabel && <span className="truncate">{seg.label}</span>}
+              </>
+            );
+
+            return (
+              <Fragment key={seg.href + i}>
+                {i > 0 && (
+                  <ChevronRight className="size-3.5 shrink-0 text-muted-foreground/50" />
+                )}
+                {isLast ? (
+                  <span
+                    className="flex min-w-0 items-center gap-1.5 px-1.5 py-1 text-sm font-medium"
+                    aria-current="page"
+                  >
+                    {inner}
+                  </span>
+                ) : (
+                  <Link
+                    href={seg.href}
+                    title={seg.label}
+                    className="flex shrink-0 items-center gap-1.5 rounded-md px-1.5 py-1 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                  >
+                    {inner}
+                  </Link>
+                )}
+              </Fragment>
+            );
+          })}
         </nav>
 
         {/* Right — view-selector · search · recents · bell · profile */}
