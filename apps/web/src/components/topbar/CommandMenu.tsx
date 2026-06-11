@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -82,11 +83,14 @@ function Highlighted({ text, q }: { text: string; q: string }) {
 export function CommandMenu() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [q, setQ] = useState("");
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => setMounted(true), []);
 
   const close = useCallback(() => {
     setOpen(false);
@@ -186,12 +190,16 @@ export function CommandMenu() {
         </kbd>
       </button>
 
-      {open && (
-        // Barely-there scrim — a soft blur, NEVER a dark bar (Roland 2026-06-11).
-        <div
-          className="fixed inset-0 z-[100] flex items-start justify-center bg-foreground/5 p-4 pt-[14vh] backdrop-blur-sm"
-          onClick={close}
-        >
+      {open &&
+        mounted &&
+        createPortal(
+          // Barely-there scrim — a soft blur, NEVER a dark bar (Roland 2026-06-11).
+          // PORTALED to <body> so the blur sits above EVERYTHING (incl. the
+          // topbar) and nothing competes through it (Roland 2026-06-11).
+          <div
+            className="fixed inset-0 z-[100] flex items-start justify-center bg-foreground/10 p-4 pt-[14vh] backdrop-blur-md"
+            onClick={close}
+          >
           <div
             className="flex max-h-[70vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-card shadow-overlay"
             onClick={(e) => e.stopPropagation()}
@@ -302,8 +310,9 @@ export function CommandMenu() {
               <Hint keys={["esc"]} label="Close" />
             </div>
           </div>
-        </div>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

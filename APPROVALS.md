@@ -133,19 +133,27 @@ Pick by WHERE the card sits:
   patient island, popovers, dialogs (the ONLY tier with a long diffuse lift).
 This is the canonical answer to "what floating params for a card within a card."
 
-3.6 **Floating fields = PURE ELEVATION, ZERO border; active = SAGE GLOW** (Roland 2026-06-11).
-`.field-float` has NO outline — not even a hairline. It floats on a layered drop shadow (contact +
-ambient + wide diffuse) like macOS Spotlight on white. **Active/focus = the resting float UNCHANGED
-+ a soft SAGE glow** (the clinic accent, blurred — never a hard ring/box). The earlier "elevation
-lift" on focus is RETIRED — Roland: the extra shadow "felt icky". The green-tick `.tick-squircle`
-is a frosted emerald chip with **NO border** (fill + tiny lift only). The section `(i)` explainer
-has **NO hover** state (Roland: same as mindate). Canonical in `components/ui/form.tsx`; full spec
-Bible 4.2 §D.3.
+3.6 **Fields = LIQUID GLASS (2026 modality); ZERO hard border** (Roland 2026-06-11). The live field
+is `.field-glass` — Apple Liquid Glass: a translucent semi-opaque fill (text stays readable, never
+on clear glass), `backdrop-blur + saturate` so content behind REFRACTS through, a bright SPECULAR
+top lip + faint rim light (light on the glass edge, NOT a flat 2010 border), inner base depth, and
+on focus the glass brightens with a SAGE rim + glow. NOTE: glass is understated on a plain white
+card (nothing behind to refract) — it sings over content/colour. `.field-float` (pure elevation +
+sage glow) is kept on record as the alternative; swap the class in `form.tsx` to revert. The
+green-tick `.tick-squircle` is frosted with NO border; the section `(i)` explainer has NO hover.
+Full spec Bible 4.2 §D.3. *(Roland is judging glass vs elevation live.)*
 
-3.7 **Universal search = the mindate command palette** (Roland 2026-06-11). Scrim is a
-barely-there blur (`bg-foreground/5 backdrop-blur-sm`) — NEVER a dark/"black bar". White
-`rounded-2xl` panel on `.shadow-overlay`; GROUPED results with counts + substring highlight +
-loading spinner + helpful empty text + a keyboard-hints footer. Full spec: Bible 4.2 §D.4.
+3.9 **NAVIGATION MUST BE SNAPPY — instant loading skeletons** (Roland 2026-06-11). EVERY route
+segment that fetches data has a `loading.tsx` shimmer skeleton (`.skeleton`) so a nav click shows
+the page SHELL immediately and never blocks blank on the server fetch — "if it's not snappy with no
+data, it'll be terrible at scale." The (app) layout persists; loading.tsx fills the page slot. New
+data routes MUST ship a matching loading.tsx.
+
+3.7 **Universal search = the mindate command palette** (Roland 2026-06-11). PORTALED to `<body>`
+so the soft blur scrim (`bg-foreground/10 backdrop-blur-md`) sits above EVERYTHING — incl. the
+topbar — and nothing competes through it (NEVER a dark "black bar"). White `rounded-2xl` panel on
+`.shadow-overlay`; GROUPED results with counts + substring highlight + loading spinner + helpful
+empty text + a keyboard-hints footer. Full spec: Bible 4.2 §D.4.
 
 3.8 **Pills are ROUNDED RECTANGLES, never stadiums** (Roland 2026-06-11). Every text badge/pill
 (note-kind, status, alert, count…) uses `rounded-md` so it echoes the cards' geometry — NOT
