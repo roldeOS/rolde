@@ -71,7 +71,7 @@ export default function LoginPage() {
           <img
             src="/wordmark-rolde.svg"
             alt="RolDe"
-            className="h-14 w-auto mix-blend-multiply sm:h-16"
+            className="h-14 w-auto sm:h-16"
           />
           <h1 className="text-base font-medium text-muted-foreground">
             The clinical operating system

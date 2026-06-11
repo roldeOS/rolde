@@ -102,14 +102,14 @@ export function AppFrame({
             <img
               src="/wordmark-rolde.svg"
               alt="RolDe"
-              className={cn("h-6 w-auto mix-blend-multiply", collapsed && "lg:hidden")}
+              className={cn("h-6 w-auto", collapsed && "lg:hidden")}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/icon.svg"
               alt="RolDe"
               className={cn(
-                "mx-auto hidden size-7 mix-blend-multiply",
+                "mx-auto hidden size-7",
                 collapsed ? "lg:block" : "lg:hidden",
               )}
             />
