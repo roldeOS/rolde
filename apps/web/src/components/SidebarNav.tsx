@@ -48,9 +48,11 @@ export function SidebarNav({ collapsed }: { collapsed: boolean }) {
             className={cn(
               "flex items-center gap-2 rounded-lg py-1.5 text-sm font-medium transition-colors",
               collapsed ? "justify-center px-0" : "px-2",
+              // Sidebar labels are BLACK for visibility (Roland 2026-06-11),
+              // not the muted grey — active just adds the wash + weight.
               active
                 ? "bg-foreground/6 text-foreground"
-                : "text-muted-foreground hover:bg-hover hover:text-foreground",
+                : "text-foreground/80 hover:bg-hover hover:text-foreground",
             )}
           >
             <CardIcon icon={item.icon} tone={item.tone} variant="badge" size="sm" />

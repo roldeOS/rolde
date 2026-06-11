@@ -57,10 +57,12 @@ export function Topbar({
       <div className="glass flex h-11 items-center justify-between gap-3 rounded-xl border border-border/40 px-2 shadow-sm">
         {/* Left — toggle + breadcrumb */}
         <nav className="flex min-w-0 items-center gap-0.5" aria-label="Breadcrumb">
+          {/* MOBILE menu button only — desktop sidebar-collapse now lives in
+              the sidebar header (Roland 2026-06-11, industry standard). */}
           <button
             onClick={onToggleSidebar}
-            className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-            aria-label="Toggle sidebar"
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground lg:hidden"
+            aria-label="Open menu"
           >
             <PanelLeft className="size-[18px]" />
           </button>

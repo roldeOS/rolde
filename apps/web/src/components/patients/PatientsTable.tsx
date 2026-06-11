@@ -129,7 +129,7 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
     "flex h-8 items-center gap-1.5 rounded-lg bg-card px-2.5 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow";
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-4 p-8">
+    <div className="w-full space-y-4 p-6 lg:p-8">
       <PageHeaderRow
         icon={Users}
         tone="brand"

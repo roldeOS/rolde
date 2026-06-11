@@ -104,11 +104,12 @@ body {
    Three tiers by NESTING DEPTH, so a card knows how to float by where it sits:
      • .shadow-float   — LEVEL 1: a card sitting on the page/canvas.
      • .shadow-raised  — LEVEL 2: a card WITHIN a card (note tiles, list rows).
-                         Softer + more feathered so it lifts off its white parent.
+                         CRISP, not feathered — a tight contact shadow so it
+                         lifts cleanly off its white parent (Roland 2026-06-11).
      • .shadow-overlay — LEVEL 3: floats above everything — dropdowns, command
                          palette, the patient island, popovers, dialogs.
-   Rule of thumb: deeper nesting → MORE feather (bigger blur, more spread, lower
-   opacity), so the lift reads even on a same-colour parent.
+   Rule: a card-within-a-card must read CRISP (a defined edge + a short shadow),
+   never a soft smudge; only true overlays get the long diffuse lift.
    ============================================================================ */
 .shadow-float {
   box-shadow:
@@ -116,14 +117,57 @@ body {
     0 5px 14px -3px rgba(0, 0, 0, 0.14);
 }
 .shadow-raised {
+  /* Crisp, not sloppy (Roland 2026-06-11): a tight hairline + a close contact
+     shadow + ONE short controlled lift — a real card pressed just off its white
+     parent, never a soft smudge. */
   box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.03),
-    0 10px 26px -8px rgba(0, 0, 0, 0.18);
+    0 0 0 0.5px rgba(0, 0, 0, 0.045),
+    0 1px 1px rgba(0, 0, 0, 0.05),
+    0 4px 10px -3px rgba(0, 0, 0, 0.10);
 }
 .shadow-overlay {
   box-shadow:
     0 0 0 0.5px rgba(0, 0, 0, 0.05),
     0 14px 36px -8px rgba(0, 0, 0, 0.24);
+}
+
+/* ----------------------------------------------------------------------------
+   FLOATING FORM FIELD (Roland 2026-06-11). A bordered input "feels like 2010";
+   a field must read as a small pane floating just above the card. The recipe
+   (industry standard — iOS/Stripe/Linear inputs): a crisp hairline ring so the
+   edge is defined + a tight contact shadow + a soft 1px top inset highlight so
+   the top edge catches light. Borderless. Focus deepens the ring (dark, never
+   blue — Bible 4.2). One class so every field floats identically. */
+.field-float {
+  background: var(--card);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 0 0 0.75px rgba(0, 0, 0, 0.06),
+    0 1px 1px rgba(0, 0, 0, 0.04),
+    0 2px 6px -1px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 150ms ease;
+}
+.field-float:focus,
+.field-float:focus-within,
+.field-float:focus-visible {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 0 0 2px color-mix(in oklab, var(--ring) 35%, transparent),
+    0 1px 1px rgba(0, 0, 0, 0.04),
+    0 3px 8px -1px rgba(0, 0, 0, 0.10);
+}
+
+/* Glassy green-tick squircle (Roland 2026-06-11): a frosted emerald chip, not a
+   flat fill — translucent + blurred + a light ring so it reads like a small
+   pane of tinted glass laid on the field. */
+.tick-squircle {
+  background: color-mix(in oklab, var(--signal-success) 16%, transparent);
+  backdrop-filter: blur(6px) saturate(140%);
+  -webkit-backdrop-filter: blur(6px) saturate(140%);
+  box-shadow:
+    inset 0 0 0 0.75px color-mix(in oklab, var(--signal-success) 40%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 /* Glass header (Roland 2026-06-10): card headers + the topbar share ONE frosted

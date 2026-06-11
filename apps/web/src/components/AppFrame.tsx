@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { LogOut, PanelLeftClose, PanelLeft, Heart } from "lucide-react";
 import { SidebarNav } from "@/components/SidebarNav";
 import { Topbar } from "@/components/topbar/Topbar";
 import { TopbarProvider } from "@/components/topbar/TopbarContext";
@@ -49,14 +49,19 @@ export function AppFrame({
     router.refresh();
   }
 
+  function collapseToggle() {
+    setCollapsed((c) => {
+      const next = !c;
+      localStorage.setItem("rolde:sidebar", next ? "collapsed" : "expanded");
+      return next;
+    });
+  }
+
   function toggle() {
-    // Desktop collapses the rail; mobile slides the drawer.
+    // Desktop collapses the rail; mobile slides the drawer. (Topbar control is
+    // now the MOBILE menu button only — desktop collapse lives in the sidebar.)
     if (window.matchMedia("(min-width: 1024px)").matches) {
-      setCollapsed((c) => {
-        const next = !c;
-        localStorage.setItem("rolde:sidebar", next ? "collapsed" : "expanded");
-        return next;
-      });
+      collapseToggle();
     } else {
       setMobileOpen((o) => !o);
     }
@@ -90,19 +95,41 @@ export function AppFrame({
               collapsed ? "px-4 lg:px-0 lg:text-center" : "px-4",
             )}
           >
-            {/* Wordmark — the ONLY place IBM Plex Serif lives (SVG to come). */}
-            <p className="font-wordmark text-xl font-semibold tracking-tight">
-              <span className={collapsed ? "lg:hidden" : ""}>RolDe</span>
-              <span className={collapsed ? "hidden lg:inline" : "hidden"}>R</span>
-            </p>
-            <p
-              className={cn(
-                "mt-0.5 truncate text-xs text-muted-foreground",
-                collapsed && "lg:hidden",
-              )}
-            >
-              {clinic}
-            </p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                {/* Wordmark — the ONLY place IBM Plex Serif lives (SVG to come). */}
+                <p className="font-wordmark text-xl font-semibold tracking-tight">
+                  <span className={collapsed ? "lg:hidden" : ""}>RolDe</span>
+                  <span className={collapsed ? "hidden lg:inline" : "hidden"}>R</span>
+                </p>
+                <p
+                  className={cn(
+                    "mt-0.5 truncate text-xs text-muted-foreground",
+                    collapsed && "lg:hidden",
+                  )}
+                >
+                  {clinic}
+                </p>
+              </div>
+              {/* Collapse toggle — the INDUSTRY STANDARD home for it is the
+                  sidebar itself (Linear / Notion / VS Code), not the topbar.
+                  Desktop only; mobile uses the topbar menu button. */}
+              <button
+                onClick={collapseToggle}
+                title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                className={cn(
+                  "hidden shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-hover hover:text-foreground lg:inline-flex",
+                  collapsed && "lg:mx-auto",
+                )}
+              >
+                {collapsed ? (
+                  <PanelLeft className="size-4" />
+                ) : (
+                  <PanelLeftClose className="size-4" />
+                )}
+              </button>
+            </div>
           </div>
           <SidebarNav collapsed={collapsed} />
           <div className="mt-auto px-2 py-3">
@@ -116,14 +143,22 @@ export function AppFrame({
               <CardIcon icon={LogOut} tone="critical" variant="badge" size="sm" />
               <span className={collapsed ? "lg:hidden" : ""}>Sign out</span>
             </button>
-            <p
+            <div
               className={cn(
-                "mt-3 px-2 text-center text-[10px] text-muted-foreground",
+                "mt-3 space-y-0.5 px-2 text-center text-[10px] leading-snug text-muted-foreground",
                 collapsed && "lg:hidden",
               )}
             >
-              © {new Date().getFullYear()} RolDe Ltd
-            </p>
+              <p className="inline-flex items-center gap-1">
+                Made with
+                <Heart
+                  aria-label="love"
+                  className="size-2.5 fill-[#e0533f] text-[#e0533f]"
+                />
+                at RolDe
+              </p>
+              <p>© {new Date().getFullYear()} RolDe Ltd</p>
+            </div>
           </div>
         </aside>
 

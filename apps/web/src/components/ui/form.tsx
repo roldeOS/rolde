@@ -7,11 +7,11 @@ import { cn } from "@/lib/utils";
  * green tick in a squircle at the right edge (mindate-iOS treatment).
  */
 export const fieldFloat =
-  "h-10 w-full min-w-0 rounded-lg bg-card px-3 text-sm shadow-sm ring-1 ring-black/[0.06] outline-none transition-all placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/35 disabled:cursor-not-allowed disabled:opacity-50";
+  "field-float h-10 w-full min-w-0 rounded-lg px-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50";
 
 function ValidTick() {
   return (
-    <span className="pointer-events-none absolute right-1.5 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-600">
+    <span className="tick-squircle pointer-events-none absolute right-1.5 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-[7px] text-emerald-600">
       <Check className="size-3.5" strokeWidth={2.75} />
     </span>
   );
@@ -73,7 +73,7 @@ export function Select({
       />
       <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       {valid && (
-        <span className="pointer-events-none absolute right-8 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-600">
+        <span className="tick-squircle pointer-events-none absolute right-8 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-[7px] text-emerald-600">
           <Check className="size-3.5" strokeWidth={2.75} />
         </span>
       )}

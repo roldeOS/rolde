@@ -1548,3 +1548,103 @@ Per the market dive, the **canonical feature list + build sequence lives in Bibl
   (the `(i)`), floating fields + green-tick squircle, floating buttons, glass headers.
 
 See Bible 4.8 §15.4 for the wave-by-wave build order.
+
+---
+
+# Addendum §D (2026-06-11): Design-system ratification for the build
+
+Roland's pre-build design pass. Everything here is LOCKED in `APPROVALS.md`; this
+section is the spec Fable 5 builds from. Source of truth for visuals is the live
+mindate dashboard (`../mindate-admin/src/components/dashboard/`) — port, don't reinvent.
+
+## D.1 Full-bleed law — content fills the card, NEVER the middle 80%
+Every page and every card uses the FULL width (and height where natural) of the
+content card. No `max-w-*` + `mx-auto` centering of page bodies — that "middle 80%"
+look is banned (Roland 2026-06-11). Page padding is `p-6 lg:p-8`; the content then
+spans edge to edge. Tables span the full card width. (A single short *form* — e.g.
+login, New patient — may still cap its field column for readability, but the PAGE
+is full-bleed; ask before centering anything else.)
+
+## D.2 Elevation — three crisp tiers (recap, now corrected)
+`.shadow-float` (L1 page cards) · `.shadow-raised` (L2 card-in-card — CRISP, a tight
+contact shadow, never a diffuse smudge) · `.shadow-overlay` (L3 popovers/dialogs).
+A card-within-a-card must read crisp; only true overlays get the long diffuse lift.
+
+## D.3 Floating form fields + glassy tick
+Inputs are borderless and FLOAT (`.field-float`: inset top highlight + hairline
+ring + tight contact shadow; focus deepens to the dark ring, never blue). When valid,
+a `.tick-squircle` — a frosted translucent emerald chip, not a flat fill — sits at the
+right. `components/ui/form.tsx` is canonical; every field uses `Field`/`Input`/`Select`.
+
+## D.4 Universal search — the mindate command palette
+ONE ⌘K palette (APPROVALS §1.4). Treatment LOCKED to mindate's CommandMenu:
+- Scrim is a BARELY-there blur (`bg-foreground/5 backdrop-blur-sm`) — NEVER a dark/black
+  bar. White `rounded-2xl` panel on `.shadow-overlay`.
+- Grouped results with per-group counts ("Patients (3)", "Jump to"/"Pages"), substring
+  HIGHLIGHTING, a loading spinner while results resolve, helpful empty/placeholder text,
+  and a keyboard-hints footer (↑↓ Navigate · ↵ Open · esc Close).
+- Federates entities as modules land (patients now; notes, letters, settings, theme,
+  recents next — mirror mindate's groups). The NL/ambient-AI layer is Bible 4.7.
+- BUILD UP-LEVEL: when we adopt `cmdk`, port mindate's `ui/command.tsx` +
+  `ui/dialog.tsx` (base-ui) wholesale rather than hand-rolling — same components.
+
+## D.5 THE TABLE — port mindate's DataTable + TableShell wholesale
+Roland worked hard on this in mindate; bring it ALL across (`DataTable.tsx`,
+`TableShell.tsx` + deps). Non-negotiable feature set every RolDe table inherits:
+- **TableShell chrome** (the ONE canonical table wrapper): a toolbar merged onto the
+  page/card header row carrying — active filter/sort **pills**, a **Filter** button
+  (→ blurred modal → removable chips; OR within a field, AND across fields), a **Sort**
+  dropdown, a **Freeze** (pin leading columns) control that auto-appears on overflow,
+  a **Density** toggle, and **Export** (client CSV of the filtered rows). Bottom bar =
+  count line + page-size selector + numbered pagination. Server-mode supported.
+- **DataTable**: `table-fixed` + `<colgroup>` widths, ellipsis truncation w/ title
+  tooltip, optional leading row-number column, expandable rows, sticky frozen columns,
+  density classes. Floating (borderless, `.shadow-float`) by default.
+- Persist density / page-size / freeze per `storageKey`. Patients is the first port;
+  every later table (investigations, billing, audit…) uses TableShell — chrome never
+  drifts (mindate MISTAKES #15/#16: never a per-table filter).
+
+## D.6 Dark mode — full, with a layered background (Profile-menu toggle)
+Adopt `next-themes` (mindate `ThemeProvider`) with a class strategy
+(`@custom-variant dark (&:is(.dark *))`). Toggle lives in the Profile dropdown
+(Light / Dark / System) AND in the command palette Theme group. EVERY card and surface
+gets dark tokens. Industry-standard depth (mindate + Material dark guidance): in dark
+mode the **page background is the DARKEST layer and each nested surface gets LIGHTER**,
+never the reverse — elevation reads by lightness, not just shadow (shadows barely show
+on dark). RolDe dark tokens (oklch, to add to `:root` `.dark` in globals.css):
+- `--background` ≈ `oklch(0.16 0.01 250)` (near-black, faint cool cast — NOT pure #000),
+  `--card` ≈ `oklch(0.21 0.01 250)`, nested card ≈ `oklch(0.25 …)`; `--popover` = card.
+- `--foreground` ≈ `oklch(0.97 0 0)`, `--muted-foreground` ≈ `oklch(0.70 0 0)`,
+  `--border`/`--input` ≈ low-alpha white (`rgb(255 255 255 / 0.10)`).
+- The sage clinic accent **desaturates + darkens** for the dark sidebar; the white
+  content card becomes the elevated dark surface. Elevation tiers swap to thin white
+  inner-rings (`ring-white/10`) since drop-shadows vanish on dark (mindate pattern).
+- Clinical signal colours keep their hue but lift lightness for contrast (e.g. allergy
+  red → a lighter rose) — AA contrast on the dark surface is mandatory (patient safety).
+Build it as TOKENS first (so every component inherits) — never per-component dark hacks.
+
+## D.7 Font-size accessibility — three sizes, global
+A 3-step text-size control in the Profile dropdown: **Compact / Default / Large**
+(Default = today). Implement as a root scale, not per-component: set
+`:root { font-size: 14px | 15px | 16px }` (or a `--text-scale` multiplier) via a
+`data-text-size` attribute on `<html>`, persisted to localStorage, applied pre-paint
+(no flash). Because the type system is rem-based (5-tier, no fixed px — APPROVALS §2.2),
+every module scales automatically from day one. Wire the provider in the root layout
+NOW so all Wave-1+ modules inherit it.
+
+## D.8 Footer + legal/regulatory surface (clinic-grade)
+Sidebar footer carries **"Made with ♥ at RolDe"** (heart in amber-red `#e0533f`) + the
+`© <year> RolDe Ltd` line (mindate pattern). Beyond that, RolDe — unlike an internal
+admin tool — is a clinical product handling **special-category health data**, and once
+dictation / ambient listening (Bible 4.7) is live we MUST surface legal + safety docs:
+- **Privacy Policy / Data Processing notice** (UK GDPR + DPA 2018 — lawful basis,
+  special-category condition, retention, data-subject rights, sub-processors).
+- **Terms of Service** and a **Disclaimer** (clinical decision-support, not a substitute
+  for clinician judgement; RolDe drafts, the clinician authorises — Bible 4.0/4.6).
+- **Clinical Safety statement** — England health-IT clinical risk management
+  (DCB0129 manufacturer / DCB0160 deploying org); name a Clinical Safety Officer.
+- **Ambient-capture consent**: an explicit, logged patient-facing consent gate BEFORE
+  any recording/listening starts, plus a visible "listening" indicator (Bible 4.7).
+These live as routed pages, linked from a persistent footer (app + auth screens) and
+shown at signup + at the point of ambient capture. Tracked as a Wave-0/5 compliance item
+in Bible 4.8 §15. (Not legal advice — flag for counsel review before go-live.)

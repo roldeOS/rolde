@@ -41,7 +41,7 @@ export default async function Home() {
   const recent = recentQ.data ?? [];
 
   return (
-    <div className="mx-auto w-full max-w-5xl space-y-6 p-8">
+    <div className="w-full space-y-6 p-6 lg:p-8">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
           {greeting()}, {name}.

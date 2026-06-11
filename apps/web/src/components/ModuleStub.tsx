@@ -21,7 +21,7 @@ export function ModuleStub({
   source: string;
 }) {
   return (
-    <div className="mx-auto w-full max-w-3xl p-8">
+    <div className="w-full p-6 lg:p-8">
       <Card>
         <CardHeader>
           <CardHeaderRow icon={icon} tone={tone} title={title} description={blurb} />
