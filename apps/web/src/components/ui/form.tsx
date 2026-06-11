@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils";
  * shadow + hairline ring that lifts on focus. When a field is valid it shows a
  * green tick in a squircle at the right edge (mindate-iOS treatment).
  */
-// Liquid Glass field (Roland 2026-06-11, the 2026 modality). Swap `field-glass`
-// → `field-float` here to revert to the pure-elevation version.
+// Option B field (Roland 2026-06-11): shallow float + a very thin shadcn hairline,
+// no glow. (`field-glass` holds the Liquid Glass alternative if ever wanted.)
 export const fieldFloat =
-  "field-glass h-10 w-full min-w-0 rounded-lg px-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50";
+  "field-float h-10 w-full min-w-0 rounded-lg px-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50";
 
 function ValidTick() {
   return (

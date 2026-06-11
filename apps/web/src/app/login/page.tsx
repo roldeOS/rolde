@@ -75,7 +75,7 @@ export default function LoginPage() {
           </h1>
         </div>
 
-        <div className="card-tinted w-full rounded-xl p-8 shadow-float">
+        <div className="w-full rounded-xl bg-card p-8 shadow-float">
           <h2 className="text-center text-xl font-semibold tracking-tight">
             Sign in
           </h2>

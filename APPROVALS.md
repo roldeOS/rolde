@@ -97,10 +97,11 @@ nav — NEVER the browser default, NEVER the bottom bar. One shared component
 (`components/ui/PageActionBar.tsx`, provider in AppFrame); forms drive it via `usePageActionBar`
 (dirty + save state) + `useSavedFlash` (sessionStorage-backed confirmation). First wired: Scribe.
 
-1.13 **Brand loader = the "rolde" writing animation** (Roland 2026-06-11). Anywhere a generic
-spinner would go, use `RoldeLoader` — the wordmark "rolde" WRITTEN into existence (a thin serif
-outline revealed left-to-right, then it settles), looping. Page-nav uses the shimmer skeletons
-(§3.9); `RoldeLoader` is for spinner moments (boot, button-busy, full-page waits).
+1.13 **Brand loader = the "rolde" letters DRAWN one by one** (Roland 2026-06-11). `RoldeLoader` —
+the wordmark "rolde" drawn letter-by-letter (each glyph's outline traces, then fills, staggered),
+looping. NOT a left-to-right wipe. It should be a RARE sight: RolDe is text-light + fast, so pages
+load near-instantly — the loader is for cold boot and HEAVY MEDIA only (e.g. dermatology images in
+clinics like Doc For Skin). Page-nav uses the shimmer skeletons (§3.9).
 
 ## 2. Typography — FONT LAW
 
@@ -140,15 +141,13 @@ Pick by WHERE the card sits:
   patient island, popovers, dialogs (the ONLY tier with a long diffuse lift).
 This is the canonical answer to "what floating params for a card within a card."
 
-3.6 **Fields = LIQUID GLASS (2026 modality); ZERO hard border** (Roland 2026-06-11). The live field
-is `.field-glass` — Apple Liquid Glass: a translucent semi-opaque fill (text stays readable, never
-on clear glass), `backdrop-blur + saturate` so content behind REFRACTS through, a bright SPECULAR
-top lip + faint rim light (light on the glass edge, NOT a flat 2010 border), inner base depth, and
-on focus the glass brightens with a SAGE rim + glow. NOTE: glass is understated on a plain white
-card (nothing behind to refract) — it sings over content/colour. `.field-float` (pure elevation +
-sage glow) is kept on record as the alternative; swap the class in `form.tsx` to revert. The
-green-tick `.tick-squircle` is frosted with NO border; the section `(i)` explainer has NO hover.
-Full spec Bible 4.2 §D.3. *(Roland is judging glass vs elevation live.)*
+3.6 **Fields = OPTION B: shallow float + one VERY THIN hairline, no glow** (Roland 2026-06-11,
+chosen over the glass). `.field-float` — a SHALLOW drop shadow (none of the earlier theatrics, no
+sage glow) + a single very faint shadcn-style hairline (`--border` ~60%) so subtle it reads as a
+defined edge, not a 2010 box. Focus just deepens the hairline a touch toward the dark ring; no
+colour, no glow. The green-tick `.tick-squircle` is frosted with NO border; the section `(i)`
+explainer has NO hover. (`.field-glass` — the Liquid Glass version — stays on record if ever
+wanted; swap the class in `form.tsx`.) Full spec Bible 4.2 §D.3.
 
 3.9 **NAVIGATION MUST BE SNAPPY — instant loading skeletons** (Roland 2026-06-11). EVERY route
 segment that fetches data has a `loading.tsx` shimmer skeleton (`.skeleton`) so a nav click shows

@@ -165,31 +165,26 @@ body {
 }
 
 /* ----------------------------------------------------------------------------
-   FLOATING FORM FIELD (Roland 2026-06-11) — the pure-elevation alternative kept
-   on record (Roland is comparing this vs the Liquid Glass field above). ZERO
-   border; floats on a layered drop shadow; focus adds only a soft sage glow. */
+   FLOATING FIELD — OPTION B (Roland 2026-06-11, his pick over the glass). A
+   SHALLOW float (much less shadow than before, NO glow, none of the earlier
+   theatrics) + ONE very thin shadcn-style hairline — so faint it reads as a soft
+   defined edge, not a 2010 box border. Focus just deepens the hairline a touch
+   toward the dark ring; no colour, no glow. */
 .field-float {
   background: var(--card);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 1px 2px rgba(0, 0, 0, 0.07),
-    0 4px 9px -2px rgba(0, 0, 0, 0.11),
-    0 12px 24px -8px rgba(0, 0, 0, 0.10);
-  transition: box-shadow 170ms ease;
+    inset 0 0 0 1px color-mix(in oklab, var(--border) 60%, transparent),
+    0 1px 1px rgba(0, 0, 0, 0.04),
+    0 1px 3px -1px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 150ms ease;
 }
 .field-float:focus,
 .field-float:focus-within,
 .field-float:focus-visible {
-  /* Active state (Roland 2026-06-11): the resting float stays UNCHANGED — no
-     extra drop shadow (the elevation jump felt "icky") — and we add only a soft
-     SAGE glow (blurred, never a hard ring/border). The field quietly comes alive
-     in the clinic's own colour. */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    0 1px 2px rgba(0, 0, 0, 0.07),
-    0 4px 9px -2px rgba(0, 0, 0, 0.11),
-    0 12px 24px -8px rgba(0, 0, 0, 0.10),
-    0 0 11px 2px color-mix(in oklab, var(--clinic-accent) 50%, transparent);
+    inset 0 0 0 1px color-mix(in oklab, var(--ring) 38%, transparent),
+    0 1px 1px rgba(0, 0, 0, 0.04),
+    0 2px 5px -1px rgba(0, 0, 0, 0.08);
 }
 
 /* Glassy green-tick squircle (Roland 2026-06-11): a frosted emerald chip —
@@ -220,22 +215,25 @@ body {
   transition: opacity 120ms ease;
 }
 
-/* The "rolde" loader (Roland 2026-06-11) — the brand spinner. The wordmark is
-   WRITTEN into existence: a thin outline reveals left-to-right (like a pen
-   tracing it), then it settles and the next cycle begins. Font-agnostic +
-   reliable (glyph stroke-dash tracing fragments on serifs). Used anywhere a
-   generic spinner would go. */
-.rolde-trace {
-  fill: var(--foreground);
+/* The "rolde" loader (Roland 2026-06-11) — the brand spinner. The letters are
+   DRAWN one by one: each glyph's outline traces (stroke), then fills, then the
+   next letter starts (staggered via per-letter animation-delay). Loops gently.
+   Used anywhere a generic spinner would go (a RARE event — the app is snappy). */
+.rolde-letter {
+  fill: transparent;
   stroke: var(--foreground);
-  stroke-width: 0.5;
-  animation: rolde-write 2.4s ease-in-out infinite;
+  stroke-width: 0.8;
+  stroke-linejoin: round;
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  animation: rolde-letter 2.8s ease-in-out infinite;
 }
-@keyframes rolde-write {
-  0%   { clip-path: inset(0 100% 0 0); opacity: 1; }
-  55%  { clip-path: inset(0 0 0 0); opacity: 1; }
-  84%  { clip-path: inset(0 0 0 0); opacity: 1; }
-  100% { clip-path: inset(0 0 0 0); opacity: 0; }
+@keyframes rolde-letter {
+  0%      { stroke-dashoffset: 240; fill: transparent; opacity: 1; }
+  20%     { stroke-dashoffset: 0;   fill: transparent; opacity: 1; }
+  30%     { fill: var(--foreground); }
+  80%     { fill: var(--foreground); opacity: 1; }
+  96%,100%{ fill: var(--foreground); opacity: 0; }
 }
 
 /* Skeleton shimmer (Roland 2026-06-11) — instant loading placeholders so every
