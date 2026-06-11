@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,31 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  // The email tick means something REAL: this account exists in the DB (Roland
+  // 2026-06-11). null = unknown/not-yet-checked; true/false from email_exists().
+  const [emailExists, setEmailExists] = useState<boolean | null>(null);
+
+  // Debounced live existence check — only a well-formed email is worth asking.
+  useEffect(() => {
+    const term = email.trim();
+    if (!EMAIL.test(term)) {
+      setEmailExists(null);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      const { data, error } = await createClient().rpc("email_exists", {
+        p_email: term,
+      });
+      // Conservative: never claim an account exists on error — the tick must
+      // only fire on a confirmed match.
+      if (!cancelled) setEmailExists(error ? false : Boolean(data));
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [email]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -63,7 +88,7 @@ export default function LoginPage() {
                 autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                valid={EMAIL.test(email)}
+                valid={emailExists === true}
                 required
               />
             </Field>
@@ -74,7 +99,6 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                valid={password.length >= 6}
                 required
               />
             </Field>

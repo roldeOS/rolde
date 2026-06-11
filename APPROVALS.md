@@ -177,6 +177,14 @@ every module automatically. Provider wired in the root layout from the start. Sp
 8.1 Sidebar footer = **"Made with ♥ at RolDe"** (amber-red heart `#e0533f`) + `© <year> RolDe
 Ltd` (mindate pattern).
 
+8.3 **Login green tick = a REAL DB match, never a format check** (Roland 2026-06-11). The email
+field ticks green ONLY when `public.email_exists(email)` confirms the account exists (debounced
+live check). A valid-looking-but-unknown email does NOT tick. The PASSWORD field gets NO tick on
+login — a password can't be verified without attempting sign-in, and signalling its correctness
+separately is itself a weakness. (Format-only ticks are fine on data-ENTRY forms; never on auth.)
+Caveat: `email_exists` is an account-enumeration surface — HARDEN with per-IP rate-limiting (and/or
+captcha) before public go-live. The green-tick UX pattern itself stays for data-entry forms.
+
 8.2 As a clinical product handling special-category health data — and ESPECIALLY once dictation /
 ambient listening lands (Bible 4.7) — RolDe must surface **Privacy Policy / data-processing
 notice, Terms, a clinical Disclaimer, and a Clinical Safety statement** (UK GDPR + DPA 2018; in

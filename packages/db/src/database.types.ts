@@ -538,6 +538,7 @@ export type Database = {
     }
     Functions: {
       current_user_tenant_ids: { Args: never; Returns: string[] }
+      email_exists: { Args: { p_email: string }; Returns: boolean }
       is_caretaker_of: { Args: { p_tenant_id: string }; Returns: boolean }
       is_custodian: { Args: never; Returns: boolean }
     }
