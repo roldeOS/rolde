@@ -6,7 +6,6 @@ import Link from "next/link";
 import {
   Users,
   UserPlus,
-  Search,
   Download,
   ArrowUp,
   ArrowDown,
@@ -15,7 +14,6 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { CardHeaderRow } from "@/components/ui/CardHeaderRow";
 import { Button } from "@/components/ui/button";
-import { fieldFloat } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 
 export type PatientRow = {
@@ -48,24 +46,16 @@ function fmtDob(d: string) {
   });
 }
 
-/** A floating, sortable, searchable data-table — the mindate TableShell pattern
- * (Roland 2026-06-11), brought to RolDe for the patients register. */
+/** A floating, sortable data-table — the mindate TableShell pattern (Roland
+ * 2026-06-11). NO per-table search box: the universal ⌘K search is the one
+ * search (Roland: "universal search solves that"). */
 export function PatientsTable({ rows }: { rows: PatientRow[] }) {
   const router = useRouter();
-  const [q, setQ] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
-  const filtered = useMemo(() => {
-    const term = q.trim().toLowerCase();
-    const list = rows.filter((r) =>
-      !term
-        ? true
-        : `${r.first_name} ${r.last_name} ${r.patient_number ?? ""}`
-            .toLowerCase()
-            .includes(term),
-    );
-    const sorted = [...list].sort((a, b) => {
+  const sorted = useMemo(() => {
+    return [...rows].sort((a, b) => {
       let cmp = 0;
       if (sortKey === "name")
         cmp = `${a.last_name} ${a.first_name}`.localeCompare(
@@ -76,8 +66,7 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
       else cmp = a.date_of_birth.localeCompare(b.date_of_birth);
       return sortDir === "asc" ? cmp : -cmp;
     });
-    return sorted;
-  }, [rows, q, sortKey, sortDir]);
+  }, [rows, sortKey, sortDir]);
 
   function toggleSort(k: SortKey) {
     if (sortKey === k) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -89,7 +78,7 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
 
   function exportCsv() {
     const head = ["Number", "Last name", "First name", "DOB", "Sex", "Mobile", "Email"];
-    const lines = filtered.map((r) =>
+    const lines = sorted.map((r) =>
       [
         r.patient_number ?? "",
         r.last_name,
@@ -143,15 +132,6 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
             count={rows.length}
             rightSlot={
               <div className="flex items-center gap-1.5">
-                <div className="relative">
-                  <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    placeholder="Search…"
-                    className={cn(fieldFloat, "h-8 w-40 pl-8")}
-                  />
-                </div>
                 <button onClick={exportCsv} className={chip} title="Export to CSV">
                   <Download className="size-3.5" /> Export
                 </button>
@@ -165,10 +145,8 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
           />
         </CardHeader>
         <CardContent>
-          {filtered.length === 0 ? (
-            <p className="p-8 text-center text-muted-foreground">
-              {q ? "No patients match your search." : "No patients yet."}
-            </p>
+          {sorted.length === 0 ? (
+            <p className="p-8 text-center text-muted-foreground">No patients yet.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -181,7 +159,7 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {filtered.map((p) => (
+                {sorted.map((p) => (
                   <tr
                     key={p.id}
                     onClick={() => router.push(`/patients/${p.id}`)}

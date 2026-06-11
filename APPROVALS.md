@@ -47,6 +47,13 @@ with the first dirty-tracking form.)
 1.3 **Sidebar nav = signature squircle CardIcon badges** per item; active = subtle dark wash;
 hover = the ONE `--hover` token.
 
+1.4 **ONE search — the universal ⌘K** (Roland 2026-06-11). NEVER add a per-page / per-table
+search field anywhere; the topbar universal search is the single search surface.
+
+1.5 **Integrated chevrons, never the browser default** (Roland 2026-06-11). Native `<select>`
+arrows are `appearance-none`'d and replaced with our own lucide `ChevronDown`; all dropdown
+affordances use the same chevron.
+
 ## 2. Typography — FONT LAW
 
 2.1 **IBM Plex Serif is ONLY for the RolDe wordmark/icon** (`font-wordmark`; Roland supplies an

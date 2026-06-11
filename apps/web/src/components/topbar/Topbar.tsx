@@ -54,7 +54,7 @@ export function Topbar({
 
   return (
     <div className="sticky top-0 z-40 px-3 pt-3 sm:px-4">
-      <div className="glass flex h-11 items-center justify-between gap-2 rounded-xl border border-border/40 px-2 shadow-sm">
+      <div className="glass flex h-11 items-center justify-between gap-3 rounded-xl border border-border/40 px-2 shadow-sm">
         {/* Left — toggle + breadcrumb */}
         <nav className="flex min-w-0 items-center gap-0.5" aria-label="Breadcrumb">
           <button
@@ -84,7 +84,7 @@ export function Topbar({
         {/* Right — view-selector · search · recents · bell · profile */}
         <div className="flex shrink-0 items-center gap-1.5">
           {onConsult && (
-            <div className="hidden items-center gap-0.5 rounded-lg border border-border/50 bg-card/50 p-0.5 sm:flex">
+            <div className="hidden items-center gap-0.5 rounded-lg bg-card/70 p-0.5 shadow-sm ring-1 ring-black/[0.05] lg:flex">
               {VIEWS.map((v) => (
                 <button
                   key={v.key}

@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -63,12 +63,17 @@ export function Select({
   className,
   ...props
 }: React.ComponentProps<"select"> & { valid?: boolean }) {
-  // Native select keeps its own chevron on the right, so the tick sits inset.
+  // `appearance-none` drops the GENERIC browser arrow; we draw OUR own integrated
+  // chevron instead (Roland 2026-06-11). The valid tick sits to its left.
   return (
     <div className="relative">
-      <select {...props} className={cn(fieldFloat, valid && "pr-16", className)} />
+      <select
+        {...props}
+        className={cn(fieldFloat, "appearance-none", valid ? "pr-16" : "pr-9", className)}
+      />
+      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
       {valid && (
-        <span className="pointer-events-none absolute right-7 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-600">
+        <span className="pointer-events-none absolute right-8 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-600">
           <Check className="size-3.5" strokeWidth={2.75} />
         </span>
       )}
