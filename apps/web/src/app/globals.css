@@ -132,42 +132,45 @@ body {
 }
 
 /* ----------------------------------------------------------------------------
-   FLOATING FORM FIELD (Roland 2026-06-11). A bordered input "feels like 2010";
-   a field must read as a small pane floating just above the card. The recipe
-   (industry standard — iOS/Stripe/Linear inputs): a crisp hairline ring so the
-   edge is defined + a tight contact shadow + a soft 1px top inset highlight so
-   the top edge catches light. Borderless. Focus deepens the ring (dark, never
-   blue — Bible 4.2). One class so every field floats identically. */
+   FLOATING FORM FIELD (Roland 2026-06-11). ZERO border — not even a hairline.
+   A white field on a white card reads as "floating" the same way a key floats on
+   a white deck or macOS Spotlight floats: PURE ELEVATION — a layered drop shadow
+   (tight contact + soft ambient + wide diffuse) and a 1px top light, no outline.
+   ACTIVE STATE WITHOUT A BORDER (Roland's rule): the field simply LIFTS HIGHER —
+   the shadow grows + deepens on focus, so it rises toward you. No ring, no box,
+   dark-family only (Bible 4.2). One class so every field floats identically. */
 .field-float {
   background: var(--card);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 0 0 0.75px rgba(0, 0, 0, 0.06),
-    0 1px 1px rgba(0, 0, 0, 0.04),
-    0 2px 6px -1px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 150ms ease;
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 1px 2px rgba(0, 0, 0, 0.07),
+    0 4px 9px -2px rgba(0, 0, 0, 0.11),
+    0 12px 24px -8px rgba(0, 0, 0, 0.10);
+  transition: box-shadow 170ms ease;
 }
 .field-float:focus,
 .field-float:focus-within,
 .field-float:focus-visible {
+  /* Lifts higher — a clear elevation jump + a soft diffuse dark halo (blurred,
+     0 spread → a glow, NOT a hard-edged ring). This IS the active state. */
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 0 0 2px color-mix(in oklab, var(--ring) 35%, transparent),
-    0 1px 1px rgba(0, 0, 0, 0.04),
-    0 3px 8px -1px rgba(0, 0, 0, 0.10);
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 9px 20px -3px rgba(0, 0, 0, 0.17),
+    0 24px 42px -10px rgba(0, 0, 0, 0.18),
+    0 0 22px 1px color-mix(in oklab, var(--ring) 16%, transparent);
 }
 
-/* Glassy green-tick squircle (Roland 2026-06-11): a frosted emerald chip, not a
-   flat fill — translucent + blurred + a light ring so it reads like a small
-   pane of tinted glass laid on the field. */
+/* Glassy green-tick squircle (Roland 2026-06-11): a frosted emerald chip —
+   translucent + blurred fill + a tiny lift. NO ring/border (Roland: the squircle
+   must not have a border either). */
 .tick-squircle {
-  background: color-mix(in oklab, var(--signal-success) 16%, transparent);
+  background: color-mix(in oklab, var(--signal-success) 18%, transparent);
   backdrop-filter: blur(6px) saturate(140%);
   -webkit-backdrop-filter: blur(6px) saturate(140%);
   box-shadow:
-    inset 0 0 0 0.75px color-mix(in oklab, var(--signal-success) 40%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 1px 2px rgba(0, 0, 0, 0.06);
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 1px 2px rgba(0, 0, 0, 0.10);
 }
 
 /* Glass header (Roland 2026-06-10): card headers + the topbar share ONE frosted

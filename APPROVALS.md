@@ -119,10 +119,14 @@ Pick by WHERE the card sits:
   patient island, popovers, dialogs (the ONLY tier with a long diffuse lift).
 This is the canonical answer to "what floating params for a card within a card."
 
-3.6 **Floating fields are CRISP + glassy tick** (Roland 2026-06-11). `.field-float` (inset top
-highlight + hairline ring + tight contact shadow; focus deepens the DARK ring, never blue).
-Valid → `.tick-squircle`, a FROSTED translucent emerald chip (not a flat fill). Canonical in
-`components/ui/form.tsx`; full spec Bible 4.2 §D.3.
+3.6 **Floating fields = PURE ELEVATION, ZERO border** (Roland 2026-06-11). `.field-float` has NO
+outline — not even a hairline. It floats on a layered drop shadow (contact + ambient + wide
+diffuse) like macOS Spotlight on white. **Active state is a border-less ELEVATION LIFT**: on focus
+the shadow grows/deepens + a soft diffuse dark halo (blurred, 0-spread → a glow, NEVER a hard
+ring), so the field rises toward you. No ring, no box, ever. The green-tick `.tick-squircle` is a
+frosted emerald chip with **NO border** either (fill + tiny lift only). Canonical in
+`components/ui/form.tsx`; full spec Bible 4.2 §D.3. *(Alt active-state treatments — soft sage glow,
+Material underline — are on the menu if Roland prefers; elevation-lift is the locked default.)*
 
 3.7 **Universal search = the mindate command palette** (Roland 2026-06-11). Scrim is a
 barely-there blur (`bg-foreground/5 backdrop-blur-sm`) — NEVER a dark/"black bar". White
