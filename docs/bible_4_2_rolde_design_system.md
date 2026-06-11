@@ -1528,3 +1528,23 @@ The next sub-Bible to draft is **4.3 — RolDe Multi-Tenant Foundation** (the Ca
 
 — Roland Manoj Jayasekhar, with Devipangaj
 RoDee, May 2026
+
+---
+
+## Addendum (2026-06-11): Dashboard cockpit + consultation features
+
+Per the market dive, the **canonical feature list + build sequence lives in Bible
+4.8 §15**. For this Bible (design system / UI):
+
+- **§6 Dashboard becomes a clinician cockpit** — Action queues (Results to review,
+  Scripts to sign, Referrals, Documents to authorise, **Pending-work list**,
+  Recalls due, Consents, Messages) + Pulse tiles + Front-of-house (today's
+  schedule, checked-in, recalls/birthdays). Queue cards are actionable; they
+  render only when their module exists (never faked). Stat tiles = `StatTile`.
+- **§3 Consultation gains** problem list, medication list, history, **before/after
+  photo slider**, **face/body-map annotations**, care plans, document store,
+  vitals/growth charts, digital consents, risk scores, printable summary.
+- Standardised primitives now in code: `PageHeaderRow`, `StatTile`, `SectionExplainer`
+  (the `(i)`), floating fields + green-tick squircle, floating buttons, glass headers.
+
+See Bible 4.8 §15.4 for the wave-by-wave build order.

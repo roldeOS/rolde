@@ -2113,3 +2113,21 @@ The next sub-Bible to draft is **4.4 — RolDe Core Modules** (the calendar, pat
 
 — Roland Manoj Jayasekhar, with Devipangaj
 RoDee, May 2026
+
+---
+
+## Addendum (2026-06-11): Billing, memberships, payment-cut, Settings
+
+Per the market dive (canonical spec in Bible 4.8 §15):
+
+- **§4 Billing gains packages & memberships** (recurring revenue — aesthetic
+  clinics live on this) and a **payment gateway via Stripe Connect**: a clinic
+  opts in at onboarding, and **RolDe takes a platform fee** on each charge
+  (Stripe Connect `application_fee_amount`). Commercial terms (the % cut, payout
+  schedule, refunds handling) → new **§4.7** to draft.
+- **§5 Settings (Caretaker console)** is a Wave-1 build: services & pricing,
+  rooms/hours, users/roles, branding + clinic-accent colour, **patient-number
+  config** (prefix/start — already wired in code on `tenants`), note/letter/consent
+  templates, integrations (pay/SMS/pharmacy), memberships config.
+
+See Bible 4.8 §15.4 for sequencing.

@@ -13,14 +13,21 @@ export async function getSessionContext() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: membership } = await supabase
-    .from("tenant_users")
-    .select("tenant_id, display_name, role, tenants(name, slug)")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+  const [{ data: membership }, { data: custodian }] = await Promise.all([
+    supabase
+      .from("tenant_users")
+      .select("tenant_id, display_name, role, tenants(name, slug)")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("custodian_users")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+  ]);
 
-  return { user, membership };
+  return { user, membership, isCustodian: !!custodian };
 }

@@ -738,6 +738,91 @@ This Bible is itself a Phase-1+ artefact that evolves.
 ### 14.2 Version History
 
 - v1.0 (10 May 2026) — initial roadmap consolidation across Bibles 0, 4.0-4.7
+- v1.1 (11 Jun 2026) — §15 added: market-dive feature expansion + build sequence
+
+---
+
+## 15. Feature Expansion & Build Sequence (2026-06-11 market dive)
+
+Added after a market dive across Epic/Cerner (In-Basket/worklists, patient lists,
+results review), Pabau/AestheticsPro (memberships, before/after, recalls,
+inventory, marketing), Medesk/Semble (templates, automation), and the clinic-KPI
+literature. Roland approved **A + B + C in full**. This is the canonical feature
+list and the **build sequence**; each item is tagged to its owning Bible.
+
+### 15.1 The Dashboard = the clinician's daily cockpit (Bible 4.2 §6 expansion)
+
+Split into **Action queues** (work waiting on *you* — Epic In-Basket model),
+**Pulse** (KPIs), **Front-of-house**. Every queue card is actionable (click → the
+item). Cards render only when their module exists — never faked.
+
+**Action queues** — Results to review (labs/imaging unseen) · Scripts to dispense/
+sign · Referrals in/out awaiting action · Documents to authorise (AI drafts) ·
+**Pending-work list** (one unified queue, full width) · Unsigned/incomplete notes ·
+**Recalls due** · Outstanding consents · Messages/tasks.
+**Pulse tiles** — Today's appointments · Unpaid/outstanding · Revenue (today/MTD) ·
+No-show rate · New patients · Active patients/retention.
+**Front-of-house** — Today's schedule · Checked-in now · Recalls/birthdays today.
+
+### 15.2 Per-page feature spec (folds into each module's Bible)
+
+- **Patients list (4.4 §2):** saved segments, tags (VIP/plan), bulk actions
+  (recall/message/export), merge duplicates, quick-view drawer. *(Universal ⌘K is
+  the only search — APPROVALS §1.4.)*
+- **Patient record / Consultation (4.2 §3, 4.4 §2, 4.6):** problem list, medication
+  list + reconciliation, history (PMH/surgical/family/social), before/after photo
+  slider, **face/body-map annotations**, care/treatment plans (multi-session),
+  document store, vitals & growth charts, digital consents (e-sign), risk scores
+  (NEWS2/QRISK), one-page printable summary.
+- **Calendar (4.4 §3):** online booking widget (LatePoint shape), room/clinician
+  views, automated SMS/email reminders + **recalls engine**, waitlist, recurring
+  "course of treatment" series.
+- **Prescribing/Orders (4.5):** drug DB + interaction/allergy/renal/pregnancy
+  checks, favourites/order-sets, e-prescribe (or PDF + pharmacy partner), repeats.
+- **Investigations (4.4 §7, 4.5):** ordering + inbound e-results, **result trends**
+  (graph a value over time), abnormal flagging + seen/actioned tracking.
+- **Letters (4.4 §5–6):** templates + AI drafts, closed-loop referrals, e-sign/send/track.
+- **Billing (4.3 §4):** invoices/deposits, **packages & memberships**, **payment
+  gateway via Stripe Connect** (clinic opts in at onboarding; **RolDe takes a
+  platform fee** via Connect `application_fee_amount`; commercial terms → new
+  4.3 §4.7), aged debt, insurer billing.
+- **Reports (4.3 §5, 4.4 §9):** financial, recall effectiveness, no-show/retention,
+  cohort analytics.
+- **Settings — Caretaker (4.3 §5):** services & pricing, rooms/hours, users/roles,
+  branding + clinic-accent colour, patient-number config (prefix/start), note/
+  letter/consent templates, integrations (pay/SMS/pharmacy), memberships config.
+
+### 15.3 The "seriously elevates" set (Roland's ★ — approved)
+
+1. Ambient AI woven everywhere (4.7) — the moat.
+2. **Memberships & packages** (4.3 §4) — recurring revenue.
+3. **Recalls + automated reminders** (4.4 §3) — retention + no-show lever.
+4. **Before/after + body-map annotations** (4.6 §4) — Doc For Skin's core.
+5. **Inventory with batch/expiry** (NEW — Bible 4.4 §13 to draft) — Botox/filler traceability.
+6. **Payment gateway with RolDe's cut** (4.3 §4.7) — a revenue model for us.
+7. **Unified worklist dashboard** (4.2 §6) — opened every morning.
+
+### 15.4 BUILD SEQUENCE (the build list)
+
+- **Wave 0 — DONE & live:** multi-tenant auth + RLS · patients + RolDe number ·
+  consultation four-card workspace · clinical-notes feed (edit/amend/strike) ·
+  allergies/alerts · Overview dashboard · patients data-table · the RDS.
+- **Wave 1 — buildable NOW (real data, no new infra):** patient-record tabs
+  (problem list · history · medication list · document store) · before/after +
+  body-map · digital consents · patients saved-segments/tags/bulk/merge ·
+  **Settings (Caretaker)** console · dashboard action-queue scaffolding.
+- **Wave 2 — Calendar & front office:** scheduling + clinician/room views ·
+  **online booking widget** · **recalls + reminders engine** · waitlist.
+- **Wave 3 — Clinical orders:** prescribing + drug-safety · investigations
+  ordering + results inbox + trends · letters + closed-loop referrals.
+- **Wave 4 — Money:** billing · packages & **memberships** · **Stripe Connect +
+  RolDe platform fee** · aged debt.
+- **Wave 5 — Ambient AI:** AI server (Gemma on M4 Max) · ambient suggestions ·
+  AI drafting · correction pipeline.
+- **Wave 6 — Growth & ops:** inventory (batch/expiry) · marketing/CRM + reviews ·
+  reports/analytics · patient portal · audit-log surface.
+
+Tenant onboarding (4.3 §2) + the Custodian console (4.3 §6) build alongside Wave 1.
 
 ---
 

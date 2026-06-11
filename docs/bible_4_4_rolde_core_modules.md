@@ -2097,3 +2097,22 @@ The next sub-Bible to draft is **4.5 — RolDe Module: Prescribing** (the unifie
 
 — Roland Manoj Jayasekhar, with Devipangaj
 RoDee, May 2026
+
+---
+
+## Addendum (2026-06-11): Clinical feature expansion
+
+Per the market dive (canonical spec in Bible 4.8 §15):
+
+- **§2 Patients:** saved segments, tags, bulk actions, merge duplicates,
+  quick-view drawer. Patient record gains problem list, medication list +
+  reconciliation, history tabs, document store, vitals/growth charts.
+- **§3 Calendar:** online booking widget (LatePoint shape), **recalls + automated
+  SMS/email reminders engine** (the biggest retention + no-show lever), waitlist/
+  cancellation fill, recurring "course of treatment" series.
+- **§6 Referrals + §7 Investigations:** closed-loop referrals, results inbox with
+  **result trends** (graph a value over time) + abnormal flagging + seen/actioned.
+- **NEW §13 — Inventory** (to draft): stock with **batch/expiry** for Botox/filler
+  traceability (safety + product-recall capability).
+
+See Bible 4.8 §15.4 for the build waves.
