@@ -65,11 +65,14 @@ export default function LoginPage() {
     // bottom so the block sits dead-centre of the viewport.
     <main className="relative flex min-h-screen items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm space-y-8">
-        <div className="flex flex-col items-center gap-1.5">
-          {/* Wordmark — the ONLY place IBM Plex Serif lives (SVG to come). */}
-          <p className="font-wordmark text-5xl font-semibold tracking-tight">
-            RolDe
-          </p>
+        <div className="flex flex-col items-center gap-2">
+          {/* Brand wordmark — Roland's SVG (public/wordmark-rolde.svg, 900×200). */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/wordmark-rolde.svg"
+            alt="RolDe"
+            className="h-14 w-auto mix-blend-multiply sm:h-16"
+          />
           <h1 className="text-base font-medium text-muted-foreground">
             The clinical operating system
           </h1>

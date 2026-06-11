@@ -96,11 +96,23 @@ export function AppFrame({
               collapsed ? "px-4 lg:px-0 lg:text-center" : "px-4",
             )}
           >
-            {/* Wordmark — the ONLY place IBM Plex Serif lives (SVG to come). */}
-            <p className="font-wordmark text-xl font-semibold tracking-tight">
-              <span className={collapsed ? "lg:hidden" : ""}>RolDe</span>
-              <span className={collapsed ? "hidden lg:inline" : "hidden"}>R</span>
-            </p>
+            {/* Brand mark — Roland's SVGs. Wordmark when expanded, square icon
+                when collapsed to the rail. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/wordmark-rolde.svg"
+              alt="RolDe"
+              className={cn("h-6 w-auto mix-blend-multiply", collapsed && "lg:hidden")}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/icon.svg"
+              alt="RolDe"
+              className={cn(
+                "mx-auto hidden size-7 mix-blend-multiply",
+                collapsed ? "lg:block" : "lg:hidden",
+              )}
+            />
             <p
               className={cn(
                 "mt-0.5 truncate text-xs text-muted-foreground",
