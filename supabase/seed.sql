@@ -6,7 +6,10 @@
 -- The auth.users rows are GoTrue-valid: blank (not NULL) token columns + an
 -- auth.identities row, so Supabase Auth can actually sign them in. Hand-inserting
 -- bare auth.users rows causes "Database error querying schema" on login.
--- Dev password for every seeded user: RolDeDev2026!
+-- Dev login (Roland 2026-06-11 — kept simple): password is 'password' for all.
+--   skin@rolde.app    — Caretaker, Doc For Skin
+--   drivers@rolde.app — Caretaker, Doc For Drivers
+--   admin@rolde.app   — Custodian (platform)
 -- ============================================================================
 
 insert into auth.users (
@@ -18,16 +21,16 @@ insert into auth.users (
   created_at, updated_at
 )
 values
-  ('00000000-0000-0000-0000-000000000000','a0000000-0000-4000-8000-000000000001','authenticated','authenticated','roland.custodian@dev.rolde.local',
-   crypt('RolDeDev2026!', gen_salt('bf')), now(),
+  ('00000000-0000-0000-0000-000000000000','a0000000-0000-4000-8000-000000000001','authenticated','authenticated','admin@rolde.app',
+   crypt('password', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb,
    '','','','','','','','', now(), now()),
-  ('00000000-0000-0000-0000-000000000000','a0000000-0000-4000-8000-000000000002','authenticated','authenticated','roland.skin@dev.rolde.local',
-   crypt('RolDeDev2026!', gen_salt('bf')), now(),
+  ('00000000-0000-0000-0000-000000000000','a0000000-0000-4000-8000-000000000002','authenticated','authenticated','skin@rolde.app',
+   crypt('password', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb,
    '','','','','','','','', now(), now()),
-  ('00000000-0000-0000-0000-000000000000','a0000000-0000-4000-8000-000000000003','authenticated','authenticated','caretaker.drivers@dev.rolde.local',
-   crypt('RolDeDev2026!', gen_salt('bf')), now(),
+  ('00000000-0000-0000-0000-000000000000','a0000000-0000-4000-8000-000000000003','authenticated','authenticated','drivers@rolde.app',
+   crypt('password', gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb,
    '','','','','','','','', now(), now())
 on conflict (id) do nothing;
@@ -38,7 +41,7 @@ select gen_random_uuid(), u.id,
        jsonb_build_object('sub', u.id::text, 'email', u.email, 'email_verified', true),
        'email', u.id::text, now(), now(), now()
 from auth.users u
-where u.email like '%@dev.rolde.local'
+where u.email like '%@rolde.app'
   and not exists (select 1 from auth.identities i where i.user_id = u.id and i.provider = 'email');
 
 -- Clinics
