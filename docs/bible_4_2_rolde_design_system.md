@@ -1669,3 +1669,25 @@ sessionStorage-backed so it survives the form remount a server-action `revalidat
 A `beforeunload` guard protects a dirty form on refresh/close. TO ADD (Fable): the in-app
 navigation discard dialog (mindate has it — intercept internal links while dirty), and wire the bar
 to every future dirty form (patient edit, settings, prescribing…). First wired: the Scribe note.
+
+## D.11 Snappiness — instant loading skeletons (plain English)
+The rule: a click must NEVER show a blank screen. Before, clicking a menu item meant the app went
+off to fetch the data first and showed nothing until it came back — so it felt like it hung, and
+that only gets worse with more data. Now, the instant you click, the app paints a "ghost" of the
+page — soft grey shimmer placeholders in the shape of the real thing — and fills in the real
+content a moment later. Because the ghost shows immediately no matter how much data is loading, it
+stays feeling instant even with thousands of patients. HOW: every data route ships a `loading.tsx`
+shimmer skeleton (the (app) layout — sidebar + topbar — persists; only the page area swaps). New
+data routes MUST add one. (APPROVALS §3.9.)
+
+## D.12 Liquid-glass fields need colour behind them
+The Liquid Glass field (§D.3 / APPROVALS §3.6) refracts whatever sits behind it — so on a pure
+white card it's nearly invisible. Field-bearing cards therefore get a WHISPER of the brand sage
+(`.card-tinted`, ~12% sage) so the glass has something to play with. Chrome stays calm; the main
+content card is still never coloured (§3.2) — this is a faint tint on auth/field cards only.
+
+## D.13 The "rolde" brand loader
+`RoldeLoader` — the wordmark "rolde" WRITTEN into existence (a thin serif outline revealed
+left-to-right via an animated `clip-path`, then it settles), looping. This is the generic spinner
+everywhere a busy/boot/full-page wait needs one. Page navigation uses the shimmer skeletons
+instead. (APPROVALS §1.13.)

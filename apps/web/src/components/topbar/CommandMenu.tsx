@@ -92,6 +92,15 @@ export function CommandMenu() {
 
   useEffect(() => setMounted(true), []);
 
+  // Hide the topbar while the palette is open (kills the grey-glass-rectangle
+  // bleed-through — Roland 2026-06-11). A root data-attr drives the CSS.
+  useEffect(() => {
+    const el = document.documentElement;
+    if (open) el.setAttribute("data-search-open", "");
+    else el.removeAttribute("data-search-open");
+    return () => el.removeAttribute("data-search-open");
+  }, [open]);
+
   const close = useCallback(() => {
     setOpen(false);
     setQ("");

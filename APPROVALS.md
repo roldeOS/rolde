@@ -88,12 +88,19 @@ Revisiting a crumb truncates back to it; the Dashboard resets the root. Dashboar
 the trail grows; only the last two crumbs keep labels (older collapse to icons). The terminal
 patient crumb keeps the rich PatientIsland. `lib/useNavTrail.ts` + `topbar/Topbar.tsx`; sessionStorage-backed.
 
-1.12 **Conversational save bar** (Roland 2026-06-11, ported from mindate). ONE shared bottom bar
-(`components/ui/PageActionBar.tsx`, `PageActionBarProvider` mounted in AppFrame) that SPEAKS — e.g.
-"RolDe has a note ready for Sarah's record" → "RolDe is saving…" → "RolDe saved this to Sarah's
-record." It reveals only when there's something to do, floats on a shadow (NO border), and is
-driven by any form via `usePageActionBar` (+ `useSavedFlash` for the confirmation, which is
-sessionStorage-backed so it survives a server-action revalidate). First wired to the Scribe note.
+1.12 **Save bar = SAVE-CONFIRMATION ONLY; unsaved-nav = CENTRAL MODAL** (Roland 2026-06-11). The
+bottom bar NEVER shows while typing (no real-estate creep). It appears ONLY after a save is
+triggered, as a conversational confirmation: "RolDe is saving…" → "RolDe saved this to Sarah's
+record" (Retry on failure), then fades. If the user navigates away with unsaved work, a **central
+discard MODAL** ("Leave without saving? … Stay on page / Discard & leave") intercepts the in-app
+nav — NEVER the browser default, NEVER the bottom bar. One shared component
+(`components/ui/PageActionBar.tsx`, provider in AppFrame); forms drive it via `usePageActionBar`
+(dirty + save state) + `useSavedFlash` (sessionStorage-backed confirmation). First wired: Scribe.
+
+1.13 **Brand loader = the "rolde" writing animation** (Roland 2026-06-11). Anywhere a generic
+spinner would go, use `RoldeLoader` — the wordmark "rolde" WRITTEN into existence (a thin serif
+outline revealed left-to-right, then it settles), looping. Page-nav uses the shimmer skeletons
+(§3.9); `RoldeLoader` is for spinner moments (boot, button-busy, full-page waits).
 
 ## 2. Typography — FONT LAW
 
@@ -149,9 +156,10 @@ the page SHELL immediately and never blocks blank on the server fetch — "if it
 data, it'll be terrible at scale." The (app) layout persists; loading.tsx fills the page slot. New
 data routes MUST ship a matching loading.tsx.
 
-3.7 **Universal search = the mindate command palette** (Roland 2026-06-11). PORTALED to `<body>`
-so the soft blur scrim (`bg-foreground/10 backdrop-blur-md`) sits above EVERYTHING — incl. the
-topbar — and nothing competes through it (NEVER a dark "black bar"). White `rounded-2xl` panel on
+3.7 **Universal search = the mindate command palette** (Roland 2026-06-11). PORTALED to `<body>`;
+the soft blur scrim (`bg-foreground/10 backdrop-blur-md`) sits above everything, AND the topbar is
+HIDDEN while the palette is open (`:root[data-search-open] .search-hideable`) so its glass band
+never reads as a grey rectangle through the scrim. White `rounded-2xl` panel on
 `.shadow-overlay`; GROUPED results with counts + substring highlight + loading spinner + helpful
 empty text + a keyboard-hints footer. Full spec: Bible 4.2 §D.4.
 

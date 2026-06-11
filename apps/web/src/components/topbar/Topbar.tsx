@@ -117,7 +117,7 @@ export function Topbar({
   const trail = useNavTrail(trailCurrent, parents);
 
   return (
-    <div className="sticky top-0 z-40 px-3 pt-3 sm:px-4">
+    <div className="search-hideable sticky top-0 z-40 px-3 pt-3 sm:px-4">
       {/* Floating glass bar (Roland 2026-06-11, mindate parity): a bright inset
           top-highlight ("wet glass lip") + a soft drop shadow so it reads as a
           bar floating over the page, not a flat seam. */}
@@ -149,7 +149,7 @@ export function Topbar({
               return (
                 <Fragment key={seg.href}>
                   {i > 0 && (
-                    <ChevronRight className="size-3.5 shrink-0 text-muted-foreground/50" />
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground/70" />
                   )}
                   <PatientIsland />
                 </Fragment>
@@ -166,7 +166,7 @@ export function Topbar({
             return (
               <Fragment key={seg.href + i}>
                 {i > 0 && (
-                  <ChevronRight className="size-3.5 shrink-0 text-muted-foreground/50" />
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground/70" />
                 )}
                 {isLast ? (
                   <span
