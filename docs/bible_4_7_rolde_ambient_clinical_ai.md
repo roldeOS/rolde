@@ -2680,3 +2680,38 @@ After 4.8, the queued sequence is **Bible 5 (Doc For Drivers)** then **Bible 5.M
 
 — Roland Manoj Jayasekhar, with Devipangaj
 RoDee, May 2026
+
+---
+
+## Addendum (2026-06-11): Natural-Language Universal Search (AI-assisted)
+
+Roland 2026-06-11: the universal (⌘K) search must be *insanely* powerful — a clinician
+should type plain English like *"Sarah with a myeloproliferative disease I saw about two
+years ago"* and get the right record, even with fuzzy facts. The ambient AI (this Bible)
+powers the understanding; RLS keeps it clinic-scoped; nothing leaves the self-hosted model.
+
+### Architecture — hybrid retrieval + AI query-understanding
+1. **Index layer.** (a) Postgres **full-text search** (FTS, `to_tsvector`) across patients,
+   notes, letters, problems, meds, results — extends the existing `idx_feed_search`. (b)
+   **Vector/semantic search** (`pgvector`): embed clinical text so *"myeloproliferative"*
+   matches *"essential thrombocythaemia / polycythaemia vera / PMF"* even when the exact word
+   isn't present. (c) Structured columns for dates, entry types, patient attributes.
+2. **Query understanding (the AI).** The self-hosted RolDe model parses the NL query into a
+   structured intent: `{ patientName, concepts[] (expanded via SNOMED/ICD synonyms), dateRange
+   (with fuzziness — "~2 years" → a window), entityType }`. The palette shows an interpretation
+   chip ("RolDe understood: Sarah · myeloproliferative neoplasm · ~2024") the user can correct.
+3. **Retrieval.** Hybrid: FTS (keyword) + vector (semantic) + structured filters, fused
+   (reciprocal-rank-fusion), then AI re-ranks the top-K and can summarise. Always RLS-scoped to
+   the tenant; audit-logged.
+4. **UX.** ⌘K palette is the single entry (no per-page search — APPROVALS §1.4). Instant literal
+   FTS hits first; AI-interpreted semantic hits stream in. Each hit = entity + highlighted
+   snippet + date + deep link.
+5. **Safety/privacy.** All embedding + parsing on the **self-hosted model** — patient data never
+   leaves the clinic's control. Graceful degradation: if the AI server is offline, FTS still works.
+
+### Build phasing (slots into Bible 4.8 §15.4 build waves)
+- **Phase A (Wave 1-2):** Postgres FTS across patients + notes; ⌘K federates entities. No AI.
+- **Phase B (Wave 5):** `pgvector` embeddings (self-hosted model) → semantic/concept matching.
+- **Phase C (Wave 5):** AI NL→intent parsing + hybrid fusion + re-rank/summary — the full
+  "type it in plain English" experience. This is the standout differentiator: search that
+  thinks like a clinician.

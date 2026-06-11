@@ -75,9 +75,23 @@ stays a neutral canvas; the clinic accent lives on the SIDEBAR only. White cards
 neutral content card. Chrome stays calm monochrome; semantic colour reserved for clinical
 signal (Bible 4.2 §2.2).
 
-3.3 **No borders — floating instead** (Roland 2026-06-10). Cards/panels/dropdowns use
-`.shadow-float` (hairline + lift), never an explicit `border`. Toolbar icons (sort/filter/
-export/maximise) are floating white chips (`bg-card shadow-sm ring-black/[0.05]`), mindate-style.
+3.3 **No borders — floating instead** (Roland 2026-06-10). Cards/panels/dropdowns float on a
+shadow, never an explicit `border`. Toolbar icons (sort/filter/export/maximise) are floating
+white chips (`bg-card shadow-sm ring-black/[0.05]`), mindate-style. **Form inputs are floating
+too** (`bg-card shadow-sm ring-black/[0.06]`, no border) with a **green-tick squircle** at the
+right when valid (mindate-iOS) — see `components/ui/form.tsx` (`fieldFloat`, `Input`, `Select`).
+
+3.5 **ELEVATION STANDARD — three tiers by nesting depth** (Roland 2026-06-11; globals.css).
+Deeper nesting → MORE feather (bigger blur, more spread, lower opacity) so the lift reads even
+on a same-colour parent. Pick by WHERE the card sits:
+- **`.shadow-float`** — LEVEL 1: a card on the page/canvas (the four consultation cards, the
+  table card, dashboard tiles).
+- **`.shadow-raised`** — LEVEL 2: a card WITHIN a card (clinical-note tiles, list rows). Softer
+  + more feathered; NO ring/border.
+- **`.shadow-overlay`** — LEVEL 3: floats above everything — dropdowns, command palette,
+  patient island, popovers, dialogs.
+A card-in-a-card-in-a-card keeps stepping up the tier. This is the canonical answer to "what
+floating params for a card within a card."
 
 3.4 **Glass headers** (topbar + all 4 consultation cards) share ONE `.glass` treatment kept
 fairly OPAQUE (~85% card) so header text never merges with content blurring underneath.

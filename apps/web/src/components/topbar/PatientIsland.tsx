@@ -60,7 +60,7 @@ export function PatientIsland() {
       </button>
 
       {open && (
-        <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-[min(680px,92vw)] overflow-hidden rounded-2xl bg-card shadow-float">
+        <div className="absolute left-0 top-[calc(100%+8px)] z-50 w-[min(680px,92vw)] overflow-hidden rounded-2xl bg-card shadow-overlay">
           {/* Identity */}
           <div className="flex items-start justify-between gap-4 p-4">
             <div className="min-w-0">

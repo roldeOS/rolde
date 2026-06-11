@@ -99,13 +99,31 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
-/* Floating card/table lift (RDS standard, Roland 2026-06-09): borderless, a
-   faint all-around hairline + a defined (not over-feathered) lift. Tune the
-   float in ONE place here. */
+/* ============================================================================
+   ELEVATION STANDARD (Roland 2026-06-11). NEVER a border — feathered shadows.
+   Three tiers by NESTING DEPTH, so a card knows how to float by where it sits:
+     • .shadow-float   — LEVEL 1: a card sitting on the page/canvas.
+     • .shadow-raised  — LEVEL 2: a card WITHIN a card (note tiles, list rows).
+                         Softer + more feathered so it lifts off its white parent.
+     • .shadow-overlay — LEVEL 3: floats above everything — dropdowns, command
+                         palette, the patient island, popovers, dialogs.
+   Rule of thumb: deeper nesting → MORE feather (bigger blur, more spread, lower
+   opacity), so the lift reads even on a same-colour parent.
+   ============================================================================ */
 .shadow-float {
   box-shadow:
-    0 0 0 0.75px rgba(0, 0, 0, 0.07),
-    0 5px 14px -2px rgba(0, 0, 0, 0.18);
+    0 0 0 0.75px rgba(0, 0, 0, 0.06),
+    0 5px 14px -3px rgba(0, 0, 0, 0.14);
+}
+.shadow-raised {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 10px 26px -8px rgba(0, 0, 0, 0.18);
+}
+.shadow-overlay {
+  box-shadow:
+    0 0 0 0.5px rgba(0, 0, 0, 0.05),
+    0 14px 36px -8px rgba(0, 0, 0, 0.24);
 }
 
 /* Glass header (Roland 2026-06-10): card headers + the topbar share ONE frosted

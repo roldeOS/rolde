@@ -31,7 +31,7 @@ export function Recents() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 rounded-xl bg-card p-1.5 shadow-float">
+        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 rounded-xl bg-card p-1.5 shadow-overlay">
           <p className="px-2.5 py-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
             Recent patients
           </p>

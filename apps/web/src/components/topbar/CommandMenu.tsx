@@ -80,25 +80,23 @@ export function CommandMenu() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex h-8 items-center gap-2 rounded-lg border border-border/60 bg-card/60 px-2.5 text-sm text-muted-foreground transition-colors hover:bg-hover"
+        className="flex h-8 items-center gap-2 rounded-lg bg-card/70 px-2.5 text-sm text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-all hover:bg-hover hover:shadow"
       >
         <Search className="size-4" />
         <span className="hidden sm:inline">Search…</span>
-        <kbd className="hidden rounded border border-border bg-muted px-1 text-[10px] sm:inline">
-          ⌘K
-        </kbd>
+        <kbd className="hidden rounded bg-muted px-1 text-[10px] sm:inline">⌘K</kbd>
       </button>
 
       {open && (
         <div
-          className="fixed inset-0 z-[100] flex items-start justify-center bg-foreground/20 p-4 pt-[12vh]"
+          className="fixed inset-0 z-[100] flex items-start justify-center bg-foreground/25 p-4 pt-[14vh] backdrop-blur-sm"
           onClick={close}
         >
           <div
-            className="w-full max-w-lg overflow-hidden rounded-xl bg-card shadow-float"
+            className="w-full max-w-xl overflow-hidden rounded-2xl bg-card shadow-overlay"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-2 border-b border-border px-3">
+            <div className="flex items-center gap-2 border-b border-border/50 px-3.5">
               <Search className="size-4 text-muted-foreground" />
               <input
                 ref={inputRef}

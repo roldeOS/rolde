@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Field, Input } from "@/components/ui/form";
 
-const inputClass =
-  "mt-1 h-9 w-full rounded-lg border border-input bg-card px-3 text-sm outline-none transition-colors focus:border-ring focus:ring-2 focus:ring-ring/20";
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,40 +43,28 @@ export default function LoginPage() {
         <h1 className="mt-6 text-center text-lg font-medium">Sign in</h1>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-xs font-medium text-muted-foreground"
-            >
-              Email
-            </label>
-            <input
+          <Field label="Email" htmlFor="email">
+            <Input
               id="email"
               type="email"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              valid={EMAIL.test(email)}
               required
-              className={inputClass}
             />
-          </div>
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-xs font-medium text-muted-foreground"
-            >
-              Password
-            </label>
-            <input
+          </Field>
+          <Field label="Password" htmlFor="password">
+            <Input
               id="password"
               type="password"
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              valid={password.length >= 6}
               required
-              className={inputClass}
             />
-          </div>
+          </Field>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 

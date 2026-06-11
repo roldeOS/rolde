@@ -245,7 +245,7 @@ export function ClinicalNotesFeed({
               )}
             </button>
             {filterOpen && (
-              <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-56 rounded-xl bg-card p-2 shadow-float">
+              <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-56 rounded-xl bg-card p-2 shadow-overlay">
                 <p className="px-1 pb-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
                   Type
                 </p>
@@ -326,8 +326,8 @@ export function ClinicalNotesFeed({
               <article
                 key={e.id}
                 className={cn(
-                  "rounded-xl bg-card p-3 shadow-sm ring-1 transition-shadow",
-                  activeId === e.id ? "ring-info/50" : "ring-black/[0.04]",
+                  "rounded-xl bg-card p-3 shadow-raised transition-shadow",
+                  activeId === e.id && "ring-2 ring-info/50",
                 )}
               >
                 <div className="flex items-center justify-between gap-2">

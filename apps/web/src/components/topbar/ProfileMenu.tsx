@@ -48,7 +48,7 @@ export function ProfileMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-56 rounded-xl bg-card p-1.5 shadow-float">
+        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-56 rounded-xl bg-card p-1.5 shadow-overlay">
           <div className="px-2.5 py-2">
             <p className="text-sm font-semibold">{user}</p>
             <p className="text-xs text-muted-foreground capitalize">
