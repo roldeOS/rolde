@@ -23,12 +23,22 @@ export type PatientRow = {
   last_name: string;
   date_of_birth: string;
   sex_at_birth: string;
+  nhs_number: string | null;
   phone_mobile: string | null;
   email: string | null;
+  status: string;
   has_active_alerts: boolean;
 };
 
 type SortKey = "number" | "name" | "dob";
+
+/** Status → pill styling (patients.status). */
+const STATUS_PILL: Record<string, string> = {
+  active: "bg-success/10 text-success",
+  inactive: "bg-slate-500/10 text-slate-600",
+  deceased: "bg-critical/10 text-critical",
+  merged: "bg-warning/12 text-warning",
+};
 
 function age(d: string) {
   const dob = new Date(d);
@@ -77,7 +87,7 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
   }
 
   function exportCsv() {
-    const head = ["Number", "Last name", "First name", "DOB", "Sex", "Mobile", "Email"];
+    const head = ["Number", "Last name", "First name", "DOB", "Sex", "NHS", "Mobile", "Email", "Status"];
     const lines = sorted.map((r) =>
       [
         r.patient_number ?? "",
@@ -85,8 +95,10 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
         r.first_name,
         r.date_of_birth,
         r.sex_at_birth,
+        r.nhs_number ?? "",
         r.phone_mobile ?? "",
         r.email ?? "",
+        r.status,
       ]
         .map((v) => `"${String(v).replace(/"/g, '""')}"`)
         .join(","),
@@ -122,7 +134,7 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
     "flex h-8 items-center gap-1.5 rounded-lg bg-card px-2.5 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow";
 
   return (
-    <div className="mx-auto w-full max-w-4xl p-8">
+    <div className="mx-auto w-full max-w-6xl p-8">
       <Card>
         <CardHeader>
           <CardHeaderRow
@@ -148,48 +160,72 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
           {sorted.length === 0 ? (
             <p className="p-8 text-center text-muted-foreground">No patients yet.</p>
           ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                  <SortHead k="number" label="Number" />
-                  <SortHead k="name" label="Name" />
-                  <SortHead k="dob" label="Date of birth" />
-                  <th className="px-3 py-2 font-semibold">Sex</th>
-                  <th className="px-3 py-2 font-semibold">Contact</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/50">
-                {sorted.map((p) => (
-                  <tr
-                    key={p.id}
-                    onClick={() => router.push(`/patients/${p.id}`)}
-                    className="cursor-pointer transition-colors hover:bg-hover"
-                  >
-                    <td className="px-3 py-2.5 font-mono text-xs text-muted-foreground">
-                      {p.patient_number ?? "—"}
-                    </td>
-                    <td className="px-3 py-2.5 font-medium">
-                      <span className="flex items-center gap-1.5">
-                        {p.has_active_alerts && (
-                          <TriangleAlert className="size-3.5 shrink-0 text-critical" />
-                        )}
-                        {p.last_name}, {p.first_name}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2.5 tabular-nums">
-                      {fmtDob(p.date_of_birth)}{" "}
-                      <span className="text-muted-foreground">
-                        ({age(p.date_of_birth)}y)
-                      </span>
-                    </td>
-                    <td className="px-3 py-2.5 capitalize">{p.sex_at_birth}</td>
-                    <td className="px-3 py-2.5 text-muted-foreground">
-                      {p.phone_mobile ?? p.email ?? "—"}
-                    </td>
+            <div className="-mx-4 overflow-x-auto px-4">
+              <table className="w-full min-w-[820px] text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                    <SortHead k="number" label="Number" />
+                    <SortHead k="name" label="Name" />
+                    <SortHead k="dob" label="Date of birth" />
+                    <th className="px-3 py-2 font-semibold">Sex</th>
+                    <th className="px-3 py-2 font-semibold">NHS</th>
+                    <th className="px-3 py-2 font-semibold">Mobile</th>
+                    <th className="px-3 py-2 font-semibold">Email</th>
+                    <th className="px-3 py-2 font-semibold">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border/50">
+                  {sorted.map((p) => (
+                    <tr
+                      key={p.id}
+                      onClick={() => router.push(`/patients/${p.id}`)}
+                      className="cursor-pointer transition-colors hover:bg-hover"
+                    >
+                      <td className="px-3 py-2.5 font-mono text-xs whitespace-nowrap text-muted-foreground">
+                        {p.patient_number ?? "—"}
+                      </td>
+                      <td className="px-3 py-2.5 font-medium whitespace-nowrap">
+                        <span className="flex items-center gap-1.5">
+                          {p.has_active_alerts && (
+                            <TriangleAlert
+                              className="size-3.5 shrink-0 text-critical"
+                              aria-label="Has active alerts"
+                            />
+                          )}
+                          {p.last_name}, {p.first_name}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 whitespace-nowrap tabular-nums">
+                        {fmtDob(p.date_of_birth)}{" "}
+                        <span className="text-muted-foreground">
+                          ({age(p.date_of_birth)}y)
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 capitalize">{p.sex_at_birth}</td>
+                      <td className="px-3 py-2.5 font-mono text-xs text-muted-foreground tabular-nums">
+                        {p.nhs_number ?? "—"}
+                      </td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground tabular-nums">
+                        {p.phone_mobile ?? "—"}
+                      </td>
+                      <td className="px-3 py-2.5 text-muted-foreground">
+                        {p.email ?? "—"}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span
+                          className={cn(
+                            "rounded-full px-2 py-0.5 text-xs font-medium capitalize",
+                            STATUS_PILL[p.status] ?? "bg-slate-500/10 text-slate-600",
+                          )}
+                        >
+                          {p.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </CardContent>
       </Card>
