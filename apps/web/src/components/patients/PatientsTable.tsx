@@ -11,8 +11,8 @@ import {
   ArrowDown,
   TriangleAlert,
 } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { CardHeaderRow } from "@/components/ui/CardHeaderRow";
+import { Card, CardContent } from "@/components/ui/card";
+import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -136,28 +136,35 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
     "flex h-8 items-center gap-1.5 rounded-lg bg-card px-2.5 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow";
 
   return (
-    <div className="mx-auto w-full max-w-6xl p-8">
+    <div className="mx-auto w-full max-w-6xl space-y-4 p-8">
+      <PageHeaderRow
+        icon={Users}
+        tone="brand"
+        title="Patients"
+        count={rows.length}
+        explainer={{
+          label: "Patients",
+          description: "Every patient registered at this clinic, RLS-scoped so you only ever see your own.",
+          terms: [
+            { term: "Number", definition: "The RolDe patient number (per-clinic MRN)." },
+            { term: "⚠ flag", definition: "The patient has active allergies or alerts." },
+            { term: "Sort / Export", definition: "Click a column to sort; Export downloads the list as CSV." },
+          ],
+        }}
+        actions={
+          <>
+            <button onClick={exportCsv} className={chip} title="Export to CSV">
+              <Download className="size-3.5" /> Export
+            </button>
+            <Link href="/patients/new">
+              <Button>
+                <UserPlus /> New patient
+              </Button>
+            </Link>
+          </>
+        }
+      />
       <Card>
-        <CardHeader>
-          <CardHeaderRow
-            icon={Users}
-            tone="brand"
-            title="Patients"
-            count={rows.length}
-            rightSlot={
-              <div className="flex items-center gap-1.5">
-                <button onClick={exportCsv} className={chip} title="Export to CSV">
-                  <Download className="size-3.5" /> Export
-                </button>
-                <Link href="/patients/new">
-                  <Button>
-                    <UserPlus /> New patient
-                  </Button>
-                </Link>
-              </div>
-            }
-          />
-        </CardHeader>
         <CardContent>
           {sorted.length === 0 ? (
             <p className="p-8 text-center text-muted-foreground">No patients yet.</p>
@@ -166,6 +173,9 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
               <table className="w-full min-w-[820px] text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                    <th className="w-9 px-3 py-2 text-center" title="Active alerts">
+                      <TriangleAlert className="mx-auto size-3.5 text-muted-foreground" />
+                    </th>
                     <SortHead k="number" label="Number" />
                     <SortHead k="name" label="Name" />
                     <SortHead k="dob" label="Date of birth" />
@@ -183,19 +193,19 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
                       onClick={() => router.push(`/patients/${p.id}`)}
                       className="cursor-pointer transition-colors hover:bg-hover"
                     >
+                      <td className="px-3 py-2.5 text-center">
+                        {p.has_active_alerts && (
+                          <TriangleAlert
+                            className="mx-auto size-4 text-critical"
+                            aria-label="Has active alerts"
+                          />
+                        )}
+                      </td>
                       <td className="px-3 py-2.5 font-mono text-xs whitespace-nowrap text-muted-foreground">
                         {p.patient_number ?? "—"}
                       </td>
                       <td className="px-3 py-2.5 font-medium whitespace-nowrap">
-                        <span className="flex items-center gap-1.5">
-                          {p.has_active_alerts && (
-                            <TriangleAlert
-                              className="size-3.5 shrink-0 text-critical"
-                              aria-label="Has active alerts"
-                            />
-                          )}
-                          {p.last_name}, {p.first_name}
-                        </span>
+                        {p.last_name}, {p.first_name}
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap tabular-nums">
                         {fmtDob(p.date_of_birth)}{" "}
