@@ -30,17 +30,15 @@ export default async function Home() {
     return new Date(n.getFullYear(), n.getMonth(), 1).toISOString();
   })();
 
-  const [totalQ, monthQ, alertsQ, notesQ, recentQ, attentionQ] = await Promise.all([
+  const [totalQ, monthQ, alertsQ, notesQ, recentQ] = await Promise.all([
     supabase.from("patients").select("*", { count: "exact", head: true }).is("deleted_at", null),
     supabase.from("patients").select("*", { count: "exact", head: true }).is("deleted_at", null).gte("created_at", monthStart),
     supabase.from("patients").select("*", { count: "exact", head: true }).is("deleted_at", null).eq("has_active_alerts", true),
     supabase.from("patient_feed_entries").select("*", { count: "exact", head: true }).eq("entry_type", "clinical_note").is("deleted_at", null),
     supabase.from("patients").select("id, first_name, last_name, date_of_birth, patient_number").is("deleted_at", null).order("created_at", { ascending: false }).limit(6),
-    supabase.from("patients").select("id, first_name, last_name, patient_number").is("deleted_at", null).eq("has_active_alerts", true).limit(6),
   ]);
 
   const recent = recentQ.data ?? [];
-  const attention = attentionQ.data ?? [];
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-6 p-8">
@@ -61,8 +59,8 @@ export default async function Home() {
         <StatTile icon={FileText} tone="info" label="Clinical notes" value={notesQ.count ?? 0} />
       </div>
 
-      {/* Recently registered + Needs attention */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* Recently registered */}
+      <div>
         <Card>
           <CardHeader>
             <CardHeaderRow
@@ -88,37 +86,6 @@ export default async function Home() {
                     className="flex items-center justify-between rounded-md px-2 py-2 transition-colors hover:bg-hover"
                   >
                     <span className="text-sm font-medium">
-                      {p.last_name}, {p.first_name}
-                    </span>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {p.patient_number}
-                    </span>
-                  </Link>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardHeaderRow icon={TriangleAlert} tone="critical" title="Needs attention" count={attention.length} />
-          </CardHeader>
-          <CardContent>
-            <div className="divide-y divide-border/50">
-              {attention.length === 0 ? (
-                <p className="py-4 text-center text-sm text-muted-foreground">
-                  No active alerts. All clear.
-                </p>
-              ) : (
-                attention.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/patients/${p.id}`}
-                    className="flex items-center justify-between rounded-md px-2 py-2 transition-colors hover:bg-hover"
-                  >
-                    <span className="flex items-center gap-1.5 text-sm font-medium">
-                      <TriangleAlert className="size-3.5 text-critical" />
                       {p.last_name}, {p.first_name}
                     </span>
                     <span className="font-mono text-xs text-muted-foreground">

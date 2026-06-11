@@ -3,14 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  Users,
-  UserPlus,
-  Download,
-  ArrowUp,
-  ArrowDown,
-  TriangleAlert,
-} from "lucide-react";
+import { Users, UserPlus, Download, ArrowUp, ArrowDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
 import { Button } from "@/components/ui/button";
@@ -173,9 +166,6 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
               <table className="w-full min-w-[820px] text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                    <th className="w-9 px-3 py-2 text-center" title="Active alerts">
-                      <TriangleAlert className="mx-auto size-3.5 text-muted-foreground" />
-                    </th>
                     <SortHead k="number" label="Number" />
                     <SortHead k="name" label="Name" />
                     <SortHead k="dob" label="Date of birth" />
@@ -193,19 +183,20 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
                       onClick={() => router.push(`/patients/${p.id}`)}
                       className="cursor-pointer transition-colors hover:bg-hover"
                     >
-                      <td className="px-3 py-2.5 text-center">
-                        {p.has_active_alerts && (
-                          <TriangleAlert
-                            className="mx-auto size-4 text-critical"
-                            aria-label="Has active alerts"
-                          />
-                        )}
-                      </td>
                       <td className="px-3 py-2.5 font-mono text-xs whitespace-nowrap text-muted-foreground">
                         {p.patient_number ?? "—"}
                       </td>
                       <td className="px-3 py-2.5 font-medium whitespace-nowrap">
-                        {p.last_name}, {p.first_name}
+                        <span className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "size-1.5 shrink-0 rounded-full",
+                              p.has_active_alerts ? "bg-critical" : "bg-transparent",
+                            )}
+                            title={p.has_active_alerts ? "Active alerts" : undefined}
+                          />
+                          {p.last_name}, {p.first_name}
+                        </span>
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap tabular-nums">
                         {fmtDob(p.date_of_birth)}{" "}
