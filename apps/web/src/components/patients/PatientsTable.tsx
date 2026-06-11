@@ -23,14 +23,14 @@ export type PatientRow = {
   last_name: string;
   date_of_birth: string;
   sex_at_birth: string;
-  nhs_number: string | null;
   phone_mobile: string | null;
   email: string | null;
   status: string;
   has_active_alerts: boolean;
+  created_at: string;
 };
 
-type SortKey = "number" | "name" | "dob";
+type SortKey = "number" | "name" | "dob" | "registered";
 
 /** Status → pill styling (patients.status). */
 const STATUS_PILL: Record<string, string> = {
@@ -73,7 +73,9 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
         );
       else if (sortKey === "number")
         cmp = (a.patient_number ?? "").localeCompare(b.patient_number ?? "");
-      else cmp = a.date_of_birth.localeCompare(b.date_of_birth);
+      else if (sortKey === "dob")
+        cmp = a.date_of_birth.localeCompare(b.date_of_birth);
+      else cmp = a.created_at.localeCompare(b.created_at);
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [rows, sortKey, sortDir]);
@@ -87,7 +89,7 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
   }
 
   function exportCsv() {
-    const head = ["Number", "Last name", "First name", "DOB", "Sex", "NHS", "Mobile", "Email", "Status"];
+    const head = ["Number", "Last name", "First name", "DOB", "Sex", "Mobile", "Email", "Registered", "Status"];
     const lines = sorted.map((r) =>
       [
         r.patient_number ?? "",
@@ -95,9 +97,9 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
         r.first_name,
         r.date_of_birth,
         r.sex_at_birth,
-        r.nhs_number ?? "",
         r.phone_mobile ?? "",
         r.email ?? "",
+        r.created_at.slice(0, 10),
         r.status,
       ]
         .map((v) => `"${String(v).replace(/"/g, '""')}"`)
@@ -168,9 +170,9 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
                     <SortHead k="name" label="Name" />
                     <SortHead k="dob" label="Date of birth" />
                     <th className="px-3 py-2 font-semibold">Sex</th>
-                    <th className="px-3 py-2 font-semibold">NHS</th>
                     <th className="px-3 py-2 font-semibold">Mobile</th>
                     <th className="px-3 py-2 font-semibold">Email</th>
+                    <SortHead k="registered" label="Registered" />
                     <th className="px-3 py-2 font-semibold">Status</th>
                   </tr>
                 </thead>
@@ -202,14 +204,14 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
                         </span>
                       </td>
                       <td className="px-3 py-2.5 capitalize">{p.sex_at_birth}</td>
-                      <td className="px-3 py-2.5 font-mono text-xs text-muted-foreground tabular-nums">
-                        {p.nhs_number ?? "—"}
-                      </td>
                       <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground tabular-nums">
                         {p.phone_mobile ?? "—"}
                       </td>
                       <td className="px-3 py-2.5 text-muted-foreground">
                         {p.email ?? "—"}
+                      </td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground tabular-nums">
+                        {fmtDob(p.created_at)}
                       </td>
                       <td className="px-3 py-2.5">
                         <span
