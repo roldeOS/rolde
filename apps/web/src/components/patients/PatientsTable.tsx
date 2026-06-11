@@ -15,7 +15,7 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { CardHeaderRow } from "@/components/ui/CardHeaderRow";
 import { Button } from "@/components/ui/button";
-import { fieldInput } from "@/components/ui/form";
+import { fieldFloat } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 
 export type PatientRow = {
@@ -149,7 +149,7 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
                     placeholder="Search…"
-                    className={cn(fieldInput, "h-8 w-40 pl-8")}
+                    className={cn(fieldFloat, "h-8 w-40 pl-8")}
                   />
                 </div>
                 <button onClick={exportCsv} className={chip} title="Export to CSV">

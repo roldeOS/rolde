@@ -17,6 +17,11 @@ import {
   Check,
   Pencil,
   CornerDownRight,
+  Stethoscope,
+  Pill,
+  FlaskConical,
+  HeartPulse,
+  ChevronDown,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -35,13 +40,16 @@ export type FeedEntry = {
 };
 export type Author = { name: string; role: string };
 
-function noteKind(role: string | undefined): { label: string; tone: CardIconTone } {
-  if (role === "nurse") return { label: "Nurse Note", tone: "success" };
-  if (role === "chemist") return { label: "Pharmacy Note", tone: "warning" };
-  if (role === "cunnere") return { label: "Lab Note", tone: "info" };
+type Icon = React.ComponentType<{ className?: string }>;
+function noteKind(
+  role: string | undefined,
+): { label: string; tone: CardIconTone; icon: Icon } {
+  if (role === "nurse") return { label: "Nurse Note", tone: "success", icon: HeartPulse };
+  if (role === "chemist") return { label: "Pharmacy Note", tone: "warning", icon: Pill };
+  if (role === "cunnere") return { label: "Lab Note", tone: "info", icon: FlaskConical };
   if (["caretaker", "clinician", "locum", "custodian"].includes(role ?? ""))
-    return { label: "Clinician Note", tone: "info" };
-  return { label: "Note", tone: "neutral" };
+    return { label: "Clinician Note", tone: "info", icon: Stethoscope };
+  return { label: "Note", tone: "neutral", icon: FileText };
 }
 const TONE_BADGE: Record<CardIconTone, string> = {
   critical: "bg-critical/10 text-critical",
@@ -93,13 +101,19 @@ export function ClinicalNotesFeed({
   const [authF, setAuthF] = useState<Set<string>>(new Set());
   const [visible, setVisible] = useState(PAGE);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [expandedOrig, setExpandedOrig] = useState<Set<string>>(new Set());
   const filterRef = useClickAway<HTMLDivElement>(
     useCallback(() => setFilterOpen(false), []),
   );
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const prevH = useRef(0);
+  const atBottom = useRef(true);
 
+  const byId = useMemo(
+    () => new Map(entries.map((e) => [e.id, e])),
+    [entries],
+  );
   const presentTypes = useMemo(
     () => [...new Set(entries.map((e) => e.entry_type))],
     [entries],
@@ -158,6 +172,23 @@ export function ClinicalNotesFeed({
     return () => ob.disconnect();
   }, [moreOlder]);
 
+  // Keep the latest note in view when the card resizes (e.g. Scribe expands and
+  // the feed shrinks) — if the user was at/near the bottom, re-pin (Roland #5).
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || sortDesc) return;
+    const ro = new ResizeObserver(() => {
+      if (atBottom.current) el.scrollTop = el.scrollHeight;
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [sortDesc]);
+
+  function onScroll() {
+    const el = scrollRef.current;
+    if (el) atBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 64;
+  }
+
   function toggle(set: Set<string>, key: string, fn: (s: Set<string>) => void) {
     const next = new Set(set);
     if (next.has(key)) next.delete(key);
@@ -173,7 +204,7 @@ export function ClinicalNotesFeed({
   ) : null;
 
   return (
-    <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
+    <div ref={scrollRef} onScroll={onScroll} className="min-h-0 flex-1 overflow-y-auto">
       {/* Glassy sticky header — notes scroll under it and blur through */}
       <div className="glass sticky top-0 z-10 flex items-center gap-2 px-4 py-2.5">
         <CardIcon icon={FileText} tone="info" variant="badge" size="sm" />
@@ -281,9 +312,15 @@ export function ClinicalNotesFeed({
             const kind =
               e.entry_type === "clinical_note"
                 ? noteKind(author?.role)
-                : { label: e.entry_type.replace(/_/g, " "), tone: "neutral" as CardIconTone };
+                : {
+                    label: e.entry_type.replace(/_/g, " "),
+                    tone: "neutral" as CardIconTone,
+                    icon: FileText as Icon,
+                  };
             const mine = !!currentUserId && e.created_by === currentUserId;
             const struck = !!e.struck_at;
+            const orig = e.related_entry_id ? byId.get(e.related_entry_id) : undefined;
+            const origOpen = expandedOrig.has(e.id);
 
             return (
               <article
@@ -294,19 +331,22 @@ export function ClinicalNotesFeed({
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="flex items-center gap-1.5">
+                  <span className="flex min-w-0 items-center gap-1.5">
+                    {/* Mobile (Roland #4): icon only; the label shows from sm up. */}
                     <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${TONE_BADGE[kind.tone]}`}
+                      className={`flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium ${TONE_BADGE[kind.tone]}`}
                     >
-                      {kind.label}
+                      <kind.icon className="size-3" />
+                      <span className="hidden capitalize sm:inline">{kind.label}</span>
                     </span>
                     {e.related_entry_id && (
-                      <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                        <CornerDownRight className="size-3" /> Amendment
+                      <span className="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground">
+                        <CornerDownRight className="size-3" />
+                        <span className="hidden sm:inline">Amendment</span>
                       </span>
                     )}
                   </span>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="shrink-0 text-xs text-muted-foreground">
                     {fmtTime(e.created_at)}
                     {e.edited_at && <span className="ml-1 italic">· edited</span>}
                     {struck && (
@@ -322,6 +362,36 @@ export function ClinicalNotesFeed({
                 >
                   {text}
                 </p>
+
+                {/* Amendment shows a truncated, chevron-expandable preview of the
+                    note it amends — struck through if the original was (Roland #6). */}
+                {orig && (
+                  <button
+                    onClick={() =>
+                      setExpandedOrig((s) => {
+                        const n = new Set(s);
+                        if (n.has(e.id)) n.delete(e.id);
+                        else n.add(e.id);
+                        return n;
+                      })
+                    }
+                    className="mt-2 flex w-full items-start gap-1 rounded-lg bg-muted/50 p-2 text-left text-xs text-muted-foreground transition-colors hover:bg-muted"
+                  >
+                    <ChevronDown
+                      className={cn(
+                        "mt-px size-3.5 shrink-0 transition-transform",
+                        !origOpen && "-rotate-90",
+                      )}
+                    />
+                    <span className={cn("min-w-0", orig.struck_at && "line-through")}>
+                      <span className="font-medium not-italic">Amends:</span>{" "}
+                      {(() => {
+                        const ot = orig.payload?.text ?? "";
+                        return origOpen || ot.length <= 80 ? ot : ot.slice(0, 80) + "…";
+                      })()}
+                    </span>
+                  </button>
+                )}
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">
                     {author?.name ?? "—"}

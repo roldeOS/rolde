@@ -1,12 +1,21 @@
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * RolDe form field styling — the mindate dashboard input (Roland 2026-06-11):
- * a clean bordered field, thin 1.5px focus ring (no halo). Used for every form
- * input / select so new forms are elegant and standardised, never generic.
+ * RolDe form fields (Roland 2026-06-11): FLOATING — no flat border, a soft
+ * shadow + hairline ring that lifts on focus. When a field is valid it shows a
+ * green tick in a squircle at the right edge (mindate-iOS treatment).
  */
-export const fieldInput =
-  "h-9 w-full min-w-0 rounded-lg border border-input bg-transparent px-3 text-sm outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[1.5px] focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50";
+export const fieldFloat =
+  "h-10 w-full min-w-0 rounded-lg bg-card px-3 text-sm shadow-sm ring-1 ring-black/[0.06] outline-none transition-all placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/35 disabled:cursor-not-allowed disabled:opacity-50";
+
+function ValidTick() {
+  return (
+    <span className="pointer-events-none absolute right-1.5 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-600">
+      <Check className="size-3.5" strokeWidth={2.75} />
+    </span>
+  );
+}
 
 export function Field({
   label,
@@ -36,10 +45,33 @@ export function Field({
   );
 }
 
-export function Input(props: React.ComponentProps<"input">) {
-  return <input {...props} className={cn(fieldInput, props.className)} />;
+export function Input({
+  valid,
+  className,
+  ...props
+}: React.ComponentProps<"input"> & { valid?: boolean }) {
+  return (
+    <div className="relative">
+      <input {...props} className={cn(fieldFloat, valid && "pr-10", className)} />
+      {valid && <ValidTick />}
+    </div>
+  );
 }
 
-export function Select(props: React.ComponentProps<"select">) {
-  return <select {...props} className={cn(fieldInput, props.className)} />;
+export function Select({
+  valid,
+  className,
+  ...props
+}: React.ComponentProps<"select"> & { valid?: boolean }) {
+  // Native select keeps its own chevron on the right, so the tick sits inset.
+  return (
+    <div className="relative">
+      <select {...props} className={cn(fieldFloat, valid && "pr-16", className)} />
+      {valid && (
+        <span className="pointer-events-none absolute right-7 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-600">
+          <Check className="size-3.5" strokeWidth={2.75} />
+        </span>
+      )}
+    </div>
+  );
 }
