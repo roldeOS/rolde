@@ -60,9 +60,26 @@ padding is `p-6 lg:p-8` and the content spans edge to edge. Tables span the full
 (A single short *form* may cap its field column for readability — ASK before centering anything
 else.) Full spec: Bible 4.2 §D.1.
 
-1.7 **Sidebar collapse toggle lives IN the sidebar** (Roland 2026-06-11). The expand/collapse
-control sits in the sidebar header (the industry standard — Linear / Notion / VS Code), desktop
-only; the topbar button is the MOBILE menu only.
+1.7 **Sidebar collapse toggle = a separate icon+text row BELOW the nav** (Roland 2026-06-11).
+NOT in the sidebar header (it squeezed the wordmark on mobile) — a nav-style row (CardIcon +
+"Collapse sidebar") at the bottom of the nav list, desktop only; the topbar button is the MOBILE
+menu only.
+
+1.8 **Floating topbar + floating search** (Roland 2026-06-11, mindate parity). The glass topbar
+FLOATS — a bright inset top-highlight ("wet glass lip") + a soft drop shadow
+(`shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_8px_22px_-10px_rgba(0,0,0,0.22)]`), not a flat
+seam. The ⌘K search trigger is a SOLID white chip on a drop shadow (no ring), with a min-width so
+it reads as a search bar.
+
+1.9 **Legal & Safety surface** (Roland 2026-06-11). A sidebar nav item → `/legal`: ONE card hosts
+the selected document (title on top, body below) with its **version history as the RIGHT rail**
+(current + every superseded version, newest first; superseded kept for audit). Documents: Privacy
+Policy, Terms, Clinical Disclaimer, Clinical Safety, Ambient-Capture Consent (§8.2). Real wording
+pending counsel; structure + versioning are built.
+
+1.10 **Centred auth pages** (Roland 2026-06-11, mindate parity). Sign-in (and all auth screens):
+big centred wordmark + tagline ABOVE a borderless floating card (`shadow-float`), with the
+`Footer` (Made with ♥ + copyright) pinned to the viewport bottom so the block sits dead-centre.
 
 ## 2. Typography — FONT LAW
 
@@ -111,6 +128,10 @@ Valid → `.tick-squircle`, a FROSTED translucent emerald chip (not a flat fill)
 barely-there blur (`bg-foreground/5 backdrop-blur-sm`) — NEVER a dark/"black bar". White
 `rounded-2xl` panel on `.shadow-overlay`; GROUPED results with counts + substring highlight +
 loading spinner + helpful empty text + a keyboard-hints footer. Full spec: Bible 4.2 §D.4.
+
+3.8 **Pills are ROUNDED RECTANGLES, never stadiums** (Roland 2026-06-11). Every text badge/pill
+(note-kind, status, alert, count…) uses `rounded-md` so it echoes the cards' geometry — NOT
+`rounded-full`. Round stays ONLY for true circles: avatars, status dots, icon bubbles.
 
 3.4 **Glass headers** (topbar + all 4 consultation cards) share ONE `.glass` treatment kept
 fairly OPAQUE (~85% card) so header text never merges with content blurring underneath.

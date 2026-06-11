@@ -12,6 +12,7 @@ import {
   Receipt,
   BarChart3,
   Settings,
+  Scale,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,9 @@ const NAV: {
   { href: "/billing", label: "Billing", icon: Receipt, tone: "warning" },
   { href: "/reports", label: "Reports", icon: BarChart3, tone: "neutral" },
   { href: "/settings", label: "Settings", icon: Settings, tone: "neutral" },
+  // Legal & Safety — the single home for Privacy, Terms, Disclaimer, Clinical
+  // Safety & consent docs, each versioned (Roland 2026-06-11).
+  { href: "/legal", label: "Legal & Safety", icon: Scale, tone: "neutral" },
 ];
 
 export function SidebarNav({ collapsed }: { collapsed: boolean }) {

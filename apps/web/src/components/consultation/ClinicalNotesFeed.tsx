@@ -209,7 +209,7 @@ export function ClinicalNotesFeed({
       <div className="glass sticky top-0 z-10 flex items-center gap-2 px-4 py-2.5">
         <CardIcon icon={FileText} tone="info" variant="badge" size="sm" />
         <span className="text-sm font-semibold">Clinical Notes</span>
-        <span className="rounded-full bg-info/10 px-1.5 text-xs font-medium text-info tabular-nums">
+        <span className="rounded-md bg-info/10 px-1.5 text-xs font-medium text-info tabular-nums">
           {filtered.length}
         </span>
         <SectionExplainer
@@ -334,7 +334,7 @@ export function ClinicalNotesFeed({
                   <span className="flex min-w-0 items-center gap-1.5">
                     {/* Mobile (Roland #4): icon only; the label shows from sm up. */}
                     <span
-                      className={`flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium ${TONE_BADGE[kind.tone]}`}
+                      className={`flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium ${TONE_BADGE[kind.tone]}`}
                     >
                       <kind.icon className="size-3" />
                       <span className="hidden capitalize sm:inline">{kind.label}</span>

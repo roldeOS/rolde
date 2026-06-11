@@ -95,43 +95,43 @@ export function AppFrame({
               collapsed ? "px-4 lg:px-0 lg:text-center" : "px-4",
             )}
           >
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                {/* Wordmark — the ONLY place IBM Plex Serif lives (SVG to come). */}
-                <p className="font-wordmark text-xl font-semibold tracking-tight">
-                  <span className={collapsed ? "lg:hidden" : ""}>RolDe</span>
-                  <span className={collapsed ? "hidden lg:inline" : "hidden"}>R</span>
-                </p>
-                <p
-                  className={cn(
-                    "mt-0.5 truncate text-xs text-muted-foreground",
-                    collapsed && "lg:hidden",
-                  )}
-                >
-                  {clinic}
-                </p>
-              </div>
-              {/* Collapse toggle — the INDUSTRY STANDARD home for it is the
-                  sidebar itself (Linear / Notion / VS Code), not the topbar.
-                  Desktop only; mobile uses the topbar menu button. */}
-              <button
-                onClick={collapseToggle}
-                title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-                className={cn(
-                  "hidden shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-hover hover:text-foreground lg:inline-flex",
-                  collapsed && "lg:mx-auto",
-                )}
-              >
-                {collapsed ? (
-                  <PanelLeft className="size-4" />
-                ) : (
-                  <PanelLeftClose className="size-4" />
-                )}
-              </button>
-            </div>
+            {/* Wordmark — the ONLY place IBM Plex Serif lives (SVG to come). */}
+            <p className="font-wordmark text-xl font-semibold tracking-tight">
+              <span className={collapsed ? "lg:hidden" : ""}>RolDe</span>
+              <span className={collapsed ? "hidden lg:inline" : "hidden"}>R</span>
+            </p>
+            <p
+              className={cn(
+                "mt-0.5 truncate text-xs text-muted-foreground",
+                collapsed && "lg:hidden",
+              )}
+            >
+              {clinic}
+            </p>
           </div>
           <SidebarNav collapsed={collapsed} />
+
+          {/* Collapse toggle — a separate nav-style row BELOW the nav (Roland
+              2026-06-11: keep it off the header so it never squeezes the logo).
+              Desktop only; mobile uses the topbar menu button + drawer. */}
+          <button
+            onClick={collapseToggle}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className={cn(
+              "mt-1 hidden items-center gap-2 rounded-lg py-1.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-hover hover:text-foreground lg:flex",
+              collapsed ? "mx-2 justify-center px-0" : "mx-2 px-2",
+            )}
+          >
+            <CardIcon
+              icon={collapsed ? PanelLeft : PanelLeftClose}
+              tone="neutral"
+              variant="badge"
+              size="sm"
+            />
+            {!collapsed && (
+              <span>{collapsed ? "Expand sidebar" : "Collapse sidebar"}</span>
+            )}
+          </button>
           <div className="mt-auto px-2 py-3">
             <button
               onClick={signOut}

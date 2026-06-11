@@ -217,7 +217,7 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
                       <td className="px-3 py-2.5">
                         <span
                           className={cn(
-                            "rounded-full px-2 py-0.5 text-xs font-medium capitalize",
+                            "rounded-md px-2 py-0.5 text-xs font-medium capitalize",
                             STATUS_PILL[p.status] ?? "bg-slate-500/10 text-slate-600",
                           )}
                         >

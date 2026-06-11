@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/form";
+import { Footer } from "@/components/Footer";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -34,48 +35,61 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-xl bg-card p-8 shadow-float">
-        {/* Wordmark — the ONLY place IBM Plex Serif lives. */}
-        <p className="text-center font-wordmark text-2xl font-semibold tracking-tight">
-          RolDe
-        </p>
-        <h1 className="mt-6 text-center text-lg font-medium">Sign in</h1>
+    // Centred treatment (mindate parity, Roland 2026-06-11): big wordmark +
+    // tagline ABOVE a borderless floating card, with the footer pinned to the
+    // bottom so the block sits dead-centre of the viewport.
+    <main className="relative flex min-h-screen items-center justify-center px-6 py-12">
+      <div className="w-full max-w-sm space-y-8">
+        <div className="flex flex-col items-center gap-1.5">
+          {/* Wordmark — the ONLY place IBM Plex Serif lives (SVG to come). */}
+          <p className="font-wordmark text-5xl font-semibold tracking-tight">
+            RolDe
+          </p>
+          <h1 className="text-base font-medium text-muted-foreground">
+            The clinical operating system
+          </h1>
+        </div>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
-          <Field label="Email" htmlFor="email">
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              valid={EMAIL.test(email)}
-              required
-            />
-          </Field>
-          <Field label="Password" htmlFor="password">
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              valid={password.length >= 6}
-              required
-            />
-          </Field>
+        <div className="w-full rounded-xl bg-card p-8 shadow-float">
+          <h2 className="text-center text-xl font-semibold tracking-tight">
+            Sign in
+          </h2>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          <form onSubmit={onSubmit} className="mt-6 space-y-4">
+            <Field label="Email" htmlFor="email">
+              <Input
+                id="email"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                valid={EMAIL.test(email)}
+                required
+              />
+            </Field>
+            <Field label="Password" htmlFor="password">
+              <Input
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                valid={password.length >= 6}
+                required
+              />
+            </Field>
 
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>
-            {loading ? "Signing in…" : "Sign in"}
-          </Button>
-        </form>
+            {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          The clinical operating system.
-        </p>
+            <Button type="submit" size="lg" className="w-full" disabled={loading}>
+              {loading ? "Signing in…" : "Sign in"}
+            </Button>
+          </form>
+        </div>
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0">
+        <Footer />
       </div>
     </main>
   );

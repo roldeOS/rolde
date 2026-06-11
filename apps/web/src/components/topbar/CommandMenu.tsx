@@ -172,13 +172,18 @@ export function CommandMenu() {
 
   return (
     <>
+      {/* Floating search — a SOLID white chip on a drop shadow (no ring), so it
+          lifts over the glass topbar like mindate's. Reads as a search BAR with
+          a min-width on larger screens. */}
       <button
         onClick={() => setOpen(true)}
-        className="flex h-8 items-center gap-2 rounded-lg bg-card/70 px-2.5 text-sm text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-all hover:bg-hover hover:shadow"
+        className="group flex h-8 items-center gap-2 rounded-lg bg-card px-2.5 text-sm text-muted-foreground shadow-sm transition-shadow hover:shadow-md sm:min-w-[200px] md:min-w-[240px]"
       >
-        <Search className="size-4" />
+        <Search className="size-4 shrink-0" />
         <span className="hidden sm:inline">Search…</span>
-        <kbd className="hidden rounded bg-muted px-1 text-[10px] sm:inline">⌘K</kbd>
+        <kbd className="ml-auto hidden rounded bg-muted px-1 text-[10px] sm:inline">
+          ⌘K
+        </kbd>
       </button>
 
       {open && (

@@ -105,7 +105,7 @@ export function PatientIsland() {
                 <span
                   key={al.title}
                   className={cn(
-                    "rounded-full px-2.5 py-0.5 text-xs font-medium",
+                    "rounded-md px-2.5 py-0.5 text-xs font-medium",
                     al.priority === "critical"
                       ? "bg-critical/10 text-critical"
                       : al.priority === "warning"

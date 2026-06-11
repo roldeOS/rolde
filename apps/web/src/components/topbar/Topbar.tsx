@@ -27,6 +27,7 @@ const SECTION: [RegExp, string][] = [
   [/^\/billing/, "Billing"],
   [/^\/reports/, "Reports"],
   [/^\/settings/, "Settings"],
+  [/^\/legal/, "Legal & Safety"],
 ];
 
 const VIEWS: { key: WorkspaceView; label: string }[] = [
@@ -54,7 +55,10 @@ export function Topbar({
 
   return (
     <div className="sticky top-0 z-40 px-3 pt-3 sm:px-4">
-      <div className="glass flex h-11 items-center justify-between gap-3 rounded-xl border border-border/40 px-2 shadow-sm">
+      {/* Floating glass bar (Roland 2026-06-11, mindate parity): a bright inset
+          top-highlight ("wet glass lip") + a soft drop shadow so it reads as a
+          bar floating over the page, not a flat seam. */}
+      <div className="glass flex h-11 items-center justify-between gap-3 rounded-xl border border-white/50 px-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_8px_22px_-10px_rgba(0,0,0,0.22)]">
         {/* Left — toggle + breadcrumb */}
         <nav className="flex min-w-0 items-center gap-0.5" aria-label="Breadcrumb">
           {/* MOBILE menu button only — desktop sidebar-collapse now lives in
