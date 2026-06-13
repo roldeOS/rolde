@@ -14,6 +14,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [pwError, setPwError] = useState(false);
   const [loading, setLoading] = useState(false);
   // The email tick means something REAL: this account exists in the DB (Roland
   // 2026-06-11). null = unknown/not-yet-checked; true/false from email_exists().
@@ -52,6 +53,7 @@ export default function LoginPage() {
     });
     if (error) {
       setError(error.message);
+      setPwError(true);
       setLoading(false);
       return;
     }
@@ -101,7 +103,11 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (pwError) setPwError(false);
+                }}
+                error={pwError}
                 required
               />
             </Field>

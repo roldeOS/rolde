@@ -1,4 +1,4 @@
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -15,6 +15,14 @@ function ValidTick() {
   return (
     <span className="tick-squircle pointer-events-none absolute right-1.5 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-[7px] text-emerald-600">
       <Check className="size-3.5" strokeWidth={2.75} />
+    </span>
+  );
+}
+
+function ErrorX() {
+  return (
+    <span className="x-squircle pointer-events-none absolute right-1.5 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-[7px] text-rose-600">
+      <X className="size-3.5" strokeWidth={2.75} />
     </span>
   );
 }
@@ -49,13 +57,23 @@ export function Field({
 
 export function Input({
   valid,
+  error,
   className,
   ...props
-}: React.ComponentProps<"input"> & { valid?: boolean }) {
+}: React.ComponentProps<"input"> & { valid?: boolean; error?: boolean }) {
   return (
     <div className="relative">
-      <input {...props} className={cn(fieldFloat, valid && "pr-10", className)} />
-      {valid && <ValidTick />}
+      <input
+        {...props}
+        className={cn(
+          fieldFloat,
+          valid && "field-ok",
+          error && "field-err",
+          (valid || error) && "pr-10",
+          className,
+        )}
+      />
+      {error ? <ErrorX /> : valid ? <ValidTick /> : null}
     </div>
   );
 }

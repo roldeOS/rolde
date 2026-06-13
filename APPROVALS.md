@@ -149,6 +149,12 @@ colour, no glow. The green-tick `.tick-squircle` is frosted with NO border; the 
 explainer has NO hover. (`.field-glass` — the Liquid Glass version — stays on record if ever
 wanted; swap the class in `form.tsx`.) Full spec Bible 4.2 §D.3.
 
+3.6a **Field validity = the hairline RE-COLOURED, never thicker** (Roland 2026-06-11). On a real
+account match the email line goes **pastel green** (`.field-ok`) + the green-tick squircle; on a
+wrong password the line goes **pastel red** (`.field-err`) + a frosted **red-X squircle**
+(`.x-squircle`). Same 1px thickness as the resting hairline — only the colour changes. Driven by
+`Input`'s `valid` / `error` props.
+
 3.9 **NAVIGATION MUST BE SNAPPY — instant loading skeletons** (Roland 2026-06-11). EVERY route
 segment that fetches data has a `loading.tsx` shimmer skeleton (`.skeleton`) so a nav click shows
 the page SHELL immediately and never blocks blank on the server fetch — "if it's not snappy with no

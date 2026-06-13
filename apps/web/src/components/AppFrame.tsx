@@ -99,10 +99,13 @@ export function AppFrame({
             {/* Brand mark — Roland's SVGs. Wordmark when expanded, square icon
                 when collapsed to the rail. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
+            {/* The SVG has ~19% built-in side whitespace, so a negative left
+                margin lands the VISIBLE "R" on the same x as the nav icons below
+                (mindate's alignment trick — Roland 2026-06-11). Tuned to h-6. */}
             <img
               src="/wordmark-rolde.svg"
               alt="RolDe"
-              className={cn("h-6 w-auto", collapsed && "lg:hidden")}
+              className={cn("-ml-[21px] h-6 w-auto", collapsed && "lg:hidden")}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -113,9 +116,12 @@ export function AppFrame({
                 collapsed ? "lg:block" : "lg:hidden",
               )}
             />
+            {/* Clinic DISPLAY name — bigger + black, right under the wordmark
+                (Roland 2026-06-11). This is the short name collected at signup so
+                it never truncates; the full legal name lives in the footer. */}
             <p
               className={cn(
-                "mt-0.5 truncate text-xs text-muted-foreground",
+                "mt-1.5 truncate text-sm font-semibold text-foreground",
                 collapsed && "lg:hidden",
               )}
             >
@@ -158,11 +164,16 @@ export function AppFrame({
             </button>
             <div
               className={cn(
-                "mt-3 space-y-0.5 px-2 text-center text-[10px] leading-snug text-muted-foreground",
+                "mt-3 space-y-1 px-2 text-left text-[10px] leading-snug text-muted-foreground",
                 collapsed && "lg:hidden",
               )}
             >
-              <p className="inline-flex items-center gap-1">
+              {/* Full (legal) clinic name — used on invoices/letters; sits here so
+                  the sidebar header can stay the short display name (Roland 2026-06-11). */}
+              <p className="truncate text-[11px] font-medium text-foreground/75">
+                {clinic}
+              </p>
+              <p className="inline-flex items-center gap-1 pt-0.5">
                 Made with
                 <Heart
                   aria-label="love"
