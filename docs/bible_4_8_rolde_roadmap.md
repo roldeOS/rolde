@@ -783,9 +783,10 @@ No-show rate · New patients · Active patients/retention.
   (graph a value over time), abnormal flagging + seen/actioned tracking.
 - **Letters (4.4 §5–6):** templates + AI drafts, closed-loop referrals, e-sign/send/track.
 - **Billing (4.3 §4):** invoices/deposits, **packages & memberships**, **payment
-  gateway via Stripe Connect** (clinic opts in at onboarding; **RolDe takes a
-  platform fee** via Connect `application_fee_amount`; commercial terms → new
-  4.3 §4.7), aged debt, insurer billing.
+  gateway options the clinic owns** (Stripe / PayPal / card — the clinic is the
+  merchant of record; RolDe facilitates the connection but takes **0% fee** and
+  never touches patient money — Roland 2026-06-13, Scenario 1, per 4.3 §4.6),
+  aged debt, insurer billing.
 - **Reports (4.3 §5, 4.4 §9):** financial, recall effectiveness, no-show/retention,
   cohort analytics.
 - **Settings — Caretaker (4.3 §5):** services & pricing, rooms/hours, users/roles,
@@ -799,7 +800,10 @@ No-show rate · New patients · Active patients/retention.
 3. **Recalls + automated reminders** (4.4 §3) — retention + no-show lever.
 4. **Before/after + body-map annotations** (4.6 §4) — Doc For Skin's core.
 5. **Inventory with batch/expiry** (NEW — Bible 4.4 §13 to draft) — Botox/filler traceability.
-6. **Payment gateway with RolDe's cut** (4.3 §4.7) — a revenue model for us.
+6. **Clinic-owned payment gateways** (4.3 §4.6) — we provide the integration
+   options; the clinic keeps 100%. RolDe earns from subscription, never patient
+   payments (Roland 2026-06-13 — Scenario 2 rejected as a logistical/regulatory
+   nightmare; we are NOT a payment facilitator).
 7. **Unified worklist dashboard** (4.2 §6) — opened every morning.
 
 ### 15.4 BUILD SEQUENCE (the build list)
@@ -815,14 +819,62 @@ No-show rate · New patients · Active patients/retention.
   **online booking widget** · **recalls + reminders engine** · waitlist.
 - **Wave 3 — Clinical orders:** prescribing + drug-safety · investigations
   ordering + results inbox + trends · letters + closed-loop referrals.
-- **Wave 4 — Money:** billing · packages & **memberships** · **Stripe Connect +
-  RolDe platform fee** · aged debt.
+- **Wave 4 — Money:** billing · packages & **memberships** · **clinic-owned
+  payment gateways** (Stripe/PayPal/card; clinic = merchant, 0% RolDe fee) · aged debt.
 - **Wave 5 — Ambient AI:** AI server (Gemma on M4 Max) · ambient suggestions ·
   AI drafting · correction pipeline.
 - **Wave 6 — Growth & ops:** inventory (batch/expiry) · marketing/CRM + reviews ·
   reports/analytics · patient portal · audit-log surface.
 
 Tenant onboarding (4.3 §2) + the Custodian console (4.3 §6) build alongside Wave 1.
+
+### 15.5 Planning-session decisions (Roland 2026-06-13) — additions to the sequence
+
+These were decided in the 2026-06-13 planning pass and slot into the waves above.
+
+- **Login Security Suite** (research-backed; Supabase-native). Splits two ways:
+  - *Wave-0 hardening (do now, config-level):* invisible captcha (Turnstile),
+    rate-limit + lockout, leaked-password protection (HIBP), strong password
+    policy, email verification, conversational + non-enumerating error copy,
+    **Forgot-Password flow** (DONE 2026-06-13). 
+  - *Wave 1:* **passkeys/WebAuthn (primary)**, **TOTP MFA** (mandatory for
+    Custodian + Caretaker), active **sessions/devices list + revoke**,
+    new-device email alerts, MFA recovery codes, admin-initiated user
+    deactivation, step-up re-auth for sensitive actions, role-scoped session
+    timeouts, an **auth audit log**. (Custodian MFA already required — 4.3 §6.2.)
+- **Legal & contact surface.** Login gets a discreet footer (Privacy · Terms ·
+  Contact). Full acceptance (terms + DPA checkbox) lives in onboarding (4.3 §2).
+  Pages to draft (counsel-reviewed before launch): Privacy Policy, **DPA**
+  (separate from privacy), Terms of Service, Clinical Disclaimer, **Clinical
+  Safety statement (DCB0129/0160)**, Acceptable Use, Cookie/processing notice.
+  Hosted in the Legal & Safety surface (APPROVALS §8.2) + the marketing site.
+- **THE WARD MAP** (greenlit frame — Roland 2026-06-13). A beautiful top-down /
+  isometric spatial board on the dashboard: rooms + beds/chairs, status colours,
+  **click a bed → the patient**, alerts glow live (Supabase Realtime). **Empty
+  bed → click to ASSIGN a patient**; doctors AND nurses can move/assign patients
+  (nurses do the real-world rearranging). The **Map Editor lives in Caretaker
+  Settings (caretaker-only)**. Layout is fully label-FREE: the caretaker names
+  rooms/positions ("bed/ward" or "chair/room") and re-labels as the clinic
+  evolves (out-patient → in-patient) — RolDe never gates the terminology.
+  Occupancy = whatever the clinic uses (manual assignment, admission, OR linked
+  appointment). Bespoke SVG assets to be supplied by Roland. Builds as a focused
+  step right after a thin Wave-1 Settings shell, BEFORE the heavier waves.
+- **Payments — FINAL: Scenario 1 only** (Roland 2026-06-13). RolDe provides the
+  gateway *options* in Caretaker Settings; the clinic connects its OWN
+  Stripe/PayPal/card account (merchant of record); funds go direct; **RolDe
+  takes 0% and never touches patient money or handles failed payments**.
+  Scenario 2 (RolDe as processor with a cut) is **rejected** — payment-
+  facilitator status is a logistical + regulatory burden not worth the
+  commission. Resolves the old §4.6-vs-§15 conflict in favour of §4.6.
+- **One-page website builder** (Wave 6 — pending final go). An embedded
+  template-based WYSIWYG (Puck or GrapesJS) in Caretaker Settings → Website, so a
+  simple clinic gets a one-page scrolling site (services, about, hours, booking
+  CTA) under the RolDe roof. Publish to `{clinic}.rolde.site` or a custom domain
+  (CNAME → RolDe, auto-SSL, Vercel-for-Platforms pattern). Scoped as
+  template-based (not freeform) to contain hosting/support/domain burden.
+- **Clinic name split** (Wave 1). Onboarding collects a **Legal/Full name**
+  (invoices, letters) + a **Display name** (sidebar, ≤24 chars, never truncates).
+  Schema: `tenants.display_name` beside `tenants.name`.
 
 ---
 
