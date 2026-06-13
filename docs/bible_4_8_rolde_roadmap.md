@@ -857,7 +857,10 @@ These were decided in the 2026-06-13 planning pass and slot into the waves above
   rooms/positions ("bed/ward" or "chair/room") and re-labels as the clinic
   evolves (out-patient → in-patient) — RolDe never gates the terminology.
   Occupancy = whatever the clinic uses (manual assignment, admission, OR linked
-  appointment). Bespoke SVG assets to be supplied by Roland. Builds as a focused
+  appointment). **Visual style = elegant pastel glassy ISOMETRIC icograms** with a
+  touch of 3D (Roland 2026-06-13) — squarely in RolDe's Liquid-Glass language.
+  SVG assets either Jarvis-made or Roland-designed (Roland is the design lead;
+  Jarvis wires them + the live alert-glow + interactivity). Builds as a focused
   step right after a thin Wave-1 Settings shell, BEFORE the heavier waves.
 - **Payments — FINAL: Scenario 1 only** (Roland 2026-06-13). RolDe provides the
   gateway *options* in Caretaker Settings; the clinic connects its OWN
@@ -866,12 +869,20 @@ These were decided in the 2026-06-13 planning pass and slot into the waves above
   Scenario 2 (RolDe as processor with a cut) is **rejected** — payment-
   facilitator status is a logistical + regulatory burden not worth the
   commission. Resolves the old §4.6-vs-§15 conflict in favour of §4.6.
-- **One-page website builder** (Wave 6 — pending final go). An embedded
-  template-based WYSIWYG (Puck or GrapesJS) in Caretaker Settings → Website, so a
-  simple clinic gets a one-page scrolling site (services, about, hours, booking
-  CTA) under the RolDe roof. Publish to `{clinic}.rolde.site` or a custom domain
-  (CNAME → RolDe, auto-SSL, Vercel-for-Platforms pattern). Scoped as
-  template-based (not freeform) to contain hosting/support/domain burden.
+- **One-page website builder** = "Shopify/Webflow for clinics" (Wave 6, a PAID
+  add-on — Roland 2026-06-13). Self-host the **Puck** core (MIT — we own our
+  fork, zero reliance/fees; the "no free tier" is only their optional hosted
+  product). Puck is React-native, so its blocks ARE RolDe components → the editor
+  looks unmistakably RolDe. **Template-based, not freeform** (clinics wanting more
+  pay for a "proper" site elsewhere — and still embed our plugin). Lives in
+  Caretaker Settings → Website. The **RolDe Booking Plugin API** (embeddable
+  widget) drops the booking form + payment (clinic's OWN gateway, Scenario 1)
+  onto the site — internal OR external — so it all wires back into RolDe (the
+  Wave-2 booking widget, made embeddable). **Custom domains, any registrar:**
+  Caretaker Settings shows the exact CNAME (www/subdomain) + A record (apex)
+  to paste at their provider, with per-registrar quick-links; RolDe auto-verifies
+  DNS + auto-issues SSL (Vercel-for-Platforms pattern); status shows
+  Pending → Verifying → Live 🔒.
 - **Clinic name split** (Wave 1). Onboarding collects a **Legal/Full name**
   (invoices, letters) + a **Display name** (sidebar, ≤24 chars, never truncates).
   Schema: `tenants.display_name` beside `tenants.name`.
