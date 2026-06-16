@@ -9,6 +9,7 @@ import { accessWindowBadge } from "@/lib/accessWindow";
 import type { CardIconTone } from "@/components/ui/CardIcon";
 import { getSettingsAccess, SettingsRestricted } from "../access";
 import { getSection } from "../sections";
+import { InviteTeammate } from "./InviteTeammate";
 import { cn } from "@/lib/utils";
 
 /**
@@ -90,9 +91,9 @@ export default async function UsersRolesPage() {
 
   const tenantId = ctx?.membership?.tenant_id ?? null;
   const meId = ctx?.user?.id ?? null;
-  const { staff, nowMs } = tenantId
+  const { staff, nowMs, country } = tenantId
     ? await loadStaff(tenantId)
-    : { staff: [], nowMs: 0 };
+    : { staff: [], nowMs: 0, country: "GB" };
 
   return (
     <div className="w-full space-y-6 p-6 lg:p-8">
@@ -122,11 +123,12 @@ export default async function UsersRolesPage() {
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl bg-card shadow-float">
-          <div className="border-b border-border px-5 py-3">
+          <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
             <p className="text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{staff.length}</span>{" "}
               {staff.length === 1 ? "person" : "people"} in this clinic
             </p>
+            <InviteTeammate country={country} />
           </div>
           <ul className="divide-y divide-border/60">
             {staff.map((s) => (
@@ -229,13 +231,16 @@ function StaffRow({ s, isMe, nowMs }: { s: Staff; isMe: boolean; nowMs: number }
 
 async function loadStaff(tenantId: string) {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("tenant_users")
-    .select(
-      "id, user_id, display_name, designation, job_title, role, prescribing_rights, license_type, license_number, status, access_starts_at, access_ends_at, last_login_at, created_at",
-    )
-    .eq("tenant_id", tenantId)
-    .order("created_at", { ascending: true });
+  const [{ data }, { data: tenant }] = await Promise.all([
+    supabase
+      .from("tenant_users")
+      .select(
+        "id, user_id, display_name, designation, job_title, role, prescribing_rights, license_type, license_number, status, access_starts_at, access_ends_at, last_login_at, created_at",
+      )
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: true }),
+    supabase.from("tenants").select("country").eq("id", tenantId).maybeSingle(),
+  ]);
 
   const rows = data ?? [];
   const emails = await resolveEmails(rows.map((r) => r.user_id));
@@ -244,6 +249,7 @@ async function loadStaff(tenantId: string) {
   return {
     staff: rows.map((r) => ({ ...r, email: emails.get(r.user_id) ?? null })),
     nowMs: Date.now(),
+    country: tenant?.country ?? "GB",
   };
 }
 

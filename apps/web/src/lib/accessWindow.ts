@@ -32,6 +32,18 @@ function fmtSpan(startMs: number, endMs: number): string {
   return `${fmtDate(startMs)} – ${fmtDate(endMs)}`;
 }
 
+/** A full sentence for the onboarding email — "how long they have access". */
+export function accessSentence(startsAt: string | null, endsAt: string | null): string {
+  const long = (ms: number) =>
+    new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" }).format(ms);
+  const start = startsAt ? Date.parse(startsAt) : null;
+  const end = endsAt ? Date.parse(endsAt) : null;
+  if (start !== null && end !== null) return `Your access runs ${long(start)} to ${long(end)}.`;
+  if (end !== null) return `Your access runs until ${long(end)}.`;
+  if (start !== null) return `Your access begins ${long(start)}.`;
+  return "Your access is open-ended.";
+}
+
 export function accessWindowBadge(
   startsAt: string | null,
   endsAt: string | null,

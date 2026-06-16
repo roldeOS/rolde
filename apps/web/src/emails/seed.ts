@@ -54,13 +54,14 @@ export const PLATFORM_TEMPLATES: EmailTemplateSeed[] = [
     headline: "Set up your account",
     paragraphs: [
       "Hi {{name}},",
-      "{{inviter}} has invited you to join {{clinic}} on RolDe OS as {{role}}. Tap below to choose a password and you’re in.",
+      "{{inviter}} has invited you to join {{clinic}} on RolDe OS as {{role}}. {{access_note}}",
+      "Tap below to choose a password and you’re in.",
     ],
     cta_label: "Set your password",
     cta_url: "{{action_url}}",
     footer_note:
       "This invite link expires in 24 hours. If you weren’t expecting it, you can safely ignore this email.",
-    variables: ["name", "clinic", "inviter", "role", "action_url"],
+    variables: ["name", "clinic", "inviter", "role", "access_note", "action_url"],
   },
 ];
 
