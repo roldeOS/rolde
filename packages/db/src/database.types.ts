@@ -472,16 +472,23 @@ export type Database = {
       tenant_users: {
         Row: {
           accepted_at: string | null
+          access_ends_at: string | null
+          access_starts_at: string | null
           created_at: string
+          designation: string | null
           display_name: string
           gdc_number: string | null
           gmc_number: string | null
           id: string
           invited_at: string | null
           invited_by: string | null
+          job_title: string | null
           last_login_at: string | null
+          license_number: string | null
+          license_type: string | null
           nmc_pin: string | null
           photo_url: string | null
+          preferred_name: string | null
           prescribing_rights: boolean
           role: Database["public"]["Enums"]["user_role"]
           specialties: string[] | null
@@ -492,16 +499,23 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          access_ends_at?: string | null
+          access_starts_at?: string | null
           created_at?: string
+          designation?: string | null
           display_name: string
           gdc_number?: string | null
           gmc_number?: string | null
           id?: string
           invited_at?: string | null
           invited_by?: string | null
+          job_title?: string | null
           last_login_at?: string | null
+          license_number?: string | null
+          license_type?: string | null
           nmc_pin?: string | null
           photo_url?: string | null
+          preferred_name?: string | null
           prescribing_rights?: boolean
           role: Database["public"]["Enums"]["user_role"]
           specialties?: string[] | null
@@ -512,16 +526,23 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          access_ends_at?: string | null
+          access_starts_at?: string | null
           created_at?: string
+          designation?: string | null
           display_name?: string
           gdc_number?: string | null
           gmc_number?: string | null
           id?: string
           invited_at?: string | null
           invited_by?: string | null
+          job_title?: string | null
           last_login_at?: string | null
+          license_number?: string | null
+          license_type?: string | null
           nmc_pin?: string | null
           photo_url?: string | null
+          preferred_name?: string | null
           prescribing_rights?: boolean
           role?: Database["public"]["Enums"]["user_role"]
           specialties?: string[] | null
@@ -549,6 +570,7 @@ export type Database = {
           config: Json
           contact_email: string | null
           contact_phone: string | null
+          country: string
           cqc_registration: string | null
           created_at: string
           custom_domain: string | null
@@ -577,6 +599,7 @@ export type Database = {
           config?: Json
           contact_email?: string | null
           contact_phone?: string | null
+          country?: string
           cqc_registration?: string | null
           created_at?: string
           custom_domain?: string | null
@@ -605,6 +628,7 @@ export type Database = {
           config?: Json
           contact_email?: string | null
           contact_phone?: string | null
+          country?: string
           cqc_registration?: string | null
           created_at?: string
           custom_domain?: string | null
@@ -634,8 +658,8 @@ export type Database = {
           delivered_at: string | null
           error_message: string | null
           id: string
-          opened_at: string | null
           idempotency_key: string | null
+          opened_at: string | null
           provider_message_id: string | null
           rendered_html: string | null
           rendered_text: string | null
@@ -654,8 +678,8 @@ export type Database = {
           delivered_at?: string | null
           error_message?: string | null
           id?: string
-          opened_at?: string | null
           idempotency_key?: string | null
+          opened_at?: string | null
           provider_message_id?: string | null
           rendered_html?: string | null
           rendered_text?: string | null
@@ -674,8 +698,8 @@ export type Database = {
           delivered_at?: string | null
           error_message?: string | null
           id?: string
-          opened_at?: string | null
           idempotency_key?: string | null
+          opened_at?: string | null
           provider_message_id?: string | null
           rendered_html?: string | null
           rendered_text?: string | null
@@ -744,6 +768,8 @@ export type Database = {
         | "cunnere"
         | "cofferer"
         | "patient"
+        | "practitioner"
+        | "codewright"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -906,6 +932,8 @@ export const Constants = {
         "cunnere",
         "cofferer",
         "patient",
+        "practitioner",
+        "codewright",
       ],
     },
   },

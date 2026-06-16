@@ -109,7 +109,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: UsersRound,
     tone: "brand",
     source: "Bible 4.3 §5",
-    status: "soon",
+    status: "ready",
     group: "Spaces & People",
   },
   // — Clinical & Services —

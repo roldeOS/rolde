@@ -15,12 +15,20 @@ export async function getSessionContext() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
+  // Access lapses BY TIME, not a cron (W1.1.7, Roland 2026-06-16): a membership
+  // only counts if it's active AND now() sits inside its access window — a
+  // started-yet (access_starts_at) and not-expired (access_ends_at) check, with
+  // null on either side meaning "open-ended". An expired Locum therefore falls
+  // straight through to "No Workspace Yet" with their authored records intact.
+  const nowIso = new Date().toISOString();
   const [{ data: membership }, { data: custodian }] = await Promise.all([
     supabase
       .from("tenant_users")
       .select("tenant_id, display_name, role, prescribing_rights, tenants(name, slug)")
       .eq("user_id", user.id)
       .eq("status", "active")
+      .or(`access_starts_at.is.null,access_starts_at.lte.${nowIso}`)
+      .or(`access_ends_at.is.null,access_ends_at.gt.${nowIso}`)
       .order("created_at", { ascending: true })
       .limit(1)
       .maybeSingle(),
