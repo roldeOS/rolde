@@ -22,8 +22,11 @@ function fill(s: string): string {
 }
 
 export async function POST(request: Request) {
+  // Any authenticated user may preview — it only renders the content posted in
+  // the request body (no DB read, nothing leaked). Both the Custodian editor and
+  // the Caretaker clinic editor use it.
   const ctx = await getSessionContext();
-  if (!ctx?.isCustodian) {
+  if (!ctx) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const b = await request.json().catch(() => ({}));

@@ -26,7 +26,14 @@ type Template = {
  * Body paragraphs are edited as text, one per blank line. The preview follows
  * your system's light/dark setting.
  */
-export function EmailEditor({ template }: { template: Template }) {
+export function EmailEditor({
+  template,
+  saveUrl,
+}: {
+  template: Template;
+  /** Where Save PATCHes (Custodian platform route, or the Caretaker clinic route). */
+  saveUrl: string;
+}) {
   const router = useRouter();
   const [form, setForm] = useState({
     name: template.name,
@@ -80,7 +87,7 @@ export function EmailEditor({ template }: { template: Template }) {
 
   async function save() {
     setSaving(true);
-    const res = await fetch(`/api/admin/email-templates/${template.slug}`, {
+    const res = await fetch(saveUrl, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ ...form, paragraphs: toParagraphs() }),

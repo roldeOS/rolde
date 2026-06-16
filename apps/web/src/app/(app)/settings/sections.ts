@@ -142,7 +142,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: MailCheck,
     tone: "info",
     source: "Bible 4.4 §6 / 4.8 §15.5",
-    status: "soon",
+    status: "ready",
     group: "Clinical & Services",
   },
   // — Money & Growth —
