@@ -130,7 +130,7 @@ export function AppFrame({
               {clinic}
             </p>
           </div>
-          <SidebarNav collapsed={collapsed} />
+          <SidebarNav collapsed={collapsed} role={role} />
 
           {/* Collapse toggle — a separate nav-style row BELOW the nav (Roland
               2026-06-11: keep it off the header so it never squeezes the logo).
