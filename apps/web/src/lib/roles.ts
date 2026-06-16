@@ -4,6 +4,7 @@ import {
   ClipboardList,
   Stethoscope,
   CalendarClock,
+  Activity,
   HeartPulse,
   Pill,
   FlaskConical,
@@ -80,6 +81,15 @@ export const ROLES: RoleDef[] = [
     tone: "success",
     origin: "Latin locum tenens — ‘place-holder’",
     meaning: "A visiting clinician, with access for a set period.",
+    tier: "clinic-team",
+  },
+  {
+    key: "practitioner",
+    label: "Clinician — Practitioner",
+    icon: Activity,
+    tone: "success",
+    origin: "Latin practicare — ‘to practise’",
+    meaning: "Advanced practitioner (nurse, physio…) with extended clinical scope.",
     tier: "clinic-team",
   },
   {

@@ -21,9 +21,10 @@ export default async function AppLayout({
   const user =
     ctx?.membership?.display_name ?? ctx?.custodian?.display_name ?? ctx?.user.email ?? "";
   const role = ctx?.membership?.role ?? (custodianOnly ? "custodian" : "");
+  const prescribingRights = ctx?.membership?.prescribing_rights ?? false;
 
   return (
-    <AppFrame clinic={clinic} user={user} role={role}>
+    <AppFrame clinic={clinic} user={user} role={role} prescribingRights={prescribingRights}>
       {children}
     </AppFrame>
   );

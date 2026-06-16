@@ -9,17 +9,19 @@ import { cn } from "@/lib/utils";
  * an optional sub-line. Optionally a clickable surface (href). Colour gives a
  * calm splash without shouting.
  */
+// A real splash of colour (Roland 2026-06-16: the flat /8 washes "looked like
+// death") — a tinted gradient + a hairline tone ring so each tile reads alive.
 const TONE: Record<
   CardIconTone,
   { bg: string; value: string }
 > = {
-  critical: { bg: "bg-critical/8", value: "text-critical" },
-  warning: { bg: "bg-warning/10", value: "text-warning" },
-  success: { bg: "bg-success/8", value: "text-success" },
-  info: { bg: "bg-info/8", value: "text-info" },
-  accent: { bg: "bg-accent/10", value: "text-accent" },
-  neutral: { bg: "bg-slate-500/8", value: "text-slate-600" },
-  brand: { bg: "bg-foreground/[0.05]", value: "text-foreground" },
+  critical: { bg: "bg-gradient-to-br from-critical/[0.18] to-critical/[0.05] ring-1 ring-critical/15", value: "text-critical" },
+  warning: { bg: "bg-gradient-to-br from-warning/20 to-warning/[0.06] ring-1 ring-warning/15", value: "text-warning" },
+  success: { bg: "bg-gradient-to-br from-success/[0.18] to-success/[0.05] ring-1 ring-success/15", value: "text-success" },
+  info: { bg: "bg-gradient-to-br from-info/[0.18] to-info/[0.05] ring-1 ring-info/15", value: "text-info" },
+  accent: { bg: "bg-gradient-to-br from-accent/25 to-accent/[0.06] ring-1 ring-accent/20", value: "text-accent" },
+  neutral: { bg: "bg-gradient-to-br from-slate-500/[0.14] to-slate-500/[0.04] ring-1 ring-slate-500/15", value: "text-slate-600" },
+  brand: { bg: "bg-gradient-to-br from-info/[0.16] to-accent/[0.06] ring-1 ring-info/15", value: "text-info" },
 };
 
 export function StatTile({

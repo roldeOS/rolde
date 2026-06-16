@@ -1164,11 +1164,27 @@ editable by the Caretaker.
 **Seamless onboarding email (Roland 2026-06-16, write-in):** the moment a Caretaker creates a user,
 RolDe emails them — their role, the clinic, **how long they have access**, and a single-use
 **set-password link** (the `/reset` screen). One step from invite to in.
-**Per-role gating (Roland 2026-06-16, REMEMBER to build):** each role sees/does only what Bible 4.1's
-access matrix allows (e.g. Concierge: demographics + appts, NO clinical; Cofferer: finance only) —
-verified 2026-06-16 that this is NOT yet enforced (all clinic staff currently see the full clinic UI);
-the `@qa.rolde.app` per-role test users (see "Dev & QA fixtures" below) exist to verify it as it's
-built.)* · W1.1.8 Services & pricing · W1.1.9
+**Per-role gating ✅ (2026-06-16, built + verified):** `lib/access.ts` maps each module to its roles;
+the nav filters AND every clinic page guards (`requireModuleAccess`) — verified the negative case
+(Concierge → /prescribing blocked, Cofferer → /patients blocked). **The access rules (Roland's detailed
+spec, 2026-06-16):** Caretaker = God for the clinic. The clinical roles (Curator, Clinician, Clinician-
+Locum, **Clinician-Practitioner** [NEW: nurse/ANP/diabetic/physio practitioners], Nurse, Chemist,
+Cunnere) get EQUAL access to all medical records + notes. **Concierge** = front desk: patient list +
+records (to print) + calendar + billing; NO labs/requests/prescribing; can add a patient + take a
+payment inline. **Cofferer** = accounts only (billing/invoices — who's paid what); not even the patient
+list. **CodeWright** [NEW] = all areas for support, but NO prescribing / test-ordering, and every
+patient-record access logged. **Prescribing is a caretaker-set gate, NOT a role** (`canPrescribe` +
+`prescribing_rights`): even a doctor can't prescribe without the caretaker ticking "is a prescriber"
+(a medical student, say). **Add-Patient** is available to every role EXCEPT Cofferer; **every
+patient-record access is audit-logged, every time** (the Audit log tab in Logs). New roles
+`practitioner`/`codewright` added to the user_role enum.
+**Profile / identity (W1.1.7 build — schema added 2026-06-16):** each user has — `preferred_name` (the
+name shown in the Clinical Note; if blank, falls back to "<designation> <surname>", e.g. "Dr
+Jayasekhar"), `designation` (Dr/Mr/Ms/Nr — **set by the Caretaker, the user can't change their own**),
+`job_title` (free text, e.g. "Advanced Diabetic & Physiotherapy Practitioner"), and `license_type` +
+`license_number` (GMC/NMC/GDC/GPhC/HCPC… — the TYPE **auto-populates from the clinic's country**, the
+number is what the person holds — a GMC doctor needn't be UK-born). All entered/edited in the Users &
+Roles screen.)* · W1.1.8 Services & pricing · W1.1.9
   Templates · W1.1.10 Memberships & packages · W1.1.11 Integrations · W1.1.12 Website & domain
   (entry) · W1.1.13 Email Templates (operational clinic→patient emails; Resend-backed; Custodian
   platform emails live in W1.5.2)

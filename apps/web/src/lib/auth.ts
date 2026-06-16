@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { roleCanAccess } from "@/lib/access";
+import { roleCanAccess, canPrescribe } from "@/lib/access";
 
 /**
  * The authenticated user's session context for this request: who they are,
@@ -18,7 +18,7 @@ export async function getSessionContext() {
   const [{ data: membership }, { data: custodian }] = await Promise.all([
     supabase
       .from("tenant_users")
-      .select("tenant_id, display_name, role, tenants(name, slug)")
+      .select("tenant_id, display_name, role, prescribing_rights, tenants(name, slug)")
       .eq("user_id", user.id)
       .eq("status", "active")
       .order("created_at", { ascending: true })
@@ -54,5 +54,15 @@ export async function requireCustodian() {
 export async function requireModuleAccess(moduleKey: string) {
   const ctx = await getSessionContext();
   if (!roleCanAccess(ctx?.membership?.role, moduleKey)) notFound();
+  return ctx;
+}
+
+/**
+ * Prescribing gate (Roland 2026-06-16): the caretaker-set `prescribing_rights`
+ * flag is the real control — even a doctor without it can't prescribe. Denied → 404.
+ */
+export async function requirePrescriber() {
+  const ctx = await getSessionContext();
+  if (!canPrescribe(ctx?.membership?.role, ctx?.membership?.prescribing_rights)) notFound();
   return ctx;
 }

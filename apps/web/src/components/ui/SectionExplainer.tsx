@@ -99,7 +99,7 @@ export function SectionExplainer({ label, description, terms = [] }: ExplainerPr
           e.stopPropagation();
           setOpen((o) => !o);
         }}
-        className="relative z-10 inline-flex size-5 cursor-help items-center justify-center rounded-md bg-card text-muted-foreground shadow-sm outline-none before:absolute before:-inset-2.5 before:content-[''] focus-visible:ring-2 focus-visible:ring-ring/40"
+        className="relative z-10 inline-flex size-5 cursor-pointer items-center justify-center rounded-md bg-card text-muted-foreground shadow-sm outline-none before:absolute before:-inset-2.5 before:content-[''] focus-visible:ring-2 focus-visible:ring-ring/40"
       >
         <Info className="size-3.5" aria-hidden="true" />
       </button>

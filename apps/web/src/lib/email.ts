@@ -180,11 +180,12 @@ async function finalizeLog(
   admin: ReturnType<typeof createAdminClient>,
   a: FinalizeArgs,
 ): Promise<void> {
+  // delivered_at / opened_at / clicked_at are set ONLY by the Resend webhook on
+  // real delivery — never at send time (that would make "delivered" meaningless).
   const row = {
     status: a.status,
     error_message: a.errorMessage ?? null,
     provider_message_id: a.providerMessageId ?? null,
-    delivered_at: a.status === "sent" ? new Date().toISOString() : null,
   };
   try {
     if (a.logId) {

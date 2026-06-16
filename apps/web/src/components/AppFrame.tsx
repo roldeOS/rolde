@@ -23,11 +23,13 @@ export function AppFrame({
   clinic,
   user,
   role,
+  prescribingRights,
   children,
 }: {
   clinic: string;
   user: string;
   role: string;
+  prescribingRights?: boolean;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -133,7 +135,7 @@ export function AppFrame({
               </p>
             )}
           </div>
-          <SidebarNav collapsed={collapsed} role={role} />
+          <SidebarNav collapsed={collapsed} role={role} prescribingRights={prescribingRights} />
 
           {/* Collapse toggle — a separate nav-style row BELOW the nav (Roland
               2026-06-11: keep it off the header so it never squeezes the logo).

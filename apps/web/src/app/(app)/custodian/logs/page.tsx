@@ -1,8 +1,6 @@
 import Link from "next/link";
 import {
   ScrollText,
-  Eye,
-  MousePointerClick,
   Mail,
   ClipboardCheck,
   LogIn,
@@ -27,15 +25,38 @@ const TABS = [
   { key: "webhooks", label: "Webhooks", icon: Webhook, ready: false, blurb: "Incoming events from Resend and payment partners." },
 ] as const;
 
-const STATUS_STYLE: Record<string, string> = {
-  queued: "bg-warning/12 text-warning",
-  sent: "bg-info/12 text-info",
-  delivered: "bg-success/12 text-success",
-  delayed: "bg-warning/12 text-warning",
-  failed: "bg-destructive/12 text-destructive",
-  bounced: "bg-destructive/12 text-destructive",
-  complained: "bg-destructive/12 text-destructive",
+// The email lifecycle as a single pill — the furthest-along state a message
+// reached (Roland 2026-06-16: a pill that shows everything, not an eye).
+type Stage = { label: string; cls: string; note: string };
+const STAGE: Record<string, Stage> = {
+  queued: { label: "Queued", cls: "bg-muted text-muted-foreground", note: "waiting to send" },
+  sent: { label: "Sent", cls: "bg-info/12 text-info", note: "accepted by the mail provider" },
+  delivered: { label: "Delivered", cls: "bg-success/12 text-success", note: "reached the inbox" },
+  opened: { label: "Opened", cls: "bg-accent/20 text-accent", note: "the recipient opened it" },
+  clicked: { label: "Clicked", cls: "bg-foreground/10 text-foreground", note: "a link was clicked" },
+  delayed: { label: "Delayed", cls: "bg-warning/12 text-warning", note: "provider is retrying" },
+  bounced: { label: "Bounced", cls: "bg-destructive/12 text-destructive", note: "couldn't be delivered" },
+  complained: { label: "Complained", cls: "bg-destructive/12 text-destructive", note: "marked as spam" },
+  failed: { label: "Failed", cls: "bg-destructive/12 text-destructive", note: "we couldn't send it" },
 };
+const STAGE_LEGEND = ["sent", "delivered", "opened", "clicked", "bounced"] as const;
+
+function lifecycle(r: {
+  status: string;
+  delivered_at: string | null;
+  opened_at: string | null;
+  clicked_at: string | null;
+}): Stage {
+  if (r.status === "failed") return STAGE.failed;
+  if (r.status === "bounced") return STAGE.bounced;
+  if (r.status === "complained") return STAGE.complained;
+  if (r.clicked_at) return STAGE.clicked;
+  if (r.opened_at) return STAGE.opened;
+  if (r.delivered_at || r.status === "delivered") return STAGE.delivered;
+  if (r.status === "delayed") return STAGE.delayed;
+  if (r.status === "sent") return STAGE.sent;
+  return STAGE.queued;
+}
 
 export default async function CustodianLogsPage({
   searchParams,
@@ -52,6 +73,7 @@ export default async function CustodianLogsPage({
     subject: string;
     template_slug: string;
     status: string;
+    delivered_at: string | null;
     opened_at: string | null;
     clicked_at: string | null;
   }> = [];
@@ -59,7 +81,7 @@ export default async function CustodianLogsPage({
     const supabase = await createClient();
     const { data } = await supabase
       .from("transactional_emails")
-      .select("id, created_at, to_email, subject, template_slug, status, opened_at, clicked_at")
+      .select("id, created_at, to_email, subject, template_slug, status, delivered_at, opened_at, clicked_at")
       .order("created_at", { ascending: false })
       .limit(100);
     rows = data ?? [];
@@ -106,7 +128,20 @@ export default async function CustodianLogsPage({
       </div>
 
       {active.key === "email" ? (
-        <div className="overflow-x-auto rounded-xl bg-card shadow-float">
+        <div className="space-y-3">
+          {/* Legend — so any reader knows what each state means. */}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[11px] text-muted-foreground">
+            {STAGE_LEGEND.map((k, i) => (
+              <span key={k} className="inline-flex items-center gap-1.5">
+                {i > 0 && <span className="text-muted-foreground/40">›</span>}
+                <span className={cn("rounded px-1.5 py-0.5 font-medium", STAGE[k].cls)}>
+                  {STAGE[k].label}
+                </span>
+              </span>
+            ))}
+            <span className="text-muted-foreground/70">— hover a pill for what it means</span>
+          </div>
+          <div className="overflow-x-auto rounded-xl bg-card shadow-float">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs text-muted-foreground">
@@ -115,7 +150,6 @@ export default async function CustodianLogsPage({
                 <th className="px-4 py-3 font-medium">Subject</th>
                 <th className="px-4 py-3 font-medium">Template</th>
                 <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Activity</th>
               </tr>
             </thead>
             <tbody>
@@ -133,44 +167,30 @@ export default async function CustodianLogsPage({
                     {r.template_slug}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={cn(
-                        "rounded-md px-2 py-0.5 text-xs font-medium capitalize",
-                        STATUS_STYLE[r.status] ?? "bg-muted text-muted-foreground",
-                      )}
-                    >
-                      {r.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    {r.opened_at || r.clicked_at ? (
-                      <div className="flex items-center gap-2.5">
-                        {r.opened_at && (
-                          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" title="Opened">
-                            <Eye className="size-3.5" /> Opened
-                          </span>
-                        )}
-                        {r.clicked_at && (
-                          <span className="inline-flex items-center gap-1 text-xs text-success" title="Clicked">
-                            <MousePointerClick className="size-3.5" /> Clicked
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground/50">—</span>
-                    )}
+                    {(() => {
+                      const s = lifecycle(r);
+                      return (
+                        <span
+                          className={cn("rounded-md px-2 py-0.5 text-xs font-medium", s.cls)}
+                          title={s.note}
+                        >
+                          {s.label}
+                        </span>
+                      );
+                    })()}
                   </td>
                 </tr>
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                  <td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">
                     No emails sent yet.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+          </div>
         </div>
       ) : (
         <div className="mx-auto flex max-w-md flex-col items-center gap-4 rounded-xl bg-card p-10 text-center shadow-float">

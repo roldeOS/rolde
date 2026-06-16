@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { CONTROL_NAV } from "@/app/(app)/custodian/sections";
-import { roleCanAccess } from "@/lib/access";
+import { roleCanAccess, canPrescribe } from "@/lib/access";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -47,7 +47,15 @@ const NAV: NavItem[] = [
   { href: "/legal", label: "Legal & Safety", icon: Scale, tone: "neutral", module: "legal" },
 ];
 
-export function SidebarNav({ collapsed, role }: { collapsed: boolean; role?: string }) {
+export function SidebarNav({
+  collapsed,
+  role,
+  prescribingRights,
+}: {
+  collapsed: boolean;
+  role?: string;
+  prescribingRights?: boolean;
+}) {
   const pathname = usePathname();
   const renderItem = (item: NavItem) => {
     const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
@@ -98,7 +106,11 @@ export function SidebarNav({ collapsed, role }: { collapsed: boolean; role?: str
 
   return (
     <nav className="flex flex-col gap-0.5 px-2">
-      {NAV.filter((item) => roleCanAccess(role, item.module)).map(renderItem)}
+      {NAV.filter((item) =>
+        item.module === "prescribing"
+          ? canPrescribe(role, prescribingRights)
+          : roleCanAccess(role, item.module),
+      ).map(renderItem)}
     </nav>
   );
 }
