@@ -2,10 +2,11 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { UserCircle, LogOut, Settings } from "lucide-react";
+import { UserCircle, LogOut, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useClickAway } from "@/lib/useClickAway";
+import { RolesGlossary } from "./RolesGlossary";
 
 /** Profile dropdown — identity + sign-out (fully functional). */
 export function ProfileMenu({
@@ -19,6 +20,7 @@ export function ProfileMenu({
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [glossaryOpen, setGlossaryOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   const ref = useClickAway<HTMLDivElement>(close);
 
@@ -56,6 +58,15 @@ export function ProfileMenu({
             </p>
           </div>
           <div className="my-1 h-px bg-border" />
+          <button
+            onClick={() => {
+              setOpen(false);
+              setGlossaryOpen(true);
+            }}
+            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-hover"
+          >
+            <Users className="size-4 text-muted-foreground" /> Who&apos;s Who
+          </button>
           <Link
             href="/settings"
             onClick={close}
@@ -71,6 +82,12 @@ export function ProfileMenu({
           </button>
         </div>
       )}
+
+      <RolesGlossary
+        open={glossaryOpen}
+        onClose={() => setGlossaryOpen(false)}
+        currentRole={role}
+      />
     </div>
   );
 }
