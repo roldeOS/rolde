@@ -39,19 +39,26 @@
   --signal-info: #0284c7;
   --destructive: #dc2626;
 
-  /* Clinic accent — an elegant, calm PLAIN pastel (Roland 2026-06-11: no grain,
-     plain colours). This is the COMMON BACKGROUND — a coloured "paper" the white
-     content card floats on; the nav sits directly on it (no separate sidebar
-     surface). Per-clinic Caretaker setting eventually. */
-  --clinic-accent: #8aa896; /* sage-deep — accents */
+  /* Parchment — the RolDe SYSTEM default "paper" (Roland 2026-06-15): a calm,
+     warm-neutral the white content cards float on. The default for the app
+     shell / sidebar AND every RolDe + clinic email background, *because the whole
+     product is a clinical operating system* — paper-calm by default. A clinic's
+     Caretaker may override it with their own accent. (Lavender is reserved for
+     the front-facing marketing site; the content card itself is NEVER tinted.) */
+  --parchment: #f0efeb;
+
+  /* Clinic accent — an elegant, calm PLAIN pastel. NOW an ACCENT only (hovers,
+     the field-OK glow, and a clinic's OPTIONAL sidebar/paper tint) — no longer
+     the default paper; parchment (above) is. Per-clinic Caretaker setting. */
+  --clinic-accent: #8aa896; /* sage-deep — default clinic accent */
 
   /* The ONE hover token (RDS rule) — the accent at a soft wash. */
   --hover: rgb(138 168 150 / 0.2);
 
-  /* The paper — a soft elegant sage pastel. */
-  --sidebar: #d8e2dc;
+  /* The paper / sidebar — parchment by default (a clinic may override). */
+  --sidebar: var(--parchment);
   --sidebar-foreground: #2c2c2e;
-  --sidebar-border: #c8d6ce;
+  --sidebar-border: #e4e2dc;
 }
 
 @theme inline {

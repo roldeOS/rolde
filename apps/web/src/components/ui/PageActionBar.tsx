@@ -202,7 +202,7 @@ export function PageActionBarProvider({ children }: { children: ReactNode }) {
   const STATUS = {
     saving: { dot: "bg-info", label: "Saving", pill: "bg-info/12 text-info", msg: "RolDe is saving…" },
     saved: { dot: "bg-success", label: "Saved", pill: "bg-success/12 text-success", msg: savedMsg ?? "Saved" },
-    failed: { dot: "bg-critical", label: "Couldn’t save", pill: "bg-critical/12 text-critical", msg: state.error || "Couldn’t save — please try again." },
+    failed: { dot: "bg-critical", label: "Couldn’t Save", pill: "bg-critical/12 text-critical", msg: state.error || "Couldn’t save — please try again." },
   }[mode];
 
   // ── Unsaved-work guards while dirty ──────────────────────────────────────

@@ -49,6 +49,36 @@ function fmtDob(d: string) {
   });
 }
 
+type SortHeadProps = {
+  k: SortKey;
+  label: string;
+  sortKey: SortKey;
+  sortDir: "asc" | "desc";
+  onSort: (k: SortKey) => void;
+  className?: string;
+};
+
+/** A sortable column header — declared at MODULE scope (never inside render, so
+ * it isn't recreated every render — react-hooks/static-components). */
+function SortHead({ k, label, sortKey, sortDir, onSort, className }: SortHeadProps) {
+  return (
+    <th className={cn("px-3 py-2 font-semibold", className)}>
+      <button
+        onClick={() => onSort(k)}
+        className="inline-flex items-center gap-1 transition-colors hover:text-foreground"
+      >
+        {label}
+        {sortKey === k &&
+          (sortDir === "asc" ? (
+            <ArrowUp className="size-3" />
+          ) : (
+            <ArrowDown className="size-3" />
+          ))}
+      </button>
+    </th>
+  );
+}
+
 /** A floating, sortable data-table — the mindate TableShell pattern (Roland
  * 2026-06-11). NO per-table search box: the universal ⌘K search is the one
  * search (Roland: "universal search solves that"). */
@@ -108,23 +138,6 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
     URL.revokeObjectURL(a.href);
   }
 
-  const SortHead = ({ k, label, className }: { k: SortKey; label: string; className?: string }) => (
-    <th className={cn("px-3 py-2 font-semibold", className)}>
-      <button
-        onClick={() => toggleSort(k)}
-        className="inline-flex items-center gap-1 transition-colors hover:text-foreground"
-      >
-        {label}
-        {sortKey === k &&
-          (sortDir === "asc" ? (
-            <ArrowUp className="size-3" />
-          ) : (
-            <ArrowDown className="size-3" />
-          ))}
-      </button>
-    </th>
-  );
-
   const chip =
     "flex h-8 items-center gap-1.5 rounded-lg bg-card px-2.5 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow";
 
@@ -151,7 +164,7 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
             </button>
             <Link href="/patients/new">
               <Button>
-                <UserPlus /> New patient
+                <UserPlus /> New Patient
               </Button>
             </Link>
           </>
@@ -166,13 +179,13 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
               <table className="w-full min-w-[820px] text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                    <SortHead k="number" label="Number" />
-                    <SortHead k="name" label="Name" />
-                    <SortHead k="dob" label="Date of birth" />
+                    <SortHead k="number" label="Number" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                    <SortHead k="name" label="Name" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                    <SortHead k="dob" label="Date Of Birth" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                     <th className="px-3 py-2 font-semibold">Sex</th>
                     <th className="px-3 py-2 font-semibold">Mobile</th>
                     <th className="px-3 py-2 font-semibold">Email</th>
-                    <SortHead k="registered" label="Registered" />
+                    <SortHead k="registered" label="Registered" sortKey={sortKey} sortDir={sortDir} onSort={toggleSort} />
                     <th className="px-3 py-2 font-semibold">Status</th>
                   </tr>
                 </thead>

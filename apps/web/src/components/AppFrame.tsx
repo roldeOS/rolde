@@ -98,14 +98,16 @@ export function AppFrame({
           >
             {/* Brand mark — Roland's SVGs. Wordmark when expanded, square icon
                 when collapsed to the rail. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            {/* The SVG has ~19% built-in side whitespace, so a negative left
+            {/* The wordmark SVG has a small built-in left whitespace (~3% — the
+                glyphs start at x≈30 of a 900-wide viewBox), so a negative left
                 margin lands the VISIBLE "R" on the same x as the nav icons below
-                (mindate's alignment trick — Roland 2026-06-11). Tuned to h-6. */}
+                (mindate's alignment trick — Roland 2026-06-11). Tuned to h-6;
+                re-check visually after the RolDe OS wordmark swap (2026-06-15). */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/wordmark-rolde.svg"
-              alt="RolDe"
-              className={cn("-ml-[21px] h-6 w-auto", collapsed && "lg:hidden")}
+              src="/wordmark-roldeos.svg"
+              alt="RolDe OS"
+              className={cn("-ml-[4px] h-6 w-auto", collapsed && "lg:hidden")}
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -135,7 +137,7 @@ export function AppFrame({
               Desktop only; mobile uses the topbar menu button + drawer. */}
           <button
             onClick={collapseToggle}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             className={cn(
               "mt-1 hidden items-center gap-2 rounded-lg py-1.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-hover hover:text-foreground lg:flex",
               collapsed ? "mx-2 justify-center px-0" : "mx-2 px-2",
@@ -148,7 +150,7 @@ export function AppFrame({
               size="sm"
             />
             {!collapsed && (
-              <span>{collapsed ? "Expand sidebar" : "Collapse sidebar"}</span>
+              <span>{collapsed ? "Expand Sidebar" : "Collapse Sidebar"}</span>
             )}
           </button>
           <div className="mt-auto px-2 py-3">
@@ -160,7 +162,7 @@ export function AppFrame({
               )}
             >
               <CardIcon icon={LogOut} tone="critical" variant="badge" size="sm" />
-              <span className={collapsed ? "lg:hidden" : ""}>Sign out</span>
+              <span className={collapsed ? "lg:hidden" : ""}>Sign Out</span>
             </button>
             <div
               className={cn(

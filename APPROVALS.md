@@ -112,6 +112,21 @@ SVG logo on request — ask when ready). **Inter EVERYWHERE else, headings inclu
 2.2 5-tier type system (display/title/metric/body/caption) — no `text-base`, no `text-xl`, no
 arbitrary pixel sizes.
 
+2.3 **TITLE CASE LAW — all visible chrome** (Roland 2026-06-13, adopted wholesale from mindate
+APPROVALS §39). Every multi-word piece of **visible chrome** is **Title Case — the first letter
+of EVERY word capitalised**: card / table / page / modal / section titles, `(i)`-explainer
+`label`s, table column headers (+ CSV export headers), tab / field / stat / counter / sort-header
+/ timeline labels, sort & filter dropdown OPTIONS, command-palette entries, select-option labels,
+**button labels**, and hardcoded status / verdict / outcome labels ("Results Back", "Needs
+Review", "Coming Next"). **Hyphenated compounds keep the post-hyphen segment lowercase**
+("Drop-off", "Anti-spoof", "In-app", "Auto-suspend" — capitalising the tail is the regression).
+**NOT Title-Cased — do NOT "fix" these:** descriptive **sentences** (explainer / help / alert /
+blurb / description copy); **aria-labels** + HTML `title=` hover tooltips; enum / code VALUES
+(Sentence case, via a future `humanizeCode` per mindate §31/§600); the **RolDe** wordmark; the
+**C-roles** (Custodian / Caretaker / Curator / Concierge) and other proper nouns. The DEFAULT for
+any new chrome string is Title Case — Roland must be able to trust this without asking. (mindate
+CI-guards this via `check-title-case.mjs`; RolDe stays review-enforced until a guard is ported.)
+
 ## 3. Colour
 
 3.1 **Clinic accent — creamish-yellow pastel** (Roland 2026-06-10; earlier sunny-peach revised).
@@ -232,6 +247,22 @@ explicit **logged patient consent gate + visible "listening" indicator** before 
 capture. Routed pages linked from a persistent footer (app + auth) and shown at signup + at the
 point of capture. Spec: Bible 4.2 §D.8. Flag for legal counsel before go-live. *(Compliance item
 tracked in Bible 4.8 §15.)*
+
+## 9. Card standard — the squircle is the signature (Roland 2026-06-13)
+
+9.1 **Every white / Card-background card carries a `CardIcon` squircle** as the first thing in
+its header — `<CardIcon icon tone variant="badge" />` (white rounded-square + soft shadow +
+tone-tinted icon), via `CardHeaderRow` / `PageHeaderRow` (adopted from mindate APPROVALS §13 /
+§1.9 — *"our icons have become almost like a signature"*). Tone carries CLINICAL meaning only
+(Bible 4.2 §2.2). Exception: the centred AUTH cards (login / reset) stay bare.
+
+9.2 **Reuse before build — never approximate a card or table.** "Build a card / table like X" =
+**render X's component** (`CardHeaderRow`, `PageHeaderRow`, `DialogHeaderRow`, `CardIcon`,
+`StatTile`, `DataTable` / `TableShell` per §5, `SectionExplainer`), passing the FULL standard
+prop set (icon + tone + the `(i)` explainer where the surface carries one) — NOT a hand-rolled
+subset. A tile without its squircle + `(i)` isn't the tile (mindate MISTAKES #25). The default
+state for any new card / table is the shared component, Title-Cased (§2.3) — built right the
+first time, so Roland never has to ask twice.
 
 ---
 

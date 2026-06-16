@@ -39,7 +39,7 @@ export function NewPatientForm() {
   return (
     <form action={createPatient} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <Field label="First name" htmlFor="first_name" required>
+        <Field label="First Name" htmlFor="first_name" required>
           <Input
             id="first_name"
             name="first_name"
@@ -49,7 +49,7 @@ export function NewPatientForm() {
             autoComplete="off"
           />
         </Field>
-        <Field label="Last name" htmlFor="last_name" required>
+        <Field label="Last Name" htmlFor="last_name" required>
           <Input
             id="last_name"
             name="last_name"
@@ -62,7 +62,7 @@ export function NewPatientForm() {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <Field label="Date of birth" htmlFor="date_of_birth" required>
+        <Field label="Date Of Birth" htmlFor="date_of_birth" required>
           <Input
             id="date_of_birth"
             name="date_of_birth"
@@ -72,7 +72,7 @@ export function NewPatientForm() {
             valid={ok.date_of_birth}
           />
         </Field>
-        <Field label="Sex at birth" htmlFor="sex_at_birth" required>
+        <Field label="Sex At Birth" htmlFor="sex_at_birth" required>
           <Select
             id="sex_at_birth"
             name="sex_at_birth"
@@ -116,7 +116,7 @@ export function NewPatientForm() {
         />
       </Field>
 
-      <Field label="NHS number" htmlFor="nhs_number" hint="(optional)">
+      <Field label="NHS Number" htmlFor="nhs_number" hint="(optional)">
         <Input
           id="nhs_number"
           name="nhs_number"
@@ -134,7 +134,7 @@ export function NewPatientForm() {
       </p>
 
       <Button type="submit" size="lg" className="w-full">
-        Register patient
+        Register Patient
       </Button>
     </form>
   );

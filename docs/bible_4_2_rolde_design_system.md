@@ -1682,9 +1682,22 @@ data routes MUST add one. (APPROVALS §3.9.)
 
 ## D.12 Liquid-glass fields need colour behind them
 The Liquid Glass field (§D.3 / APPROVALS §3.6) refracts whatever sits behind it — so on a pure
-white card it's nearly invisible. Field-bearing cards therefore get a WHISPER of the brand sage
-(`.card-tinted`, ~12% sage) so the glass has something to play with. Chrome stays calm; the main
-content card is still never coloured (§3.2) — this is a faint tint on auth/field cards only.
+white card it's nearly invisible. Field-bearing cards therefore get a WHISPER of the brand paper
+(`.card-tinted`, ~12% of `--sidebar`) so the glass has something to play with. Chrome stays calm; the
+main content card is still never coloured (§3.2) — this is a faint tint on auth/field cards only.
+
+## D.12.5 Parchment is the system paper (Roland 2026-06-15)
+The default "paper" the whole product sits on is **parchment `#F0EFEB`** (`--parchment`, wired into
+`--sidebar`) — *because RolDe is a clinical operating system; it should feel paper-calm by default.*
+Parchment is the default for the **app shell / sidebar** and for **every RolDe + clinic email
+background** (Custodian platform emails and each clinic's patient emails alike). The **clinic accent**
+(sage by default, `--clinic-accent`) is no longer the paper — it's an accent (hovers, the field-OK
+glow) and a clinic's **optional** sidebar/paper tint, set per-clinic by the Caretaker (a Settings
+toggle; W1.1.4). White content cards still float on the paper and are **never** themselves coloured
+(§3.2). The neutral content canvas (`--background`) stays as-is. **Lavender** (`#DCD9EA`) is reserved
+for the **front-facing marketing site** (parchment background + lavender accents — Bible 8 §5.1), not
+the app. The ♥ stays coral `#e0533f` as the one warm pop. **Guardrail: this is a paper/background
+decision only — it does NOT restyle buttons, fields, or any worked-hard component.**
 
 ## D.13 The "rolde" brand loader
 `RoldeLoader` — the wordmark "rolde" WRITTEN into existence (a thin serif outline revealed

@@ -59,8 +59,13 @@ Greek letters. He is "Roland"; never "sir" / "mate" / "boss".
   design to his eye.
 - **FONT LAW (APPROVALS §2): IBM Plex Serif ONLY for the RolDe wordmark/icon** (`font-wordmark`;
   Roland will supply an SVG). **Inter everywhere else — headings included.** Plex Mono for code.
-- **Clinic accent = pastel sunny tones** (sidebar + the one `--hover` token, same colour family)
-  — a per-clinic Caretaker setting eventually; `--clinic-accent` in globals.css until then.
+- **System paper = parchment `#F0EFEB`** (`--parchment` → `--sidebar`): the calm default for the
+  app shell, sidebar, and ALL RolDe/clinic emails (a clinical OS should feel paper-calm). The
+  **clinic accent** (sage default, `--clinic-accent` + the one `--hover` token) is now an accent
+  (hovers, field-OK glow) and a clinic's **optional** sidebar tint — a per-clinic Caretaker setting
+  (W1.1.4). **Lavender `#DCD9EA`** is the front-facing website accent ONLY. The ♥ stays coral
+  `#e0533f`. This is a paper/background decision — **never restyle buttons/fields off it.** White
+  content cards are never coloured. (Bible 4.2 §D.12.5; roadmap §15.5.)
 - Never ask Roland to run terminal commands — run them, or hand a complete paste-in block.
 - Schema/state changes live in one canonical, re-runnable file — never ad-hoc in a dashboard.
 - Vercel "Sensitive" env vars are NEVER revealable after creation — never ask Roland to read

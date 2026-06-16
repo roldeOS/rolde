@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { createClient } from "@/lib/supabase/client";
+import { TURNSTILE_SITE_KEY } from "@/lib/turnstile";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/form";
 import { Footer } from "@/components/Footer";
@@ -21,8 +23,20 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   // The email tick means something REAL: this account exists in the DB.
   const [emailExists, setEmailExists] = useState<boolean | null>(null);
+  // Cloudflare Turnstile (W0.1.3): once CAPTCHA is enabled in Supabase Auth, every
+  // auth call REQUIRES a captchaToken. The token is single-use, so we reset the
+  // widget after each attempt. The SECRET key lives only in Supabase, never here.
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaError, setCaptchaError] = useState(false);
+  const captchaRef = useRef<TurnstileInstance>(null);
+
+  function resetCaptcha() {
+    captchaRef.current?.reset();
+    setCaptchaToken("");
+  }
 
   // Debounced live existence check — only a well-formed email is worth asking.
+  // (RPC, not an auth endpoint, so CAPTCHA doesn't gate it — the tick still works.)
   useEffect(() => {
     const term = email.trim();
     if (!EMAIL.test(term)) {
@@ -49,12 +63,14 @@ export default function LoginPage() {
     const { error } = await createClient().auth.signInWithPassword({
       email,
       password,
+      options: { captchaToken },
     });
     if (error) {
       // Conversational + secure — never names which field is wrong (RolDe voice).
       setError("That didn’t match what we’ve got. Give it another go — or reset your password below.");
       setPwError(true);
       setLoading(false);
+      resetCaptcha(); // single-use token — get a fresh one for the retry
       return;
     }
     router.push("/");
@@ -65,21 +81,65 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    // Always proceed silently regardless of whether the email exists (no
-    // account-enumeration). The reset link lands on /reset.
-    await createClient().auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset`,
+    // Our own route mints the link + sends the branded RolDe email. Always
+    // proceeds silently regardless of whether the email exists (no account
+    // enumeration) — only a failed captcha is surfaced. Lands on /reset.
+    const res = await fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: email.trim(), captchaToken }),
     });
     setLoading(false);
+    resetCaptcha();
+    const data = await res.json().catch(() => ({}));
+    if (data?.error === "captcha_failed") {
+      setCaptchaError(true);
+      return;
+    }
     setMode("sent");
   }
+
+  function switchMode(next: Mode) {
+    setMode(next);
+    setError(null);
+    setPwError(false);
+    setCaptchaToken(""); // fresh challenge for the new form
+  }
+
+  // Shared Turnstile widget — only one auth form mounts at a time, so a single
+  // ref tracks the live widget. `interaction-only` keeps it INVISIBLE: it solves
+  // silently in the background and only ever renders Cloudflare's box if a real
+  // human-check is needed (rare). The ugly bordered widget never shows otherwise.
+  const captcha = (
+    <>
+      <Turnstile
+        ref={captchaRef}
+        siteKey={TURNSTILE_SITE_KEY}
+        onSuccess={(t) => {
+          setCaptchaToken(t);
+          setCaptchaError(false);
+        }}
+        onError={() => {
+          setCaptchaToken("");
+          setCaptchaError(true);
+        }}
+        onExpire={() => setCaptchaToken("")}
+        options={{ appearance: "interaction-only", size: "flexible", theme: "light" }}
+      />
+      {captchaError && (
+        <p className="text-center text-xs text-muted-foreground">
+          We couldn’t verify you just now — give it a refresh and try again.
+        </p>
+      )}
+    </>
+  );
 
   return (
     <main className="relative flex min-h-screen items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm space-y-8">
         <div className="flex flex-col items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/wordmark-rolde.svg" alt="RolDe" className="h-14 w-auto sm:h-16" />
+          <img src="/wordmark-roldeos.svg" alt="RolDe OS" className="h-12 w-auto sm:h-14" />
           <h1 className="text-base font-medium text-muted-foreground">
             The clinical operating system
           </h1>
@@ -89,7 +149,7 @@ export default function LoginPage() {
           {mode === "signin" && (
             <>
               <h2 className="text-center text-xl font-semibold tracking-tight">
-                Sign in
+                Sign In
               </h2>
               <form onSubmit={onSubmit} className="mt-6 space-y-4">
                 <Field label="Email" htmlFor="email">
@@ -120,19 +180,25 @@ export default function LoginPage() {
 
                 {error && <p className="text-sm text-destructive">{error}</p>}
 
-                <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                  {loading ? "Signing you in…" : "Sign in"}
-                </Button>
+                {/* Invisible captcha sits with the button so it adds no gap when
+                    hidden; if a challenge ever shows, it appears just above it. */}
+                <div>
+                  {captcha}
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full"
+                    disabled={loading || !captchaToken}
+                  >
+                    {loading ? "Signing You In…" : "Sign In"}
+                  </Button>
+                </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setMode("forgot");
-                    setError(null);
-                    setPwError(false);
-                  }}
+                  onClick={() => switchMode("forgot")}
                   className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  Forgot your password?
+                  Forgot Your Password?
                 </button>
               </form>
             </>
@@ -141,10 +207,10 @@ export default function LoginPage() {
           {mode === "forgot" && (
             <>
               <h2 className="text-center text-xl font-semibold tracking-tight">
-                Reset your password
+                Reset Your Password
               </h2>
               <p className="mt-2 text-center text-sm text-muted-foreground">
-                Pop in your email and we’ll send you a link to set a new one.
+                Pop in your email for a reset link.
               </p>
               <form onSubmit={onForgot} className="mt-6 space-y-4">
                 <Field label="Email" htmlFor="forgot-email">
@@ -158,15 +224,24 @@ export default function LoginPage() {
                     required
                   />
                 </Field>
-                <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                  {loading ? "Sending…" : "Send the reset link"}
-                </Button>
+
+                <div>
+                  {captcha}
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full"
+                    disabled={loading || !captchaToken}
+                  >
+                    {loading ? "Sending…" : "Send The Reset Link"}
+                  </Button>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setMode("signin")}
+                  onClick={() => switchMode("signin")}
                   className="block w-full text-center text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  ← Back to sign in
+                  ← Back To Sign In
                 </button>
               </form>
             </>
@@ -174,7 +249,7 @@ export default function LoginPage() {
 
           {mode === "sent" && (
             <div className="text-center">
-              <h2 className="text-xl font-semibold tracking-tight">Check your inbox</h2>
+              <h2 className="text-xl font-semibold tracking-tight">Check Your Inbox</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 If <span className="font-medium text-foreground">{email}</span> has a
                 RolDe account, a reset link is on its way. It expires in an hour.
@@ -182,9 +257,9 @@ export default function LoginPage() {
               <Button
                 size="lg"
                 className="mt-6 w-full"
-                onClick={() => setMode("signin")}
+                onClick={() => switchMode("signin")}
               >
-                Back to sign in
+                Back To Sign In
               </Button>
             </div>
           )}

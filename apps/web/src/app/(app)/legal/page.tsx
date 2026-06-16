@@ -1,145 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Scale,
-  ShieldCheck,
-  FileText,
-  AlertTriangle,
-  HeartPulse,
-  Mic,
-  History,
-  Check,
-} from "lucide-react";
+import { Scale, History, Check } from "lucide-react";
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
-import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
+import { CardIcon } from "@/components/ui/CardIcon";
+import { LegalDocBody } from "@/components/LegalDocBody";
+import { LEGAL_DOCS, STATUS_PILL, STATUS_LABEL } from "@/lib/legal";
 import { cn } from "@/lib/utils";
 
 /**
- * Legal & Safety — the single home for every policy / safety document (Roland
- * 2026-06-11). One card hosts the selected document (title on top, body below);
- * the right rail is its VERSION HISTORY — the current version plus every
- * superseded one, organised newest-first. Pick a document on the left, pick a
- * version on the right.
+ * Legal & Safety — the in-app, versioned home for every policy / safety document
+ * (Roland 2026-06-11). One card hosts the selected document (title on top, body
+ * below); the right rail is its VERSION HISTORY (current + every superseded copy,
+ * newest first). Documents come from the shared `@/lib/legal` source, which also
+ * feeds the PUBLIC `/policy/[slug]` pages linked from the login footer (W0.2).
  *
- * Content here is SCAFFOLD/placeholder — the real wording is drafted with legal
- * counsel before go-live (APPROVALS §8.2 / Bible 4.2 §D.8). The structure,
- * routing and versioning UI are real so the documents drop straight in.
+ * Content is SCAFFOLD — the real wording is drafted with legal counsel before
+ * go-live (APPROVALS §8.2 / Bible 4.2 §D.8). Structure + versioning are real.
  */
 
-type Version = {
-  v: string;
-  date: string;
-  status: "current" | "superseded" | "draft";
-  body: string;
-};
-
-type Doc = {
-  key: string;
-  title: string;
-  icon: React.ComponentType<{ className?: string }>;
-  tone: CardIconTone;
-  summary: string;
-  versions: Version[];
-};
-
-const DOCS: Doc[] = [
-  {
-    key: "privacy",
-    title: "Privacy Policy & Data-Processing Notice",
-    icon: ShieldCheck,
-    tone: "info",
-    summary:
-      "How RolDe processes personal and special-category health data under UK GDPR & DPA 2018.",
-    versions: [
-      {
-        v: "Draft 0.1",
-        date: "2026-06-11",
-        status: "draft",
-        body: "Lawful basis, special-category condition (Art. 9 — health/social care), retention schedule, data-subject rights, sub-processors (Supabase, hosting), international transfers. To be finalised with counsel before go-live.",
-      },
-    ],
-  },
-  {
-    key: "terms",
-    title: "Terms of Service",
-    icon: FileText,
-    tone: "neutral",
-    summary: "The agreement governing each clinic's use of RolDe.",
-    versions: [
-      {
-        v: "Draft 0.1",
-        date: "2026-06-11",
-        status: "draft",
-        body: "Licence, acceptable use, clinic vs RolDe responsibilities, availability, liability, termination. Pending counsel review.",
-      },
-    ],
-  },
-  {
-    key: "disclaimer",
-    title: "Clinical Disclaimer",
-    icon: AlertTriangle,
-    tone: "warning",
-    summary:
-      "RolDe is decision-support — it never replaces clinician judgement.",
-    versions: [
-      {
-        v: "Draft 0.1",
-        date: "2026-06-11",
-        status: "draft",
-        body: "RolDe drafts; the clinician authorises. Nothing is sent or actioned without explicit clinician sign-off (Bible 4.0/4.6). The clinician remains responsible for all clinical decisions.",
-      },
-    ],
-  },
-  {
-    key: "safety",
-    title: "Clinical Safety Statement",
-    icon: HeartPulse,
-    tone: "critical",
-    summary:
-      "Clinical risk management for health IT (England: DCB0129 / DCB0160).",
-    versions: [
-      {
-        v: "Draft 0.1",
-        date: "2026-06-11",
-        status: "draft",
-        body: "Manufacturer clinical risk management (DCB0129) + deploying-organisation duties (DCB0160). Names a Clinical Safety Officer, hazard log, and the clinical safety case. Required before any clinical go-live.",
-      },
-    ],
-  },
-  {
-    key: "consent",
-    title: "Ambient-Capture Consent",
-    icon: Mic,
-    tone: "success",
-    summary:
-      "Patient consent + a visible indicator before any dictation / ambient listening.",
-    versions: [
-      {
-        v: "Draft 0.1",
-        date: "2026-06-11",
-        status: "draft",
-        body: "An explicit, LOGGED patient consent gate before RolDe AI records or listens (Bible 4.7), a visible 'listening' indicator while active, and easy withdrawal. No capture without it.",
-      },
-    ],
-  },
-];
-
-const STATUS_PILL: Record<Version["status"], string> = {
-  current: "bg-success/12 text-success",
-  superseded: "bg-muted text-muted-foreground",
-  draft: "bg-warning/12 text-warning",
-};
-
-const STATUS_LABEL: Record<Version["status"], string> = {
-  current: "Current",
-  superseded: "Superseded",
-  draft: "Draft",
-};
-
 export default function LegalPage() {
-  const [docKey, setDocKey] = useState(DOCS[0].key);
-  const doc = DOCS.find((d) => d.key === docKey) ?? DOCS[0];
+  const [docKey, setDocKey] = useState(LEGAL_DOCS[0].key);
+  const doc = LEGAL_DOCS.find((d) => d.key === docKey) ?? LEGAL_DOCS[0];
   const [versionIndex, setVersionIndex] = useState(0);
   const version = doc.versions[versionIndex] ?? doc.versions[0];
 
@@ -154,7 +36,7 @@ export default function LegalPage() {
         icon={Scale}
         tone="neutral"
         title="Legal & Safety"
-        count={DOCS.length}
+        count={LEGAL_DOCS.length}
         explainer={{
           label: "Legal & Safety",
           description:
@@ -164,7 +46,7 @@ export default function LegalPage() {
 
       {/* Document selector — chips, one per document. */}
       <div className="flex flex-wrap gap-2">
-        {DOCS.map((d) => {
+        {LEGAL_DOCS.map((d) => {
           const on = d.key === docKey;
           return (
             <button
@@ -209,21 +91,23 @@ export default function LegalPage() {
             <span>Effective {version.date}</span>
           </div>
 
-          <div className="mt-4 text-sm leading-relaxed text-foreground/90">
-            {version.body}
+          <div className="mt-4">
+            <LegalDocBody version={version} />
           </div>
 
-          <p className="mt-6 rounded-lg bg-warning/8 px-3 py-2 text-xs text-warning">
-            Scaffold copy — final wording is drafted with legal counsel before
-            go-live (APPROVALS §8.2).
-          </p>
+          {version.status === "draft" && (
+            <p className="mt-6 rounded-lg bg-warning/8 px-3 py-2 text-xs text-warning">
+              Working draft — the in-force v1.0 is being finalised and will be
+              published here.
+            </p>
+          )}
         </article>
 
         {/* Version history — newest first, click to view a historic copy. */}
         <aside className="rounded-xl bg-card p-4 shadow-float">
           <div className="flex items-center gap-2 px-1 pb-2">
             <History className="size-4 text-muted-foreground" />
-            <span className="text-sm font-semibold">Version history</span>
+            <span className="text-sm font-semibold">Version History</span>
           </div>
           <div className="space-y-1">
             {doc.versions.map((vv, i) => {

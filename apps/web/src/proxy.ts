@@ -4,15 +4,29 @@ import { updateSession } from "@/lib/supabase/middleware";
 /**
  * Runs on every request (Next 16 "proxy" convention; was `middleware`).
  * Refresh the Supabase session, then gate:
- * - Not signed in + not on /login  → redirect to /login
- * - Signed in + on /login          → redirect to /
+ * - Not signed in + not on a PUBLIC route → redirect to /login
+ * - Signed in + on /login                 → redirect to /
  * (Subdomain→tenant resolution lands here next — Bible 4.1 §3.5.)
  */
 export async function proxy(request: NextRequest) {
   const { supabaseResponse, user } = await updateSession(request);
-  const isLogin = request.nextUrl.pathname === "/login";
+  const path = request.nextUrl.pathname;
+  const isLogin = path === "/login";
+  // Routes the page-gate must NOT redirect to /login:
+  //  - the auth screens (sign-in + the password-reset landing) and public legal
+  //    pages (W0.2) — reachable WITHOUT a session;
+  //  - `/api/*` and `/auth/*` — these return JSON / redirects and do their OWN
+  //    auth (e.g. forgot-password, the generateLink confirm handler). Redirecting
+  //    them to the /login HTML page would break the call. (The session is still
+  //    refreshed above for every route.)
+  const isPublic =
+    isLogin ||
+    path === "/reset" ||
+    path.startsWith("/policy") ||
+    path.startsWith("/api") ||
+    path.startsWith("/auth");
 
-  if (!user && !isLogin) {
+  if (!user && !isPublic) {
     return redirectKeepingCookies(request, "/login", supabaseResponse);
   }
   if (user && isLogin) {

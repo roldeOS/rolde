@@ -94,7 +94,7 @@ export function Topbar({
   let trailCurrent: TrailEntry | null = null;
   let parents: TrailEntry[] = [];
   if (pathname === "/patients/new") {
-    trailCurrent = { href: pathname, label: "New patient", kind: "new-patient" };
+    trailCurrent = { href: pathname, label: "New Patient", kind: "new-patient" };
     parents = [{ href: "/patients", label: "Patients", kind: "patients" }];
   } else if (isPatientDetail) {
     parents = [{ href: "/patients", label: "Patients", kind: "patients" }];

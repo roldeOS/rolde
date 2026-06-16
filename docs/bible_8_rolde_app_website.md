@@ -210,20 +210,25 @@ Header nav links (anchor to sections):
 
 ### 5.1 Colour Palette
 
-Per Bible 0 RoDee group palette + Bible 4.2 RolDe design system:
+Per the RolDe brand decision (Roland 2026-06-15): the front-facing site shares the app's
+**parchment** paper, with **soft lavender** accents. Lavender is the site's signature (the *app*
+itself stays parchment + monochrome — see Bible 4.2 §D.12.5). This **supersedes** the earlier
+teal/cream/peach group palette for the RolDe site.
 
 | Colour | Hex | Role |
 |---|---|---|
-| **Primary** | **#0081A7** | Deep blue (matches Doc For Skin; symbolic of clinical-medical seriousness) |
-| Secondary | #00AFB9 | Teal |
-| Background neutral | #FDFCDC | Cream (sections background variation) |
-| Highlight | #FED9B7 | Peach (subtle accents) |
-| Coral | #F07167 | (Used sparingly — symbolises Doc For Drivers; appears in the "clinics using RolDe" section) |
+| **Background** | **#F0EFEB** | Parchment — the common site background (calm clinical paper) |
+| **Accent (primary)** | **#DCD9EA** | Soft lavender — section tints, highlights, illustration fills |
+| Accent (deep) | #BFB6DE | Stronger lavender — links, active states, emphasis |
+| CTA | #0A0A0A | Near-black button (matches the app's button language), white text |
+| Warm pop | #E0533F | Coral — the ♥ and rare highlights, used sparingly |
 | Text dark | #1A1A1A | Body and headlines |
 | Text muted | #6B6B6B | Sub-text, captions |
-| Surface | #FFFFFF | Cards, sections |
+| Surface | #FFFFFF | Cards, panels |
 
-**Usage**: Hero is **#0081A7** primary. Sections alternate white and cream backgrounds for visual rhythm. Coral and peach are used sparingly as accents (CTAs, highlights), not dominantly.
+**Usage**: the whole site sits on **parchment**; sections lift with **soft-lavender** tints and white
+cards for rhythm. Lavender is the accent throughout (links, highlights, illustration fills); CTAs are
+**near-black** for punch; coral is a rare warm pop. Headlines in IBM Plex Serif, body in Inter.
 
 ### 5.2 Typography
 

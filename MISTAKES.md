@@ -87,5 +87,34 @@ and Roland's established taste conflict, ask or follow the taste — never silen
 
 ---
 
+## 3. Drifted to Supabase's built-in auth-email templates instead of the planned app-controlled email system — 2026-06-15
+
+**Symptom:** For the password-reset email I built a **Supabase built-in auth template** (HTML to be
+pasted into the Supabase dashboard), instead of the Custodian-controlled, code-seeded, Resend-sent
+template system the roadmap (§15.5) had *always* planned — mindate's proven pattern. Roland: *"mindate
+never asked me to do any of this… why are you making a rigid email system in supabase… Something is
+not right… NEVER DRIFT."*
+
+**Root cause:** I took the quick platform-default shortcut (Supabase sends; you configure its
+dashboard template) instead of building the harder, correct, content-managed system. Classic
+quick-and-dirty over harder-and-best, and a drift from both the documented plan AND the mindate
+precedent I should have checked first.
+
+**Fix:** Deleted the Supabase-paste artifact; corrected the roadmap; adopted mindate's architecture —
+`email_templates` table + code **seed** + `sendTemplatedEmail` via **Resend** + `transactional_emails`
+log + a **Custodian dashboard editor**. RolDe keeps Supabase **Auth**, so for auth emails a server
+route uses Supabase admin `generateLink` to mint the secure link and WE send the branded email.
+
+**Trigger:** Building ANY cross-cutting system (email, notifications, templates, auth flows). Check
+the roadmap's planned architecture AND for a mindate precedent (read the mindate-admin code) BEFORE
+building. If a quick platform-default path tempts you while a content-managed / Custodian-controlled
+system is the plan — STOP; that temptation is the signal to build the harder-best one.
+
+**Lesson:** **NEVER DRIFT** from the planned/precedented architecture to a shortcut. Harder-and-best
+over quick-and-dirty — never even surface the shortcut (CLAUDE.md). Query the plan + the mindate code
+first; priors and shortcuts are wrong by default.
+
+---
+
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or
 when a diagnosed regression is worth locking and Roland approves the entry.*

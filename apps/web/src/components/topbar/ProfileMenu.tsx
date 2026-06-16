@@ -67,7 +67,7 @@ export function ProfileMenu({
             onClick={signOut}
             className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm text-critical transition-colors hover:bg-critical/10"
           >
-            <LogOut className="size-4" /> Sign out
+            <LogOut className="size-4" /> Sign Out
           </button>
         </div>
       )}

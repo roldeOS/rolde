@@ -24,7 +24,7 @@ export default function NewPatientPage() {
           <CardHeaderRow
             icon={UserPlus}
             tone="brand"
-            title="New patient"
+            title="New Patient"
             description="Just the essentials to register — the record fills in from here."
           />
         </CardHeader>

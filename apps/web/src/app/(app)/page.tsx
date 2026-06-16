@@ -54,9 +54,9 @@ export default async function Home() {
       {/* Stat tiles — real metrics */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatTile icon={Users} tone="brand" label="Patients" value={totalQ.count ?? 0} href="/patients" />
-        <StatTile icon={CalendarPlus} tone="success" label="New this month" value={monthQ.count ?? 0} />
-        <StatTile icon={TriangleAlert} tone="critical" label="Needs attention" value={alertsQ.count ?? 0} sub="active alerts" href="/patients" />
-        <StatTile icon={FileText} tone="info" label="Clinical notes" value={notesQ.count ?? 0} />
+        <StatTile icon={CalendarPlus} tone="success" label="New This Month" value={monthQ.count ?? 0} />
+        <StatTile icon={TriangleAlert} tone="critical" label="Needs Attention" value={alertsQ.count ?? 0} sub="Active Alerts" href="/patients" />
+        <StatTile icon={FileText} tone="info" label="Clinical Notes" value={notesQ.count ?? 0} />
       </div>
 
       {/* Recently registered */}
@@ -66,10 +66,10 @@ export default async function Home() {
             <CardHeaderRow
               icon={Users}
               tone="info"
-              title="Recently registered"
+              title="Recently Registered"
               rightSlot={
                 <Link href="/patients/new" className="text-xs font-medium text-muted-foreground hover:text-foreground">
-                  + New patient
+                  + New Patient
                 </Link>
               }
             />

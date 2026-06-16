@@ -29,6 +29,74 @@ export type Database = {
         }
         Relationships: []
       }
+      email_templates: {
+        Row: {
+          category: string
+          created_at: string
+          cta_label: string | null
+          cta_url: string | null
+          description: string | null
+          footer_note: string | null
+          headline: string | null
+          id: string
+          is_active: boolean
+          name: string
+          paragraphs: string[]
+          preheader: string | null
+          slug: string
+          subject: string
+          tenant_id: string | null
+          updated_at: string
+          variables: string[]
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          footer_note?: string | null
+          headline?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          paragraphs?: string[]
+          preheader?: string | null
+          slug: string
+          subject: string
+          tenant_id?: string | null
+          updated_at?: string
+          variables?: string[]
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          footer_note?: string | null
+          headline?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          paragraphs?: string[]
+          preheader?: string | null
+          slug?: string
+          subject?: string
+          tenant_id?: string | null
+          updated_at?: string
+          variables?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_alerts: {
         Row: {
           category: string
@@ -532,6 +600,71 @@ export type Database = {
         }
         Relationships: []
       }
+      transactional_emails: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          idempotency_key: string | null
+          provider_message_id: string | null
+          rendered_html: string | null
+          rendered_text: string | null
+          source: string
+          status: string
+          subject: string
+          template_slug: string
+          tenant_id: string | null
+          to_email: string
+          to_name: string | null
+          variables_used: Json | null
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string | null
+          provider_message_id?: string | null
+          rendered_html?: string | null
+          rendered_text?: string | null
+          source?: string
+          status: string
+          subject: string
+          template_slug: string
+          tenant_id?: string | null
+          to_email: string
+          to_name?: string | null
+          variables_used?: Json | null
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          idempotency_key?: string | null
+          provider_message_id?: string | null
+          rendered_html?: string | null
+          rendered_text?: string | null
+          source?: string
+          status?: string
+          subject?: string
+          template_slug?: string
+          tenant_id?: string | null
+          to_email?: string
+          to_name?: string | null
+          variables_used?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactional_emails_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -541,6 +674,7 @@ export type Database = {
       email_exists: { Args: { p_email: string }; Returns: boolean }
       is_caretaker_of: { Args: { p_tenant_id: string }; Returns: boolean }
       is_custodian: { Args: never; Returns: boolean }
+      next_patient_number: { Args: { p_tenant: string }; Returns: string }
     }
     Enums: {
       alert_priority: "info" | "warning" | "critical"

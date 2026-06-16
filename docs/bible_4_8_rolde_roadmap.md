@@ -848,20 +848,21 @@ These were decided in the 2026-06-13 planning pass and slot into the waves above
   (separate from privacy), Terms of Service, Clinical Disclaimer, **Clinical
   Safety statement (DCB0129/0160)**, Acceptable Use, Cookie/processing notice.
   Hosted in the Legal & Safety surface (APPROVALS §8.2) + the marketing site.
-- **THE WARD MAP** (greenlit frame — Roland 2026-06-13). A beautiful top-down /
-  isometric spatial board on the dashboard: rooms + beds/chairs, status colours,
-  **click a bed → the patient**, alerts glow live (Supabase Realtime). **Empty
-  bed → click to ASSIGN a patient**; doctors AND nurses can move/assign patients
-  (nurses do the real-world rearranging). The **Map Editor lives in Caretaker
-  Settings (caretaker-only)**. Layout is fully label-FREE: the caretaker names
-  rooms/positions ("bed/ward" or "chair/room") and re-labels as the clinic
-  evolves (out-patient → in-patient) — RolDe never gates the terminology.
-  Occupancy = whatever the clinic uses (manual assignment, admission, OR linked
-  appointment). **Visual style = elegant pastel glassy ISOMETRIC icograms** with a
-  touch of 3D (Roland 2026-06-13) — squarely in RolDe's Liquid-Glass language.
-  SVG assets either Jarvis-made or Roland-designed (Roland is the design lead;
-  Jarvis wires them + the live alert-glow + interactivity). Builds as a focused
-  step right after a thin Wave-1 Settings shell, BEFORE the heavier waves.
+- **THE WARD MAP** (greenlit + design LOCKED — Roland 2026-06-13). A beautiful
+  spatial board on the dashboard: rooms the caretaker draws, with **beds/chairs
+  rendered as RolDe cards** (the whole app is card-based, so a bed IS a card).
+  The status colour fills the card; **click a card → the patient**; alerts glow
+  live (Supabase Realtime). **Empty card → click to ASSIGN a patient**; doctors
+  AND nurses can move/assign patients (nurses do the real-world rearranging). The
+  **Map Editor lives in Caretaker Settings (caretaker-only)**. Fully label-FREE:
+  the caretaker names rooms/positions ("bed/ward" or "chair/room") and re-labels
+  as the clinic evolves (out-patient → in-patient) — RolDe never gates the
+  terminology. Occupancy = whatever the clinic uses (manual assignment, admission,
+  OR linked appointment). **Renderer-agnostic geometry** (rooms/positions on a
+  normalized grid) → ships as an **elegant 2D top-down card board NOW**, with a
+  **pastel glassy ISOMETRIC v2 later** (a new renderer over the same data, not a
+  rewrite). Builds as a focused step right after a thin Wave-1 Settings shell,
+  BEFORE the heavier waves. **Full locked design spec → §15.6.**
 - **Payments — FINAL: Scenario 1 only** (Roland 2026-06-13). RolDe provides the
   gateway *options* in Caretaker Settings; the clinic connects its OWN
   Stripe/PayPal/card account (merchant of record); funds go direct; **RolDe
@@ -883,9 +884,270 @@ These were decided in the 2026-06-13 planning pass and slot into the waves above
   to paste at their provider, with per-registrar quick-links; RolDe auto-verifies
   DNS + auto-issues SSL (Vercel-for-Platforms pattern); status shows
   Pending → Verifying → Live 🔒.
-- **Clinic name split** (Wave 1). Onboarding collects a **Legal/Full name**
-  (invoices, letters) + a **Display name** (sidebar, ≤24 chars, never truncates).
-  Schema: `tenants.display_name` beside `tenants.name`.
+- **Clinic name split** (Wave 1). Onboarding collects a **Display name** (sidebar,
+  short, never truncates) + a **Legal/Full name** (invoices, letters). **Schema
+  ALREADY supports this** — `tenants.name` (display) + `tenants.legal_name` (legal)
+  exist from the foundation migration, so NO `display_name` migration is needed
+  (corrected 2026-06-13 by reading the live schema). Remaining work: collect both
+  at onboarding, add a Caretaker edit field (Settings → Clinic profile), wire the
+  sidebar **footer** to `legal_name` (it currently shows `name` twice), and add a
+  `tenants` caretaker-write RLS policy (only custodian can write tenants today).
+- **Email system & templates** (Roland 2026-06-14). RolDe Ltd is a HIS vendor; transactional +
+  auth email goes via **Resend** (the mindate family's provider — to be wired as Supabase's custom
+  SMTP, replacing Supabase's dev-only built-in email; becomes a sub-processor in the legal docs
+  once live). Email **templates** are managed in two places: **Custodian** side (platform/system
+  emails — invites, password resets, notices) and **Caretaker** side (Settings → **Email
+  Templates** — the operational emails a clinic sends its patients: reminders, results-ready,
+  follow-ups, issue notices). **Operational / clinical comms ONLY — never business ads or
+  marketing.** Volume scales with a clinic's patient load. WBS: W1.1.13 (Caretaker email templates)
+  + W1.5.2 (Custodian email templates) + a W0/W1 hardening task to wire Resend.
+  - **Architecture (Roland 2026-06-15): app-controlled email system, NOT Supabase auth templates.**
+    Port mindate's proven pattern (verified by reading `mindate-admin/src/lib/email.ts` +
+    `email-templates-seed.ts`): a code **seed** (canonical templates: slug + subject + structured
+    body) → DB table `email_templates` → **Custodian dashboard editor** (Content → Emails, with a
+    "Re-seed from code" button) → `sendTemplatedEmail()` sends via **Resend** with `{{variable}}`
+    substitution → every send logged to `transactional_emails` (rendered-HTML snapshot) → a
+    `/logs/emails` page. ALL emails (auth + operational) flow through this one system. For password
+    reset specifically, since RolDe uses **Supabase Auth** (mindate uses its own JWT): a server route
+    calls Supabase admin `generateLink({type:'recovery'})` to mint the secure link, then WE send the
+    branded email via the template system — Supabase keeps the secure token, we own the email. **No
+    pasting HTML into the Supabase dashboard.** (Superseded the earlier Supabase-auth-template
+    approach — that was a drift; the brand shell design is preserved in the approved mockups.)
+  - **Renderer: React Email** (Roland greenlit 2026-06-15) — built by Resend, used by Stripe/Vercel/
+    Notion; templates as React/TS components, browser-previewable, battle-tested cross-client HTML.
+    Content stays DB-stored + Custodian/Caretaker-editable; the React Email shell (code) renders it.
+    Port mindate's dark-mode fix into the shell: off-white card (Apple-Mail-safe), class-tagged
+    `@media (prefers-color-scheme: dark)` + Outlook `[data-ogsc]/[data-ogsb]` fallback, and BRIGHT
+    dark body text (~#e8e0d4, ~10:1) — the muddy-tan unreadability was mindate's actual bug.
+  - **Build chunks:** (1) **schema** ✅ 2026-06-15 — `email_templates` (platform/Custodian + clinic/
+    Caretaker via `tenant_id` + RLS) & `transactional_emails` log (idempotency key, rendered-HTML
+    snapshot); migration `20260615190000_email_system.sql`, types regenerated, RLS verified.
+    (2) **send library** ✅ 2026-06-15 — `@react-email/components` + `resend` installed; the RolDe
+    brand shell `apps/web/src/emails/RoldeEmailShell.tsx` (parchment, RolDe OS serif-fallback
+    wordmark, coral ♥, mindate's dark-mode fix: class-tagged `@media` + Outlook `[data-ogsc]` +
+    bright `#e8e0d4` body); `apps/web/src/lib/email.ts#sendTemplatedEmail` (DB content + `{{var}}`
+    substitution → render → Resend → log) with ATOMIC idempotency (claim-a-queued-row-first);
+    service-role client `lib/supabase/admin.ts`. Verified: tsc + lint + a 10/10 render smoke +
+    Title-Case guard.
+    (3) **auth emails** ✅ 2026-06-15 — platform seed (`auth_password_reset` + `auth_invite`,
+    `emails/seed.ts` + re-runnable `reseedPlatformTemplates`); `POST /api/auth/forgot-password`
+    (verifies Turnstile itself via `lib/turnstile-server.ts` since `generateLink` bypasses Supabase's
+    captcha, mints the recovery link, sends our branded email, NO account enumeration); `GET
+    /auth/confirm` (verifyOtp → session → redirect, open-redirect-guarded); login `onForgot` rewired
+    off Supabase's `resetPasswordForEmail`. Also: proxy now passes `/api/*` + `/auth/*` through
+    (self-gating, not page-redirected). **Verified end-to-end**: real branded email sent (Resend id
+    + `transactional_emails` log + rendered snapshot), captcha gate blocks the no-token case (400),
+    and the recovery link → `/auth/confirm` → `/reset` lands a usable Set-A-New-Password form. Keys
+    added to `.env.local`: `SUPABASE_SERVICE_ROLE_KEY`, `TURNSTILE_SECRET_KEY`. RolDe OS wordmark
+    PNGs received (1800×400 transparent, `public/roldeos-{black,white}.png`) — wire the email-shell
+    URLs after deploy.
+    (4a) **Custodian console — first slice + Emails list** ✅ 2026-06-15 — `requireCustodian()` gate +
+    `(app)/custodian/` layout; `(app)/custodian/emails` lists the platform templates (RLS:
+    Custodian reads `tenant_id IS NULL`); `POST /api/admin/email-templates/reseed` (Custodian-gated)
+    + "Re-seed From Code" button. Also added the app's first `not-found.tsx` (a real gap — `notFound()`
+    was leaving the loader stuck). Verified: reseed gate **403** for non-custodians, 404 renders
+    cleanly, tsc/lint/guard. *(Logged-in Custodian list UI needs a real custodian session to eyeball —
+    the only custodian is `admin@rolde.app`, not yet a deliverable alias.)*
+    (4b) **Per-template editor + live preview** ✅ 2026-06-16 — `(app)/custodian/emails/[slug]` with a
+    two-column editor (`EmailEditor.tsx`): content fields (subject/preheader/headline/body-as-blank-
+    line-paragraphs/CTA/footer/active) + a debounced **live preview** rendered through the real React
+    Email pipeline (`POST /api/admin/email-templates/preview`), and **Save** (`PATCH
+    /api/admin/email-templates/[slug]`). List cards link in. All three endpoints Custodian-gated
+    (verified **403**); tsc/lint/guard clean. *(Custodian account renamed `admin@`→`custodian@rolde.app`
+    — deliverable; logged-in editor UI is Roland's to eyeball.)* → next: (5) Caretaker clinic
+    templates (Settings → Email Templates, W1.1.13) + `/logs/emails` (the `transactional_emails` view).
+  - **Email wordmark = design-needed:** RolDe OS PNG, light + dark (transparent), like mindate's two
+    wordmark PNGs (email clients can't render SVG). Roland to export; serif-text placeholder until then.
+  - **Parchment = the system paper (Roland 2026-06-15, DECIDED).** `#F0EFEB` is the default
+    background for the **app shell / sidebar** (`--parchment` → `--sidebar`, done in globals.css)
+    AND **every RolDe + clinic email** (Custodian platform emails + each clinic's patient emails) —
+    *because the whole product is a clinical operating system; paper-calm by default.* A clinic's
+    **Caretaker can override** the paper/email background with their own accent → **new W1.1.4
+    setting** (sidebar tint + email background per clinic; default = parchment). **Lavender
+    `#DCD9EA`** is the **front-facing website** accent only (Bible 8 §5.1 updated: parchment bg +
+    lavender accents). The ♥ stays coral `#e0533f`. **Guardrail: paper/background only — never
+    restyle buttons/fields.** Email auth-footer order (own lines, small): `Made with ♥ at RolDe` →
+    `© <year> RolDe Ltd` → `Registered in England & Wales - 17210556` → `71–75 Shelton Street,
+    Covent Garden,` / `London, WC2H 9JQ, UK` → tiny `Privacy · Terms · Contact` (the registered
+    name + number + place of registration + office is a UK Companies Act 2006 / Trading Disclosures
+    requirement on business email). Bibles updated: 4.2 §D.12.5, 8 §5.1, CLAUDE.md.
+- **Stock / pharmacy / store management + the Cellarer role** (Roland 2026-06-14 — confirming
+  the bible). Already wired: the **Chemist** role (pharmacist); pharmacy integrations — NHS /
+  private / clinic-stock / paper-print (Bible 4.5 §5.4, Phase 2) with `clinic_stock` prescription
+  routing; and **Inventory with batch/expiry** (Wave 6 / W6.1 — detailed spec is Bible 4.4 §13,
+  still "to draft"). The stockist role IS named + locked: **Cellarer** — "the medieval officer of
+  the stores; keeps stock + supplies" (role-taxonomy *backlog*; joins the `user_role` enum
+  pre-launch when a clinic needs it). Roland's refinement to build into the W6 inventory module:
+  the **Caretaker** adds + manages Pharmacy + Store from new Caretaker Settings sections, and a
+  **Cellarer** logs into a **scoped stock-only area** (add/manage stock — medicines + other items;
+  RLS-restricted to that area, no clinical/patient access). Draft Bible 4.4 §13 first; activate
+  the Cellarer enum value + RLS when built.
+
+### 15.6 Ward Map — locked design spec (Roland 2026-06-13)
+
+Approved and LOCKED in the 2026-06-13 design pass. This is what we build to.
+
+**The position card (bed = chair = one card).** The same card renders a bed or a
+treatment chair; only the top-left type label differs (`bed 06` / `chair 03`).
+Pure RolDe card: **no border, soft float-shadow, black readable text**, and the
+**whole card takes the status colour** (bold + scannable across a ward). Anatomy:
+- **Top-left:** small type label (`bed`/`chair`) over a **bold position number**.
+- **Top-right (beside the ⋮ menu):** the **patient identifier** — region-aware
+  label (**CHI** Scotland · **NHS No.** England · **MRN** private), with room for a
+  full 10-digit number. The caretaker can add **prefixes/suffixes** to the hospital
+  number (e.g. `DFS-00042`). The **⋮ three-dot menu** sits in the corner.
+- **Name:** bigger/bolder, with a **fixed left edge** — it never shifts whether or
+  not there are adornments, so the eye always lands in the same place.
+- **DOB · age line**, with an **Allergies pill** slotted beside it (red, shown only
+  when the patient has allergies) — the fastest stop-and-check cue on the card.
+  (An allergy *pill* beside the DOB, NOT a leading dot — the name's left edge stays
+  put.)
+- **Dynamic pill row (bottom):** **RolDe's live signal channel** — whatever the AI
+  is surfacing *right now* (e.g. `Results Back`, `Meds Due`, `Obs Overdue`, `Risk
+  Rising`…). Pills appear/vanish on their own; a stable patient shows none. Labels
+  are **Title Case** (APPROVALS §2.3) and **instantly clear or they don't ship**
+  (see the design law below).
+
+**The builder element kit (functional only — props dropped).** 1 Bed card ·
+2 Treatment-chair card · 3 Nursing station (a labelled room) · 4 Room (resizable
+rounded rectangle) · 5 Wall/partition (extendable straight line) · 6 Door ·
+7 Window · 8 Zone/area (soft tinted region) · 9 Text label. (Privacy curtain, sink,
+standalone desk were cut — the bed/chair are the only "position" cards; everything
+else is structure the caretaker draws.)
+
+**The colour code (most-urgent status wins the card; extensible).**
+🔵 blue/slate = empty · 🟢 green = stable · 🟠 amber = needs review (obs due,
+results back & unreviewed) · 🔴 red = clinical alert, **pulsing red = emergency** ·
+🟣 purple = medication due.
+
+**Move & transfer.** The ⋮ menu offers: open patient · move within ward · transfer
+to another ward · discharge. **Within a ward: drag the card** to another room.
+**Across wards: the transfer modal** — pick the destination ward → it shows *that*
+ward's empty beds → confirm. No cross-canvas drag, so no patient lands in the wrong
+building by accident.
+
+**Clinical gates (caretaker-configurable, PER CLINIC).** Sensitive actions are
+**gated behind a sign-off chain the Caretaker defines per clinic**. Locked first
+example — **Discharge · free the bed** is dead/greyed until: ① the discharge
+decision is documented in the clinician note → ② RolDe drafts the discharge letter
+→ ③ the doctor **signs it off** → only then does the bed release. Same machinery
+takes more gates later (e.g. pharmacy signs off the medications before a report
+counts as valid) — Roland supplies the full list after the major builds.
+
+**Design law governing all of the above (Roland 2026-06-13 — permanent).**
+*If Roland and Jarvis don't grasp it at a glance, a stranger never will — cut it or
+make it instantly clear.* If a feature needs reaching/explaining, people won't use
+it. **Good design is forgotten in the shadows — the user just experiences it.**
+(This is why "Sign note" was cut: unclear to the founder = unclear to everyone.)
+
+### 15.7 Build Register — the addressable WBS (Roland 2026-06-13)
+
+Every build item has a stable ID: **`W{wave}.{module}.{task}`** (e.g. `W0.1.3`). Use the ID to
+greenlight or report. **Two rules Roland locked 2026-06-13: (1) waves complete IN ORDER — finish
+Wave N before any Wave N+1 work; (2) nothing is deferred or left half-built — every item is built
+properly when its turn comes.** `✅` = done & verified. This register supersedes the §15.4 bullet
+list for addressing/tracking; §15.4 stays as the narrative.
+
+**W0 — Foundation Hardening** *(must finish before W1 continues)*
+- **W0.1 Login Security Suite** — W0.1.1 Conversational, non-enumerating errors ✅ · W0.1.2
+  Forgot-Password → Reset flow ✅ · W0.1.3 Invisible captcha (Cloudflare Turnstile) ✅ *(wired into
+  sign-in + password-reset, managed mode, single-use token reset per attempt; verified 2026-06-13)*
+  · W0.1.4 Auth rate-limit + lockout ✅ *(Supabase Auth → Rate Limits reviewed & retained 2026-06-15:
+  emails 30/h · sign-ups+sign-ins 30/5min·IP · token verifications 30/5min·IP · token refreshes
+  150/5min·IP. ⚠ both per-IP limits are **per source IP** — raise the sign-in limit before a clinic on
+  a single shared NAT goes live, and raise the email limit before bulk staff onboarding)*
+  · W0.1.5 Leaked-password protection (HIBP) — ⏳ **LAUNCH GATE**: Supabase's HaveIBeenPwned check needs
+  a **Pro plan** (unavailable on Free); enable before production / real patient data. Until then the
+  W0.1.6 class requirements + 12-char minimum are the compensating control.
+  · W0.1.6 Strong-password policy ✅ *(server, set 2026-06-15: min length 12 + required classes
+  lower/upper/digit/symbol. Client mirror: live strength meter `apps/web/src/lib/password.ts` driving
+  the `/reset` bar — shows what's still missing, then Good/Strong; tsc/lint/logic verified)*
+  · W0.1.7 Email verification on signup *(fully lands with W1.5.1 onboarding)*
+- **W0.2 Legal & Contact Surface** — W0.2.1 Legal & Safety page + versioning + 5 scaffold docs ✅
+  · W0.2.2 DPA ✅ · W0.2.3 Acceptable Use ✅ · W0.2.4 Cookie/processing notice ✅ *(all 3 added to a
+  shared `lib/legal` source the in-app surface + public pages both read — surface now 8 docs; and
+  all 8 written as substantive drafts, then upgraded to a real **v1.0 ("In Force")** ONE PER
+  SESSION — RolDe drafts them itself, not counsel (Roland 2026-06-14). Researched against UK
+  GDPR/DPA 2018 (Art. 9(2)(h)/Sch.1, Art. 22A), Art. 28, DCB0129/0160 + PECR/DUA Act 2025;
+  `[to be added]` only for facts RolDe supplies. **ALL 8 docs v1.0 In Force (complete 2026-06-14):
+  Privacy Policy (16 sections), Terms of Service (17, liability cap 12-months-fees / £25k floor),
+  Data Processing Agreement (14, Art. 28(3) + Caretaker/DCB0160), Clinical Disclaimer (11,
+  automation-bias + UKCA/MHRA), Clinical Safety Statement (10, DCB0129 + CSO Dr R.M. Jayasekhar
+  GMC 7537707), Acceptable Use Policy (10, responsible disclosure + patient-data), Cookie &
+  Processing Notice (9, strictly-necessary + PECR/DUA Act), Ambient-Capture Consent (10, Art. 9 +
+  children/capacity + controller/processor)** — the whole legal surface is v1.0, each verified.
+  Open facts for RolDe to fill: ICO reg no., the £ liability floor if changing £25k. Contacts:
+  `privacy@` (data protection), `safety@` (clinical safety), `team@` (general
+  + auth-email sender via Resend custom SMTP — send pipeline confirmed 2026-06-14, email id
+  032aba38))* ·
+  W0.2.5 Login footer: Privacy · Terms · Contact ✅ *(links to PUBLIC `/policy/[slug]` pages —
+  proxy allowlisted; ALSO fixed the latent `/reset` gating bug in the same pass; verified
+  logged-out public render + gating still enforced for app routes 2026-06-13)*
+- **W0.3 UI Standards** — W0.3.1 Title Case + card-squircle standards LOCKED (APPROVALS §2.3/§9) ✅
+  · W0.3.2 Title Case sweep of existing surfaces ✅ *(dashboard, patients, legal, login, reset,
+  shell — verified 2026-06-13)* · W0.3.3 `check-title-case` CI guard ✅ *(component-aware port,
+  wired into `build`; immediately caught + fixed 3 missed labels — breadcrumb "New Patient",
+  save-pill "Couldn't Save", "Terms Of Service"; verified 2026-06-13)* · W0.3.4 Lint health ✅
+  *(`tsc` + `eslint` both clean; `PatientsTable` SortHead lifted to module scope — fixes
+  react-hooks/static-components; the React-Compiler-only `set-state-in-effect`/`refs` rules set
+  off in eslint.config with rationale, as RolDe isn't using the Compiler; NB Next 16 no longer
+  lints during `build`, so these never blocked deploys — corrected 2026-06-13)*
+
+**🚦 Pre-Launch Gates** *(do NOT need doing now — tick just before production / first real clinic
+with real patient data; parked here so nothing is forgotten)*
+- [ ] **Supabase Pro + leaked-password (HIBP) ON** — enable "Prevent use of leaked passwords"
+  (needs Pro, ~$25/mo). This is W0.1.5.
+- [ ] **Drop the password class-composition requirement** — once HIBP is on, switch Supabase
+  Auth → Providers → Email "Password requirements" back to *no required classes* (NCSC
+  "long beats complicated"), and update `apps/web/src/lib/password.ts` + the `/reset` meter in
+  the SAME pass to length-only. The classes are only an interim compensating control while HIBP
+  is unavailable.
+- [x] **Raise auth rate-limits for clinic scale** ✅ *(done early 2026-06-15 — Roland set them
+  ahead of launch so a real clinic signup never hits the ceiling)*: sending emails **100/h**,
+  sign-ups+sign-ins **100 / 5 min**, token verifications **60 / 5 min**; token refreshes 150/5 min
+  left as-is. All per-IP; captcha is the real brute-force defence so the headroom is safe.
+- [ ] **Security headers audit** — confirm CSP, HSTS, X-Frame-Options, Referrer-Policy on all
+  responses (this, not the soft-404 status, is the real "industry standard" hygiene item).
+- [ ] **ICO registration number** — slot the real number into the legal docs once it lands.
+- [ ] **Liability floor** — confirm or change the £25k floor in the Terms (currently
+  12-months-fees / £25k).
+
+**W1 — Clinic Core** *(buildable now; resumes once W0 is complete)*
+- **W1.1 Settings (Caretaker) Console** — W1.1.1 Hub shell + registry + scaffold + access gate +
+  skeleton ✅ *(built ahead of W0 — acknowledged; W0 finishes first now)* · W1.1.2 Clinic Profile
+  (+ caretaker-write RLS) · W1.1.3 Ward Map editor · W1.1.4 Branding & accent *(incl. the parchment override: per-clinic
+sidebar/paper tint + email background — default parchment, Caretaker may switch to their accent)* ·
+W1.1.5 Patient
+  numbering · W1.1.6 Rooms & hours · W1.1.7 Users & roles *(invite-link onboarding: Caretaker invites by email + role; the user sets
+their OWN password via a single-use link — the same `/reset` screen + checklist; the Caretaker can
+also trigger a password-reset link for any user under them. Nobody ever sets anyone else's
+password.)* · W1.1.8 Services & pricing · W1.1.9
+  Templates · W1.1.10 Memberships & packages · W1.1.11 Integrations · W1.1.12 Website & domain
+  (entry) · W1.1.13 Email Templates (operational clinic→patient emails; Resend-backed; Custodian
+  platform emails live in W1.5.2)
+- **W1.2 Patient Record Tabs** — W1.2.1 Problem list · W1.2.2 Medication list + reconciliation ·
+  W1.2.3 History (PMH/surgical/family/social) · W1.2.4 Document store · W1.2.5 Before/after +
+  body-map · W1.2.6 Digital consents (e-sign) · W1.2.7 Vitals/growth charts · W1.2.8 Risk scores
+  (NEWS2/QRISK) · W1.2.9 One-page printable summary
+- **W1.3 Patients List** — W1.3.1 Saved segments · W1.3.2 Tags · W1.3.3 Bulk actions · W1.3.4
+  Merge duplicates · W1.3.5 Quick-view drawer
+- **W1.4 Dashboard Cockpit** — W1.4.1 Action queues · W1.4.2 Pulse tiles · W1.4.3 Front-of-house
+  · W1.4.4 Ward Map card (live board)
+- **W1.5 Onboarding & Custodian** — W1.5.1 Tenant onboarding wizard · W1.5.2 Custodian console
+  `/custodian/*` (+ mandatory MFA, 4h timeout; incl. trigger a password-reset link for any Caretaker) · W1.5.3 Ward Map live board (Realtime alert-glow,
+  click-to-assign, transfer modal, discharge gate)
+
+**W2 — Calendar & Front Office** — W2.1 Scheduling + clinician/room views · W2.2 Online booking
+widget · W2.3 Recalls + reminders engine · W2.4 Waitlist · W2.5 Recurring course series
+**W3 — Clinical Orders** — W3.1 Prescribing + drug-safety · W3.2 Investigations + results inbox +
+trends · W3.3 Letters + closed-loop referrals
+**W4 — Money** — W4.1 Billing/invoices/deposits · W4.2 Packages & memberships · W4.3 Clinic-owned
+gateways (Scenario 1) · W4.4 Aged debt · W4.5 Insurer billing
+**W5 — Ambient AI** — W5.1 AI server (Gemma/M4 Max) · W5.2 Ambient suggestions · W5.3 AI drafting
+· W5.4 Correction pipeline
+**W6 — Growth & Ops** — W6.1 Inventory (batch/expiry) · W6.2 Marketing/CRM + reviews · W6.3
+Reports/analytics · W6.4 Patient portal · W6.5 Audit-log surface · W6.6 Website builder (Puck) +
+booking plugin + custom domains
 
 ---
 
