@@ -81,7 +81,7 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
       <section className="space-y-4 rounded-xl bg-card p-6 shadow-float">
         <h2 className="font-heading text-sm font-semibold tracking-tight">Identity</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Clinic Name" htmlFor="name" required hint="Shown across RolDe">
+          <Field label="Clinic Name" htmlFor="name" required hint="Shown across RolDe OS">
             <Input
               id="name"
               value={form.name}

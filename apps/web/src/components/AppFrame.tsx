@@ -112,7 +112,7 @@ export function AppFrame({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/icon.svg"
-              alt="RolDe"
+              alt="RolDe OS"
               className={cn(
                 "mx-auto hidden size-7",
                 collapsed ? "lg:block" : "lg:hidden",

@@ -28,7 +28,7 @@ export default async function CustodianEmailsPage() {
         explainer={{
           label: "Email Templates",
           description:
-            "The platform emails RolDe sends — password resets, invites, notices. Edit the wording here; re-seed from code to reset a template to its canonical version.",
+            "The platform emails RolDe OS sends — password resets, invites, notices. Edit the wording here; re-seed from code to reset a template to its canonical version.",
         }}
       />
 

@@ -152,7 +152,7 @@ export function PatientsTable({ rows }: { rows: PatientRow[] }) {
           label: "Patients",
           description: "Every patient registered at this clinic, RLS-scoped so you only ever see your own.",
           terms: [
-            { term: "Number", definition: "The RolDe patient number (per-clinic MRN)." },
+            { term: "Number", definition: "The RolDe OS patient number (per-clinic MRN)." },
             { term: "⚠ flag", definition: "The patient has active allergies or alerts." },
             { term: "Sort / Export", definition: "Click a column to sort; Export downloads the list as CSV." },
           ],

@@ -33,7 +33,7 @@ export function ClinicEmailSetup() {
       <div>
         <h2 className="font-heading text-lg font-semibold tracking-tight">No Emails Yet</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Start from RolDe&apos;s calm, clinical defaults — appointment reminders, results-ready,
+          Start from RolDe OS&apos;s calm, clinical defaults — appointment reminders, results-ready,
           follow-ups — then edit the wording to your clinic&apos;s voice.
         </p>
       </div>

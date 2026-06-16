@@ -1120,6 +1120,16 @@ with real patient data; parked here so nothing is forgotten)*
 - [ ] **Liability floor** — confirm or change the £25k floor in the Terms (currently
   12-months-fees / £25k).
 
+**🌐 Custom-domain (rolde.app) cutover** *(do the moment we point the app off `rolde-web.vercel.app`
+— Roland 2026-06-16 "tell me when we're good enough to go to rolde.app"; everything here breaks
+silently if missed)*
+- [ ] **Vercel** — add the custom domain (`rolde.app` or `app.rolde.app`) to the project + verify DNS.
+- [ ] **Resend webhook URL** — Resend → Webhooks → edit the endpoint to `https://<new-domain>/api/webhooks/resend`. *(Signing secret unchanged; one field.)*
+- [ ] **Cloudflare Turnstile** — add the new hostname to the widget's allowed-hostnames list (else the invisible captcha fails on the live login).
+- [ ] **Supabase Auth → URL Configuration** — set the **Site URL** + add the **Redirect URLs** for the new domain (reset/invite links resolve against these; wrong = broken `/auth/confirm`).
+- [ ] **Any hardcoded origin** — confirm links are built from `request.url` origin (they are today), not a baked-in `rolde-web.vercel.app`.
+- [ ] **Re-verify the full reset flow** end-to-end on the new domain before announcing.
+
 **W1 — Clinic Core** *(buildable now; resumes once W0 is complete)*
 - **W1.1 Settings (Caretaker) Console** — W1.1.1 Hub shell + registry + scaffold + access gate +
   skeleton ✅ *(built ahead of W0 — acknowledged; W0 finishes first now)* · W1.1.2 Clinic Profile ✅

@@ -2,9 +2,17 @@
 
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, Users } from "lucide-react";
-import { ROLES, TIER_ORDER, TIER_LABEL } from "@/lib/roles";
+import { X, BookUser } from "lucide-react";
+import { ROLES, TIER_ORDER, TIER_LABEL, type RoleTier } from "@/lib/roles";
 import { cn } from "@/lib/utils";
+
+// A calm splash of colour per tier (Roland 2026-06-16: let the titles stand out).
+const NAME_COLOR: Record<RoleTier, string> = {
+  platform: "text-info",
+  "clinic-lead": "text-success",
+  "clinic-team": "text-foreground",
+  patient: "text-muted-foreground",
+};
 
 /**
  * "Who's Who" — the role glossary (Roland 2026-06-16). The RolDe lexicon is warm
@@ -41,11 +49,13 @@ export function RolesGlossary({
         <div className="flex items-start justify-between gap-3 px-5 pb-3 pt-5">
           <div className="flex items-center gap-2.5">
             <span className="inline-flex size-9 items-center justify-center rounded-[10px] bg-info/10 text-info">
-              <Users className="size-4" />
+              <BookUser className="size-4" />
             </span>
             <div>
               <h2 className="font-heading text-base font-semibold tracking-tight">Who&apos;s Who</h2>
-              <p className="text-xs text-muted-foreground">The people in RolDe, and what each does.</p>
+              <p className="text-xs text-muted-foreground">
+                The people in RolDe OS, and what each does.
+              </p>
             </div>
           </div>
           <button
@@ -60,7 +70,7 @@ export function RolesGlossary({
         <div className="overflow-y-auto px-5 pb-5">
           {TIER_ORDER.map((tier) => (
             <div key={tier} className="mt-3 first:mt-1">
-              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-info">
                 {TIER_LABEL[tier]}
               </p>
               <div className="space-y-0.5">
@@ -74,8 +84,11 @@ export function RolesGlossary({
                         isYou && "bg-info/[0.08] ring-1 ring-info/20",
                       )}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-foreground">{r.label}</span>
+                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                        <span className={cn("text-sm font-semibold", NAME_COLOR[tier])}>
+                          {r.label}
+                        </span>
+                        <span className="text-[11px] italic text-info/90">{r.origin}</span>
                         {isYou && (
                           <span className="rounded-md bg-info/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-info">
                             You
@@ -87,7 +100,7 @@ export function RolesGlossary({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs leading-snug text-muted-foreground">{r.meaning}</p>
+                      <p className="mt-0.5 text-xs leading-snug text-foreground/70">{r.meaning}</p>
                     </div>
                   );
                 })}

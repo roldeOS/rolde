@@ -50,7 +50,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     key: "profile",
     title: "Clinic Profile",
     blurb:
-      "Your clinic's name, contact details and regulator registrations — the identity shown across RolDe, invoices and letters.",
+      "Your clinic's name, contact details and regulator registrations — the identity shown across RolDe OS, invoices and letters.",
     icon: Building2,
     tone: "brand",
     source: "Bible 4.3 §5",
@@ -61,7 +61,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     key: "branding",
     title: "Branding & Accent",
     blurb:
-      "The sunny accent colour for your sidebar and highlights — make RolDe feel like yours.",
+      "The sunny accent colour for your sidebar and highlights — make RolDe OS feel like yours.",
     icon: Palette,
     tone: "info",
     source: "Bible 4.2 §1.10 / APPROVALS §3.1",
@@ -160,7 +160,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     key: "integrations",
     title: "Integrations",
     blurb:
-      "Connect your own payment gateway, SMS and pharmacy partners. RolDe takes 0% — you keep every penny.",
+      "Connect your own payment gateway, SMS and pharmacy partners. RolDe OS takes 0% — you keep every penny.",
     icon: Plug,
     tone: "warning",
     source: "Bible 4.3 §4.6",

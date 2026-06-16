@@ -75,10 +75,19 @@ export const CONTROL_NAV: ControlSection[] = [
     status: "soon",
   },
   {
+    key: "logs",
+    label: "Email Log",
+    blurb: "Every email the platform has sent, with its delivery status.",
+    href: "/custodian/logs",
+    icon: ScrollText,
+    tone: "neutral",
+    status: "ready",
+  },
+  {
     key: "control",
     label: "Control",
     blurb:
-      "The platform levers you own — legal documents, the email system and your fellow Custodians.",
+      "The platform levers you edit for the clinics under you — legal documents, email templates and your fellow Custodians.",
     href: "/custodian/control",
     icon: SlidersHorizontal,
     tone: "neutral",
@@ -104,15 +113,6 @@ export const CONTROL_HUB: ControlSection[] = [
     href: "/custodian/emails",
     icon: MailCheck,
     tone: "info",
-    status: "ready",
-  },
-  {
-    key: "logs",
-    label: "Email Log",
-    blurb: "Every email the platform has sent, with its delivery status.",
-    href: "/custodian/logs",
-    icon: ScrollText,
-    tone: "neutral",
     status: "ready",
   },
   {

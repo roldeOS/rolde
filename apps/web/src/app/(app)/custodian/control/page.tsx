@@ -19,7 +19,7 @@ export default function ControlHubPage() {
         explainer={{
           label: "Control",
           description:
-            "Everything you change across the platform — the legal and clinical-safety documents, the email system, and your fellow Custodians.",
+            "Everything you edit for the clinics under you — the legal and clinical-safety documents, the email templates, and your fellow Custodians.",
         }}
       />
 

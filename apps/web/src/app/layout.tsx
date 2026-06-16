@@ -16,7 +16,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RolDe",
+  title: "RolDe OS",
   description: "The clinical operating system, built by a doctor.",
 };
 

@@ -269,7 +269,7 @@ export default function LoginPage() {
               <h2 className="text-xl font-semibold tracking-tight">Check Your Inbox</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 If <span className="font-medium text-foreground">{email}</span> has a
-                RolDe account, a reset link is on its way. It expires in an hour.
+                RolDe OS account, a reset link is on its way. It expires in an hour.
               </p>
               <Button
                 size="lg"

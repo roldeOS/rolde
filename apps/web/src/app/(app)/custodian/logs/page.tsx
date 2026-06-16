@@ -36,7 +36,7 @@ export default async function CustodianLogsPage() {
         explainer={{
           label: "Email Log",
           description:
-            "Every email RolDe has sent — auth, invites, clinic emails — with its delivery status. Newest 100.",
+            "Every email RolDe OS has sent — auth, invites, clinic emails — with its delivery status. Newest 100.",
         }}
       />
       <div className="overflow-x-auto rounded-xl bg-card shadow-float">

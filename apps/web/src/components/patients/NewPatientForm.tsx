@@ -130,7 +130,7 @@ export function NewPatientForm() {
 
       <p className="flex items-center gap-1.5 rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
         <Hash className="size-3.5 shrink-0" />
-        A RolDe patient number is assigned automatically on registration.
+        A RolDe OS patient number is assigned automatically on registration.
       </p>
 
       <Button type="submit" size="lg" className="w-full">

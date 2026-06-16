@@ -19,7 +19,7 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
   const doc = getLegalDoc(slug);
-  return { title: doc ? `${doc.title} · RolDe` : "RolDe" };
+  return { title: doc ? `${doc.title} · RolDe OS` : "RolDe OS" };
 }
 
 export default async function PolicyPage({
