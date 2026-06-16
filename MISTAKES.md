@@ -114,6 +114,29 @@ system is the plan — STOP; that temptation is the signal to build the harder-b
 over quick-and-dirty — never even surface the shortcut (CLAUDE.md). Query the plan + the mindate code
 first; priors and shortcuts are wrong by default.
 
+## 4. Shipped transactional email without deliverability hardening (no DMARC) — 2026-06-16
+
+I built the Resend send pipeline (Chunks 1–5) and called it done, but never set up **email
+deliverability hardening**. The password-reset to `rolandmanoj@icloud.com` was *accepted* by Resend
+yet **junked by iCloud**, because rolde.app had DKIM but **no DMARC record** (and is a young sending
+domain). Roland: *"Remember not to make mistakes like this DMARC anymore… you should have known
+this."* He's right — for a clinical product whose password resets and patient notices ALL ride
+email, deliverability is foundational, not an afterthought.
+
+**Fix:** Diagnosed with `dig` (DKIM ✓ `resend._domainkey`, SPF ✓ Google Workspace, **DMARC ✗**).
+Gave Roland the DMARC TXT record (`v=DMARC1; p=none; rua=…`) for Cloudflare DNS; building Resend
+delivery webhooks → `transactional_emails` so the Email Log shows true Delivered/Bounced, not just
+"accepted".
+
+**Trigger:** Setting up or touching ANY email sending (new provider, domain, or template system).
+Before "done", verify the FULL deliverability chain for the sending domain with `dig` — SPF, DKIM,
+**DMARC** — and wire a delivery-event webhook. "status: sent" means the provider ACCEPTED it, NOT
+that the inbox received it.
+
+**Lesson:** Deliverability hardening (SPF/DKIM/DMARC) is PART of building transactional email.
+"Sent" is a happy-path signal, not proof of delivery — pairs with
+[[verify-the-negative-case-for-gates]].
+
 ---
 
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or

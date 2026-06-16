@@ -50,3 +50,6 @@ pnpm-debug.log*
 
 # DEV-ONLY role impersonation — must never ship to production
 apps/web/src/app/api/dev/
+
+# DEV-ONLY seed/test scripts — never ship
+apps/web/scripts/dev/

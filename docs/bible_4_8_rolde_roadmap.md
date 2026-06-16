@@ -1137,7 +1137,11 @@ W1.1.5 Patient
   numbering · W1.1.6 Rooms & hours · W1.1.7 Users & roles *(invite-link onboarding: Caretaker invites by email + role; the user sets
 their OWN password via a single-use link — the same `/reset` screen + checklist; the Caretaker can
 also trigger a password-reset link for any user under them. Nobody ever sets anyone else's
-password.)* · W1.1.8 Services & pricing · W1.1.9
+password. **Soft-revoke, never delete (LOCKED, Roland 2026-06-16):** access = revocable clinic
+membership (`tenant_users.status` + optional **expiry**, e.g. a Locum given access for a set
+period); the login is NEVER deleted, so every record that user authored keeps a valid author — no
+orphaned/empty DB reference. A user with no active membership + not a Custodian gets the **"No
+Workspace Yet"** screen (built; `components/NoWorkspace.tsx`).)* · W1.1.8 Services & pricing · W1.1.9
   Templates · W1.1.10 Memberships & packages · W1.1.11 Integrations · W1.1.12 Website & domain
   (entry) · W1.1.13 Email Templates (operational clinic→patient emails; Resend-backed; Custodian
   platform emails live in W1.5.2)
