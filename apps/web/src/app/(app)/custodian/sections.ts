@@ -76,8 +76,9 @@ export const CONTROL_NAV: ControlSection[] = [
   },
   {
     key: "logs",
-    label: "Email Log",
-    blurb: "Every email the platform has sent, with its delivery status.",
+    label: "Logs",
+    blurb:
+      "What RolDe OS recorded — email delivery first, with audit, access and error logs to follow.",
     href: "/custodian/logs",
     icon: ScrollText,
     tone: "neutral",
