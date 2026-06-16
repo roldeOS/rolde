@@ -954,8 +954,16 @@ These were decided in the 2026-06-13 planning pass and slot into the waves above
     Email pipeline (`POST /api/admin/email-templates/preview`), and **Save** (`PATCH
     /api/admin/email-templates/[slug]`). List cards link in. All three endpoints Custodian-gated
     (verified **403**); tsc/lint/guard clean. *(Custodian account renamed `admin@`→`custodian@rolde.app`
-    — deliverable; logged-in editor UI is Roland's to eyeball.)* → next: (5) Caretaker clinic
-    templates (Settings → Email Templates, W1.1.13) + `/logs/emails` (the `transactional_emails` view).
+    — deliverable; logged-in editor UI is Roland's to eyeball.)*
+    (5) **Logs + Caretaker clinic templates** ✅ 2026-06-16 — (5a) `/custodian/logs` surfaces
+    `transactional_emails`; sidebar gains a Custodian "Platform" section. (5b) **Settings → Email
+    Templates** (W1.1.13): per-clinic patient emails (appointment reminder / results-ready / follow-up
+    defaults + one-tap "Set Up Default Emails"), scoped to the clinic from the session, Caretaker-gated
+    setup/save endpoints; the shared `EmailEditor` (moved to `components/email`, now takes a `saveUrl`)
+    + live preview serve both Custodian + Caretaker. **The whole app-controlled email system (Chunks
+    1–5) is complete and deployed to production** (`rolde-web.vercel.app`, commits `54ee947`/`60e5a48`/
+    `fe26cd7`). Email wordmark PNGs still pending an after-deploy URL wire; clinic→patient *sending* is
+    gated by the Bible 0 §8.11 agentic boundary when those flows land (W2+).
   - **Email wordmark = design-needed:** RolDe OS PNG, light + dark (transparent), like mindate's two
     wordmark PNGs (email clients can't render SVG). Roland to export; serif-text placeholder until then.
   - **Parchment = the system paper (Roland 2026-06-15, DECIDED).** `#F0EFEB` is the default
@@ -1114,8 +1122,16 @@ with real patient data; parked here so nothing is forgotten)*
 
 **W1 — Clinic Core** *(buildable now; resumes once W0 is complete)*
 - **W1.1 Settings (Caretaker) Console** — W1.1.1 Hub shell + registry + scaffold + access gate +
-  skeleton ✅ *(built ahead of W0 — acknowledged; W0 finishes first now)* · W1.1.2 Clinic Profile
-  (+ caretaker-write RLS) · W1.1.3 Ward Map editor · W1.1.4 Branding & accent *(incl. the parchment override: per-clinic
+  skeleton ✅ *(built ahead of W0 — acknowledged; W0 finishes first now)* · W1.1.2 Clinic Profile ✅
+  *(2026-06-16: Settings → Clinic Profile form — Identity (name, legal name), Contact (email, phone,
+  4-line address), Registrations (ICO/CQC/HIS); migration `20260616120000_clinic_profile.sql` added the
+  contact/address columns + a **column-scoped caretaker-write path** — `tenants_caretaker_update` RLS
+  (is_caretaker_of) row-scopes, and a column GRANT hard-limits `authenticated` UPDATE to the 11 safe
+  fields so billing/lifecycle columns (subscription_tier, status, slug…) are unreachable even via raw
+  PostgREST; anon lost UPDATE entirely. Endpoint `/api/settings/clinic-profile` whitelists + requires
+  name/legal_name. Verified end-to-end: forbidden `subscription_tier:'enterprise'` ignored, empty name →
+  400, save/clear round-trip. **Logo deferred to W1.1.4 Branding** where visual identity lives.)* ·
+  W1.1.3 Ward Map editor · W1.1.4 Branding & accent + clinic logo *(incl. the parchment override: per-clinic
 sidebar/paper tint + email background — default parchment, Caretaker may switch to their accent)* ·
 W1.1.5 Patient
   numbering · W1.1.6 Rooms & hours · W1.1.7 Users & roles *(invite-link onboarding: Caretaker invites by email + role; the user sets

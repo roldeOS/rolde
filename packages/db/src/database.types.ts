@@ -534,7 +534,12 @@ export type Database = {
       tenants: {
         Row: {
           activated_at: string | null
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
           config: Json
+          contact_email: string | null
+          contact_phone: string | null
           cqc_registration: string | null
           created_at: string
           custom_domain: string | null
@@ -546,6 +551,7 @@ export type Database = {
           onboarding_step: string | null
           patient_number_next: number
           patient_number_prefix: string | null
+          postcode: string | null
           slug: string
           status: string
           stripe_customer_id: string | null
@@ -556,7 +562,12 @@ export type Database = {
         }
         Insert: {
           activated_at?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
           config?: Json
+          contact_email?: string | null
+          contact_phone?: string | null
           cqc_registration?: string | null
           created_at?: string
           custom_domain?: string | null
@@ -568,6 +579,7 @@ export type Database = {
           onboarding_step?: string | null
           patient_number_next?: number
           patient_number_prefix?: string | null
+          postcode?: string | null
           slug: string
           status?: string
           stripe_customer_id?: string | null
@@ -578,7 +590,12 @@ export type Database = {
         }
         Update: {
           activated_at?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
           config?: Json
+          contact_email?: string | null
+          contact_phone?: string | null
           cqc_registration?: string | null
           created_at?: string
           custom_domain?: string | null
@@ -590,6 +607,7 @@ export type Database = {
           onboarding_step?: string | null
           patient_number_next?: number
           patient_number_prefix?: string | null
+          postcode?: string | null
           slug?: string
           status?: string
           stripe_customer_id?: string | null

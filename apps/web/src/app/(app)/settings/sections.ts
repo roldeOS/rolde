@@ -50,11 +50,11 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     key: "profile",
     title: "Clinic Profile",
     blurb:
-      "Your clinic's name, contact details and logo — the identity shown across RolDe, invoices and letters.",
+      "Your clinic's name, contact details and regulator registrations — the identity shown across RolDe, invoices and letters.",
     icon: Building2,
     tone: "brand",
     source: "Bible 4.3 §5",
-    status: "soon",
+    status: "ready",
     group: "Your Clinic",
   },
   {
