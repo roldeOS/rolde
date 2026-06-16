@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, TriangleAlert, FileText, CalendarPlus } from "lucide-react";
+import { Users, TriangleAlert, FileText, CalendarPlus, Building2, UserRoundCheck } from "lucide-react";
 import { getSessionContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -13,24 +13,113 @@ function greeting() {
   return "Good evening";
 }
 
+function monthStartISO() {
+  const n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), 1).toISOString();
+}
+
 /**
- * Overview — the clinic's at-a-glance check-in (mindate Overview ancestry,
- * Roland 2026-06-11): a warm greeting, a row of stat tiles (REAL metrics only),
- * then "Recently registered" + "Needs attention". Tiles for modules we haven't
- * built yet aren't faked — we show what we actually have.
+ * Overview — the at-a-glance check-in (mindate ancestry, Roland 2026-06-11):
+ * a warm greeting, a row of REAL stat tiles (never faked), then a list.
+ * A Custodian gets the PLATFORM overview (Control → Overview, W1.5.2 Chunk 2);
+ * everyone else gets their clinic's. Tiles for systems not built yet
+ * (escalations, errors, storage, health) are omitted, not invented.
  */
 export default async function Home() {
   const ctx = await getSessionContext();
   const name =
     ctx?.membership?.display_name ?? ctx?.custodian?.display_name ?? ctx?.user.email ?? "there";
   const custodianOnly = !!ctx?.isCustodian && !ctx?.membership;
-  const clinic = ctx?.membership?.tenants?.name ?? "your clinic";
   const supabase = await createClient();
 
-  const monthStart = (() => {
-    const n = new Date();
-    return new Date(n.getFullYear(), n.getMonth(), 1).toISOString();
-  })();
+  // ─────────────────────────────── Custodian: the platform God-View ──────────
+  if (custodianOnly) {
+    const [clinicsQ, patientsQ, staffQ, notesQ, newClinicsQ, clinicRowsQ, patientTenantsQ] =
+      await Promise.all([
+        supabase.from("tenants").select("*", { count: "exact", head: true }),
+        supabase.from("patients").select("*", { count: "exact", head: true }).is("deleted_at", null),
+        supabase.from("tenant_users").select("*", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("patient_feed_entries").select("*", { count: "exact", head: true }).eq("entry_type", "clinical_note").is("deleted_at", null),
+        supabase.from("tenants").select("*", { count: "exact", head: true }).gte("created_at", monthStartISO()),
+        supabase.from("tenants").select("id, name, slug, status").order("created_at", { ascending: true }),
+        supabase.from("patients").select("tenant_id").is("deleted_at", null),
+      ]);
+
+    const clinics = clinicRowsQ.data ?? [];
+    const perClinic = (patientTenantsQ.data ?? []).reduce<Record<string, number>>((acc, p) => {
+      acc[p.tenant_id] = (acc[p.tenant_id] ?? 0) + 1;
+      return acc;
+    }, {});
+    const newThisMonth = newClinicsQ.count ?? 0;
+
+    return (
+      <div className="w-full space-y-6 p-6 lg:p-8">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {greeting()}, {name}.
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">Here&apos;s your platform today.</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <StatTile
+            icon={Building2}
+            tone="brand"
+            label="Clinics"
+            value={clinicsQ.count ?? 0}
+            sub={newThisMonth ? `+${newThisMonth} this month` : undefined}
+            href="/custodian/clinics"
+          />
+          <StatTile icon={Users} tone="info" label="Patients" value={patientsQ.count ?? 0} />
+          <StatTile icon={UserRoundCheck} tone="success" label="Active Staff" value={staffQ.count ?? 0} />
+          <StatTile icon={FileText} tone="neutral" label="Clinical Notes" value={notesQ.count ?? 0} />
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardHeaderRow
+              icon={Building2}
+              tone="info"
+              title="Clinics"
+              rightSlot={
+                <Link
+                  href="/custodian/clinics"
+                  className="text-xs font-medium text-muted-foreground hover:text-foreground"
+                >
+                  View All
+                </Link>
+              }
+            />
+          </CardHeader>
+          <CardContent>
+            <div className="divide-y divide-border/50">
+              {clinics.length === 0 ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">No clinics yet.</p>
+              ) : (
+                clinics.map((c) => (
+                  <div key={c.id} className="flex items-center justify-between px-2 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{c.name}</span>
+                      <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium capitalize text-muted-foreground">
+                        {c.status}
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {perClinic[c.id] ?? 0} {(perClinic[c.id] ?? 0) === 1 ? "patient" : "patients"}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // ──────────────────────────────────── Clinic operator: the clinic ──────────
+  const clinic = ctx?.membership?.tenants?.name ?? "your clinic";
+  const monthStart = monthStartISO();
 
   const [totalQ, monthQ, alertsQ, notesQ, recentQ] = await Promise.all([
     supabase.from("patients").select("*", { count: "exact", head: true }).is("deleted_at", null),
@@ -48,9 +137,7 @@ export default async function Home() {
         <h1 className="text-2xl font-semibold tracking-tight">
           {greeting()}, {name}.
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Here&apos;s {custodianOnly ? "your platform" : clinic} today.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">Here&apos;s {clinic} today.</p>
       </div>
 
       {/* Stat tiles — real metrics */}
@@ -90,9 +177,7 @@ export default async function Home() {
                     <span className="text-sm font-medium">
                       {p.last_name}, {p.first_name}
                     </span>
-                    <span className="font-mono text-xs text-muted-foreground">
-                      {p.patient_number}
-                    </span>
+                    <span className="font-mono text-xs text-muted-foreground">{p.patient_number}</span>
                   </Link>
                 ))
               )}

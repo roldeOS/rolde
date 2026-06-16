@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Users } from "lucide-react";
 import { ROLES, TIER_ORDER, TIER_LABEL } from "@/lib/roles";
 import { cn } from "@/lib/utils";
@@ -30,7 +31,10 @@ export function RolesGlossary({
   if (!open) return null;
   const current = (currentRole || "").toLowerCase();
 
-  return (
+  // Portal to <body> so the fixed overlay escapes the glass topbar's
+  // backdrop-filter, which would otherwise become its containing block and
+  // push the modal off-screen. This keeps it truly viewport-centred.
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-foreground/20 backdrop-blur-[1px]" onClick={onClose} />
       <div className="relative z-10 flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-card shadow-overlay">
@@ -92,6 +96,7 @@ export function RolesGlossary({
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

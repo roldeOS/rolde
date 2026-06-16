@@ -1,4 +1,4 @@
-import { ScrollText } from "lucide-react";
+import { ScrollText, Eye, MousePointerClick } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
 import { cn } from "@/lib/utils";
@@ -23,7 +23,7 @@ export default async function CustodianLogsPage() {
   const supabase = await createClient();
   const { data: rows } = await supabase
     .from("transactional_emails")
-    .select("id, created_at, to_email, subject, template_slug, status, source")
+    .select("id, created_at, to_email, subject, template_slug, status, source, opened_at, clicked_at")
     .order("created_at", { ascending: false })
     .limit(100);
 
@@ -65,14 +65,22 @@ export default async function CustodianLogsPage() {
                   {r.template_slug}
                 </td>
                 <td className="px-4 py-3">
-                  <span
-                    className={cn(
-                      "rounded-md px-2 py-0.5 text-xs font-medium capitalize",
-                      STATUS_STYLE[r.status] ?? "bg-muted text-muted-foreground",
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={cn(
+                        "rounded-md px-2 py-0.5 text-xs font-medium capitalize",
+                        STATUS_STYLE[r.status] ?? "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {r.status}
+                    </span>
+                    {r.opened_at && (
+                      <Eye className="size-3.5 text-muted-foreground" aria-label="Opened" />
                     )}
-                  >
-                    {r.status}
-                  </span>
+                    {r.clicked_at && (
+                      <MousePointerClick className="size-3.5 text-info" aria-label="Clicked" />
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

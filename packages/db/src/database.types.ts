@@ -629,10 +629,12 @@ export type Database = {
       }
       transactional_emails: {
         Row: {
+          clicked_at: string | null
           created_at: string
           delivered_at: string | null
           error_message: string | null
           id: string
+          opened_at: string | null
           idempotency_key: string | null
           provider_message_id: string | null
           rendered_html: string | null
@@ -647,10 +649,12 @@ export type Database = {
           variables_used: Json | null
         }
         Insert: {
+          clicked_at?: string | null
           created_at?: string
           delivered_at?: string | null
           error_message?: string | null
           id?: string
+          opened_at?: string | null
           idempotency_key?: string | null
           provider_message_id?: string | null
           rendered_html?: string | null
@@ -665,10 +669,12 @@ export type Database = {
           variables_used?: Json | null
         }
         Update: {
+          clicked_at?: string | null
           created_at?: string
           delivered_at?: string | null
           error_message?: string | null
           id?: string
+          opened_at?: string | null
           idempotency_key?: string | null
           provider_message_id?: string | null
           rendered_html?: string | null

@@ -59,21 +59,43 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "bad_json" }, { status: 400 });
   }
 
-  const status = event.type ? STATUS_BY_EVENT[event.type] : undefined;
   const emailId = event.data?.email_id;
+  const type = event.type ?? "";
+  if (!emailId) return NextResponse.json({ ok: true, ignored: true });
+
+  const admin = createAdminClient();
+  const now = new Date().toISOString();
+
+  // Engagement events stamp a time WITHOUT disturbing delivery status; record
+  // only the first open / click (open-tracking is approximate — Apple MPP).
+  if (type === "email.opened") {
+    await admin
+      .from("transactional_emails")
+      .update({ opened_at: now })
+      .eq("provider_message_id", emailId)
+      .is("opened_at", null);
+    return NextResponse.json({ ok: true });
+  }
+  if (type === "email.clicked") {
+    await admin
+      .from("transactional_emails")
+      .update({ clicked_at: now })
+      .eq("provider_message_id", emailId)
+      .is("clicked_at", null);
+    return NextResponse.json({ ok: true });
+  }
+
+  const status = STATUS_BY_EVENT[type];
   // Ack unknown/unmapped events so Resend doesn't retry them.
-  if (!status || !emailId) return NextResponse.json({ ok: true, ignored: true });
+  if (!status) return NextResponse.json({ ok: true, ignored: true });
 
   const update: { status: string; delivered_at?: string; error_message?: string } = { status };
-  if (event.type === "email.delivered") update.delivered_at = new Date().toISOString();
-  if (event.type === "email.bounced") {
+  if (type === "email.delivered") update.delivered_at = now;
+  if (type === "email.bounced") {
     update.error_message = event.data?.bounce?.type ? `bounced: ${event.data.bounce.type}` : "bounced";
   }
 
-  let query = createAdminClient()
-    .from("transactional_emails")
-    .update(update)
-    .eq("provider_message_id", emailId);
+  let query = admin.from("transactional_emails").update(update).eq("provider_message_id", emailId);
   // A late, non-terminal event (sent/delayed) must never clobber a terminal one.
   if (!TERMINAL.includes(status)) query = query.not("status", "in", `(${TERMINAL.join(",")})`);
   await query;

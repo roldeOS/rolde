@@ -21,6 +21,9 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [pwError, setPwError] = useState(false);
   const [loading, setLoading] = useState(false);
+  // An expired/used reset link lands back here as ?error=link_expired (from
+  // /auth/confirm). We drop them straight into the request-another-link form.
+  const [expired, setExpired] = useState(false);
   // The email tick means something REAL: this account exists in the DB.
   const [emailExists, setEmailExists] = useState<boolean | null>(null);
   // Cloudflare Turnstile (W0.1.3): once CAPTCHA is enabled in Supabase Auth, every
@@ -34,6 +37,17 @@ export default function LoginPage() {
     captchaRef.current?.reset();
     setCaptchaToken("");
   }
+
+  // An expired or already-used reset link sends the user back here. Show the
+  // honest "expired" notice + open the request-another form, then clean the URL.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "link_expired") {
+      setExpired(true);
+      setMode("forgot");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   // Debounced live existence check — only a well-formed email is worth asking.
   // (RPC, not an auth endpoint, so CAPTCHA doesn't gate it — the tick still works.)
@@ -103,6 +117,7 @@ export default function LoginPage() {
     setMode(next);
     setError(null);
     setPwError(false);
+    setExpired(false);
     setCaptchaToken(""); // fresh challenge for the new form
   }
 
@@ -207,10 +222,12 @@ export default function LoginPage() {
           {mode === "forgot" && (
             <>
               <h2 className="text-center text-xl font-semibold tracking-tight">
-                Reset Your Password
+                {expired ? "Link Expired" : "Reset Your Password"}
               </h2>
               <p className="mt-2 text-center text-sm text-muted-foreground">
-                Pop in your email for a reset link.
+                {expired
+                  ? "Reset links only last an hour. Pop your email in and we’ll send a fresh one."
+                  : "Pop in your email for a reset link."}
               </p>
               <form onSubmit={onForgot} className="mt-6 space-y-4">
                 <Field label="Email" htmlFor="forgot-email">

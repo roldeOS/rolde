@@ -25,6 +25,7 @@ import { PatientIsland } from "./PatientIsland";
 import { CommandMenu } from "./CommandMenu";
 import { Recents } from "./Recents";
 import { NotificationsBell } from "./NotificationsBell";
+import { RolesGlossaryButton } from "./RolesGlossaryButton";
 import { ProfileMenu } from "./ProfileMenu";
 import { useNavTrail, type TrailEntry } from "@/lib/useNavTrail";
 import { cn } from "@/lib/utils";
@@ -213,6 +214,7 @@ export function Topbar({
           <Recents />
           <NotificationsBell />
           <div className="mx-0.5 h-5 w-px bg-border" />
+          <RolesGlossaryButton role={role} />
           <ProfileMenu user={user} role={role} clinic={clinic} />
         </div>
       </div>
