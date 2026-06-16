@@ -10,9 +10,13 @@ import { cn } from "@/lib/utils";
  * row, so a per-send replay view can come later.
  */
 const STATUS_STYLE: Record<string, string> = {
-  sent: "bg-success/12 text-success",
-  failed: "bg-destructive/12 text-destructive",
   queued: "bg-warning/12 text-warning",
+  sent: "bg-info/12 text-info",
+  delivered: "bg-success/12 text-success",
+  delayed: "bg-warning/12 text-warning",
+  failed: "bg-destructive/12 text-destructive",
+  bounced: "bg-destructive/12 text-destructive",
+  complained: "bg-destructive/12 text-destructive",
 };
 
 export default async function CustodianLogsPage() {

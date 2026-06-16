@@ -1141,7 +1141,24 @@ password. **Soft-revoke, never delete (LOCKED, Roland 2026-06-16):** access = re
 membership (`tenant_users.status` + optional **expiry**, e.g. a Locum given access for a set
 period); the login is NEVER deleted, so every record that user authored keeps a valid author — no
 orphaned/empty DB reference. A user with no active membership + not a Custodian gets the **"No
-Workspace Yet"** screen (built; `components/NoWorkspace.tsx`).)* · W1.1.8 Services & pricing · W1.1.9
+Workspace Yet"** screen (built; `components/NoWorkspace.tsx`).
+**Time-limited access (Roland 2026-06-16, write-in):** when a Caretaker grants access they set an
+**access window** — indefinite, *until a date* (e.g. a doctor on a 3-month probation), or a
+*from–to* span (e.g. a Locum for 48h across 29–30 Aug, 2 months out). Schema:
+`tenant_users.access_starts_at` / `access_ends_at` (nullable = indefinite). Access lapses **by time,
+not a cron** — the membership query gates on `status='active' AND (access_ends_at IS NULL OR
+access_ends_at > now()) AND (access_starts_at IS NULL OR access_starts_at <= now())`, so an expired
+Locum simply lands on No Workspace with their notes intact. UI: the Users list shows each person's
+window as a calm badge (`Indefinite` · `Until 30 Nov` · `Locum · 29–30 Aug` · `3 months left`),
+editable by the Caretaker.
+**Seamless onboarding email (Roland 2026-06-16, write-in):** the moment a Caretaker creates a user,
+RolDe emails them — their role, the clinic, **how long they have access**, and a single-use
+**set-password link** (the `/reset` screen). One step from invite to in.
+**Per-role gating (Roland 2026-06-16, REMEMBER to build):** each role sees/does only what Bible 4.1's
+access matrix allows (e.g. Concierge: demographics + appts, NO clinical; Cofferer: finance only) —
+verified 2026-06-16 that this is NOT yet enforced (all clinic staff currently see the full clinic UI);
+the `@qa.rolde.app` per-role test users (see "Dev & QA fixtures" below) exist to verify it as it's
+built.)* · W1.1.8 Services & pricing · W1.1.9
   Templates · W1.1.10 Memberships & packages · W1.1.11 Integrations · W1.1.12 Website & domain
   (entry) · W1.1.13 Email Templates (operational clinic→patient emails; Resend-backed; Custodian
   platform emails live in W1.5.2)
@@ -1214,6 +1231,20 @@ gateways (Scenario 1) · W4.4 Aged debt · W4.5 Insurer billing
 **W6 — Growth & Ops** — W6.1 Inventory (batch/expiry) · W6.2 Marketing/CRM + reviews · W6.3
 Reports/analytics · W6.4 Patient portal · W6.5 Audit-log surface · W6.6 Website builder (Puck) +
 booking plugin + custom domains
+
+---
+
+### Dev & QA fixtures *(test-only — not real users/data; Roland 2026-06-16 "keep them, document them")*
+
+- **Per-role QA users** — one passwordless test user per staff role lives in **Doc For Skin**, email
+  pattern **`<role>@qa.rolde.app`** (curator/concierge/clinician/locum/nurse/chemist/cunnere/cofferer,
+  display names `QA <Role>`). Purpose: log in as each role to verify what it sees / is blocked from as
+  per-role gating (W1.1.7) is built. Seeded by `apps/web/scripts/dev/seed-roles.mjs` (gitignored).
+  They WILL appear in the Doc For Skin Users list — they're fixtures, removable anytime; grep
+  `@qa.rolde.app` to clear.
+- **Dev role-login** — `apps/web/src/app/api/dev/login?email=…` lets the builder assume any role in
+  the LOCAL preview (mints a session server-side, no credential exposed). **Gitignored + NODE_ENV +
+  ALLOW_DEV_LOGIN gated — physically never ships to production.**
 
 ---
 
