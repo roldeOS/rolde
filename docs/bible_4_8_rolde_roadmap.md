@@ -1161,6 +1161,14 @@ access_ends_at > now()) AND (access_starts_at IS NULL OR access_starts_at <= now
 Locum simply lands on No Workspace with their notes intact. UI: the Users list shows each person's
 window as a calm badge (`Indefinite` · `Until 30 Nov` · `Locum · 29–30 Aug` · `3 months left`),
 editable by the Caretaker.
+**Chunk 1 built ✅ (2026-06-16, verified live):** Settings → Users & Roles shows the
+Caretaker the clinic's STAFF ROSTER (warm-tinted avatar, name + designation, role chip,
+`Prescriber` flag, access-window badge, email). Schema: `tenant_users.access_starts_at` /
+`access_ends_at` + `tenants.country`. `getSessionContext` now gates the membership on the
+window, so access lapses BY TIME — verified the negative case: an expired Locum lands on
+"No Workspace Yet", login + authored records intact. `lib/accessWindow.ts` is the badge.
+**Next (chunk 2):** the write path — invite (email + role + designation + job title +
+license + prescribing + access window) → onboarding email, then edit / revoke / reset.
 **Seamless onboarding email (Roland 2026-06-16, write-in):** the moment a Caretaker creates a user,
 RolDe emails them — their role, the clinic, **how long they have access**, and a single-use
 **set-password link** (the `/reset` screen). One step from invite to in.
