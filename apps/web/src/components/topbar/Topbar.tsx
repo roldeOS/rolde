@@ -23,6 +23,7 @@ import {
 import { useTopbar, type WorkspaceView } from "./TopbarContext";
 import { PatientIsland } from "./PatientIsland";
 import { CommandMenu } from "./CommandMenu";
+import { Clock } from "./Clock";
 import { Recents } from "./Recents";
 import { NotificationsBell } from "./NotificationsBell";
 import { RolesGlossaryButton } from "./RolesGlossaryButton";
@@ -122,7 +123,7 @@ export function Topbar({
       {/* Floating glass bar (Roland 2026-06-11, mindate parity): a bright inset
           top-highlight ("wet glass lip") + a soft drop shadow so it reads as a
           bar floating over the page, not a flat seam. */}
-      <div className="glass flex h-11 items-center justify-between gap-3 rounded-xl border border-white/50 px-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_8px_22px_-10px_rgba(0,0,0,0.22)]">
+      <div className="glass flex h-11 items-center gap-3 rounded-xl border border-white/50 px-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_8px_22px_-10px_rgba(0,0,0,0.22)]">
         {/* Left — toggle + JOURNEY breadcrumb trail */}
         <nav className="flex min-w-0 items-center gap-0.5" aria-label="Breadcrumb">
           {/* MOBILE menu button only — desktop sidebar-collapse now lives in
@@ -190,8 +191,17 @@ export function Topbar({
           })}
         </nav>
 
-        {/* Right — view-selector · search · recents · bell · profile */}
-        <div className="flex shrink-0 items-center gap-1.5">
+        {/* Search — pushed LEFT (Roland 2026-06-16): the command palette now
+            sits right after the journey trail, and the action cluster is shoved
+            to the far right by ml-auto. */}
+        <CommandMenu />
+
+        {/* Right — clock · view-selector · recents · bell · profile */}
+        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+          {/* Live date + time to the second. timeZone defaults to the viewer's
+              local clock; the Caretaker clinic-timezone setting will feed it
+              (W1.1.x). */}
+          <Clock />
           {onConsult && (
             <div className="hidden items-center gap-0.5 rounded-lg bg-card/70 p-0.5 shadow-sm ring-1 ring-black/[0.05] lg:flex">
               {VIEWS.map((v) => (
@@ -210,7 +220,6 @@ export function Topbar({
               ))}
             </div>
           )}
-          <CommandMenu />
           <Recents />
           <NotificationsBell />
           <div className="mx-0.5 h-5 w-px bg-border" />
