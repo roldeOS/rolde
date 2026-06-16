@@ -21,7 +21,9 @@ function greeting() {
  */
 export default async function Home() {
   const ctx = await getSessionContext();
-  const name = ctx?.membership?.display_name ?? ctx?.user.email ?? "there";
+  const name =
+    ctx?.membership?.display_name ?? ctx?.custodian?.display_name ?? ctx?.user.email ?? "there";
+  const custodianOnly = !!ctx?.isCustodian && !ctx?.membership;
   const clinic = ctx?.membership?.tenants?.name ?? "your clinic";
   const supabase = await createClient();
 
@@ -47,7 +49,7 @@ export default async function Home() {
           {greeting()}, {name}.
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Here&apos;s {clinic} today.
+          Here&apos;s {custodianOnly ? "your platform" : clinic} today.
         </p>
       </div>
 

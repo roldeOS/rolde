@@ -17,14 +17,23 @@ export type Database = {
       custodian_users: {
         Row: {
           created_at: string
+          display_name: string | null
+          photo_url: string | null
+          title: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
+          display_name?: string | null
+          photo_url?: string | null
+          title?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
+          display_name?: string | null
+          photo_url?: string | null
+          title?: string | null
           user_id?: string
         }
         Relationships: []

@@ -47,3 +47,6 @@ pnpm-debug.log*
 .vscode/*
 !.vscode/extensions.json
 *.swp
+
+# DEV-ONLY role impersonation — must never ship to production
+apps/web/src/app/api/dev/

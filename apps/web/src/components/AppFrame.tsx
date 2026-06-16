@@ -120,15 +120,18 @@ export function AppFrame({
             />
             {/* Clinic DISPLAY name — bigger + black, right under the wordmark
                 (Roland 2026-06-11). This is the short name collected at signup so
-                it never truncates; the full legal name lives in the footer. */}
-            <p
-              className={cn(
-                "mt-1.5 truncate text-sm font-semibold text-foreground",
-                collapsed && "lg:hidden",
-              )}
-            >
-              {clinic}
-            </p>
+                it never truncates; the full legal name lives in the footer. A
+                Custodian has no clinic, so the slot is theirs to skip entirely. */}
+            {role !== "custodian" && (
+              <p
+                className={cn(
+                  "mt-1.5 truncate text-sm font-semibold text-foreground",
+                  collapsed && "lg:hidden",
+                )}
+              >
+                {clinic}
+              </p>
+            )}
           </div>
           <SidebarNav collapsed={collapsed} role={role} />
 
@@ -171,10 +174,13 @@ export function AppFrame({
               )}
             >
               {/* Full (legal) clinic name — used on invoices/letters; sits here so
-                  the sidebar header can stay the short display name (Roland 2026-06-11). */}
-              <p className="truncate text-[11px] font-medium text-foreground/75">
-                {clinic}
-              </p>
+                  the sidebar header can stay the short display name (Roland 2026-06-11).
+                  A Custodian has no clinic, so this line is theirs to skip. */}
+              {role !== "custodian" && (
+                <p className="truncate text-[11px] font-medium text-foreground/75">
+                  {clinic}
+                </p>
+              )}
               <p className="inline-flex items-center gap-1 pt-0.5">
                 Made with
                 <Heart

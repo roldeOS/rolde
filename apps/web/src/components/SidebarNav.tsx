@@ -13,10 +13,9 @@ import {
   BarChart3,
   Settings,
   Scale,
-  MailCheck,
-  ScrollText,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
+import { CONTROL_NAV } from "@/app/(app)/custodian/sections";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -24,8 +23,10 @@ type NavItem = {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   tone: CardIconTone;
+  soon?: boolean;
 };
 
+// The clinic-operator nav (Caretaker / clinician / concierge …).
 const NAV: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard, tone: "brand" },
   { href: "/patients", label: "Patients", icon: Users, tone: "info" },
@@ -41,20 +42,13 @@ const NAV: NavItem[] = [
   { href: "/legal", label: "Legal & Safety", icon: Scale, tone: "neutral" },
 ];
 
-// Custodian-only platform surfaces (first slice of the console; the standalone
-// /custodian console with its own chrome is W1.5.2).
-const PLATFORM_NAV: NavItem[] = [
-  { href: "/custodian/emails", label: "Email Templates", icon: MailCheck, tone: "info" },
-  { href: "/custodian/logs", label: "Email Log", icon: ScrollText, tone: "neutral" },
-];
-
 export function SidebarNav({ collapsed, role }: { collapsed: boolean; role?: string }) {
   const pathname = usePathname();
   const renderItem = (item: NavItem) => {
     const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
     return (
       <Link
-        key={item.href}
+        key={item.href + item.label}
         href={item.href}
         title={collapsed ? item.label : undefined}
         className={cn(
@@ -68,25 +62,35 @@ export function SidebarNav({ collapsed, role }: { collapsed: boolean; role?: str
         )}
       >
         <CardIcon icon={item.icon} tone={item.tone} variant="badge" size="sm" />
-        {!collapsed && item.label}
+        {!collapsed && <span className="flex-1">{item.label}</span>}
+        {!collapsed && item.soon && (
+          <span className="rounded-md bg-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+            Soon
+          </span>
+        )}
       </Link>
     );
   };
 
+  // Custodians get the platform God-View — NOT the clinic-operator nav. The
+  // last item, "Control", is the hub for every platform lever (Bible 4.8 §16).
+  if (role === "custodian") {
+    return (
+      <nav className="flex flex-col gap-0.5 px-2">
+        {CONTROL_NAV.map((s) =>
+          renderItem({
+            href: s.href,
+            label: s.label,
+            icon: s.icon,
+            tone: s.tone,
+            soon: s.status === "soon",
+          }),
+        )}
+      </nav>
+    );
+  }
+
   return (
-    <nav className="flex flex-col gap-0.5 px-2">
-      {NAV.map(renderItem)}
-      {role === "custodian" && (
-        <>
-          {!collapsed && (
-            <p className="mt-4 mb-1 px-2 text-[11px] font-semibold tracking-wide text-muted-foreground">
-              Platform
-            </p>
-          )}
-          {collapsed && <div className="mt-3 mb-1 border-t border-sidebar-border" />}
-          {PLATFORM_NAV.map(renderItem)}
-        </>
-      )}
-    </nav>
+    <nav className="flex flex-col gap-0.5 px-2">{NAV.map(renderItem)}</nav>
   );
 }

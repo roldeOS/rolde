@@ -1149,9 +1149,55 @@ password.)* · W1.1.8 Services & pricing · W1.1.9
   Merge duplicates · W1.3.5 Quick-view drawer
 - **W1.4 Dashboard Cockpit** — W1.4.1 Action queues · W1.4.2 Pulse tiles · W1.4.3 Front-of-house
   · W1.4.4 Ward Map card (live board)
-- **W1.5 Onboarding & Custodian** — W1.5.1 Tenant onboarding wizard · W1.5.2 Custodian console
-  `/custodian/*` (+ mandatory MFA, 4h timeout; incl. trigger a password-reset link for any Caretaker) · W1.5.3 Ward Map live board (Realtime alert-glow,
-  click-to-assign, transfer modal, discharge gate)
+- **W1.5 Onboarding & Custodian** — W1.5.1 Tenant onboarding wizard · W1.5.2 Custodian
+  **"Control" console** `/custodian/*` — the God-View, a DISTINCT shell from the clinic-operator
+  UI (Roland 2026-06-16, from the annotated screenshot). Sidebar = the God-View surfaces (Overview ·
+  Clinics (directory like the Users page → clinic detail = profile + Vitals + Concerns + "Message
+  Caretaker") · Confer · Concerns) **+ a "Control" menu** — the Custodian's equivalent of a clinic's
+  Settings: ONE destination (`/custodian/control`) gathering every platform lever they own (Legal &
+  Safety **editor** · Email Templates · Email Log · Custodians), instead of scattering them (Roland
+  2026-06-16: "Control = a sidebar menu… the things he needs to change and control for the clinics
+  under him"). (+ mandatory MFA, 4h timeout; trigger a password-reset link for any Caretaker.)
+  **Chunk 1 ✅ (2026-06-16, verified live): the Control shell** — custodian-only sidebar (drops
+  clinical nav; honest "soon" scaffolds via `/custodian/[section]`), the Control hub, custodian
+  profiles (`custodian_users` += display_name/title/photo_url; Roland/Devi/RolDe seeded), greet-by-name,
+  both "Platform" labels removed (a Custodian has no clinic slot). Verified live as Custodian AND
+  Caretaker via a NEW dev-only role-login (`/api/dev/login` — gitignored + NODE_ENV-gated, never
+  ships) so every role is now verifiable in the local preview. ·
+  W1.5.3 Ward Map live board (Realtime alert-glow, click-to-assign, transfer modal, discharge gate)
+  · **W1.5.4 Clinic Vitals** — per-clinic + platform usage/health from OUR OWN tables (counts,
+  storage, emails, last-active) + a weighted traffic-light health score; Phase 2 (errors/crashes)
+  rides the self-hosted error beacon in W1.6.3. NEVER an external monitor (Roland 2026-06-16).
+- **W1.1.14 Profiles & Avatars** *(universal, near-term — the Control greeting depends on it)*:
+  every user from Custodian → Caretaker → staff gets a profile page + circular avatar. Photo upload
+  to a Supabase Storage bucket (`tenant_users.photo_url` exists; custodians now have one too); when
+  none is set, a **deterministic generated avatar (DiceBear, MIT, runs locally — never an external
+  call)** keeps it colourful and lively.
+- **W1.1.15 Role glossary ("Who's Who")** *(Roland 2026-06-16)* — the user-role names + a one-line
+  meaning for each + the stewardship hierarchy (Custodian → Caretaker → Curator/Concierge/Clinician/
+  Locum/Nurse/Chemist/Cunnere/Cofferer/CodeWright → Patient), reachable from **every page** (a quiet
+  topbar affordance by the avatar → popover), the caller's own role highlighted. So a newcomer who
+  sees "Cunnere" or "CodeWright" instantly knows what it means — the archaic-steward lexicon stays
+  warm without ever being confusing.
+
+**W1.6 — Confer & Concerns** *(the in-house communication + escalation layer; Roland 2026-06-16)* —
+one shared backbone (thread + messages + attachments + hierarchy RLS), two surfaces. **The hierarchy
+of stewardship is law:** Custodian ↔ Caretaker only; staff ↔ staff WITHIN a clinic; patients NEVER;
+staff below Caretaker never reach a Custodian.
+- **W1.6.1 Confer** — the messaging portal (30 / 70 two-pane, full-screen: conversation list │ thread).
+  Phased: P1 threaded messaging → P2 realtime (Supabase Realtime) → P3 unread/notifications. **Built
+  as a clinical-adjacent record ALWAYS** (Roland 2026-06-16): tenant RLS, audit, retention,
+  soft-redact (never hard-delete), included in patient data-access/erasure.
+- **W1.6.2 Concerns** — the report + escalation pipeline, itself a Confer-style conversation with a
+  status spine so the raiser ALWAYS knows what's happening (open → triaged → escalated → resolved;
+  "Roland from the CodeWright team is reviewing"). One-click capture button auto-grabs a screenshot +
+  diagnostics (route, browser, build), then a modal to type the issue. Raise → Caretaker + the
+  clinic's **CodeWright** (NEW role — the digital fixer; *code-wright*, where a "wright" is one who
+  builds and mends — wheelwright, shipwright, playwright; `cunnere` is lab-tech, so CodeWright is
+  added to the enum here) → triage in-house → escalate to Custodian if it's a RolDe OS problem →
+  resolve flows back down.
+- **W1.6.3 Vitals Phase 2** — the self-hosted client error beacon (`client_errors`, tenant-tagged)
+  feeding both a clinic's own error view and the Custodian's Vitals. Self-hosted only.
 
 **W2 — Calendar & Front Office** — W2.1 Scheduling + clinician/room views · W2.2 Online booking
 widget · W2.3 Recalls + reminders engine · W2.4 Waitlist · W2.5 Recurring course series

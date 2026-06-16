@@ -25,12 +25,12 @@ export async function getSessionContext() {
       .maybeSingle(),
     supabase
       .from("custodian_users")
-      .select("user_id")
+      .select("user_id, display_name, title, photo_url")
       .eq("user_id", user.id)
       .maybeSingle(),
   ]);
 
-  return { user, membership, isCustodian: !!custodian };
+  return { user, membership, custodian, isCustodian: !!custodian };
 }
 
 /**
