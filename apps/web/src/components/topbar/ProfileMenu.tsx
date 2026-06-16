@@ -41,7 +41,7 @@ export function ProfileMenu({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-info to-info/70 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+        className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-info to-info/70 text-xs font-semibold text-white shadow-sm ring-2 ring-white transition-all hover:shadow-md"
         aria-label="Profile"
       >
         {initials || <UserCircle className="size-4" />}

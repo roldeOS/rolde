@@ -1,7 +1,9 @@
 import { Receipt } from "lucide-react";
 import { ModuleStub } from "@/components/ModuleStub";
+import { requireModuleAccess } from "@/lib/auth";
 
-export default function BillingPage() {
+export default async function BillingPage() {
+  await requireModuleAccess("billing");
   return (
     <ModuleStub
       icon={Receipt}

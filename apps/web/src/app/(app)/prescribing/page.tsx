@@ -1,7 +1,9 @@
 import { Pill } from "lucide-react";
 import { ModuleStub } from "@/components/ModuleStub";
+import { requireModuleAccess } from "@/lib/auth";
 
-export default function PrescribingPage() {
+export default async function PrescribingPage() {
+  await requireModuleAccess("prescribing");
   return (
     <ModuleStub
       icon={Pill}

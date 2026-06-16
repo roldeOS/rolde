@@ -81,6 +81,7 @@
   --color-warning: var(--signal-warning);
   --color-success: var(--signal-success);
   --color-info: var(--signal-info);
+  --color-accent: var(--clinic-accent); /* sage — the RolDe steward accent */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-border: var(--sidebar-border);

@@ -15,6 +15,7 @@ export type CardIconTone =
   | "warning"  // amber — action needed, moderate concern
   | "success"  // green — consents complete, normal, verified
   | "info"     // blue — informational, results, AI confidence
+  | "accent"   // sage — the RolDe steward accent (Custodian, brand splash)
   | "neutral"  // slate — admin, documents, settings
   | "brand";   // near-black — RolDe chrome, patients, identity
 
@@ -23,6 +24,7 @@ const TONES: Record<CardIconTone, { bg: string; text: string }> = {
   warning:  { bg: "bg-warning/12",  text: "text-warning" },
   success:  { bg: "bg-success/10",  text: "text-success" },
   info:     { bg: "bg-info/10",     text: "text-info" },
+  accent:   { bg: "bg-accent/15",   text: "text-accent" },
   neutral:  { bg: "bg-slate-500/10", text: "text-slate-600" },
   brand:    { bg: "bg-foreground/8", text: "text-foreground" },
 };

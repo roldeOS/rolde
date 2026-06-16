@@ -1,7 +1,9 @@
 import { Mail } from "lucide-react";
 import { ModuleStub } from "@/components/ModuleStub";
+import { requireModuleAccess } from "@/lib/auth";
 
-export default function LettersPage() {
+export default async function LettersPage() {
+  await requireModuleAccess("letters");
   return (
     <ModuleStub
       icon={Mail}

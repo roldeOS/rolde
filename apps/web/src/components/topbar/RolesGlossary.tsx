@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, IdCard } from "lucide-react";
+import { X, BadgeHelp } from "lucide-react";
 import { ROLES, TIER_ORDER, TIER_LABEL } from "@/lib/roles";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,7 @@ export function RolesGlossary({
       <div className="relative z-10 flex max-h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-card shadow-overlay">
         <div className="flex items-start justify-between gap-3 px-5 pb-3 pt-5">
           <div className="flex items-center gap-2.5">
-            <CardIcon icon={IdCard} tone="brand" variant="badge" size="md" />
+            <CardIcon icon={BadgeHelp} tone="accent" variant="badge" size="md" />
             <div>
               <h2 className="font-heading text-base font-semibold tracking-tight">Who&apos;s Who</h2>
               <p className="text-xs text-muted-foreground">
@@ -69,7 +69,7 @@ export function RolesGlossary({
                       key={r.key}
                       className={cn(
                         "flex items-center gap-3 rounded-xl px-2 py-2",
-                        isYou && "bg-foreground/[0.04] ring-1 ring-border",
+                        isYou && "bg-hover ring-1 ring-accent/40",
                       )}
                     >
                       <CardIcon icon={r.icon} tone={r.tone} variant="tinted" size="md" />
@@ -78,7 +78,7 @@ export function RolesGlossary({
                           <span className="text-sm font-semibold text-foreground">{r.label}</span>
                           <span className="text-[11px] italic text-muted-foreground">{r.origin}</span>
                           {isYou && (
-                            <span className="rounded-md bg-foreground/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-foreground">
+                            <span className="rounded-md bg-accent/20 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-accent">
                               You
                             </span>
                           )}

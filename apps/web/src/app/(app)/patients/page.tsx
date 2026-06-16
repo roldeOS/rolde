@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { PatientsTable, type PatientRow } from "@/components/patients/PatientsTable";
+import { requireModuleAccess } from "@/lib/auth";
 
 export default async function PatientsPage() {
+  await requireModuleAccess("patients");
   const supabase = await createClient();
   const { data: patients } = await supabase
     .from("patients")

@@ -1,7 +1,9 @@
 import { CalendarDays } from "lucide-react";
 import { ModuleStub } from "@/components/ModuleStub";
+import { requireModuleAccess } from "@/lib/auth";
 
-export default function CalendarPage() {
+export default async function CalendarPage() {
+  await requireModuleAccess("calendar");
   return (
     <ModuleStub
       icon={CalendarDays}

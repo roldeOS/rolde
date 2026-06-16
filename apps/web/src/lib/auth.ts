@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { roleCanAccess } from "@/lib/access";
 
 /**
  * The authenticated user's session context for this request: who they are,
@@ -41,5 +42,17 @@ export async function getSessionContext() {
 export async function requireCustodian() {
   const ctx = await getSessionContext();
   if (!ctx?.isCustodian) notFound();
+  return ctx;
+}
+
+/**
+ * Gate a clinic module to the roles allowed by the access matrix (Bible 4.1 /
+ * `lib/access.ts`). A staff role without access — and a Custodian, who does no
+ * clinical work — gets a 404 (we don't reveal the page). This is the REAL gate;
+ * hiding the nav item is only the matching UX. Returns the context on success.
+ */
+export async function requireModuleAccess(moduleKey: string) {
+  const ctx = await getSessionContext();
+  if (!roleCanAccess(ctx?.membership?.role, moduleKey)) notFound();
   return ctx;
 }

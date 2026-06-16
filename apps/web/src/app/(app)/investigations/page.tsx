@@ -1,7 +1,9 @@
 import { FlaskConical } from "lucide-react";
 import { ModuleStub } from "@/components/ModuleStub";
+import { requireModuleAccess } from "@/lib/auth";
 
-export default function InvestigationsPage() {
+export default async function InvestigationsPage() {
+  await requireModuleAccess("investigations");
   return (
     <ModuleStub
       icon={FlaskConical}

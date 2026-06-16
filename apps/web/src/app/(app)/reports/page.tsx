@@ -1,7 +1,9 @@
 import { BarChart3 } from "lucide-react";
 import { ModuleStub } from "@/components/ModuleStub";
+import { requireModuleAccess } from "@/lib/auth";
 
-export default function ReportsPage() {
+export default async function ReportsPage() {
+  await requireModuleAccess("reports");
   return (
     <ModuleStub
       icon={BarChart3}

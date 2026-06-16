@@ -17,6 +17,7 @@ const TONE: Record<
   warning: { bg: "bg-warning/10", value: "text-warning" },
   success: { bg: "bg-success/8", value: "text-success" },
   info: { bg: "bg-info/8", value: "text-info" },
+  accent: { bg: "bg-accent/10", value: "text-accent" },
   neutral: { bg: "bg-slate-500/8", value: "text-slate-600" },
   brand: { bg: "bg-foreground/[0.05]", value: "text-foreground" },
 };

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { CONTROL_NAV } from "@/app/(app)/custodian/sections";
+import { roleCanAccess } from "@/lib/access";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -23,23 +24,27 @@ type NavItem = {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   tone: CardIconTone;
+  /** Access-matrix module key (Bible 4.1) — gates who sees this item. */
+  module: string;
   soon?: boolean;
 };
 
-// The clinic-operator nav (Caretaker / clinician / concierge …).
+// The clinic-operator nav (Caretaker / clinician / concierge …), filtered per
+// role by the access matrix (Bible 4.1 / lib/access.ts). The matching page guard
+// (requireModuleAccess) is the real gate; this hides what a role can't reach.
 const NAV: NavItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard, tone: "brand" },
-  { href: "/patients", label: "Patients", icon: Users, tone: "info" },
-  { href: "/calendar", label: "Calendar", icon: CalendarDays, tone: "success" },
-  { href: "/investigations", label: "Investigations", icon: FlaskConical, tone: "info" },
-  { href: "/prescribing", label: "Prescribing", icon: Pill, tone: "warning" },
-  { href: "/letters", label: "Letters", icon: Mail, tone: "neutral" },
-  { href: "/billing", label: "Billing", icon: Receipt, tone: "warning" },
-  { href: "/reports", label: "Reports", icon: BarChart3, tone: "neutral" },
-  { href: "/settings", label: "Settings", icon: Settings, tone: "neutral" },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard, tone: "brand", module: "dashboard" },
+  { href: "/patients", label: "Patients", icon: Users, tone: "info", module: "patients" },
+  { href: "/calendar", label: "Calendar", icon: CalendarDays, tone: "success", module: "calendar" },
+  { href: "/investigations", label: "Investigations", icon: FlaskConical, tone: "info", module: "investigations" },
+  { href: "/prescribing", label: "Prescribing", icon: Pill, tone: "warning", module: "prescribing" },
+  { href: "/letters", label: "Letters", icon: Mail, tone: "neutral", module: "letters" },
+  { href: "/billing", label: "Billing", icon: Receipt, tone: "warning", module: "billing" },
+  { href: "/reports", label: "Reports", icon: BarChart3, tone: "neutral", module: "reports" },
+  { href: "/settings", label: "Settings", icon: Settings, tone: "neutral", module: "settings" },
   // Legal & Safety — the single home for Privacy, Terms, Disclaimer, Clinical
   // Safety & consent docs, each versioned (Roland 2026-06-11).
-  { href: "/legal", label: "Legal & Safety", icon: Scale, tone: "neutral" },
+  { href: "/legal", label: "Legal & Safety", icon: Scale, tone: "neutral", module: "legal" },
 ];
 
 export function SidebarNav({ collapsed, role }: { collapsed: boolean; role?: string }) {
@@ -83,6 +88,7 @@ export function SidebarNav({ collapsed, role }: { collapsed: boolean; role?: str
             label: s.label,
             icon: s.icon,
             tone: s.tone,
+            module: s.key,
             soon: s.status === "soon",
           }),
         )}
@@ -91,6 +97,8 @@ export function SidebarNav({ collapsed, role }: { collapsed: boolean; role?: str
   }
 
   return (
-    <nav className="flex flex-col gap-0.5 px-2">{NAV.map(renderItem)}</nav>
+    <nav className="flex flex-col gap-0.5 px-2">
+      {NAV.filter((item) => roleCanAccess(role, item.module)).map(renderItem)}
+    </nav>
   );
 }

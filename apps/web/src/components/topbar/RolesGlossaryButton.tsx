@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { IdCard } from "lucide-react";
+import { BadgeHelp } from "lucide-react";
 import { RolesGlossary } from "./RolesGlossary";
 
 /**
@@ -17,9 +17,9 @@ export function RolesGlossaryButton({ role }: { role: string }) {
         onClick={() => setOpen(true)}
         title="Who's Who"
         aria-label="Who's Who"
-        className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+        className="flex size-8 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-border/50 transition-shadow hover:text-foreground hover:shadow-md"
       >
-        <IdCard className="size-[18px]" />
+        <BadgeHelp className="size-[18px]" />
       </button>
       <RolesGlossary open={open} onClose={() => setOpen(false)} currentRole={role} />
     </>

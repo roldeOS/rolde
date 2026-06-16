@@ -56,6 +56,7 @@ const TONE_BADGE: Record<CardIconTone, string> = {
   warning: "bg-warning/12 text-warning",
   success: "bg-success/10 text-success",
   info: "bg-info/10 text-info",
+  accent: "bg-accent/15 text-accent",
   neutral: "bg-slate-500/10 text-slate-600",
   brand: "bg-foreground/8 text-foreground",
 };
