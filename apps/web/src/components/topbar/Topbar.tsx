@@ -123,7 +123,7 @@ export function Topbar({
       {/* Floating glass bar (Roland 2026-06-11, mindate parity): a bright inset
           top-highlight ("wet glass lip") + a soft drop shadow so it reads as a
           bar floating over the page, not a flat seam. */}
-      <div className="glass flex h-11 items-center gap-3 rounded-xl border border-white/50 px-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_8px_22px_-10px_rgba(0,0,0,0.22)]">
+      <div className="glass flex h-11 items-center justify-between gap-3 rounded-xl border border-white/50 px-2 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_8px_22px_-10px_rgba(0,0,0,0.22)]">
         {/* Left — toggle + JOURNEY breadcrumb trail */}
         <nav className="flex min-w-0 items-center gap-0.5" aria-label="Breadcrumb">
           {/* MOBILE menu button only — desktop sidebar-collapse now lives in
@@ -191,13 +191,10 @@ export function Topbar({
           })}
         </nav>
 
-        {/* Search — pushed LEFT (Roland 2026-06-16): the command palette now
-            sits right after the journey trail, and the action cluster is shoved
-            to the far right by ml-auto. */}
-        <CommandMenu />
-
-        {/* Right — clock · view-selector · recents · bell · profile */}
-        <div className="ml-auto flex shrink-0 items-center gap-1.5">
+        {/* Right — clock · view-selector · search · recents · bell · profile.
+            Search lives HERE, not on the left: the left belongs to the JOURNEY
+            breadcrumb (Roland 2026-06-16 — search-on-left collided with it). */}
+        <div className="flex shrink-0 items-center gap-1.5">
           {/* Live date + time to the second. timeZone defaults to the viewer's
               local clock; the Caretaker clinic-timezone setting will feed it
               (W1.1.x). */}
@@ -220,6 +217,7 @@ export function Topbar({
               ))}
             </div>
           )}
+          <CommandMenu />
           <Recents />
           <NotificationsBell />
           <div className="mx-0.5 h-5 w-px bg-border" />
