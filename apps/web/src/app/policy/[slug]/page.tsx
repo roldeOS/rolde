@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getLegalDoc, STATUS_PILL, STATUS_LABEL } from "@/lib/legal";
+import { getDbLegalDoc } from "@/lib/legalDb";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { LegalDocBody } from "@/components/LegalDocBody";
 import { Footer } from "@/components/Footer";
@@ -28,9 +29,12 @@ export default async function PolicyPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const doc = getLegalDoc(slug);
+  // Public visitors see only the PUBLISHED version (RLS-enforced), read live
+  // from the DB so a Custodian's published edits show here immediately.
+  const doc = await getDbLegalDoc(slug);
   if (!doc) notFound();
-  const version = doc.versions[0];
+  const version = doc.versions.find((v) => v.status === "current") ?? doc.versions[0];
+  if (!version) notFound();
 
   return (
     <main className="relative flex min-h-screen flex-col items-center px-6 py-12">
