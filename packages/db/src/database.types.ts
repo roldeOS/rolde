@@ -106,6 +106,45 @@ export type Database = {
           },
         ]
       }
+      legal_doc_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          doc_key: string
+          id: string
+          intro: string
+          published_at: string | null
+          sections: Json
+          status: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          doc_key: string
+          id?: string
+          intro?: string
+          published_at?: string | null
+          sections?: Json
+          status?: string
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          doc_key?: string
+          id?: string
+          intro?: string
+          published_at?: string | null
+          sections?: Json
+          status?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: []
+      }
       patient_alerts: {
         Row: {
           category: string
