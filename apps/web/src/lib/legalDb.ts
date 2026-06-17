@@ -51,6 +51,37 @@ export async function getDbLegalDoc(key: string): Promise<DbLegalDoc | null> {
   return { ...catalog, versions: ((data as DbRow[] | null) ?? []).map(toVersion) };
 }
 
+/** Full version rows (incl. ids + drafts) for the Custodian editor, by doc key. */
+export type EditorVersion = {
+  id: string;
+  version: string;
+  status: string;
+  intro: string;
+  sections: LegalSection[];
+  date: string;
+};
+
+export async function getLegalEditorData(): Promise<Record<string, EditorVersion[]>> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("legal_doc_versions")
+    .select("id, doc_key, version, status, intro, sections, published_at, created_at, updated_at")
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .order("updated_at", { ascending: false });
+  const byKey: Record<string, EditorVersion[]> = {};
+  for (const r of (data as (DbRow & { id: string; updated_at: string })[] | null) ?? []) {
+    (byKey[r.doc_key] ??= []).push({
+      id: r.id,
+      version: r.version,
+      status: r.status,
+      intro: r.intro,
+      sections: r.sections ?? [],
+      date: (r.published_at ?? r.created_at).slice(0, 10),
+    });
+  }
+  return byKey;
+}
+
 export async function getAllDbLegalDocs(): Promise<DbLegalDoc[]> {
   const supabase = await createClient();
   const { data } = await supabase

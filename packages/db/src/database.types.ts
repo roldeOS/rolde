@@ -762,6 +762,7 @@ export type Database = {
       is_caretaker_of: { Args: { p_tenant_id: string }; Returns: boolean }
       is_custodian: { Args: never; Returns: boolean }
       next_patient_number: { Args: { p_tenant: string }; Returns: string }
+      publish_legal_draft: { Args: { p_doc_key: string }; Returns: undefined }
     }
     Enums: {
       alert_priority: "info" | "warning" | "critical"

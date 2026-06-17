@@ -101,8 +101,8 @@ export const CONTROL_HUB: ControlSection[] = [
   {
     key: "legal",
     label: "Legal & Safety",
-    blurb: "Edit and version the platform's legal and clinical-safety documents.",
-    href: "/legal",
+    blurb: "Draft, preview and publish the platform's legal and clinical-safety documents.",
+    href: "/custodian/legal",
     icon: Scale,
     tone: "neutral",
     status: "ready",
