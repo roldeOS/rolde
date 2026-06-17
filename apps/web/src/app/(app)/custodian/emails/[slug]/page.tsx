@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, MailCheck } from "lucide-react";
+import { MailCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
 import { EmailEditor } from "@/components/email/EmailEditor";
@@ -26,12 +25,6 @@ export default async function EmailTemplatePage({
 
   return (
     <div className="w-full space-y-6 p-6 lg:p-8">
-      <Link
-        href="/custodian/emails"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" /> Email Templates
-      </Link>
       <PageHeaderRow
         icon={MailCheck}
         tone="neutral"

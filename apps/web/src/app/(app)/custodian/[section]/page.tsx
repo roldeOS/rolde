@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
 import { getControlSection } from "../sections";
 
@@ -27,15 +25,6 @@ export default async function ControlSectionPage({
         tone={sec.tone}
         title={sec.label}
         explainer={{ label: sec.label, description: sec.blurb }}
-        actions={
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" />
-            Overview
-          </Link>
-        }
       />
 
       <div className="rounded-xl bg-card p-8 shadow-float">

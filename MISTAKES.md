@@ -137,6 +137,31 @@ that the inbox received it.
 "Sent" is a happy-path signal, not proof of delivery — pairs with
 [[verify-the-negative-case-for-gates]].
 
+## 5. Added a vestigial in-page back-link ("← All Settings") that duplicates the topbar breadcrumb — 2026-06-17
+
+**Symptom:** New pages (every Settings sub-page, the Services & Pricing page, the email
+editors, the `[section]` scaffolds) carried a `PageHeaderRow` `actions` back-link — "← All
+Settings" / "Email Templates". Roland: *"Why did you add a breadcrumb there? … That is precisely
+the reason we created a robust breadcrumbing system in the top-bar. Remember not to do this in
+any of the new pages."*
+
+**Root cause:** Copied a page-header back-link into new pages without registering that the topbar
+JOURNEY breadcrumb (APPROVALS §1.11) — now clickable to any ancestor including the Settings hub —
+ALREADY provides step-back. A second, page-level back affordance is redundant chrome creep.
+
+**Fix:** Removed the back-link from every `(app)`-shell page; the topbar breadcrumb is the ONE
+back-navigation. Audited the whole app for the pattern (`ArrowLeft` + a hub `Link` in a page
+header) and stripped it. PUBLIC pages with no topbar (`/policy/[slug]`, `not-found`) keep their
+own back-link — that's legitimate, not a vestige.
+
+**Trigger:** Building ANY page inside the `(app)` shell. Do NOT add an in-page back-link, an
+"All X" link, or any breadcrumb in the page body — the topbar JOURNEY breadcrumb (APPROVALS §1.11)
+is the single back-nav. A page-level back affordance is the regression.
+
+**Lesson:** Reuse the established navigation primitive; never re-implement step-back per page. The
+topbar breadcrumb is the one place for it — pairs with the "build the shared primitive" rule
+(MISTAKES §0).
+
 ---
 
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or

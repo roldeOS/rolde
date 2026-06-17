@@ -1,6 +1,4 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
 import { getSettingsAccess, SettingsRestricted } from "../access";
@@ -29,14 +27,6 @@ export default async function ServicesPage() {
         tone={sec.tone}
         title={sec.title}
         explainer={{ label: sec.title, description: sec.blurb }}
-        actions={
-          <Link
-            href="/settings"
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-          >
-            <ArrowLeft className="size-4" /> All Settings
-          </Link>
-        }
       />
 
       {!tenantId ? (
