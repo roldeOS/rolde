@@ -8,6 +8,7 @@ import {
   MailCheck,
   ScrollText,
   ShieldCheck,
+  UserCog,
 } from "lucide-react";
 import type { CardIconTone } from "@/components/ui/CardIcon";
 
@@ -91,6 +92,15 @@ export const CONTROL_NAV: ControlSection[] = [
       "The platform levers you edit for the clinics under you — legal documents, email templates and your fellow Custodians.",
     href: "/custodian/control",
     icon: SlidersHorizontal,
+    tone: "neutral",
+    status: "ready",
+  },
+  {
+    key: "settings",
+    label: "Settings",
+    blurb: "Your own Custodian profile and account — name, title, avatar and security.",
+    href: "/custodian/settings",
+    icon: UserCog,
     tone: "neutral",
     status: "ready",
   },
