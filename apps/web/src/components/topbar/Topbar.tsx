@@ -191,14 +191,10 @@ export function Topbar({
           })}
         </nav>
 
-        {/* Right — clock · view-selector · search · recents · bell · profile.
-            Search lives HERE, not on the left: the left belongs to the JOURNEY
-            breadcrumb (Roland 2026-06-16 — search-on-left collided with it). */}
+        {/* Right — view-selector · search · clock · recents · bell · profile.
+            Search lives in this cluster, not on the left (the left belongs to the
+            JOURNEY breadcrumb); the clock sits AFTER the search (Roland 2026-06-16). */}
         <div className="flex shrink-0 items-center gap-1.5">
-          {/* Live date + time to the second. timeZone defaults to the viewer's
-              local clock; the Caretaker clinic-timezone setting will feed it
-              (W1.1.x). */}
-          <Clock />
           {onConsult && (
             <div className="hidden items-center gap-0.5 rounded-lg bg-card/70 p-0.5 shadow-sm ring-1 ring-black/[0.05] lg:flex">
               {VIEWS.map((v) => (
@@ -218,6 +214,10 @@ export function Topbar({
             </div>
           )}
           <CommandMenu />
+          {/* Live date + time to the second — sits just AFTER the search bar
+              (Roland 2026-06-16). timeZone defaults to the viewer's local clock;
+              the Caretaker clinic-timezone setting will feed it later (W1.1.x). */}
+          <Clock />
           <Recents />
           <NotificationsBell />
           <div className="mx-0.5 h-5 w-px bg-border" />
