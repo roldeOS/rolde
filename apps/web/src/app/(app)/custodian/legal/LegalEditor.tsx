@@ -10,10 +10,10 @@ import {
   Plus,
   Trash2,
   Loader2,
-  Check,
   History,
 } from "lucide-react";
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
+import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { LegalDocBody } from "@/components/LegalDocBody";
 import { LEGAL_DOCS, STATUS_LABEL, STATUS_PILL, type LegalVersion } from "@/lib/legal";
@@ -71,7 +71,8 @@ export function LegalEditor({
   const [docKey, setDocKey] = useState(LEGAL_DOCS[0].key);
   const [step, setStep] = useState<Step>("edit");
   const [busy, setBusy] = useState<null | "draft" | "publish">(null);
-  const [flash, setFlash] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const flashSaved = useSavedFlash();
 
   const versions = versionsByKey[docKey] ?? [];
   const published = versions.find((v) => v.status === "published");
@@ -80,20 +81,25 @@ export function LegalEditor({
 
   // The form starts from the existing draft, else a fresh copy of the published
   // version with the next version number suggested.
-  const [form, setForm] = useState<Form>(() =>
-    draft
-      ? versionToForm(draft, "1.0")
-      : versionToForm(published, bump(published?.version ?? "1.0")),
-  );
+  const initialForm = draft
+    ? versionToForm(draft, "1.0")
+    : versionToForm(published, bump(published?.version ?? "1.0"));
+  const [form, setForm] = useState<Form>(() => initialForm);
+  // Baseline for dirty-tracking — the save-confirmation bar (§1.12) shows the
+  // "Saving… → RolDe saved" lifecycle, and leaving with unsaved edits is guarded.
+  const [baseline, setBaseline] = useState(() => JSON.stringify(initialForm));
+  const dirty = JSON.stringify(form) !== baseline;
 
   function pickDoc(key: string) {
     const vs = versionsByKey[key] ?? [];
     const d = vs.find((v) => v.status === "draft");
     const p = vs.find((v) => v.status === "published");
+    const next = d ? versionToForm(d, "1.0") : versionToForm(p, bump(p?.version ?? "1.0"));
     setDocKey(key);
     setStep("edit");
-    setFlash(null);
-    setForm(d ? versionToForm(d, "1.0") : versionToForm(p, bump(p?.version ?? "1.0")));
+    setError(null);
+    setForm(next);
+    setBaseline(JSON.stringify(next));
   }
 
   const setForm2 = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
@@ -107,9 +113,9 @@ export function LegalEditor({
   const removeSection = (i: number) =>
     setForm((f) => ({ ...f, sections: f.sections.filter((_, j) => j !== i) }));
 
-  async function saveDraft(): Promise<boolean> {
+  async function saveDraft(silent = false): Promise<boolean> {
     setBusy("draft");
-    setFlash(null);
+    setError(null);
     try {
       const res = await fetch("/api/custodian/legal/draft", {
         method: "POST",
@@ -123,14 +129,15 @@ export function LegalEditor({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) {
-        setFlash("Couldn't save the draft.");
+        setError("RolDe couldn’t save your draft — try again.");
         return false;
       }
-      setFlash("Draft saved.");
+      setBaseline(JSON.stringify(form));
+      if (!silent) flashSaved(`RolDe saved your draft of ${catalog.title}.`);
       router.refresh();
       return true;
     } catch {
-      setFlash("Couldn't save the draft.");
+      setError("RolDe couldn’t save your draft — try again.");
       return false;
     } finally {
       setBusy(null);
@@ -139,9 +146,9 @@ export function LegalEditor({
 
   async function publish() {
     setBusy("publish");
-    setFlash(null);
+    setError(null);
     // Persist the latest edits as the draft, then publish it.
-    const saved = await saveDraft();
+    const saved = await saveDraft(true);
     if (!saved) {
       setBusy(null);
       return;
@@ -155,17 +162,27 @@ export function LegalEditor({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) {
-        setFlash("Couldn't publish.");
+        setError("RolDe couldn’t publish — try again.");
         return;
       }
-      setFlash(`Published ${form.version} — it's now in force.`);
+      flashSaved(`${catalog.title} ${form.version} is now in force.`);
       router.refresh();
     } catch {
-      setFlash("Couldn't publish.");
+      setError("RolDe couldn’t publish — try again.");
     } finally {
       setBusy(null);
     }
   }
+
+  // Drive the shared save-confirmation bar (§1.12): the "Saving… → RolDe saved"
+  // lifecycle, the failed/Retry state, and the unsaved-work nav guard.
+  usePageActionBar({
+    dirty,
+    saving: busy !== null,
+    onSave: () => saveDraft(),
+    saveLabel: "Save Draft",
+    error,
+  });
 
   const previewVersion: LegalVersion = {
     v: form.version || "—",
@@ -362,14 +379,10 @@ export function LegalEditor({
             {/* Footer — save draft + flash */}
             <div className="flex items-center justify-between gap-3 border-t border-border/60 px-5 py-3">
               <span className="text-xs text-muted-foreground">
-                {flash && (
-                  <span className="inline-flex items-center gap-1 font-medium text-foreground">
-                    <Check className="size-3.5 text-success" /> {flash}
-                  </span>
-                )}
+                {dirty && "Unsaved changes"}
               </span>
               <button
-                onClick={saveDraft}
+                onClick={() => saveDraft()}
                 disabled={!!busy}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3.5 py-1.5 text-sm font-medium text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:opacity-60"
               >

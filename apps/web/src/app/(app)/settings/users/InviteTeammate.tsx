@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { UserPlus, X, Loader2 } from "lucide-react";
+import { useSavedFlash } from "@/components/ui/PageActionBar";
 import { emptyMemberForm, windowFromForm, type MemberForm } from "@/lib/memberForm";
 import { MemberFields } from "./MemberFields";
 
@@ -14,6 +15,7 @@ import { MemberFields } from "./MemberFields";
  */
 export function InviteTeammate({ country }: { country: string }) {
   const router = useRouter();
+  const flashSaved = useSavedFlash();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -66,8 +68,10 @@ export function InviteTeammate({ country }: { country: string }) {
         setBusy(false);
         return;
       }
+      const name = form.displayName.trim();
       setOpen(false);
       setForm(emptyMemberForm(country));
+      flashSaved(`RolDe sent ${name} an invite to join.`);
       router.refresh();
     } catch {
       setError("Something went wrong. Try again.");

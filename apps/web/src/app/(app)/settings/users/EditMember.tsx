@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { X, Loader2 } from "lucide-react";
+import { useSavedFlash } from "@/components/ui/PageActionBar";
 import {
   memberFormFrom,
   windowFromForm,
@@ -41,6 +42,7 @@ export function EditMember({
   onClose: () => void;
 }) {
   const router = useRouter();
+  const flashSaved = useSavedFlash();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -97,7 +99,9 @@ export function EditMember({
         setBusy(false);
         return;
       }
+      const name = form.displayName.trim();
       onClose();
+      flashSaved(`RolDe updated ${name}’s details.`);
       router.refresh();
     } catch {
       setError("Something went wrong. Try again.");

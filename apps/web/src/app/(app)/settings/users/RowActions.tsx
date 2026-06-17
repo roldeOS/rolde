@@ -12,6 +12,7 @@ import {
   Check,
 } from "lucide-react";
 import { useClickAway } from "@/lib/useClickAway";
+import { useSavedFlash } from "@/components/ui/PageActionBar";
 import { cn } from "@/lib/utils";
 import { EditMember, type EditableMember } from "./EditMember";
 
@@ -35,6 +36,7 @@ export function RowActions({
   country: string;
 }) {
   const router = useRouter();
+  const flashSaved = useSavedFlash();
   const [open, setOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -77,7 +79,14 @@ export function RowActions({
     const ok = await post("/api/clinic/users/update", { id: member.id, status }, "status");
     setOpen(false);
     setConfirmPause(false);
-    if (ok) router.refresh();
+    if (ok) {
+      flashSaved(
+        status === "active"
+          ? `RolDe restored ${member.display_name}’s access.`
+          : `RolDe paused ${member.display_name}’s access.`,
+      );
+      router.refresh();
+    }
   }
 
   return (
