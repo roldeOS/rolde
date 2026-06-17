@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionContext } from "@/lib/auth";
+import { logPatientAccess } from "@/lib/audit";
 import { TopbarPatientSync } from "@/components/topbar/TopbarContext";
 import { ConsultationWorkspace } from "@/components/consultation/ConsultationWorkspace";
 import type { FeedEntry, Author } from "@/components/consultation/ClinicalNotesFeed";
@@ -46,6 +47,13 @@ export default async function ConsultationPage({
     .maybeSingle();
 
   if (!patient) notFound();
+
+  // Clinical-governance trail (§6.14): record that this person opened this record.
+  await logPatientAccess({
+    patientId: id,
+    tenantId: ctx?.membership?.tenant_id,
+    userId: currentUserId,
+  });
 
   const { data: entries } = await supabase
     .from("patient_feed_entries")

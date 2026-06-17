@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
  */
 const TABS = [
   { key: "email", label: "Email", icon: Mail, ready: true },
-  { key: "audit", label: "Audit", icon: ClipboardCheck, ready: false, blurb: "Who changed or viewed what, across every clinic — the clinical-governance trail." },
+  { key: "audit", label: "Audit", icon: ClipboardCheck, ready: true, blurb: "Who changed or viewed what, across every clinic — the clinical-governance trail." },
   { key: "access", label: "Access", icon: LogIn, ready: false, blurb: "Sign-ins, failed attempts and sessions — the security record." },
   { key: "errors", label: "Errors", icon: TriangleAlert, ready: false, blurb: "Crashes and client errors, fed by the self-hosted beacon (W1.6.3)." },
   { key: "webhooks", label: "Webhooks", icon: Webhook, ready: false, blurb: "Incoming events from Resend and payment partners." },
@@ -85,6 +85,34 @@ export default async function CustodianLogsPage({
       .order("created_at", { ascending: false })
       .limit(100);
     rows = data ?? [];
+  }
+
+  // Audit — the patient-access trail (Custodian reads all clinics via RLS). The
+  // patient is shown by its clinic REFERENCE (number), never name — audit metadata.
+  type AuditRow = { id: string; at: string; action: string; user_id: string; tenant_id: string; patient_id: string };
+  let auditRows: (AuditRow & { staff: string; clinic: string; patient: string })[] = [];
+  if (active.key === "audit") {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("patient_access_log")
+      .select("id, at, action, user_id, tenant_id, patient_id")
+      .order("at", { ascending: false })
+      .limit(200);
+    const raw = (data as AuditRow[] | null) ?? [];
+    const [{ data: staff }, { data: pts }, { data: tns }] = await Promise.all([
+      supabase.from("tenant_users").select("user_id, tenant_id, display_name").in("user_id", raw.map((r) => r.user_id)),
+      supabase.from("patients").select("id, patient_number").in("id", raw.map((r) => r.patient_id)),
+      supabase.from("tenants").select("id, name").in("id", raw.map((r) => r.tenant_id)),
+    ]);
+    const staffMap = new Map((staff ?? []).map((s) => [`${s.tenant_id}:${s.user_id}`, s.display_name]));
+    const ptMap = new Map((pts ?? []).map((p) => [p.id, p.patient_number ?? "—"]));
+    const tnMap = new Map((tns ?? []).map((t) => [t.id, t.name]));
+    auditRows = raw.map((r) => ({
+      ...r,
+      staff: staffMap.get(`${r.tenant_id}:${r.user_id}`) ?? "Unknown",
+      clinic: tnMap.get(r.tenant_id) ?? "—",
+      patient: ptMap.get(r.patient_id) ?? "—",
+    }));
   }
 
   return (
@@ -191,6 +219,46 @@ export default async function CustodianLogsPage({
             </tbody>
           </table>
           </div>
+        </div>
+      ) : active.key === "audit" ? (
+        <div className="overflow-x-auto rounded-xl bg-card shadow-float">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                <th className="px-4 py-3 font-medium">When</th>
+                <th className="px-4 py-3 font-medium">Clinic</th>
+                <th className="px-4 py-3 font-medium">Who</th>
+                <th className="px-4 py-3 font-medium">Patient</th>
+                <th className="px-4 py-3 font-medium">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {auditRows.map((r) => (
+                <tr key={r.id} className="border-b border-border/50 last:border-0">
+                  <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
+                    {new Date(r.at).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+                  </td>
+                  <td className="px-4 py-3">{r.clinic}</td>
+                  <td className="px-4 py-3">{r.staff}</td>
+                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted-foreground">
+                    {r.patient}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
+                      {r.action}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {auditRows.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                    No patient-record access logged yet.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       ) : (
         <div className="mx-auto flex max-w-md flex-col items-center gap-4 rounded-xl bg-card p-10 text-center shadow-float">

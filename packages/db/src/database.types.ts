@@ -145,6 +145,48 @@ export type Database = {
         }
         Relationships: []
       }
+      patient_access_log: {
+        Row: {
+          action: string
+          at: string
+          id: string
+          patient_id: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          action?: string
+          at?: string
+          id?: string
+          patient_id: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          at?: string
+          id?: string
+          patient_id?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_access_log_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_access_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_alerts: {
         Row: {
           category: string
