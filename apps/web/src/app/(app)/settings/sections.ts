@@ -120,7 +120,7 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: Stethoscope,
     tone: "success",
     source: "Bible 4.4 §3",
-    status: "soon",
+    status: "ready",
     group: "Clinical & Services",
   },
   {
