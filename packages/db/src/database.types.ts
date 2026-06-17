@@ -477,8 +477,6 @@ export type Database = {
           created_at: string
           designation: string | null
           display_name: string
-          gdc_number: string | null
-          gmc_number: string | null
           id: string
           invited_at: string | null
           invited_by: string | null
@@ -486,7 +484,6 @@ export type Database = {
           last_login_at: string | null
           license_number: string | null
           license_type: string | null
-          nmc_pin: string | null
           photo_url: string | null
           preferred_name: string | null
           prescribing_rights: boolean
@@ -504,8 +501,6 @@ export type Database = {
           created_at?: string
           designation?: string | null
           display_name: string
-          gdc_number?: string | null
-          gmc_number?: string | null
           id?: string
           invited_at?: string | null
           invited_by?: string | null
@@ -513,7 +508,6 @@ export type Database = {
           last_login_at?: string | null
           license_number?: string | null
           license_type?: string | null
-          nmc_pin?: string | null
           photo_url?: string | null
           preferred_name?: string | null
           prescribing_rights?: boolean
@@ -531,8 +525,6 @@ export type Database = {
           created_at?: string
           designation?: string | null
           display_name?: string
-          gdc_number?: string | null
-          gmc_number?: string | null
           id?: string
           invited_at?: string | null
           invited_by?: string | null
@@ -540,7 +532,6 @@ export type Database = {
           last_login_at?: string | null
           license_number?: string | null
           license_type?: string | null
-          nmc_pin?: string | null
           photo_url?: string | null
           preferred_name?: string | null
           prescribing_rights?: boolean

@@ -29,6 +29,7 @@ import { NotificationsBell } from "./NotificationsBell";
 import { RolesGlossaryButton } from "./RolesGlossaryButton";
 import { ProfileMenu } from "./ProfileMenu";
 import { useNavTrail, type TrailEntry } from "@/lib/useNavTrail";
+import { SETTINGS_SECTIONS, getSection } from "@/app/(app)/settings/sections";
 import { cn } from "@/lib/utils";
 
 /**
@@ -65,6 +66,12 @@ const KIND_ICON: Record<string, LucideIcon> = {
   settings: Settings,
   legal: Scale,
 };
+
+// A settings SUB-page crumb (e.g. Clinic Profile) carries its section's own icon,
+// drawn from the single Settings registry so the two never drift.
+const SETTINGS_ICON: Record<string, LucideIcon> = Object.fromEntries(
+  SETTINGS_SECTIONS.map((s) => [s.key, s.icon as LucideIcon]),
+);
 
 const VIEWS: { key: WorkspaceView; label: string }[] = [
   { key: "consult", label: "Consult" },
@@ -108,6 +115,17 @@ export function Topbar({
           kind: "patient",
         }
       : null;
+  } else if (/^\/settings\/[^/]+$/.test(pathname)) {
+    // A Settings SUB-page (e.g. Clinic Profile): Settings is the clickable
+    // PARENT, the section is the current crumb — so the breadcrumb steps back
+    // to the hub (Roland 2026-06-17).
+    const slug = pathname.split("/")[2];
+    parents = [{ href: "/settings", label: "Settings", kind: "settings" }];
+    trailCurrent = {
+      href: pathname,
+      label: getSection(slug)?.title ?? "Settings",
+      kind: slug,
+    };
   } else if (sectionMatch) {
     trailCurrent = {
       href: sectionMatch.kind === "dashboard" ? "/" : firstSeg,
@@ -143,7 +161,7 @@ export function Topbar({
             // icons to save room) — Roland 2026-06-11.
             const showLabel =
               i === 0 ? trail.length === 1 : i >= trail.length - 2;
-            const Icon = KIND_ICON[seg.kind] ?? User;
+            const Icon = KIND_ICON[seg.kind] ?? SETTINGS_ICON[seg.kind] ?? User;
 
             // Terminal patient crumb keeps the rich PatientIsland (name +
             // allergy flag + click-to-open island).

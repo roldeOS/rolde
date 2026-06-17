@@ -1,9 +1,22 @@
 import Link from "next/link";
 import { Settings } from "lucide-react";
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
-import { CardIcon } from "@/components/ui/CardIcon";
+import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { SETTINGS_GROUPS, SETTINGS_SECTIONS } from "./sections";
 import { getSettingsAccess, SettingsRestricted } from "./access";
+import { cn } from "@/lib/utils";
+
+// A calm tone wash per card (Roland 2026-06-17: "make this a bit more colour") —
+// the gradient + hairline ring parity with the dashboard StatTiles, kept light.
+const TONE_WASH: Record<CardIconTone, string> = {
+  critical: "bg-gradient-to-br from-critical/[0.15] to-critical/[0.04] ring-1 ring-critical/15",
+  warning: "bg-gradient-to-br from-warning/[0.18] to-warning/[0.05] ring-1 ring-warning/15",
+  success: "bg-gradient-to-br from-success/[0.15] to-success/[0.04] ring-1 ring-success/15",
+  info: "bg-gradient-to-br from-info/[0.15] to-info/[0.04] ring-1 ring-info/15",
+  accent: "bg-gradient-to-br from-accent/20 to-accent/[0.05] ring-1 ring-accent/20",
+  neutral: "bg-gradient-to-br from-slate-500/[0.12] to-slate-500/[0.03] ring-1 ring-slate-500/15",
+  brand: "bg-gradient-to-br from-info/[0.14] to-accent/[0.06] ring-1 ring-info/15",
+};
 
 /**
  * Settings hub — the Caretaker's control room (Bible 4.3 §5). A grouped grid of
@@ -40,7 +53,10 @@ export default async function SettingsPage() {
                 <Link
                   key={s.key}
                   href={`/settings/${s.key}`}
-                  className="flex flex-col gap-3 rounded-xl bg-card p-5 shadow-float transition-shadow hover:shadow-raised"
+                  className={cn(
+                    "flex flex-col gap-3 rounded-xl p-5 shadow-float transition-shadow hover:shadow-raised",
+                    TONE_WASH[s.tone],
+                  )}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <CardIcon icon={s.icon} tone={s.tone} variant="badge" />
