@@ -10,6 +10,7 @@ import type { CardIconTone } from "@/components/ui/CardIcon";
 import { getSettingsAccess, SettingsRestricted } from "../access";
 import { getSection } from "../sections";
 import { InviteTeammate } from "./InviteTeammate";
+import { RowActions } from "./RowActions";
 import { cn } from "@/lib/utils";
 
 /**
@@ -132,7 +133,13 @@ export default async function UsersRolesPage() {
           </div>
           <ul className="divide-y divide-border/60">
             {staff.map((s) => (
-              <StaffRow key={s.id} s={s} isMe={s.user_id === meId} nowMs={nowMs} />
+              <StaffRow
+                key={s.id}
+                s={s}
+                isMe={s.user_id === meId}
+                nowMs={nowMs}
+                country={country}
+              />
             ))}
             {staff.length === 0 && (
               <li className="px-5 py-10 text-center text-sm text-muted-foreground">
@@ -146,16 +153,26 @@ export default async function UsersRolesPage() {
   );
 }
 
-function StaffRow({ s, isMe, nowMs }: { s: Staff; isMe: boolean; nowMs: number }) {
+function StaffRow({
+  s,
+  isMe,
+  nowMs,
+  country,
+}: {
+  s: Staff;
+  isMe: boolean;
+  nowMs: number;
+  country: string;
+}) {
   const role = ROLE_BY_KEY[s.role];
-  const revoked = s.status !== "active";
+  const suspended = s.status !== "active";
   const name = [s.designation, s.display_name].filter(Boolean).join(" ");
   const subtitle = s.job_title || role?.meaning || "";
   const license = [s.license_type, s.license_number].filter(Boolean).join(" ");
   const window = accessWindowBadge(s.access_starts_at, s.access_ends_at, nowMs);
 
   return (
-    <li className={cn("flex items-center gap-3 px-5 py-3.5", revoked && "opacity-60")}>
+    <li className={cn("flex items-center gap-3 px-5 py-3.5", suspended && "opacity-60")}>
       {/* Avatar */}
       <span
         className={cn(
@@ -204,9 +221,9 @@ function StaffRow({ s, isMe, nowMs }: { s: Staff; isMe: boolean; nowMs: number }
               <Pill className="size-3" /> Prescriber
             </span>
           )}
-          {revoked ? (
+          {suspended ? (
             <span className="rounded-md bg-critical/12 px-2 py-0.5 text-xs font-medium text-critical">
-              Revoked
+              Suspended
             </span>
           ) : (
             <span
@@ -225,6 +242,25 @@ function StaffRow({ s, isMe, nowMs }: { s: Staff; isMe: boolean; nowMs: number }
           {lastSeen(s.last_login_at, nowMs)}
         </p>
       </div>
+
+      <RowActions
+        member={{
+          id: s.id,
+          display_name: s.display_name,
+          role: s.role,
+          designation: s.designation,
+          preferred_name: s.preferred_name,
+          job_title: s.job_title,
+          license_type: s.license_type,
+          license_number: s.license_number,
+          prescribing_rights: s.prescribing_rights,
+          access_starts_at: s.access_starts_at,
+          access_ends_at: s.access_ends_at,
+          status: s.status,
+        }}
+        isMe={isMe}
+        country={country}
+      />
     </li>
   );
 }
@@ -235,7 +271,7 @@ async function loadStaff(tenantId: string) {
     supabase
       .from("tenant_users")
       .select(
-        "id, user_id, display_name, designation, job_title, role, prescribing_rights, license_type, license_number, status, access_starts_at, access_ends_at, last_login_at, created_at",
+        "id, user_id, display_name, designation, preferred_name, job_title, role, prescribing_rights, license_type, license_number, status, access_starts_at, access_ends_at, last_login_at, created_at",
       )
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: true }),

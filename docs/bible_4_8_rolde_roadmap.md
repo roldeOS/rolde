@@ -1167,8 +1167,18 @@ Caretaker the clinic's STAFF ROSTER (warm-tinted avatar, name + designation, rol
 `access_ends_at` + `tenants.country`. `getSessionContext` now gates the membership on the
 window, so access lapses BY TIME — verified the negative case: an expired Locum lands on
 "No Workspace Yet", login + authored records intact. `lib/accessWindow.ts` is the badge.
-**Next (chunk 2):** the write path — invite (email + role + designation + job title +
-license + prescribing + access window) → onboarding email, then edit / revoke / reset.
+**Chunk 2 built ✅ (2026-06-16, verified live):** the write path. An "Invite Teammate"
+modal (email + role + designation + job title + licence [type auto-suggested from the
+clinic country + role] + prescribing + access window) → creates the login if new + the
+membership + the onboarding set-password email. Each row's ⋯ menu: Edit (same shared
+fields, pre-filled), Send Reset Link, and Suspend/Restore (soft-revoke = the schema's
+`suspended` state, never a delete). Self-lockout guards: a Caretaker can't suspend or
+demote themselves. Verified every path end-to-end (incl. both negative cases). **Open
+naming Q for Roland:** the soft-revoke state is `suspended` in the schema, so the UI says
+"Suspend/Suspended" — if he'd rather it read "Revoke", align the DB value too.
+**Next (chunk 3):** Concierge inline add-patient + payment; add-patient for all-but-Cofferer.
+Then chunk 4: per-patient-access audit log. Legacy `gmc_number/gdc_number/nmc_pin` columns
+(superseded by `license_type/number`) await Roland's call to retire.
 **Seamless onboarding email (Roland 2026-06-16, write-in):** the moment a Caretaker creates a user,
 RolDe emails them — their role, the clinic, **how long they have access**, and a single-use
 **set-password link** (the `/reset` screen). One step from invite to in.
