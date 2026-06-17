@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Field, Input } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 
 export type ClinicProfile = {
   name: string;
@@ -27,7 +28,8 @@ export type ClinicProfile = {
  */
 export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
   const router = useRouter();
-  const [form, setForm] = useState({
+  const flashSaved = useSavedFlash();
+  const initial = {
     name: profile.name,
     legal_name: profile.legal_name,
     contact_email: profile.contact_email ?? "",
@@ -39,17 +41,19 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
     ico_registration: profile.ico_registration ?? "",
     his_registration: profile.his_registration ?? "",
     cqc_registration: profile.cqc_registration ?? "",
-  });
+  };
+  const [form, setForm] = useState(initial);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
-    setSaved(false);
   }
 
   const canSave = form.name.trim() !== "" && form.legal_name.trim() !== "";
+  const dirty =
+    canSave &&
+    (Object.keys(initial) as (keyof typeof initial)[]).some((k) => form[k] !== initial[k]);
 
   async function save() {
     if (!canSave) return;
@@ -63,17 +67,27 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {
-        setSaved(true);
+        flashSaved("RolDe saved your clinic profile.");
         router.refresh();
       } else {
-        setError(data.error ?? "Couldn’t save your changes.");
+        setError(data.error ?? "RolDe couldn’t save your changes.");
       }
     } catch {
-      setError("Couldn’t save your changes.");
+      setError("RolDe couldn’t save your changes.");
     } finally {
       setSaving(false);
     }
   }
+
+  // Drive the shared save-confirmation bar (§1.12) + the unsaved-work guard.
+  usePageActionBar({
+    dirty,
+    saving,
+    onSave: save,
+    onDiscard: () => setForm(initial),
+    error,
+    saveLabel: "Save Changes",
+  });
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -188,8 +202,6 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
         <Button onClick={save} disabled={saving || !canSave}>
           {saving ? "Saving…" : "Save Changes"}
         </Button>
-        {saved && <span className="text-xs text-success">Saved</span>}
-        {error && <span className="text-xs text-destructive">{error}</span>}
       </div>
     </div>
   );

@@ -162,6 +162,28 @@ is the single back-nav. A page-level back affordance is the regression.
 topbar breadcrumb is the one place for it — pairs with the "build the shared primitive" rule
 (MISTAKES §0).
 
+## 6. Built forms with a homegrown "Save / Saved" instead of the shared save-bar — 2026-06-17
+
+**Symptom:** Forms (Clinic Profile, the email editor) had their OWN Save button + inline green
+"Saved" text instead of driving the shared SAVE-CONFIRMATION bar (APPROVALS §1.12 — the
+conversational "RolDe is saving… → RolDe saved…"). Roland flagged it twice — *"the bottombar save
+did not extend to this page either… I asked you to do an audit… make sure this does not happen
+again."*
+
+**Root cause:** Wired (and left) each form's save UX locally instead of routing every save through
+the one shared bar. The same class as MISTAKES #5 — re-implementing a shared primitive per page.
+
+**Fix:** Audited EVERY form/action with a save (`grep` for save buttons + inline "Saved"); routed
+them all through `usePageActionBar` (saving / failed-Retry / unsaved-work guard) + `useSavedFlash`
+(the "RolDe saved…" confirmation), and deleted all homegrown saved-text.
+
+**Trigger:** Building ANY page/form with a save action. Drive the shared save-bar
+(`usePageActionBar` + `useSavedFlash` from `components/ui/PageActionBar`) — NEVER a local
+Save/Saved/flash. The save-bar is the one save surface, app-wide.
+
+**Lesson:** One shared primitive for a cross-surface behaviour — saving, like step-back nav (#5),
+has exactly one implementation everyone uses. (§0.)
+
 ---
 
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or

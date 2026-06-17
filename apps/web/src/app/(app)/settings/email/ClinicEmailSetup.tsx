@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { MailPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
+import { useSavedFlash } from "@/components/ui/PageActionBar";
 
 /** First-run: seed the clinic's email templates from RolDe's defaults. */
 export function ClinicEmailSetup() {
   const router = useRouter();
+  const flashSaved = useSavedFlash();
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -18,8 +20,10 @@ export function ClinicEmailSetup() {
     try {
       const res = await fetch("/api/settings/clinic-emails/setup", { method: "POST" });
       const data = await res.json().catch(() => ({}));
-      if (data.ok) router.refresh();
-      else setErr(data.error ?? "Couldn’t set up the emails");
+      if (data.ok) {
+        flashSaved("RolDe set up your default emails.");
+        router.refresh();
+      } else setErr(data.error ?? "Couldn’t set up the emails");
     } catch {
       setErr("Couldn’t set up the emails");
     } finally {

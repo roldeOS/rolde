@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Field, Input, fieldFloat } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { cn } from "@/lib/utils";
 
 type Template = {
@@ -35,7 +36,8 @@ export function EmailEditor({
   saveUrl: string;
 }) {
   const router = useRouter();
-  const [form, setForm] = useState({
+  const flashSaved = useSavedFlash();
+  const initial = {
     name: template.name,
     subject: template.subject,
     preheader: template.preheader ?? "",
@@ -45,10 +47,15 @@ export function EmailEditor({
     cta_url: template.cta_url ?? "",
     footer_note: template.footer_note ?? "",
     is_active: template.is_active,
-  });
+  };
+  const [form, setForm] = useState(initial);
   const [previewHtml, setPreviewHtml] = useState("");
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const dirty = (Object.keys(initial) as (keyof typeof initial)[]).some(
+    (k) => form[k] !== initial[k],
+  );
 
   const toParagraphs = useCallback(
     () => form.paragraphs.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean),
@@ -57,7 +64,6 @@ export function EmailEditor({
 
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
-    setSaved(false);
   }
 
   // Debounced live preview through the real renderer.
@@ -87,17 +93,28 @@ export function EmailEditor({
 
   async function save() {
     setSaving(true);
-    const res = await fetch(saveUrl, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...form, paragraphs: toParagraphs() }),
-    });
-    setSaving(false);
-    if (res.ok) {
-      setSaved(true);
-      router.refresh();
+    setError(null);
+    try {
+      const res = await fetch(saveUrl, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ...form, paragraphs: toParagraphs() }),
+      });
+      if (res.ok) {
+        flashSaved(`RolDe saved the “${form.name}” email.`);
+        router.refresh();
+      } else {
+        setError("RolDe couldn’t save the template — try again.");
+      }
+    } catch {
+      setError("RolDe couldn’t save the template — try again.");
+    } finally {
+      setSaving(false);
     }
   }
+
+  // Drive the shared save-confirmation bar (§1.12) + the unsaved-work guard.
+  usePageActionBar({ dirty, saving, onSave: save, error, saveLabel: "Save Changes" });
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -167,7 +184,6 @@ export function EmailEditor({
           <Button onClick={save} disabled={saving}>
             {saving ? "Saving…" : "Save Changes"}
           </Button>
-          {saved && <span className="text-xs text-success">Saved</span>}
         </div>
       </div>
 
