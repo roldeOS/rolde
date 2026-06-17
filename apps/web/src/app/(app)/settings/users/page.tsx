@@ -165,14 +165,14 @@ function StaffRow({
   country: string;
 }) {
   const role = ROLE_BY_KEY[s.role];
-  const suspended = s.status !== "active";
+  const paused = s.status !== "active";
   const name = [s.designation, s.display_name].filter(Boolean).join(" ");
   const subtitle = s.job_title || role?.meaning || "";
   const license = [s.license_type, s.license_number].filter(Boolean).join(" ");
   const window = accessWindowBadge(s.access_starts_at, s.access_ends_at, nowMs);
 
   return (
-    <li className={cn("flex items-center gap-3 px-5 py-3.5", suspended && "opacity-60")}>
+    <li className={cn("flex items-center gap-3 px-5 py-3.5", paused && "opacity-60")}>
       {/* Avatar */}
       <span
         className={cn(
@@ -221,9 +221,9 @@ function StaffRow({
               <Pill className="size-3" /> Prescriber
             </span>
           )}
-          {suspended ? (
+          {paused ? (
             <span className="rounded-md bg-critical/12 px-2 py-0.5 text-xs font-medium text-critical">
-              Suspended
+              Paused
             </span>
           ) : (
             <span

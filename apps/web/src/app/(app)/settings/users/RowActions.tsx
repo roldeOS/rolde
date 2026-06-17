@@ -16,11 +16,11 @@ import { cn } from "@/lib/utils";
 import { EditMember, type EditableMember } from "./EditMember";
 
 /**
- * Per-member actions (W1.1.7 chunk 2): Edit · Send Reset Link · Suspend/Restore.
- * Soft-revoke never deletes the login — it flips the membership status to
- * `suspended` (the schema's restorable state), so a restored member walks back
- * in with their records intact. The Caretaker's OWN row can only be edited (no
- * self-suspend / self-reset → no self-lockout).
+ * Per-member actions (W1.1.7 chunk 2): Edit · Send Reset Link · Pause/Restore.
+ * Pausing never deletes the login — it flips the membership status to `paused`
+ * (the schema's restorable state), so a restored member walks back in with their
+ * records intact. The Caretaker's OWN row can only be edited (no self-pause /
+ * self-reset → no self-lockout).
  */
 const ITEM =
   "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-hover disabled:opacity-60";
@@ -39,13 +39,13 @@ export function RowActions({
   const [editOpen, setEditOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [confirmRevoke, setConfirmRevoke] = useState(false);
+  const [confirmPause, setConfirmPause] = useState(false);
   const ref = useClickAway<HTMLDivElement>(() => {
     setOpen(false);
-    setConfirmRevoke(false);
+    setConfirmPause(false);
   });
 
-  const suspended = member.status !== "active";
+  const paused = member.status !== "active";
 
   async function post(url: string, body: object, key: string): Promise<boolean> {
     setBusy(key);
@@ -76,7 +76,7 @@ export function RowActions({
   async function setStatus(status: string) {
     const ok = await post("/api/clinic/users/update", { id: member.id, status }, "status");
     setOpen(false);
-    setConfirmRevoke(false);
+    setConfirmPause(false);
     if (ok) router.refresh();
   }
 
@@ -108,7 +108,7 @@ export function RowActions({
                 <Pencil className="size-4 text-muted-foreground" /> Edit
               </button>
 
-              {!isMe && !suspended && (
+              {!isMe && !paused && (
                 <button onClick={sendReset} disabled={!!busy} className={ITEM}>
                   {busy === "reset" ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -120,7 +120,7 @@ export function RowActions({
               )}
 
               {!isMe &&
-                (suspended ? (
+                (paused ? (
                   <button
                     onClick={() => setStatus("active")}
                     disabled={!!busy}
@@ -133,9 +133,9 @@ export function RowActions({
                     )}
                     Restore Access
                   </button>
-                ) : confirmRevoke ? (
+                ) : confirmPause ? (
                   <button
-                    onClick={() => setStatus("suspended")}
+                    onClick={() => setStatus("paused")}
                     disabled={!!busy}
                     className={cn(ITEM, "font-semibold text-critical")}
                   >
@@ -144,14 +144,14 @@ export function RowActions({
                     ) : (
                       <Ban className="size-4" />
                     )}
-                    Tap Again to Suspend
+                    Tap Again to Pause
                   </button>
                 ) : (
                   <button
-                    onClick={() => setConfirmRevoke(true)}
+                    onClick={() => setConfirmPause(true)}
                     className={cn(ITEM, "text-critical")}
                   >
-                    <Ban className="size-4" /> Suspend Access
+                    <Ban className="size-4" /> Pause Access
                   </button>
                 ))}
             </>

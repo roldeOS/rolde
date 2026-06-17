@@ -86,9 +86,9 @@ export async function POST(request: Request) {
   }
   if ("status" in body) {
     // The schema's membership states (CHECK tenant_users_status_valid):
-    //   active = has access · suspended = soft-revoked (restorable) · archived.
+    //   active = has access · paused = soft-revoked (restorable) · archived.
     const status = String(body.status);
-    if (!["active", "suspended", "archived"].includes(status)) return fail("bad_status");
+    if (!["active", "paused", "archived"].includes(status)) return fail("bad_status");
     if (isSelf && status !== "active") return fail("self_lock");
     patch.status = status;
   }

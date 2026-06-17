@@ -89,7 +89,7 @@ export const ROLES: RoleDef[] = [
     icon: Activity,
     tone: "success",
     origin: "Latin practicare — ‘to practise’",
-    meaning: "Advanced practitioner (nurse, physio…) with extended clinical scope.",
+    meaning: "Advanced nurse/physio practitioner; extended scope.",
     tier: "clinic-team",
   },
   {
