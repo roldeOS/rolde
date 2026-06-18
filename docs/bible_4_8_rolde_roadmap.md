@@ -1202,10 +1202,26 @@ Jayasekhar"), `designation` (Dr/Mr/Ms/Nr — **set by the Caretaker, the user ca
 `job_title` (free text, e.g. "Advanced Diabetic & Physiotherapy Practitioner"), and `license_type` +
 `license_number` (GMC/NMC/GDC/GPhC/HCPC… — the TYPE **auto-populates from the clinic's country**, the
 number is what the person holds — a GMC doctor needn't be UK-born). All entered/edited in the Users &
-Roles screen.)* · W1.1.8 Services & pricing · W1.1.9
-  Templates · W1.1.10 Memberships & packages · W1.1.11 Integrations · W1.1.12 Website & domain
+Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ — flat list: name, description, price [pence],
+  duration, active; 2026-06-17). v2 (greenlit 2026-06-18, see "Commerce & Booking" below):** category
+  + service **code** + **type** (one-off / course / membership-included) + **conditional VAT &
+  deposit per service** that only appear when those switches are on in **Commercial Settings**. This
+  is the catalogue the **booking widget + billing** read. · W1.1.9
+  Templates · W1.1.10 Memberships & packages · **W1.1.11 Integrations** *(Money & Growth; gateways
+  greenlit 2026-06-18)* — **clinic-owned payment gateways**: Stripe · PayPal · Klarna · Clearpay
+  (BNPL), each a **toggle the clinic turns on with their OWN API keys**, plus a **live / sandbox
+  (test) switch** per gateway so they trial then flip to live. **RolDe takes 0% and never touches the
+  funds** (money settles clinic-account → clinic), so no settlement/PCI liability sits on us; secret
+  keys are write-once (shown as `•••• last4` + Replace, never read back — like a Vercel Sensitive
+  env). Also SMS + pharmacy partners. · W1.1.12 Website & domain
   (entry) · W1.1.13 Email Templates (operational clinic→patient emails; Resend-backed; Custodian
-  platform emails live in W1.5.2)
+  platform emails live in W1.5.2) · **W1.1.16 Commercial Settings** *(NEW, greenlit 2026-06-18)* — the
+  money-policy **toggles hub** in Money & Growth: **VAT** (on + rate) · **Deposits** (on + default) ·
+  **Consultation Credit** (on + amount + label — credit-on-account, auto-applied to the patient's next
+  treatment) · **Discount Codes** (on). **Each detail field appears ONLY when its switch is on** — a
+  VAT-free, deposit-free clinic sees a clean page. These switches GATE the conditional fields in
+  Services v2, the booking widget, and billing. (`clinic_commercial_settings`, one row per tenant;
+  Caretaker-write via `is_caretaker_of`.)
 - **W1.2 Patient Record Tabs** — W1.2.1 Problem list · W1.2.2 Medication list + reconciliation ·
   W1.2.3 History (PMH/surgical/family/social) · W1.2.4 Document store · W1.2.5 Before/after +
   body-map · W1.2.6 Digital consents (e-sign) · W1.2.7 Vitals/growth charts · W1.2.8 Risk scores
@@ -1264,17 +1280,64 @@ staff below Caretaker never reach a Custodian.
 - **W1.6.3 Vitals Phase 2** — the self-hosted client error beacon (`client_errors`, tenant-tagged)
   feeding both a clinic's own error view and the Custodian's Vitals. Self-hosted only.
 
-**W2 — Calendar & Front Office** — W2.1 Scheduling + clinician/room views · W2.2 Online booking
-widget · W2.3 Recalls + reminders engine · W2.4 Waitlist · W2.5 Recurring course series
+**W2 — Calendar & Front Office** *(Appointments are first-class — a booking ≠ a patient; greenlit
+2026-06-18)* — W2.1 Scheduling + clinician/room views **(the Appointment entity: who · what service ·
+when · where · status; an Appointments sidebar item + a Today's Appointments dashboard card)** · W2.2
+**Online booking widget** *(passwordless — the patient books + pays without an account; pays the
+deposit/consultation fee through the clinic's own gateway)* · W2.3 Recalls + reminders engine · W2.4
+Waitlist · W2.5 Recurring course series
 **W3 — Clinical Orders** — W3.1 Prescribing + drug-safety · W3.2 Investigations + results inbox +
 trends · W3.3 Letters + closed-loop referrals
-**W4 — Money** — W4.1 Billing/invoices/deposits · W4.2 Packages & memberships · W4.3 Clinic-owned
-gateways (Scenario 1) · W4.4 Aged debt · W4.5 Insurer billing
+**W4 — Money** — W4.1 Billing/invoices/**deposits** *(deposit amount per Commercial Settings /
+per-service; taken at booking, netted off the final bill)* · W4.2 Packages & memberships · W4.3
+**Clinic-owned gateways (Scenario 1)** *(Stripe/PayPal/Klarna/Clearpay; clinic's own keys, live/
+sandbox; RolDe 0%; configured in W1.1.11 Integrations)* · **W4.x Consultation Credit** *(credit-on-
+account: the consultation fee a patient pays becomes a balance auto-applied to their next treatment;
+toggle + amount + label in Commercial Settings; shown on the patient record + the invoice)* · **W4.x
+Discount Codes** *(seasonal codes: percentage or fixed; total + per-customer usage limits; minimum
+spend; expiry; code usage shown against the patient)* · W4.4 Aged debt · W4.5 Insurer billing
 **W5 — Ambient AI** — W5.1 AI server (Gemma/M4 Max) · W5.2 Ambient suggestions · W5.3 AI drafting
 · W5.4 Correction pipeline
 **W6 — Growth & Ops** — W6.1 Inventory (batch/expiry) · W6.2 Marketing/CRM + reviews · W6.3
 Reports/analytics · W6.4 Patient portal · W6.5 Audit-log surface · W6.6 Website builder (Puck) +
 booking plugin + custom domains
+
+---
+
+### Commerce & Booking — the money thread *(greenlit Roland 2026-06-18)*
+
+The whole money story is **toggle-first**: a clinic sees only what it has switched on, so a cash-only,
+VAT-free practice gets a clean OS while a busy aesthetics clinic gets deposits, BNPL, credit and codes.
+It threads through the waves above (W1.1.8 Services v2 · **W1.1.16 Commercial Settings** · W1.1.11
+Integrations · W2 booking/appointments · W4 Money) rather than living as a separate track.
+
+**Build order (the chunks):**
+1. **Commercial Settings** (W1.1.16) — the toggles hub: VAT, Deposits, Consultation Credit, Discount
+   Codes. *(First chunk — everything else reads these switches.)*
+2. **Services v2** (W1.1.8) — categories + code + type + the conditional VAT/deposit fields.
+3. **Integrations → Payment gateways** (W1.1.11) — clinic-owned Stripe/PayPal/Klarna/Clearpay, own
+   keys, live/sandbox, 0% to RolDe.
+4. **Appointments + booking** (W2) and **Consultation Credit / Discount Codes** (W4) — the live money flow.
+
+**Three questions Roland asked, answered (the design rulings):**
+
+- **Does Consultation Credit / Appointments mean every patient gets a login?** *Not in v1.* Credit is
+  **credit-on-account held on the patient record** — staff see and auto-apply it; no patient login
+  needed. Booking is a **passwordless public widget** (book + pay, no account). A full **Patient
+  Portal** where patients log in to see records, credit balance and rebook is **W6.4 (later)** — and
+  when it lands, Roland's instinct is exactly right: the *"first payment → claim your account"* email
+  is the onboarding (a single-use magic-link, same pattern as the staff invite). The idea is sound;
+  it's just sequenced after the core money flow.
+- **Is there a login page on the clinic's front-end website (e.g. Doc For Skin)?** *Not in v1.* The
+  clinic website (Bible 5.M / W6.6) carries the **booking widget** (passwordless) — no login. **Staff
+  sign in to RolDe OS at the app domain (rolde.app), never the public site.** A **"Patient Login" on
+  the clinic site appears with the Patient Portal (W6.4 + W6.6)** and SSOs into that clinic's portal.
+- **Are payment gateways + API keys toggles — clinic uses their OWN keys for live or sandbox?**
+  ***Yes, exactly.*** This is the **clinic-owned gateway (Scenario 1)** model: each gateway is an
+  off-by-default toggle in Integrations; switching it on reveals **the clinic's own publishable +
+  secret keys** and a **live / sandbox switch** so they test then go live. **Money settles into the
+  clinic's own account — RolDe takes 0% and never holds funds**, so no settlement/PCI liability on us.
+  Secret keys are write-once (`•••• last4` + Replace; never read back).
 
 ---
 

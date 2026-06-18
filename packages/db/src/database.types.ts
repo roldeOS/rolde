@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      clinic_commercial_settings: {
+        Row: {
+          consult_credit_enabled: boolean
+          consult_credit_label: string
+          consult_credit_pence: number
+          created_at: string
+          currency: string
+          deposit_default_pence: number
+          deposit_enabled: boolean
+          discount_codes_enabled: boolean
+          tenant_id: string
+          updated_at: string
+          vat_enabled: boolean
+          vat_rate_bps: number
+        }
+        Insert: {
+          consult_credit_enabled?: boolean
+          consult_credit_label?: string
+          consult_credit_pence?: number
+          created_at?: string
+          currency?: string
+          deposit_default_pence?: number
+          deposit_enabled?: boolean
+          discount_codes_enabled?: boolean
+          tenant_id: string
+          updated_at?: string
+          vat_enabled?: boolean
+          vat_rate_bps?: number
+        }
+        Update: {
+          consult_credit_enabled?: boolean
+          consult_credit_label?: string
+          consult_credit_pence?: number
+          created_at?: string
+          currency?: string
+          deposit_default_pence?: number
+          deposit_enabled?: boolean
+          discount_codes_enabled?: boolean
+          tenant_id?: string
+          updated_at?: string
+          vat_enabled?: boolean
+          vat_rate_bps?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_commercial_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_services: {
         Row: {
           active: boolean

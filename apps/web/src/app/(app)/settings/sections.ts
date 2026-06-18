@@ -9,6 +9,7 @@ import {
   FileText,
   MailCheck,
   BadgePoundSterling,
+  Coins,
   Plug,
   Globe,
 } from "lucide-react";
@@ -146,6 +147,17 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     group: "Clinical & Services",
   },
   // — Money & Growth —
+  {
+    key: "commercial",
+    title: "Commercial Settings",
+    blurb:
+      "Your money policy — VAT, deposits, consultation credit and discount codes. Switch on only what your clinic uses; everything else stays out of sight.",
+    icon: Coins,
+    tone: "success",
+    source: "Bible 4.8 §W1.1.16",
+    status: "ready",
+    group: "Money & Growth",
+  },
   {
     key: "memberships",
     title: "Memberships & Packages",
