@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Field, Input, fieldFloat } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { cn } from "@/lib/utils";
 
@@ -180,11 +179,6 @@ export function EmailEditor({
             </span>
           </p>
         )}
-        <div className="flex items-center gap-3 pt-1">
-          <Button onClick={save} disabled={saving}>
-            {saving ? "Saving…" : "Save Changes"}
-          </Button>
-        </div>
       </div>
 
       <div className="space-y-2">

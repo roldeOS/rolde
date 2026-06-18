@@ -88,14 +88,20 @@ Revisiting a crumb truncates back to it; the Dashboard resets the root. Dashboar
 the trail grows; only the last two crumbs keep labels (older collapse to icons). The terminal
 patient crumb keeps the rich PatientIsland. `lib/useNavTrail.ts` + `topbar/Topbar.tsx`; sessionStorage-backed.
 
-1.12 **Save bar = SAVE-CONFIRMATION ONLY; unsaved-nav = CENTRAL MODAL** (Roland 2026-06-11). The
-bottom bar NEVER shows while typing (no real-estate creep). It appears ONLY after a save is
-triggered, as a conversational confirmation: "RolDe is saving…" → "RolDe saved this to Sarah's
-record" (Retry on failure), then fades. If the user navigates away with unsaved work, a **central
-discard MODAL** ("Leave without saving? … Stay on page / Discard & leave") intercepts the in-app
-nav — NEVER the browser default, NEVER the bottom bar. One shared component
-(`components/ui/PageActionBar.tsx`, provider in AppFrame); forms drive it via `usePageActionBar`
-(dirty + save state) + `useSavedFlash` (sessionStorage-backed confirmation). First wired: Scribe.
+1.12 **Save bar = PINNED SAVE on dirty → conversational confirmation; unsaved-nav = CENTRAL MODAL**
+(Roland 2026-06-11; pinned-Save refinement 2026-06-17 — "shouldn't have to scroll to see the save
+button"). The bottom bar is the ONE save surface and runs the full lifecycle in place: it appears
+the **moment a form is dirty** with the **Save pinned inside it** (+ Discard when offered), so you
+**never scroll to a Save button** — then becomes the conversational confirmation: dirty ("Unsaved")
+→ "RolDe is saving…" → "RolDe saved this to Sarah's record" (Retry on failure), then fades. If the
+user navigates away with unsaved work, a **central discard MODAL** ("Leave without saving? … Stay
+on page / Discard & leave") intercepts the in-app nav — NEVER the browser default. One shared
+component (`components/ui/PageActionBar.tsx`, provider in AppFrame); forms drive it via
+`usePageActionBar` (dirty + save state) + `useSavedFlash` (sessionStorage-backed confirmation).
+**Opt-out — `pinned: false`:** a screen that owns its OWN in-context Save (e.g. **Scribe**, the
+clinical workspace, where the Save lives in the composer card) passes `pinned: false` — it keeps
+its in-card Save/Discard, still gets the nav guard + the saved confirmation, but shows **no pinned
+bar** (the clinical screen stays uncluttered). Every other form uses the pinned default.
 
 1.13 **Brand loader = the "rolde" letters DRAWN one by one** (Roland 2026-06-11). `RoldeLoader` —
 the wordmark "rolde" drawn letter-by-letter (each glyph's outline traces, then fills, staggered),

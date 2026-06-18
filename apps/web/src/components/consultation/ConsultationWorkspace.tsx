@@ -164,6 +164,9 @@ export function ConsultationWorkspace({
     saveLabel,
     onSave: submit,
     onDiscard: editTarget || draft ? discard : undefined,
+    // Scribe owns its in-card Save/Discard buttons; the bar keeps only the
+    // nav guard + the conversational confirmation (no pinned Save).
+    pinned: false,
   });
 
   return (

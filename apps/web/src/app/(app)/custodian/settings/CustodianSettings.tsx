@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, UserCircle, ShieldCheck, Palette } from "lucide-react";
+import { UserCircle, ShieldCheck, Palette } from "lucide-react";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { CardIcon } from "@/components/ui/CardIcon";
 
@@ -89,16 +89,6 @@ export function CustodianSettings({
             {error}
           </p>
         )}
-        <div className="mt-4 flex items-center justify-end">
-          <button
-            onClick={save}
-            disabled={busy || !dirty}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3.5 py-1.5 text-sm font-medium text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:opacity-50"
-          >
-            {busy && <Loader2 className="size-4 animate-spin" />}
-            Save
-          </button>
-        </div>
       </div>
 
       {/* Account & Security — honest scaffold */}

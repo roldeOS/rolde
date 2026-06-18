@@ -375,21 +375,6 @@ export function LegalEditor({
                 </div>
               )}
             </div>
-
-            {/* Footer — save draft + flash */}
-            <div className="flex items-center justify-between gap-3 border-t border-border/60 px-5 py-3">
-              <span className="text-xs text-muted-foreground">
-                {dirty && "Unsaved changes"}
-              </span>
-              <button
-                onClick={() => saveDraft()}
-                disabled={!!busy}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3.5 py-1.5 text-sm font-medium text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:opacity-60"
-              >
-                {busy === "draft" ? <Loader2 className="size-4 animate-spin" /> : <Pencil className="size-4" />}
-                Save Draft
-              </button>
-            </div>
           </div>
 
           {/* Version history */}

@@ -37,6 +37,9 @@ interface ActionState {
   onSave: () => void;
   onDiscard?: () => void;
   error?: string | null;
+  /** Show the pinned Save bar on dirty (default). Set false for a form that owns
+   *  its own in-context Save button (e.g. Scribe) — it still gets the nav guard. */
+  pinned: boolean;
 }
 
 const EMPTY: ActionState = {
@@ -46,6 +49,7 @@ const EMPTY: ActionState = {
   saveLabel: "Save",
   onSave: () => {},
   error: null,
+  pinned: true,
 };
 
 interface ContextValue {
@@ -116,6 +120,9 @@ export function usePageActionBar(opts: {
   onSave: () => void;
   onDiscard?: () => void;
   error?: string | null;
+  /** false → keep the form's own Save button; the bar gives only the nav guard
+   *  + the saving/saved confirmation (no pinned Save). Default true. */
+  pinned?: boolean;
 }): void {
   const ctx = useContext(ActionBarContext);
   const onSaveRef = useRef(opts.onSave);
@@ -137,8 +144,9 @@ export function usePageActionBar(opts: {
       onSave: () => onSaveRef.current(),
       onDiscard: hasDiscard ? () => onDiscardRef.current?.() : undefined,
       error: opts.error ?? null,
+      pinned: opts.pinned !== false,
     });
-  }, [ctx, opts.dirty, opts.saving, opts.error, message, saveLabel, hasDiscard]);
+  }, [ctx, opts.dirty, opts.saving, opts.error, opts.pinned, message, saveLabel, hasDiscard]);
 
   // Clear the DIRTY registration on unmount (the saved flash lives on in the
   // provider, so a remount-on-save still shows the confirmation).
@@ -188,18 +196,23 @@ export function PageActionBarProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(t);
   }, [savedMsg]);
 
-  // The bar shows ONLY for the save lifecycle — saving / saved / failed. It does
-  // NOT appear on `dirty` (no real-estate creep while typing — Roland 2026-06-11).
+  // The bar is the ONE save surface (Roland 2026-06-17): it appears the MOMENT a
+  // form is dirty — with the Save pinned in it, so you never scroll to a button —
+  // then runs the lifecycle: dirty → saving → saved / failed.
   const showSaved = !!savedMsg && !state.saving && !state.error;
-  const show = state.saving || !!state.error || showSaved;
+  const showDirty = dirty && state.pinned && !state.saving && !state.error && !showSaved;
+  const show = showDirty || state.saving || !!state.error || showSaved;
 
-  const mode: "failed" | "saving" | "saved" = state.error
+  const mode: "failed" | "saving" | "saved" | "dirty" = state.error
     ? "failed"
     : state.saving
       ? "saving"
-      : "saved";
+      : showSaved
+        ? "saved"
+        : "dirty";
 
   const STATUS = {
+    dirty: { dot: "bg-warning", label: "Unsaved", pill: "bg-warning/12 text-warning", msg: state.message },
     saving: { dot: "bg-info", label: "Saving", pill: "bg-info/12 text-info", msg: "RolDe is saving…" },
     saved: { dot: "bg-success", label: "Saved", pill: "bg-success/12 text-success", msg: savedMsg ?? "Saved" },
     failed: { dot: "bg-critical", label: "Couldn’t Save", pill: "bg-critical/12 text-critical", msg: state.error || "Couldn’t save — please try again." },
@@ -290,10 +303,21 @@ export function PageActionBarProvider({ children }: { children: ReactNode }) {
                   <button type="button" onClick={() => state.onSave()} className={btnDark}>
                     Retry
                   </button>
-                ) : (
+                ) : mode === "saving" ? (
                   <span className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary/90 px-3 text-sm font-medium text-primary-foreground">
                     <Loader2 className="size-4 animate-spin" /> Saving…
                   </span>
+                ) : (
+                  <>
+                    {state.onDiscard && (
+                      <button type="button" onClick={() => state.onDiscard?.()} className={btnGhost}>
+                        Discard
+                      </button>
+                    )}
+                    <button type="button" onClick={() => state.onSave()} className={btnDark}>
+                      {state.saveLabel}
+                    </button>
+                  </>
                 )}
               </div>
             </div>

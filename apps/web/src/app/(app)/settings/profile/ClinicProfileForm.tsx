@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Field, Input } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 
 export type ClinicProfile = {
@@ -198,11 +197,6 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
         </div>
       </section>
 
-      <div className="flex items-center gap-3">
-        <Button onClick={save} disabled={saving || !canSave}>
-          {saving ? "Saving…" : "Save Changes"}
-        </Button>
-      </div>
     </div>
   );
 }
