@@ -211,8 +211,9 @@ primitive doesn't exist for what you need, BUILD the shared one — don't drop t
 
 **Lesson:** "Design ALL elements in our theme" is a default-state guarantee Roland must be able to
 trust without re-checking every screen. Native controls are the tell that a shared primitive was
-skipped. Pairs with the UI-standards lock (APPROVALS §2.3, §9) and #5/#6 (one shared primitive,
-app-wide).
+skipped. Roland 2026-06-18: *"Never, in the future and now, should any of our pages have default
+elements — we worked so hard on building our own elements for a reason."* Now **LOCKED in APPROVALS
+§10**. Pairs with §2.3 / §9 and #5/#6 (one shared primitive, app-wide).
 
 ---
 

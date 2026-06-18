@@ -15,6 +15,7 @@ import {
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { CardIcon } from "@/components/ui/CardIcon";
+import { Field, Input, fieldFloat } from "@/components/ui/form";
 import { LegalDocBody } from "@/components/LegalDocBody";
 import { LEGAL_DOCS, STATUS_LABEL, STATUS_PILL, type LegalVersion } from "@/lib/legal";
 import type { EditorVersion } from "@/lib/legalDb";
@@ -59,8 +60,8 @@ const STEPS: { key: Step; label: string; icon: typeof Pencil; on: string }[] = [
   { key: "publish", label: "Publish", icon: Send, on: "bg-success/15 text-success" },
 ];
 
-const INPUT =
-  "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-foreground/30 focus:ring-2 focus:ring-foreground/10";
+// Themed textarea — the float field with a flexible height (APPROVALS §10).
+const TEXTAREA = cn(fieldFloat, "h-auto resize-y py-2");
 
 export function LegalEditor({
   versionsByKey,
@@ -279,28 +280,23 @@ export function LegalEditor({
               {step === "edit" && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-[120px_1fr] gap-3">
-                    <div>
-                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                        Version
-                      </label>
-                      <input
-                        className={INPUT}
+                    <Field label="Version" htmlFor="legal_version">
+                      <Input
+                        id="legal_version"
                         value={form.version}
                         onChange={(e) => setForm2({ version: e.target.value })}
                         placeholder="1.1"
                       />
-                    </div>
+                    </Field>
                   </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                      Intro
-                    </label>
+                  <Field label="Intro" htmlFor="legal_intro">
                     <textarea
-                      className={cn(INPUT, "min-h-24 resize-y")}
+                      id="legal_intro"
+                      className={cn(TEXTAREA, "min-h-24")}
                       value={form.intro}
                       onChange={(e) => setForm2({ intro: e.target.value })}
                     />
-                  </div>
+                  </Field>
 
                   <div className="space-y-3">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -309,12 +305,14 @@ export function LegalEditor({
                     {form.sections.map((s, i) => (
                       <div key={i} className="space-y-2 rounded-lg border border-border p-3">
                         <div className="flex items-center gap-2">
-                          <input
-                            className={cn(INPUT, "font-medium")}
-                            value={s.heading}
-                            onChange={(e) => setSection(i, { heading: e.target.value })}
-                            placeholder="Section heading"
-                          />
+                          <div className="flex-1">
+                            <Input
+                              className="font-medium"
+                              value={s.heading}
+                              onChange={(e) => setSection(i, { heading: e.target.value })}
+                              placeholder="Section heading"
+                            />
+                          </div>
                           <button
                             onClick={() => removeSection(i)}
                             className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-critical/10 hover:text-critical"
@@ -324,13 +322,13 @@ export function LegalEditor({
                           </button>
                         </div>
                         <textarea
-                          className={cn(INPUT, "min-h-20 resize-y")}
+                          className={cn(TEXTAREA, "min-h-20")}
                           value={s.body}
                           onChange={(e) => setSection(i, { body: e.target.value })}
                           placeholder="Paragraph (optional)"
                         />
                         <textarea
-                          className={cn(INPUT, "min-h-16 resize-y font-mono text-xs")}
+                          className={cn(TEXTAREA, "min-h-16 font-mono text-xs")}
                           value={s.items}
                           onChange={(e) => setSection(i, { items: e.target.value })}
                           placeholder="Bullet points — one per line (optional)"

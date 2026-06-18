@@ -270,6 +270,30 @@ subset. A tile without its squircle + `(i)` isn't the tile (mindate MISTAKES #25
 state for any new card / table is the shared component, Title-Cased (§2.3) — built right the
 first time, so Roland never has to ask twice.
 
+## 10. Themed components ONLY — never a system-default element (Roland 2026-06-18, LOCKED)
+
+10.1 **Every form control on every page / modal is one of RolDe's themed components — NEVER a
+system-default (native) element.** Roland 2026-06-18, after the Services modal shipped native
+controls: *"Never, in the future and now, should any of our pages have default elements — we
+worked so hard on building our own elements for a reason."* The roster:
+- **Text / email / number / date inputs** → `Input` (or the `fieldFloat` class) from
+  `components/ui/form`, wrapped in `Field` for its label + hint.
+- **Dropdowns** → `Select` from `components/ui/form` (it draws OUR chevron via `appearance-none`)
+  — NEVER a bare `<select>` (the browser chevron is the tell).
+- **Toggles / on-off** → `Switch` from `components/ui/Switch` (the pill) — NEVER an
+  `<input type="checkbox">`.
+- **Cards / headers / tiles** → the §9 shared components with their `CardIcon` squircle.
+
+10.2 **No ad-hoc field styling.** A local `const INPUT = "w-full rounded-lg border …"` / `LABEL`
+string is the same offence as a native control — it bypasses the themed primitive. Use `Field` +
+`Input` / `Select` / `Switch`. If a themed primitive genuinely doesn't exist for what you need,
+**BUILD the shared one** (as `Switch` was, 2026-06-18) — never drop to native or hand-rolled.
+
+10.3 **This is a default-state guarantee.** It holds for EVERY new and existing surface, with no
+exceptions to chase later — Roland must be able to trust that any RolDe screen is themed without
+re-checking it. Regression history: MISTAKES #7 (Services modal native `<select>` + checkbox).
+Pairs with §9 (cards) + §2.3 (Title Case).
+
 ---
 
 *Append new approvals under the relevant section with the date. The locked trigger phrase is
