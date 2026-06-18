@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Plus, X, Loader2, Pencil, Trash2, Clock, Hash } from "lucide-react";
 import { useSavedFlash } from "@/components/ui/PageActionBar";
 import { Switch } from "@/components/ui/Switch";
+import { Field, Input } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 
 export type Service = {
@@ -14,8 +15,6 @@ export type Service = {
   description: string | null;
   category: string | null;
   code: string | null;
-  service_type: string;
-  course_sessions: number | null;
   price_pence: number;
   duration_minutes: number | null;
   vat_exempt: boolean;
@@ -33,20 +32,10 @@ export type CommercialContext = {
 
 type Editing = Service | "new" | null;
 
-const TYPE_LABEL: Record<string, string> = {
-  one_off: "One-off",
-  course: "Course",
-  membership: "Membership",
-};
-const TYPES = ["one_off", "course", "membership"] as const;
 const UNCATEGORISED = "Uncategorised";
 
 const money = (pence: number) =>
   `£${(pence / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-const INPUT =
-  "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-foreground/30 focus:ring-2 focus:ring-foreground/10";
-const LABEL = "mb-1 block text-xs font-medium text-muted-foreground";
 
 export function ServicesManager({
   initial,
@@ -187,12 +176,6 @@ function ServiceRow({
               {s.code}
             </span>
           )}
-          {s.service_type !== "one_off" && (
-            <span className="rounded bg-info/12 px-1.5 py-0.5 text-[10px] font-semibold text-info">
-              {TYPE_LABEL[s.service_type]}
-              {s.service_type === "course" && s.course_sessions ? ` ×${s.course_sessions}` : ""}
-            </span>
-          )}
           {!s.active && (
             <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Inactive
@@ -232,6 +215,29 @@ function ServiceRow({
   );
 }
 
+/** A bordered switch row (Active, etc.) — our themed toggle, never a raw checkbox. */
+function ToggleRow({
+  title,
+  hint,
+  checked,
+  onChange,
+}: {
+  title: string;
+  hint: string;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5">
+      <span className="text-sm">
+        <span className="font-medium">{title}</span>
+        <span className="block text-xs text-muted-foreground">{hint}</span>
+      </span>
+      <Switch checked={checked} onChange={onChange} label={title} />
+    </label>
+  );
+}
+
 function ServiceModal({
   service,
   commercial,
@@ -249,10 +255,6 @@ function ServiceModal({
   const [description, setDescription] = useState(service?.description ?? "");
   const [category, setCategory] = useState(service?.category ?? "");
   const [code, setCode] = useState(service?.code ?? "");
-  const [type, setType] = useState<string>(service?.service_type ?? "one_off");
-  const [sessions, setSessions] = useState(
-    service?.course_sessions != null ? String(service.course_sessions) : "",
-  );
   const [price, setPrice] = useState(service ? (service.price_pence / 100).toFixed(2) : "");
   const [duration, setDuration] = useState(
     service?.duration_minutes != null ? String(service.duration_minutes) : "",
@@ -288,8 +290,6 @@ function ServiceModal({
           description,
           category: category.trim() || null,
           code: code.trim() || null,
-          service_type: type,
-          course_sessions: type === "course" && sessions.trim() ? Number(sessions) : null,
           price_pence: pricePence,
           duration_minutes: duration.trim() === "" ? null : Number(duration),
           vat_exempt: commercial.vat_enabled ? !chargeVat : false,
@@ -341,145 +341,120 @@ function ServiceModal({
         </div>
 
         <div className="space-y-4 px-5 py-4">
-          <div>
-            <label className={LABEL}>Name</label>
-            <input
-              className={INPUT}
+          <Field label="Name" htmlFor="svc_name">
+            <Input
+              id="svc_name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Anti-Wrinkle (3 Areas)"
             />
-          </div>
+          </Field>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={LABEL}>Category</label>
-              <input
-                className={INPUT}
-                list="service-categories"
+          <div>
+            <Field label="Category" htmlFor="svc_category" hint="Type a new one or pick below">
+              <Input
+                id="svc_category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 placeholder="e.g. Injectables"
               />
-              <datalist id="service-categories">
+            </Field>
+            {categories.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
                 {categories.map((c) => (
-                  <option key={c} value={c} />
+                  <button
+                    type="button"
+                    key={c}
+                    onClick={() => setCategory(c)}
+                    className={cn(
+                      "rounded-full px-2.5 py-1 text-xs font-medium transition-colors",
+                      category.trim() === c
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground hover:bg-hover hover:text-foreground",
+                    )}
+                  >
+                    {c}
+                  </button>
                 ))}
-              </datalist>
-            </div>
-            <div>
-              <label className={LABEL}>Code</label>
-              <input
-                className={INPUT}
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Optional, e.g. BTX-3"
-              />
-            </div>
-          </div>
-
-          <div className={cn("grid gap-3", type === "course" ? "grid-cols-2" : "grid-cols-1")}>
-            <div>
-              <label className={LABEL}>Type</label>
-              <select className={INPUT} value={type} onChange={(e) => setType(e.target.value)}>
-                {TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {TYPE_LABEL[t]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {type === "course" && (
-              <div>
-                <label className={LABEL}>Sessions In The Course</label>
-                <input
-                  className={INPUT}
-                  inputMode="numeric"
-                  value={sessions}
-                  onChange={(e) => setSessions(e.target.value)}
-                  placeholder="e.g. 6"
-                />
               </div>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={LABEL}>Price (£)</label>
-              <input
-                className={INPUT}
+          <Field label="Code" htmlFor="svc_code" hint="Your short reference, shown on invoices & reports">
+            <Input
+              id="svc_code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="Optional, e.g. BTX-3"
+            />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Price (£)" htmlFor="svc_price">
+              <Input
+                id="svc_price"
                 inputMode="decimal"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="0.00"
               />
-            </div>
-            <div>
-              <label className={LABEL}>Duration (min)</label>
-              <input
-                className={INPUT}
+            </Field>
+            <Field label="Duration (min)" htmlFor="svc_duration" hint="Optional">
+              <Input
+                id="svc_duration"
                 inputMode="numeric"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
-                placeholder="Optional"
+                placeholder="e.g. 30"
               />
-            </div>
+            </Field>
           </div>
 
-          <div>
-            <label className={LABEL}>Description</label>
-            <input
-              className={INPUT}
+          <Field label="Description" htmlFor="svc_description" hint="Optional">
+            <Input
+              id="svc_description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional"
             />
-          </div>
+          </Field>
 
           {/* Conditional — only when the clinic charges VAT */}
           {commercial.vat_enabled && (
-            <label className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5">
-              <span className="text-sm">
-                <span className="font-medium">Charge VAT On This Service</span>
-                <span className="block text-xs text-muted-foreground">
-                  {chargeVat
-                    ? `Adds ${vatPct}% — patients pay ${money(grossPence)}.`
-                    : "This service is VAT-exempt."}
-                </span>
-              </span>
-              <Switch checked={chargeVat} onChange={setChargeVat} label="Charge VAT on this service" />
-            </label>
+            <ToggleRow
+              title="Charge VAT On This Service"
+              hint={
+                chargeVat
+                  ? `Adds ${vatPct}% — patients pay ${money(grossPence)}.`
+                  : "This service is VAT-exempt."
+              }
+              checked={chargeVat}
+              onChange={setChargeVat}
+            />
           )}
 
           {/* Conditional — only when the clinic takes deposits */}
           {commercial.deposit_enabled && (
-            <div>
-              <label className={LABEL}>Deposit For This Service (£)</label>
-              <input
-                className={INPUT}
+            <Field
+              label="Deposit For This Service (£)"
+              htmlFor="svc_deposit"
+              hint={`Blank = clinic default (${money(commercial.deposit_default_pence)})`}
+            >
+              <Input
+                id="svc_deposit"
                 inputMode="decimal"
                 value={depositStr}
                 onChange={(e) => setDepositStr(e.target.value)}
-                placeholder={`Default ${money(commercial.deposit_default_pence)}`}
+                placeholder={money(commercial.deposit_default_pence)}
               />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Leave blank to use the clinic default ({money(commercial.deposit_default_pence)}).
-              </p>
-            </div>
+            </Field>
           )}
 
-          <label className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5">
-            <span className="text-sm">
-              <span className="font-medium">Active</span>
-              <span className="block text-xs text-muted-foreground">Offered to patients now.</span>
-            </span>
-            <input
-              type="checkbox"
-              className="size-4 accent-success"
-              checked={active}
-              onChange={(e) => setActive(e.target.checked)}
-            />
-          </label>
+          <ToggleRow
+            title="Active"
+            hint="Offered to patients now."
+            checked={active}
+            onChange={setActive}
+          />
 
           {error && (
             <p className="rounded-lg bg-critical/10 px-3 py-2 text-xs font-medium text-critical">

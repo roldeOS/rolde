@@ -1202,11 +1202,13 @@ Jayasekhar"), `designation` (Dr/Mr/Ms/Nr — **set by the Caretaker, the user ca
 `job_title` (free text, e.g. "Advanced Diabetic & Physiotherapy Practitioner"), and `license_type` +
 `license_number` (GMC/NMC/GDC/GPhC/HCPC… — the TYPE **auto-populates from the clinic's country**, the
 number is what the person holds — a GMC doctor needn't be UK-born). All entered/edited in the Users &
-Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ — flat list: name, description, price [pence],
-  duration, active; 2026-06-17). v2 (greenlit 2026-06-18, see "Commerce & Booking" below):** category
-  + service **code** + **type** (one-off / course / membership-included) + **conditional VAT &
-  deposit per service** that only appear when those switches are on in **Commercial Settings**. This
-  is the catalogue the **booking widget + billing** read. · W1.1.9
+Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06-18):** category
+  grouping + service **code** + **conditional VAT & deposit per service** that only appear when those
+  switches are on in **Commercial Settings**. This is the catalogue the **booking widget + billing**
+  read. *(Service **type** — one-off / course / membership — was pulled back out 2026-06-18: a bare
+  type label with no management behind it created ambiguity; it returns with **W1.1.10 Memberships &
+  Packages** where courses/memberships are actually managed. All fields use themed components, never
+  native controls — MISTAKES #7.)* · W1.1.9
   Templates · W1.1.10 Memberships & packages · **W1.1.11 Integrations** *(Money & Growth; gateways
   greenlit 2026-06-18)* — **clinic-owned payment gateways**: Stripe · PayPal · Klarna · Clearpay
   (BNPL), each a **toggle the clinic turns on with their OWN API keys**, plus a **live / sandbox

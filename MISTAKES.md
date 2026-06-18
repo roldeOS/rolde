@@ -184,6 +184,36 @@ Save/Saved/flash. The save-bar is the one save surface, app-wide.
 **Lesson:** One shared primitive for a cross-surface behaviour — saving, like step-back nav (#5),
 has exactly one implementation everyone uses. (§0.)
 
+## 7. Built a form with system-default controls instead of RolDe's themed components — 2026-06-18
+
+**Symptom:** The Services modal shipped with **native HTML controls** — a raw `<select>` (the Type
+dropdown, with the browser's own chevron) and a raw `<input type="checkbox">` (Active) — plus flat
+ad-hoc `INPUT`/`LABEL` class inputs, NOT the themed `Field`/`Input`/`Select`/`Switch`. Roland (with
+screenshots): *"I told you so many times not to use those and to use our theme ones… The entire
+service modal has many elements which are system default and not our theme elements."* The same
+offence sat in MemberFields (native select + checkbox), CustodianSettings, EmailEditor.
+
+**Root cause:** Carried v1's local `INPUT`/`LABEL` + native `<select>`/`<input type=checkbox>`
+pattern forward instead of reaching for the shared themed primitives. Native controls render with
+the OS/browser default look — instantly off-brand against the calm RolDe field style.
+
+**Fix:** Rebuilt the Services modal on `Field` + `Input` + `Switch` (no native select/checkbox);
+holistic sweep of the siblings — `MemberFields` (native select→`Select`, checkbox→`Switch`),
+`CustodianSettings` + `EmailEditor` (→ `Field`/`Input`/`Switch`). Added the shared `Switch`
+component. (Remaining: `LegalEditor` uses custom-bordered `INPUT` consts — not native controls —
+flagged for the same upgrade.)
+
+**Trigger:** Building or editing ANY page/form/modal. Use the themed components —
+`Field`/`Input`/`Select`/`fieldFloat` from `components/ui/form`, `Switch` from
+`components/ui/Switch`, cards via `CardIcon`/`CardHeaderRow`/`PageHeaderRow`. NEVER a raw
+`<input>`/`<select>`/`<input type="checkbox">` or a local `INPUT`/`LABEL` class. If a themed
+primitive doesn't exist for what you need, BUILD the shared one — don't drop to native.
+
+**Lesson:** "Design ALL elements in our theme" is a default-state guarantee Roland must be able to
+trust without re-checking every screen. Native controls are the tell that a shared primitive was
+skipped. Pairs with the UI-standards lock (APPROVALS §2.3, §9) and #5/#6 (one shared primitive,
+app-wide).
+
 ---
 
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Field, Input, fieldFloat } from "@/components/ui/form";
+import { Switch } from "@/components/ui/Switch";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { cn } from "@/lib/utils";
 
@@ -162,15 +163,17 @@ export function EmailEditor({
             onChange={(e) => set("footer_note", e.target.value)}
           />
         </Field>
-        <label className="flex items-center gap-2 text-sm text-foreground">
-          <input
-            type="checkbox"
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5">
+          <span className="text-sm">
+            <span className="font-medium">Active</span>
+            <span className="block text-xs text-muted-foreground">Sends are blocked when off.</span>
+          </span>
+          <Switch
             checked={form.is_active}
-            onChange={(e) => set("is_active", e.target.checked)}
-            className="size-4 accent-foreground"
+            onChange={(next) => set("is_active", next)}
+            label="Active"
           />
-          Active — sends are blocked when off
-        </label>
+        </div>
         {template.variables.length > 0 && (
           <p className="text-xs text-muted-foreground">
             Variables:{" "}

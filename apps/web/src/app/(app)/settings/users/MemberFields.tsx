@@ -4,19 +4,18 @@ import { Pill } from "lucide-react";
 import { ROLES } from "@/lib/roles";
 import { licenseTypesFor, defaultLicenseType } from "@/lib/licenses";
 import { PRESCRIBER_ROLES, type MemberForm, type WindowMode } from "@/lib/memberForm";
+import { Field, Input, Select } from "@/components/ui/form";
+import { Switch } from "@/components/ui/Switch";
 import { cn } from "@/lib/utils";
 
 /**
  * The shared field set behind Invite + Edit (W1.1.7 chunk 2) — one controlled
  * component so the two flows can never drift. `showEmail` adds the login field
- * (invite only); an edit never changes the login identity.
+ * (invite only); an edit never changes the login identity. All fields are RolDe's
+ * themed components (Field / Input / Select / Switch) — never raw HTML controls.
  */
 const ASSIGNABLE = ROLES.filter((r) => r.tier !== "platform" && r.tier !== "patient");
 const DESIGNATIONS = ["", "Dr", "Mr", "Mrs", "Ms", "Miss", "Nr"];
-
-export const FIELD_INPUT =
-  "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-foreground/30 focus:ring-2 focus:ring-foreground/10";
-export const FIELD_LABEL = "mb-1 block text-xs font-medium text-muted-foreground";
 
 const MODES: [WindowMode, string][] = [
   ["indefinite", "Indefinite"],
@@ -48,98 +47,106 @@ export function MemberFields({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div className={showEmail ? "col-span-2 sm:col-span-1" : "col-span-2"}>
-          <label className={FIELD_LABEL}>Full Name</label>
-          <input
-            className={FIELD_INPUT}
-            value={form.displayName}
-            onChange={(e) => onChange({ displayName: e.target.value })}
-            placeholder="Jordan Avery"
-          />
+          <Field label="Full Name" htmlFor="mf_name">
+            <Input
+              id="mf_name"
+              value={form.displayName}
+              onChange={(e) => onChange({ displayName: e.target.value })}
+              placeholder="Jordan Avery"
+            />
+          </Field>
         </div>
         {showEmail && (
           <div className="col-span-2 sm:col-span-1">
-            <label className={FIELD_LABEL}>Email</label>
-            <input
-              className={FIELD_INPUT}
-              type="email"
-              value={form.email}
-              onChange={(e) => onChange({ email: e.target.value })}
-              placeholder="jordan@example.com"
-            />
+            <Field label="Email" htmlFor="mf_email">
+              <Input
+                id="mf_email"
+                type="email"
+                value={form.email}
+                onChange={(e) => onChange({ email: e.target.value })}
+                placeholder="jordan@example.com"
+              />
+            </Field>
           </div>
         )}
         <div className="col-span-2 sm:col-span-1">
-          <label className={FIELD_LABEL}>Role</label>
-          <select className={FIELD_INPUT} value={form.role} onChange={(e) => onRoleChange(e.target.value)}>
-            {ASSIGNABLE.map((r) => (
-              <option key={r.key} value={r.key}>
-                {r.label}
-              </option>
-            ))}
-          </select>
+          <Field label="Role" htmlFor="mf_role">
+            <Select id="mf_role" value={form.role} onChange={(e) => onRoleChange(e.target.value)}>
+              {ASSIGNABLE.map((r) => (
+                <option key={r.key} value={r.key}>
+                  {r.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
         </div>
         <div className="col-span-2 sm:col-span-1">
-          <label className={FIELD_LABEL}>Designation</label>
-          <select
-            className={FIELD_INPUT}
-            value={form.designation}
-            onChange={(e) => onChange({ designation: e.target.value })}
-          >
-            {DESIGNATIONS.map((d) => (
-              <option key={d} value={d}>
-                {d || "—"}
-              </option>
-            ))}
-          </select>
+          <Field label="Designation" htmlFor="mf_designation">
+            <Select
+              id="mf_designation"
+              value={form.designation}
+              onChange={(e) => onChange({ designation: e.target.value })}
+            >
+              {DESIGNATIONS.map((d) => (
+                <option key={d} value={d}>
+                  {d || "—"}
+                </option>
+              ))}
+            </Select>
+          </Field>
         </div>
         <div className="col-span-2 sm:col-span-1">
-          <label className={FIELD_LABEL}>Preferred Name</label>
-          <input
-            className={FIELD_INPUT}
-            value={form.preferredName}
-            onChange={(e) => onChange({ preferredName: e.target.value })}
-            placeholder="Shown on the clinical note"
-          />
+          <Field label="Preferred Name" htmlFor="mf_preferred">
+            <Input
+              id="mf_preferred"
+              value={form.preferredName}
+              onChange={(e) => onChange({ preferredName: e.target.value })}
+              placeholder="Shown on the clinical note"
+            />
+          </Field>
         </div>
         <div className="col-span-2 sm:col-span-1">
-          <label className={FIELD_LABEL}>Job Title</label>
-          <input
-            className={FIELD_INPUT}
-            value={form.jobTitle}
-            onChange={(e) => onChange({ jobTitle: e.target.value })}
-            placeholder="e.g. Consultant Dermatologist"
-          />
+          <Field label="Job Title" htmlFor="mf_jobtitle">
+            <Input
+              id="mf_jobtitle"
+              value={form.jobTitle}
+              onChange={(e) => onChange({ jobTitle: e.target.value })}
+              placeholder="e.g. Consultant Dermatologist"
+            />
+          </Field>
         </div>
         <div className="col-span-2 sm:col-span-1">
-          <label className={FIELD_LABEL}>Licence Type</label>
-          <select
-            className={FIELD_INPUT}
-            value={form.licenseType}
-            onChange={(e) => onChange({ licenseType: e.target.value })}
-          >
-            <option value="">— None —</option>
-            {licenseTypes.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.label}
-              </option>
-            ))}
-          </select>
+          <Field label="Licence Type" htmlFor="mf_licensetype">
+            <Select
+              id="mf_licensetype"
+              value={form.licenseType}
+              onChange={(e) => onChange({ licenseType: e.target.value })}
+            >
+              <option value="">— None —</option>
+              {licenseTypes.map((l) => (
+                <option key={l.code} value={l.code}>
+                  {l.label}
+                </option>
+              ))}
+            </Select>
+          </Field>
         </div>
         <div className="col-span-2 sm:col-span-1">
-          <label className={FIELD_LABEL}>Licence Number</label>
-          <input
-            className={FIELD_INPUT}
-            value={form.licenseNumber}
-            onChange={(e) => onChange({ licenseNumber: e.target.value })}
-            placeholder="e.g. 7654321"
-          />
+          <Field label="Licence Number" htmlFor="mf_licensenumber">
+            <Input
+              id="mf_licensenumber"
+              value={form.licenseNumber}
+              onChange={(e) => onChange({ licenseNumber: e.target.value })}
+              placeholder="e.g. 7654321"
+            />
+          </Field>
         </div>
       </div>
 
-      {/* Prescribing */}
-      <label
+      {/* Prescribing — themed switch, never a raw checkbox */}
+      <div
         className={cn(
-          "flex items-center justify-between rounded-lg border border-border px-3 py-2.5",
+          "flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5",
           !canPrescribe && "opacity-50",
         )}
       >
@@ -154,18 +161,17 @@ export function MemberFields({
             </span>
           </span>
         </span>
-        <input
-          type="checkbox"
-          className="size-4 accent-success"
-          disabled={!canPrescribe}
+        <Switch
           checked={form.prescribing}
-          onChange={(e) => onChange({ prescribing: e.target.checked })}
+          onChange={(next) => onChange({ prescribing: next })}
+          disabled={!canPrescribe}
+          label="Prescriber"
         />
-      </label>
+      </div>
 
       {/* Access window */}
       <div>
-        <label className={FIELD_LABEL}>Access</label>
+        <label className="mb-1 block text-xs font-medium text-muted-foreground">Access</label>
         <div className="flex gap-1.5">
           {MODES.map(([m, lbl]) => (
             <button
@@ -185,35 +191,34 @@ export function MemberFields({
         </div>
         {form.windowMode === "until" && (
           <div className="mt-2">
-            <label className={FIELD_LABEL}>Access Ends</label>
-            <input
-              type="date"
-              className={FIELD_INPUT}
-              value={form.toDate}
-              onChange={(e) => onChange({ toDate: e.target.value })}
-            />
+            <Field label="Access Ends" htmlFor="mf_to">
+              <Input
+                id="mf_to"
+                type="date"
+                value={form.toDate}
+                onChange={(e) => onChange({ toDate: e.target.value })}
+              />
+            </Field>
           </div>
         )}
         {form.windowMode === "period" && (
           <div className="mt-2 grid grid-cols-2 gap-3">
-            <div>
-              <label className={FIELD_LABEL}>From</label>
-              <input
+            <Field label="From" htmlFor="mf_from">
+              <Input
+                id="mf_from"
                 type="date"
-                className={FIELD_INPUT}
                 value={form.fromDate}
                 onChange={(e) => onChange({ fromDate: e.target.value })}
               />
-            </div>
-            <div>
-              <label className={FIELD_LABEL}>To</label>
-              <input
+            </Field>
+            <Field label="To" htmlFor="mf_to_period">
+              <Input
+                id="mf_to_period"
                 type="date"
-                className={FIELD_INPUT}
                 value={form.toDate}
                 onChange={(e) => onChange({ toDate: e.target.value })}
               />
-            </div>
+            </Field>
           </div>
         )}
       </div>

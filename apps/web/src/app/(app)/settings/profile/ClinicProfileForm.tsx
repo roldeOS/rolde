@@ -89,29 +89,68 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
   });
 
   return (
-    <div className="max-w-2xl space-y-6">
-      {/* Identity */}
-      <section className="space-y-4 rounded-xl bg-card p-6 shadow-float">
-        <h2 className="font-heading text-sm font-semibold tracking-tight">Identity</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Clinic Name" htmlFor="name" required hint="Shown across RolDe OS">
-            <Input
-              id="name"
-              value={form.name}
-              onChange={(e) => set("name", e.target.value)}
-              error={form.name.trim() === ""}
-            />
-          </Field>
-          <Field label="Legal Name" htmlFor="legal_name" required hint="On invoices & letters">
-            <Input
-              id="legal_name"
-              value={form.legal_name}
-              onChange={(e) => set("legal_name", e.target.value)}
-              error={form.legal_name.trim() === ""}
-            />
-          </Field>
-        </div>
-      </section>
+    // Two columns so the profile fills the width and fits one screen — no scroll
+    // to reach Save (Roland 2026-06-18). Identity + Registrations stack on the
+    // left; the taller Contact card takes the right.
+    <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+      <div className="space-y-6">
+        {/* Identity */}
+        <section className="space-y-4 rounded-xl bg-card p-6 shadow-float">
+          <h2 className="font-heading text-sm font-semibold tracking-tight">Identity</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Clinic Name" htmlFor="name" required hint="Shown across RolDe OS">
+              <Input
+                id="name"
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                error={form.name.trim() === ""}
+              />
+            </Field>
+            <Field label="Legal Name" htmlFor="legal_name" required hint="On invoices & letters">
+              <Input
+                id="legal_name"
+                value={form.legal_name}
+                onChange={(e) => set("legal_name", e.target.value)}
+                error={form.legal_name.trim() === ""}
+              />
+            </Field>
+          </div>
+        </section>
+
+        {/* Registrations */}
+        <section className="space-y-4 rounded-xl bg-card p-6 shadow-float">
+          <div>
+            <h2 className="font-heading text-sm font-semibold tracking-tight">Registrations</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Your data-protection and regulator numbers — printed where compliance requires.
+            </p>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="ICO" htmlFor="ico_registration" hint="Data protection">
+              <Input
+                id="ico_registration"
+                value={form.ico_registration}
+                onChange={(e) => set("ico_registration", e.target.value)}
+                placeholder="ZA000000"
+              />
+            </Field>
+            <Field label="CQC" htmlFor="cqc_registration" hint="England">
+              <Input
+                id="cqc_registration"
+                value={form.cqc_registration}
+                onChange={(e) => set("cqc_registration", e.target.value)}
+              />
+            </Field>
+            <Field label="HIS" htmlFor="his_registration" hint="Scotland">
+              <Input
+                id="his_registration"
+                value={form.his_registration}
+                onChange={(e) => set("his_registration", e.target.value)}
+              />
+            </Field>
+          </div>
+        </section>
+      </div>
 
       {/* Contact */}
       <section className="space-y-4 rounded-xl bg-card p-6 shadow-float">
@@ -162,41 +201,6 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
           </Field>
         </div>
       </section>
-
-      {/* Registrations */}
-      <section className="space-y-4 rounded-xl bg-card p-6 shadow-float">
-        <div>
-          <h2 className="font-heading text-sm font-semibold tracking-tight">Registrations</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Your data-protection and regulator numbers — printed where compliance requires.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="ICO" htmlFor="ico_registration" hint="Data protection">
-            <Input
-              id="ico_registration"
-              value={form.ico_registration}
-              onChange={(e) => set("ico_registration", e.target.value)}
-              placeholder="ZA000000"
-            />
-          </Field>
-          <Field label="CQC" htmlFor="cqc_registration" hint="England">
-            <Input
-              id="cqc_registration"
-              value={form.cqc_registration}
-              onChange={(e) => set("cqc_registration", e.target.value)}
-            />
-          </Field>
-          <Field label="HIS" htmlFor="his_registration" hint="Scotland">
-            <Input
-              id="his_registration"
-              value={form.his_registration}
-              onChange={(e) => set("his_registration", e.target.value)}
-            />
-          </Field>
-        </div>
-      </section>
-
     </div>
   );
 }

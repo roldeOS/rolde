@@ -5,10 +5,7 @@ import { useRouter } from "next/navigation";
 import { UserCircle, ShieldCheck, Palette } from "lucide-react";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { CardIcon } from "@/components/ui/CardIcon";
-
-const INPUT =
-  "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none transition-colors focus:border-foreground/30 focus:ring-2 focus:ring-foreground/10";
-const LABEL = "mb-1 block text-xs font-medium text-muted-foreground";
+import { Field, Input } from "@/components/ui/form";
 
 export function CustodianSettings({
   initial,
@@ -64,25 +61,23 @@ export function CustodianSettings({
             <p className="text-xs text-muted-foreground">How you appear across RolDe OS.</p>
           </div>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className={LABEL}>Name</label>
-            <input
-              className={INPUT}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Name" htmlFor="cs_name">
+            <Input
+              id="cs_name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Your name"
             />
-          </div>
-          <div>
-            <label className={LABEL}>Title</label>
-            <input
-              className={INPUT}
+          </Field>
+          <Field label="Title" htmlFor="cs_title">
+            <Input
+              id="cs_title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Founder & Clinical Safety Officer"
             />
-          </div>
+          </Field>
         </div>
         {error && (
           <p className="mt-3 rounded-lg bg-critical/10 px-3 py-2 text-xs font-medium text-critical">

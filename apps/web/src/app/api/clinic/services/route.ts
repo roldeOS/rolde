@@ -39,12 +39,6 @@ export async function POST(request: Request) {
     rawDuration === null || rawDuration === undefined || rawDuration === ""
       ? null
       : Math.round(Number(rawDuration));
-  const serviceType = String(body.service_type ?? "one_off");
-  const rawSessions = body.course_sessions;
-  const sessions =
-    rawSessions === null || rawSessions === undefined || rawSessions === ""
-      ? null
-      : Math.round(Number(rawSessions));
   const rawDeposit = body.deposit_pence;
   const depositPence =
     rawDeposit === null || rawDeposit === undefined ? null : Math.round(Number(rawDeposit));
@@ -56,25 +50,18 @@ export async function POST(request: Request) {
   if (duration !== null && (!Number.isInteger(duration) || duration <= 0)) {
     return NextResponse.json({ ok: false, error: "bad_duration" }, { status: 400 });
   }
-  if (!["one_off", "course", "membership"].includes(serviceType)) {
-    return NextResponse.json({ ok: false, error: "bad_type" }, { status: 400 });
-  }
-  if (sessions !== null && (!Number.isInteger(sessions) || sessions <= 0)) {
-    return NextResponse.json({ ok: false, error: "bad_sessions" }, { status: 400 });
-  }
   if (depositPence !== null && (!Number.isInteger(depositPence) || depositPence < 0)) {
     return NextResponse.json({ ok: false, error: "bad_deposit" }, { status: 400 });
   }
 
   const supabase = await createClient();
+  // service_type / course_sessions are owned by the Memberships & Packages module
+  // (W1.1.10) — not written here, so existing values are preserved untouched.
   const fields = {
     name,
     description: trimOrNull(body.description),
     category: trimOrNull(body.category),
     code: trimOrNull(body.code),
-    service_type: serviceType,
-    // course_sessions only makes sense for a course
-    course_sessions: serviceType === "course" ? sessions : null,
     price_pence: pricePence,
     duration_minutes: duration,
     vat_exempt: body.vat_exempt === true,
