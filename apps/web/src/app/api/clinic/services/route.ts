@@ -39,6 +39,16 @@ export async function POST(request: Request) {
     rawDuration === null || rawDuration === undefined || rawDuration === ""
       ? null
       : Math.round(Number(rawDuration));
+  const serviceType = String(body.service_type ?? "one_off");
+  const rawSessions = body.course_sessions;
+  const sessions =
+    rawSessions === null || rawSessions === undefined || rawSessions === ""
+      ? null
+      : Math.round(Number(rawSessions));
+  const rawDeposit = body.deposit_pence;
+  const depositPence =
+    rawDeposit === null || rawDeposit === undefined ? null : Math.round(Number(rawDeposit));
+
   if (!name) return NextResponse.json({ ok: false, error: "name_required" }, { status: 400 });
   if (!Number.isInteger(pricePence) || pricePence < 0) {
     return NextResponse.json({ ok: false, error: "bad_price" }, { status: 400 });
@@ -46,13 +56,29 @@ export async function POST(request: Request) {
   if (duration !== null && (!Number.isInteger(duration) || duration <= 0)) {
     return NextResponse.json({ ok: false, error: "bad_duration" }, { status: 400 });
   }
+  if (!["one_off", "course", "membership"].includes(serviceType)) {
+    return NextResponse.json({ ok: false, error: "bad_type" }, { status: 400 });
+  }
+  if (sessions !== null && (!Number.isInteger(sessions) || sessions <= 0)) {
+    return NextResponse.json({ ok: false, error: "bad_sessions" }, { status: 400 });
+  }
+  if (depositPence !== null && (!Number.isInteger(depositPence) || depositPence < 0)) {
+    return NextResponse.json({ ok: false, error: "bad_deposit" }, { status: 400 });
+  }
 
   const supabase = await createClient();
   const fields = {
     name,
     description: trimOrNull(body.description),
+    category: trimOrNull(body.category),
+    code: trimOrNull(body.code),
+    service_type: serviceType,
+    // course_sessions only makes sense for a course
+    course_sessions: serviceType === "course" ? sessions : null,
     price_pence: pricePence,
     duration_minutes: duration,
+    vat_exempt: body.vat_exempt === true,
+    deposit_pence: depositPence,
     active: body.active !== false,
   };
 
@@ -67,6 +93,10 @@ export async function POST(request: Request) {
     : (await supabase.from("clinic_services").insert({ ...fields, tenant_id: tenantId })).error;
 
   if (error) {
+    // The (tenant_id, lower(code)) unique index — a friendly "code taken".
+    if (error.code === "23505") {
+      return NextResponse.json({ ok: false, error: "code_taken" }, { status: 409 });
+    }
     console.error("[services]", error.message);
     return NextResponse.json({ ok: false, error: "save_failed" }, { status: 500 });
   }

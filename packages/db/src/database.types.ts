@@ -70,39 +70,57 @@ export type Database = {
       clinic_services: {
         Row: {
           active: boolean
+          category: string | null
+          code: string | null
+          course_sessions: number | null
           created_at: string
+          deposit_pence: number | null
           description: string | null
           duration_minutes: number | null
           id: string
           name: string
           price_pence: number
+          service_type: string
           sort: number
           tenant_id: string
           updated_at: string
+          vat_exempt: boolean
         }
         Insert: {
           active?: boolean
+          category?: string | null
+          code?: string | null
+          course_sessions?: number | null
           created_at?: string
+          deposit_pence?: number | null
           description?: string | null
           duration_minutes?: number | null
           id?: string
           name: string
           price_pence?: number
+          service_type?: string
           sort?: number
           tenant_id: string
           updated_at?: string
+          vat_exempt?: boolean
         }
         Update: {
           active?: boolean
+          category?: string | null
+          code?: string | null
+          course_sessions?: number | null
           created_at?: string
+          deposit_pence?: number | null
           description?: string | null
           duration_minutes?: number | null
           id?: string
           name?: string
           price_pence?: number
+          service_type?: string
           sort?: number
           tenant_id?: string
           updated_at?: string
+          vat_exempt?: boolean
         }
         Relationships: [
           {
