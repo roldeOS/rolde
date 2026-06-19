@@ -6,6 +6,8 @@ import { licenseTypesFor, defaultLicenseType } from "@/lib/licenses";
 import { PRESCRIBER_ROLES, type MemberForm, type WindowMode } from "@/lib/memberForm";
 import { Field, Input, Select } from "@/components/ui/form";
 import { Switch } from "@/components/ui/Switch";
+import { Segmented } from "@/components/ui/Segmented";
+import { CardIcon } from "@/components/ui/CardIcon";
 import { cn } from "@/lib/utils";
 
 /**
@@ -45,7 +47,7 @@ export function MemberFields({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <div className={showEmail ? "col-span-2 sm:col-span-1" : "col-span-2"}>
           <Field label="Full Name" htmlFor="mf_name">
             <Input
@@ -143,15 +145,15 @@ export function MemberFields({
         </div>
       </div>
 
-      {/* Prescribing — themed switch, never a raw checkbox */}
+      {/* Prescribing — themed switch + an IconChip (never a bare icon) */}
       <div
         className={cn(
           "flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5",
           !canPrescribe && "opacity-50",
         )}
       >
-        <span className="flex items-center gap-2 text-sm">
-          <Pill className="size-4 text-success" />
+        <span className="flex items-center gap-3 text-sm">
+          <CardIcon icon={Pill} tone="success" variant="badge" size="sm" />
           <span>
             <span className="font-medium">Prescriber</span>
             <span className="block text-xs text-muted-foreground">
@@ -172,23 +174,11 @@ export function MemberFields({
       {/* Access window */}
       <div>
         <label className="mb-1 block text-xs font-medium text-muted-foreground">Access</label>
-        <div className="flex gap-1.5">
-          {MODES.map(([m, lbl]) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => onChange({ windowMode: m })}
-              className={cn(
-                "flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors",
-                form.windowMode === m
-                  ? "border-foreground/30 bg-foreground/8 text-foreground"
-                  : "border-border text-muted-foreground hover:bg-hover",
-              )}
-            >
-              {lbl}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          options={MODES.map(([value, label]) => ({ value, label }))}
+          value={form.windowMode}
+          onChange={(windowMode) => onChange({ windowMode })}
+        />
         {form.windowMode === "until" && (
           <div className="mt-2">
             <Field label="Access Ends" htmlFor="mf_to">

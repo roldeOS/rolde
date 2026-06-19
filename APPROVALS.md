@@ -270,6 +270,19 @@ subset. A tile without its squircle + `(i)` isn't the tile (mindate MISTAKES #25
 state for any new card / table is the shared component, Title-Cased (§2.3) — built right the
 first time, so Roland never has to ask twice.
 
+9.3 **A modal is a new page → it carries the squircle too** (Roland 2026-06-18). Every modal /
+dialog header uses **`DialogHeaderRow`** (`components/ui/DialogHeaderRow`) — a `CardIcon` squircle +
+title (+ optional subtitle) + close — never a bare `<h2>`. Roland: *"when you design a modal,
+remember it is a new page of sorts, so it needs an IconChip."* Modals get **room to breathe**:
+generous width (so placeholders never squish) and `px-6 py-5` body padding, not cramped.
+
+9.4 **Any standalone icon is a `CardIcon` squircle (the "IconChip"), never bare** (Roland
+2026-06-18, *"it's kind of our brand thing"*). A meaning-carrying icon beside a label (a row, a
+toggle, a header) renders as `<CardIcon icon tone variant="badge" size="sm" />` — the squircle is
+the signature. A bare `<Icon className="size-4" />` sitting next to text is the regression
+(precedent: the Prescriber `Pill`). Tiny inline affordance glyphs inside a control (a chevron, a
+spinner, the ✕ in a close button) are exempt — those aren't standalone brand icons.
+
 ## 10. Themed components ONLY — never a system-default element (Roland 2026-06-18, LOCKED)
 
 10.1 **Every form control on every page / modal is one of RolDe's themed components — NEVER a
@@ -282,7 +295,10 @@ worked so hard on building our own elements for a reason."* The roster:
   — NEVER a bare `<select>` (the browser chevron is the tell).
 - **Toggles / on-off** → `Switch` from `components/ui/Switch` (the pill) — NEVER an
   `<input type="checkbox">`.
-- **Cards / headers / tiles** → the §9 shared components with their `CardIcon` squircle.
+- **Pick-one-of-few** → `Segmented` from `components/ui/Segmented` (soft muted track, the selected
+  segment lifts onto white with a shadow) — NEVER drab grey buttons-with-a-border.
+- **Cards / headers / tiles / modals** → the §9 shared components (`CardHeaderRow`,
+  `PageHeaderRow`, `DialogHeaderRow`) with their `CardIcon` squircle.
 
 10.2 **No ad-hoc field styling.** A local `const INPUT = "w-full rounded-lg border …"` / `LABEL`
 string is the same offence as a native control — it bypasses the themed primitive. Use `Field` +

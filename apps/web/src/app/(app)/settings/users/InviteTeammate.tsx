@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { UserPlus, X, Loader2 } from "lucide-react";
+import { UserPlus, Loader2 } from "lucide-react";
 import { useSavedFlash } from "@/components/ui/PageActionBar";
+import { DialogHeaderRow } from "@/components/ui/DialogHeaderRow";
 import { emptyMemberForm, windowFromForm, type MemberForm } from "@/lib/memberForm";
 import { MemberFields } from "./MemberFields";
 
@@ -97,23 +98,17 @@ export function InviteTeammate({ country }: { country: string }) {
             onClick={close}
           >
             <div
-              className="w-full max-w-lg rounded-2xl bg-card shadow-overlay"
+              className="w-full max-w-2xl rounded-2xl bg-card shadow-overlay"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
-                <h2 className="font-heading text-base font-semibold tracking-tight">
-                  Invite a Teammate
-                </h2>
-                <button
-                  onClick={close}
-                  className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-                  aria-label="Close"
-                >
-                  <X className="size-4" />
-                </button>
-              </div>
+              <DialogHeaderRow
+                icon={UserPlus}
+                title="Invite a Teammate"
+                subtitle="They'll set their own password from a single-use link."
+                onClose={close}
+              />
 
-              <div className="px-5 py-4">
+              <div className="px-6 py-5">
                 <MemberFields form={form} onChange={update} country={country} showEmail />
                 {error && (
                   <p className="mt-4 rounded-lg bg-critical/10 px-3 py-2 text-xs font-medium text-critical">
@@ -122,7 +117,7 @@ export function InviteTeammate({ country }: { country: string }) {
                 )}
               </div>
 
-              <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-3">
+              <div className="flex items-center justify-end gap-2 border-t border-border px-6 py-4">
                 <button
                   onClick={close}
                   disabled={busy}

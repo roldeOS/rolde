@@ -3,10 +3,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { Plus, X, Loader2, Pencil, Trash2, Clock, Hash } from "lucide-react";
+import { Plus, Loader2, Pencil, Trash2, Clock, Hash, Stethoscope } from "lucide-react";
 import { useSavedFlash } from "@/components/ui/PageActionBar";
 import { Switch } from "@/components/ui/Switch";
 import { Field, Input } from "@/components/ui/form";
+import { DialogHeaderRow } from "@/components/ui/DialogHeaderRow";
 import { cn } from "@/lib/utils";
 
 export type Service = {
@@ -324,23 +325,18 @@ function ServiceModal({
       onClick={() => !busy && onClose()}
     >
       <div
-        className="w-full max-w-lg rounded-2xl bg-card shadow-overlay"
+        className="w-full max-w-2xl rounded-2xl bg-card shadow-overlay"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
-          <h2 className="font-heading text-base font-semibold tracking-tight">
-            {service ? "Edit Service" : "Add Service"}
-          </h2>
-          <button
-            onClick={() => !busy && onClose()}
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-            aria-label="Close"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
+        <DialogHeaderRow
+          icon={Stethoscope}
+          tone="success"
+          title={service ? "Edit Service" : "Add Service"}
+          subtitle="A treatment your clinic offers, with its price."
+          onClose={() => !busy && onClose()}
+        />
 
-        <div className="space-y-4 px-5 py-4">
+        <div className="space-y-4 px-6 py-5">
           <Field label="Name" htmlFor="svc_name">
             <Input
               id="svc_name"
@@ -463,7 +459,7 @@ function ServiceModal({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-border px-5 py-3">
+        <div className="flex items-center justify-end gap-2 border-t border-border px-6 py-4">
           <button
             onClick={() => !busy && onClose()}
             disabled={busy}
