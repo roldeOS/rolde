@@ -229,7 +229,7 @@ function ToggleRow({
   onChange: (next: boolean) => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5">
+    <label className="field-float flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2.5">
       <span className="text-sm">
         <span className="font-medium">{title}</span>
         <span className="block text-xs text-muted-foreground">{hint}</span>

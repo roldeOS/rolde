@@ -24,7 +24,7 @@ export function DialogHeaderRow({
   return (
     <div className="flex items-center justify-between gap-3 border-b border-border px-6 py-4">
       <div className="flex items-center gap-3">
-        <CardIcon icon={icon} tone={tone} variant="badge" size="md" />
+        <CardIcon icon={icon} tone={tone} variant="tinted" size="md" />
         <div>
           <h2 className="font-heading text-base font-semibold tracking-tight">{title}</h2>
           {subtitle && <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>}

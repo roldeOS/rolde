@@ -124,6 +124,7 @@ export function EditMember({
       >
         <DialogHeaderRow
           icon={UserCog}
+          tone="accent"
           title="Edit Member"
           subtitle={member.display_name}
           onClose={close}

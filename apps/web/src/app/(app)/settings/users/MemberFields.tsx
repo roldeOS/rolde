@@ -145,15 +145,15 @@ export function MemberFields({
         </div>
       </div>
 
-      {/* Prescribing — themed switch + an IconChip (never a bare icon) */}
+      {/* Prescribing — themed switch + a coloured IconChip; the row FLOATS (no hard border) */}
       <div
         className={cn(
-          "flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5",
+          "field-float flex items-center justify-between gap-3 rounded-lg px-3 py-2.5",
           !canPrescribe && "opacity-50",
         )}
       >
         <span className="flex items-center gap-3 text-sm">
-          <CardIcon icon={Pill} tone="success" variant="badge" size="sm" />
+          <CardIcon icon={Pill} tone="success" variant="tinted" size="sm" />
           <span>
             <span className="font-medium">Prescriber</span>
             <span className="block text-xs text-muted-foreground">
