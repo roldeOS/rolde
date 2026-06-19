@@ -1224,6 +1224,16 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
   VAT-free, deposit-free clinic sees a clean page. These switches GATE the conditional fields in
   Services v2, the booking widget, and billing. (`clinic_commercial_settings`, one row per tenant;
   Caretaker-write via `is_caretaker_of`.)
+  **→ Tax v2 — generalise UK-VAT to GLOBAL Tax (researched 2026-06-19, Roland; pending greenlight).**
+  Hardcoding "VAT 20%" excludes the global market. Research (HMRC + Avalara/Stripe Tax/Chargebee +
+  India GST / US sales tax / AU GST) → make Tax fully **configurable**: a **name** (VAT · GST · Sales
+  Tax · Tax — defaulted by clinic country) · an **editable rate** (so 20→25% is one field) · a **tax
+  registration number** (VAT no. / GSTIN, for invoices) · **tax-inclusive vs tax-exclusive** pricing
+  (clinic default; UK aesthetics quote inclusive). The **per-service taxable/exempt** toggle stays —
+  it's UNIVERSAL: cosmetic = taxable, therapeutic/medical = exempt (UK/US/AU/IN all draw this line;
+  HMRC actively enforces it, e.g. *Illuminate Skin Clinics v HMRC* 2025). Deep rename `vat_*` →
+  `tax_*` (+ `tax_name`, `tax_registration`, `tax_inclusive`); per-service `vat_exempt` → `tax_exempt`.
+  No "VAT" hardcoded anywhere once shipped.
 - **W1.2 Patient Record Tabs** — W1.2.1 Problem list · W1.2.2 Medication list + reconciliation ·
   W1.2.3 History (PMH/surgical/family/social) · W1.2.4 Document store · W1.2.5 Before/after +
   body-map · W1.2.6 Digital consents (e-sign) · W1.2.7 Vitals/growth charts · W1.2.8 Risk scores
@@ -1345,12 +1355,13 @@ Integrations · W2 booking/appointments · W4 Money) rather than living as a sep
 
 ### Dev & QA fixtures *(test-only — not real users/data; Roland 2026-06-16 "keep them, document them")*
 
-- **Per-role QA users** — one passwordless test user per staff role lives in **Doc For Skin**, email
+- **Per-role test users** — one passwordless test user per staff role lives in **Doc For Skin**, email
   pattern **`<role>@qa.rolde.app`** (curator/concierge/clinician/locum/nurse/chemist/cunnere/cofferer,
-  display names `QA <Role>`). Purpose: log in as each role to verify what it sees / is blocked from as
-  per-role gating (W1.1.7) is built. Seeded by `apps/web/scripts/dev/seed-roles.mjs` (gitignored).
-  They WILL appear in the Doc For Skin Users list — they're fixtures, removable anytime; grep
-  `@qa.rolde.app` to clear.
+  display names **`Jarvis <Role>`** — renamed from "QA" 2026-06-19 on Roland's call; the email stays
+  `@qa.rolde.app` as the fixture identifier). Purpose: log in as each role to verify what it sees / is
+  blocked from as per-role gating (W1.1.7) is built. Seeded by `apps/web/scripts/dev/seed-roles.mjs`
+  (gitignored). They WILL appear in the Doc For Skin Users list — they're fixtures, removable anytime;
+  grep `@qa.rolde.app` to clear.
 - **Dev role-login** — `apps/web/src/app/api/dev/login?email=…` lets the builder assume any role in
   the LOCAL preview (mints a session server-side, no credential exposed). **Gitignored + NODE_ENV +
   ALLOW_DEV_LOGIN gated — physically never ships to production.**
