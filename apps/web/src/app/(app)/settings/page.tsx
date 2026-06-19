@@ -6,16 +6,17 @@ import { SETTINGS_GROUPS, SETTINGS_SECTIONS } from "./sections";
 import { getSettingsAccess, SettingsRestricted } from "./access";
 import { cn } from "@/lib/utils";
 
-// A calm tone wash per card (Roland 2026-06-17: "make this a bit more colour") —
-// the gradient + hairline ring parity with the dashboard StatTiles, kept light.
+// A CHEERFUL tone wash per card (Roland 2026-06-19: "give the website some cheer —
+// bright pastel colours, not death"). The gradient + hairline ring, turned up so
+// the pastels actually read as colour, not a washed-out grey.
 const TONE_WASH: Record<CardIconTone, string> = {
-  critical: "bg-gradient-to-br from-critical/[0.15] to-critical/[0.04] ring-1 ring-critical/15",
-  warning: "bg-gradient-to-br from-warning/[0.18] to-warning/[0.05] ring-1 ring-warning/15",
-  success: "bg-gradient-to-br from-success/[0.15] to-success/[0.04] ring-1 ring-success/15",
-  info: "bg-gradient-to-br from-info/[0.15] to-info/[0.04] ring-1 ring-info/15",
-  accent: "bg-gradient-to-br from-accent/20 to-accent/[0.05] ring-1 ring-accent/20",
-  neutral: "bg-gradient-to-br from-slate-500/[0.12] to-slate-500/[0.03] ring-1 ring-slate-500/15",
-  brand: "bg-gradient-to-br from-info/[0.14] to-accent/[0.06] ring-1 ring-info/15",
+  critical: "bg-gradient-to-br from-critical/[0.26] to-critical/[0.09] ring-1 ring-critical/25",
+  warning: "bg-gradient-to-br from-warning/[0.30] to-warning/[0.10] ring-1 ring-warning/25",
+  success: "bg-gradient-to-br from-success/[0.26] to-success/[0.09] ring-1 ring-success/25",
+  info: "bg-gradient-to-br from-info/[0.26] to-info/[0.09] ring-1 ring-info/25",
+  accent: "bg-gradient-to-br from-accent/[0.34] to-accent/[0.11] ring-1 ring-accent/30",
+  neutral: "bg-gradient-to-br from-slate-500/[0.20] to-slate-500/[0.06] ring-1 ring-slate-500/20",
+  brand: "bg-gradient-to-br from-info/[0.24] to-accent/[0.12] ring-1 ring-info/25",
 };
 
 /**

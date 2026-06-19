@@ -33,8 +33,8 @@ export function Switch({
       onClick={() => onChange(!checked)}
       className={cn(
         "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full outline-none transition-colors",
-        "focus-visible:ring-2 focus-visible:ring-foreground/20 disabled:cursor-not-allowed disabled:opacity-50",
-        checked ? "bg-foreground" : "bg-border",
+        "focus-visible:ring-2 focus-visible:ring-success/30 disabled:cursor-not-allowed disabled:opacity-50",
+        checked ? "bg-success" : "bg-border",
       )}
     >
       <span

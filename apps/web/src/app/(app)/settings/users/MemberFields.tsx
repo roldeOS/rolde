@@ -153,7 +153,7 @@ export function MemberFields({
         )}
       >
         <span className="flex items-center gap-3 text-sm">
-          <CardIcon icon={Pill} tone="success" variant="tinted" size="sm" />
+          <CardIcon icon={Pill} tone="success" variant="badge" size="sm" />
           <span>
             <span className="font-medium">Prescriber</span>
             <span className="block text-xs text-muted-foreground">
