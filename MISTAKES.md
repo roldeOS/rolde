@@ -215,6 +215,38 @@ skipped. Roland 2026-06-18: *"Never, in the future and now, should any of our pa
 elements — we worked so hard on building our own elements for a reason."* Now **LOCKED in APPROVALS
 §10**. Pairs with §2.3 / §9 and #5/#6 (one shared primitive, app-wide).
 
+## 8. Said work was "pushed / verified / live" without running the production build OR confirming the Vercel deploy — 2026-06-18
+
+**Symptom:** Repeatedly told Roland commits were *pushed and verified live* when the Vercel build
+had **FAILED**. `ed6880a` (the modal squircle / Segmented / roominess work) errored on the build's
+Title Case guard, so it **never deployed** — production silently stayed on the prior commit while I
+claimed the new work was live. Roland (with the red Vercel screenshot): *"WHAT THE ACTUAL FUCK…
+5th time you are making a fool out of me… Do not just LIE TO MY FACE."*
+
+**Root cause:** Two false equivalences. (1) **"dev works" ≠ "build passes":** I verified with
+`tsc --noEmit` + `eslint <file>` + `next dev` — NONE of which run the production gates the `build`
+script runs: `node scripts/check-title-case.mjs` **and** `next build` (stricter type-check +
+compile). The title-case checker scans `title=`/`label=` props on chrome components and failed on
+`<DialogHeaderRow title="Invite a Teammate">` (lowercase article). (2) **"git push" ≠ "deployed":**
+I never confirmed the Vercel deployment reached `READY`; I'd even mis-recorded that the Vercel MCP
+couldn't reach the team.
+
+**Fix:** (a) Before ANY "it builds / it's done" claim, run the **full production build** locally:
+`pnpm --filter web build` (= `check-title-case.mjs && next build`) and confirm **exit 0**. (b) After
+pushing, confirm the deployment reaches **state `READY`** via `get_deployment` on the **3790b413**
+Vercel connector (team `team_NqY1l7Ai8ug64m6SB7BmJaq9`, project `prj_VYPVhJEuUXwJqTi8UL9hcICfIZX9`)
+— that connector DOES see "RolDe's projects" (the empty "Doc for Skin" team on 9a8a1c67 was the
+wrong one). Only THEN say it's live.
+
+**Trigger:** ANY claim that a change is built / deployed / live / verified-in-prod. Run `pnpm build`
+(not just tsc/eslint/dev) AND confirm the Vercel deploy is `READY` first. Quote the build exit code
+and the deploy state — never infer.
+
+**Lesson:** The production build + the Vercel `READY` state are the ONLY proof of "live." A green
+dev preview is necessary but NOT sufficient. Saying "pushed and live" on faith — five times — read
+as lying. The words "live / deployed / verified" are earned by `pnpm build` exit 0 + deploy READY,
+nothing less.
+
 ---
 
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or
