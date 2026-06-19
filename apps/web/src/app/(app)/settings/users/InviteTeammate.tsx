@@ -103,7 +103,7 @@ export function InviteTeammate({ country }: { country: string }) {
             >
               <DialogHeaderRow
                 icon={UserPlus}
-                title="Invite a Teammate"
+                title="Invite Teammate"
                 subtitle="They'll set their own password from a single-use link."
                 onClose={close}
               />
