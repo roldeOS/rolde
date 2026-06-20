@@ -12,6 +12,7 @@ import {
   type MemberForm,
 } from "@/lib/memberForm";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/form";
 import { MemberFields } from "./MemberFields";
 
 export type EditableMember = {
@@ -64,7 +65,7 @@ export function EditMember({
   // editor is the single place to manage a person).
   const [actionBusy, setActionBusy] = useState<string | null>(null);
   const [confirmPause, setConfirmPause] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [resetSent, setResetSent] = useState(false);
   const paused = status !== "active";
 
   // Re-seed the form whenever a new member's editor opens.
@@ -73,7 +74,7 @@ export function EditMember({
       setForm(memberFormFrom(member));
       setError(null);
       setConfirmPause(false);
-      setNotice(null);
+      setResetSent(false);
     }
   }, [open, member]);
 
@@ -102,9 +103,16 @@ export function EditMember({
   }
 
   async function sendReset() {
+    setError(null);
     const ok = await postAction("/api/clinic/users/reset-link", { id: member.id }, "reset");
-    setNotice(ok ? "Reset link sent." : "Couldn't send the link.");
-    setTimeout(() => setNotice(null), 2200);
+    if (ok) {
+      setResetSent(true);
+      // Conversational confirmation via the shared bottom bar (Roland 2026-06-21).
+      flashSaved(`RolDe sent ${member.display_name} a reset link.`);
+      setTimeout(() => setResetSent(false), 2500);
+    } else {
+      setError("Couldn't send the reset link. Try again.");
+    }
   }
 
   async function setStatus(next: string) {
@@ -198,14 +206,50 @@ export function EditMember({
           onClose={close}
         />
 
-        <div className="px-6 py-5">
-          <MemberFields
-            form={form}
-            onChange={update}
-            country={country}
-            showEmail
-            emailHint="their login — send a reset link after a change"
-          />
+        <div className="space-y-4 px-6 py-5">
+          {/* Login email + the reset action on ONE row (Roland 2026-06-21): change
+              the email if they've lost access, then send a reset link to finish. */}
+          <div className="space-y-1">
+            <label htmlFor="em_email" className="text-xs font-semibold text-foreground">
+              Email{" "}
+              <span className="font-normal text-muted-foreground">
+                — their login; change it if they&apos;ve lost access, then send a reset link
+              </span>
+            </label>
+            <div className="flex items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <Input
+                  id="em_email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => update({ email: e.target.value })}
+                  placeholder="name@example.com"
+                />
+              </div>
+              {!isMe && (
+                <button
+                  type="button"
+                  onClick={sendReset}
+                  disabled={!!actionBusy}
+                  className={cn(
+                    "inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg border border-input bg-card px-3 text-sm font-medium transition-colors hover:bg-hover disabled:opacity-50",
+                    resetSent ? "text-success" : "text-foreground",
+                  )}
+                >
+                  {actionBusy === "reset" ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : resetSent ? (
+                    <Check className="size-4" />
+                  ) : (
+                    <KeyRound className="size-4 text-muted-foreground" />
+                  )}
+                  {resetSent ? "Link Sent" : "Send Reset Link"}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <MemberFields form={form} onChange={update} country={country} />
           {error && (
             <p className="mt-4 rounded-lg bg-critical/10 px-3 py-2 text-xs font-medium text-critical">
               {error}
@@ -214,50 +258,32 @@ export function EditMember({
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-6 py-4">
-          {/* Secondary member-management actions (not on your own row). */}
-          <div className="flex min-h-[1.75rem] flex-wrap items-center gap-1.5">
-            {notice ? (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
-                <Check className="size-3.5" /> {notice}
-              </span>
-            ) : (
-              !isMe && (
-                <>
-                  {!paused && (
-                    <button
-                      onClick={sendReset}
-                      disabled={!!actionBusy}
-                      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground disabled:opacity-50"
-                    >
-                      {actionBusy === "reset" ? <Loader2 className="size-3.5 animate-spin" /> : <KeyRound className="size-3.5" />}
-                      Send Reset Link
-                    </button>
+          {/* Pause / Restore on the LEFT — amber-fill, matching the discard-changes
+              treatment (Roland 2026-06-21). Not on your own row (no self-lockout). */}
+          <div className="flex min-h-[2rem] items-center">
+            {!isMe &&
+              (paused ? (
+                <button
+                  onClick={() => setStatus("active")}
+                  disabled={!!actionBusy}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-success/12 px-3 py-1.5 text-sm font-medium text-success transition-colors hover:bg-success/20 disabled:opacity-50"
+                >
+                  {actionBusy === "status" ? <Loader2 className="size-4 animate-spin" /> : <RotateCcw className="size-4" />}
+                  Restore Access
+                </button>
+              ) : (
+                <button
+                  onClick={() => (confirmPause ? setStatus("paused") : setConfirmPause(true))}
+                  disabled={!!actionBusy}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-lg bg-warning/12 px-3 py-1.5 text-sm font-medium text-warning transition-colors hover:bg-warning/20 disabled:opacity-50",
+                    confirmPause && "bg-warning/20 font-semibold",
                   )}
-                  {paused ? (
-                    <button
-                      onClick={() => setStatus("active")}
-                      disabled={!!actionBusy}
-                      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-success transition-colors hover:bg-success/10 disabled:opacity-50"
-                    >
-                      {actionBusy === "status" ? <Loader2 className="size-3.5 animate-spin" /> : <RotateCcw className="size-3.5" />}
-                      Restore Access
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => (confirmPause ? setStatus("paused") : setConfirmPause(true))}
-                      disabled={!!actionBusy}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-critical transition-colors hover:bg-critical/10 disabled:opacity-50",
-                        confirmPause && "bg-critical/10 font-semibold",
-                      )}
-                    >
-                      {actionBusy === "status" ? <Loader2 className="size-3.5 animate-spin" /> : <Ban className="size-3.5" />}
-                      {confirmPause ? "Tap Again to Pause" : "Pause Access"}
-                    </button>
-                  )}
-                </>
-              )
-            )}
+                >
+                  {actionBusy === "status" ? <Loader2 className="size-4 animate-spin" /> : <Ban className="size-4" />}
+                  {confirmPause ? "Tap Again to Pause" : "Pause Access"}
+                </button>
+              ))}
           </div>
 
           {/* Primary actions. */}
