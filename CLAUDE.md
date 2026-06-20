@@ -52,11 +52,18 @@ Greek letters. He is "Roland"; never "sir" / "mate" / "boss".
 - Tailwind v4, CSS-first: theme tokens in `app/globals.css` `@theme` (no `tailwind.config.ts`).
 - **"This is NOT the Next.js you know" — read `node_modules/next/dist/docs/` before writing
   Next code; heed deprecation notices.**
-- Design = Roland Design System (mindate ancestry), adapted for RolDe. Bible 4.2 (calm
-  clinical monochrome + semantic clinical colour, dark focus ring) is the **starting frame,
-  not law** — Roland's live visual judgment overrides the spec, and a tasteful **splash of
-  colour is his call** (as he did for the mindate Dashboard). Show real pixels early; bend the
-  design to his eye.
+- **URDS FIRST — never build any UI element without checking the Universal Roland Design
+  System** (`../UNIVERSAL_ROLAND_DESIGN_SYSTEM.md`, at the RoDee Studio root). It is the single
+  canonical design law shared by mindate-dashboard + RolDe OS: the token tiers, build process,
+  component roster, the **interaction-colour law** (hover/active derive from the sidebar paper's
+  warm family — gold @10%/16%, never an unrelated accent), and Earth & Bloom. **Every change to a
+  shared standard updates the URDS (the right section + its §10 Changelog) in the SAME pass.** No
+  standard exists for the thing you're building → STOP and ask Roland (Roland 2026-06-21).
+- Design = Roland Design System (mindate ancestry), adapted for RolDe — now the shared **URDS**
+  above. Bible 4.2 (calm clinical monochrome + semantic clinical colour, dark focus ring) is the
+  **starting frame, not law** — Roland's live visual judgment overrides the spec, and a tasteful
+  **splash of colour is his call** (as he did for the mindate Dashboard). Show real pixels early;
+  bend the design to his eye.
 - **FONT LAW (APPROVALS §2): IBM Plex Serif ONLY for the RolDe wordmark/icon** (`font-wordmark`;
   Roland will supply an SVG). **Inter everywhere else — headings included.** Plex Mono for code.
 - **System paper = parchment `#F0EFEB`** (`--parchment` → `--sidebar`): the calm default for the
