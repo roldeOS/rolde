@@ -17,6 +17,7 @@ import { MemberFields } from "./MemberFields";
 export type EditableMember = {
   id: string;
   display_name: string;
+  email: string | null;
   role: string;
   designation: string | null;
   preferred_name: string | null;
@@ -123,6 +124,8 @@ export function EditMember({
   async function save() {
     setError(null);
     if (!form.displayName.trim()) return setError("Add their full name.");
+    const email = form.email.trim();
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setError("That email doesn't look right.");
     const window = windowFromForm(form);
     if (!window) return setError("Set the access dates.");
 
@@ -134,6 +137,7 @@ export function EditMember({
         body: JSON.stringify({
           id: member.id,
           display_name: form.displayName.trim(),
+          email,
           role: form.role,
           designation: form.designation,
           preferred_name: form.preferredName,
@@ -149,14 +153,24 @@ export function EditMember({
         setError(
           data.error === "self_role_locked"
             ? "You can't change your own role — ask another Caretaker."
-            : "That didn't save. Check the details and try again.",
+            : data.error === "email_taken"
+              ? "That email is already used by another account."
+              : data.error === "bad_email"
+                ? "That email doesn't look right."
+                : data.error === "email_failed"
+                  ? "Couldn't change the email. Try again."
+                  : "That didn't save. Check the details and try again.",
         );
         setBusy(false);
         return;
       }
       const name = form.displayName.trim();
       onClose();
-      flashSaved(`RolDe updated ${name}’s details.`);
+      flashSaved(
+        data.emailChanged
+          ? `RolDe updated ${name}’s details + email — send them a reset link to finish.`
+          : `RolDe updated ${name}’s details.`,
+      );
       router.refresh();
     } catch {
       setError("Something went wrong. Try again.");
@@ -185,7 +199,13 @@ export function EditMember({
         />
 
         <div className="px-6 py-5">
-          <MemberFields form={form} onChange={update} country={country} />
+          <MemberFields
+            form={form}
+            onChange={update}
+            country={country}
+            showEmail
+            emailHint="their login — send a reset link after a change"
+          />
           {error && (
             <p className="mt-4 rounded-lg bg-critical/10 px-3 py-2 text-xs font-medium text-critical">
               {error}

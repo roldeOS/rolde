@@ -8,7 +8,7 @@ export type WindowMode = "indefinite" | "until" | "period";
 
 export type MemberForm = {
   displayName: string;
-  email: string; // invite only — an edit never changes the login identity
+  email: string; // invite: the new login. edit: the member's current login (changeable).
   role: string;
   designation: string;
   preferredName: string;
@@ -58,6 +58,7 @@ function localDateInput(iso: string): string {
 /** Build a MemberForm from an existing membership row (for the edit modal). */
 export function memberFormFrom(m: {
   display_name: string;
+  email?: string | null;
   role: string;
   designation: string | null;
   preferred_name: string | null;
@@ -84,7 +85,7 @@ export function memberFormFrom(m: {
   }
   return {
     displayName: m.display_name,
-    email: "",
+    email: m.email ?? "",
     role: m.role,
     designation: m.designation ?? "",
     preferredName: m.preferred_name ?? "",

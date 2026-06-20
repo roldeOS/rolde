@@ -89,7 +89,10 @@ export function TableExport({
     const autoTable = autoTableMod.default;
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
 
-    const when = new Date().toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+    const now = new Date();
+    const when = now.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+    const at = now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    const stampWhen = `${when} at ${at}`;
     const clinic = brand?.clinic?.trim();
     const rowsLabel = `${data.rows.length.toLocaleString()} ${data.rows.length === 1 ? "row" : "rows"}`;
 
@@ -135,7 +138,7 @@ export function TableExport({
       doc.setFontSize(7.5);
       doc.setTextColor(140, 140, 145);
       doc.text(`Confidential · ${clinic || "RolDe OS"}`, 40, ph - 22);
-      const stamp = brand?.exportedBy ? `Exported by ${brand.exportedBy} · ${when}` : `Exported ${when}`;
+      const stamp = brand?.exportedBy ? `Exported by ${brand.exportedBy} · ${stampWhen}` : `Exported ${stampWhen}`;
       doc.text(stamp, pw / 2, ph - 22, { align: "center" });
       // Page "X of Y" is filled in the final pass (Y is unknown until the end).
     };
@@ -144,10 +147,12 @@ export function TableExport({
       head: [data.columns.map((c) => c.header)],
       body: data.rows.map((r) => data.columns.map((c) => cell(r[c.key]))),
       startY: 80,
-      margin: { top: 80, bottom: 52, left: 40, right: 40 },
+      margin: { top: 80, bottom: 52, left: 32, right: 32 },
       theme: "striped",
-      styles: { font: "helvetica", fontSize: 8, cellPadding: { top: 5, bottom: 5, left: 7, right: 7 }, textColor: [39, 39, 42], lineColor: [236, 236, 236], lineWidth: 0.5, overflow: "linebreak" },
-      headStyles: { fillColor: [240, 239, 235], textColor: [24, 24, 27], fontStyle: "bold", fontSize: 8.5, lineColor: [212, 168, 67], lineWidth: { bottom: 1 } },
+      // Smaller type + tight padding so every value sits on ONE line (no ugly
+      // mid-cell folding) — Roland's "reduced scaling" until the column-picker lands.
+      styles: { font: "helvetica", fontSize: 6.8, cellPadding: { top: 4, bottom: 4, left: 5, right: 5 }, textColor: [39, 39, 42], lineColor: [236, 236, 236], lineWidth: 0.5, overflow: "linebreak", valign: "middle" },
+      headStyles: { fillColor: [240, 239, 235], textColor: [24, 24, 27], fontStyle: "bold", fontSize: 7.2, lineColor: [212, 168, 67], lineWidth: { bottom: 1 } },
       alternateRowStyles: { fillColor: [250, 249, 247] },
       didDrawPage: drawChrome,
     });

@@ -30,11 +30,14 @@ export function MemberFields({
   onChange,
   country,
   showEmail = false,
+  emailHint,
 }: {
   form: MemberForm;
   onChange: (patch: Partial<MemberForm>) => void;
   country: string;
   showEmail?: boolean;
+  /** Optional hint under the email field (e.g. the edit-mode change warning). */
+  emailHint?: string;
 }) {
   const licenseTypes = licenseTypesFor(country);
   const canPrescribe = PRESCRIBER_ROLES.has(form.role);
@@ -60,7 +63,7 @@ export function MemberFields({
         </div>
         {showEmail && (
           <div className="col-span-2 sm:col-span-1">
-            <Field label="Email" htmlFor="mf_email">
+            <Field label="Email" htmlFor="mf_email" hint={emailHint}>
               <Input
                 id="mf_email"
                 type="email"
@@ -173,7 +176,7 @@ export function MemberFields({
 
       {/* Access window */}
       <div>
-        <label className="mb-1 block text-xs font-medium text-muted-foreground">Access</label>
+        <label className="mb-1 block text-xs font-semibold text-foreground">Access</label>
         <Segmented
           options={MODES.map(([value, label]) => ({ value, label }))}
           value={form.windowMode}

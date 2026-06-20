@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { Database } from "@rolde/db";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getSessionContext } from "@/lib/auth";
 import { ROLES } from "@/lib/roles";
 
@@ -10,7 +11,15 @@ import { ROLES } from "@/lib/roles";
  * the caretaker's own session so RLS (`is_caretaker_of`) re-checks it; a target
  * outside their clinic 404s. Self-lockout guards: a Caretaker can't revoke
  * themselves or change their own role.
+ *
+ * Email change (Roland 2026-06-21): a member can lose access to the email they
+ * signed up with — losing the email must NOT mean losing the account. So a
+ * Caretaker can change a member's LOGIN email here; the change goes through the
+ * service-role admin client (auth.users isn't writable via RLS), is marked
+ * confirmed (the Caretaker is vouching), and the Caretaker then sends a reset
+ * link so the member sets a password against the new address.
  */
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 type UserRole = Database["public"]["Enums"]["user_role"];
 type Patch = Database["public"]["Tables"]["tenant_users"]["Update"];
 
@@ -93,7 +102,37 @@ export async function POST(request: Request) {
     patch.status = status;
   }
 
-  if (Object.keys(patch).length === 0) return fail("nothing_to_update");
+  // ── Login email change (admin) ──────────────────────────────────────────
+  // auth.users is not writable via RLS, so route through the service-role client.
+  // Only fires when a valid, DIFFERENT email is supplied; marked confirmed (the
+  // Caretaker vouches) — they then send a reset link so the member sets a password.
+  let didEmail = false;
+  if (typeof body.email === "string" && body.email.trim()) {
+    const newEmail = body.email.trim().toLowerCase();
+    if (!EMAIL_RE.test(newEmail)) return fail("bad_email");
+    const admin = createAdminClient();
+    const { data: cur } = await admin.auth.admin.getUserById(target.user_id);
+    const curEmail = cur?.user?.email?.toLowerCase() ?? "";
+    if (newEmail !== curEmail) {
+      const { error: emailErr } = await admin.auth.admin.updateUserById(target.user_id, {
+        email: newEmail,
+        email_confirm: true,
+      });
+      if (emailErr) {
+        const taken = /already|exist|registered|in use/i.test(emailErr.message);
+        if (!taken) console.error("[users/update email]", emailErr.message);
+        return fail(taken ? "email_taken" : "email_failed", taken ? 400 : 500);
+      }
+      // Audit breadcrumb in the server log until a dedicated user-admin audit
+      // table lands (the access-log covers patient records, not staff identity).
+      console.warn(`[users/update] ${ctx.user.id} changed login email of ${target.user_id} to ${newEmail}`);
+      didEmail = true;
+    }
+  }
+
+  if (Object.keys(patch).length === 0) {
+    return didEmail ? NextResponse.json({ ok: true, emailChanged: true }) : fail("nothing_to_update");
+  }
   patch.updated_at = new Date().toISOString();
 
   const { error: upErr } = await supabase.from("tenant_users").update(patch).eq("id", id);
@@ -101,5 +140,5 @@ export async function POST(request: Request) {
     console.error("[users/update]", upErr.message);
     return fail("update_failed", 500);
   }
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, emailChanged: didEmail });
 }

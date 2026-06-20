@@ -108,6 +108,7 @@ function toEditable(s: StaffMember): EditableMember {
   return {
     id: s.id,
     display_name: s.display_name,
+    email: s.email,
     role: s.role,
     designation: s.designation,
     preferred_name: s.preferred_name,
