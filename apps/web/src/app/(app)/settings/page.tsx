@@ -6,17 +6,17 @@ import { SETTINGS_GROUPS, SETTINGS_SECTIONS } from "./sections";
 import { getSettingsAccess, SettingsRestricted } from "./access";
 import { cn } from "@/lib/utils";
 
-// A CHEERFUL tone wash per card (Roland 2026-06-19: "give the website some cheer —
-// bright pastel colours, not death"). The gradient + hairline ring, turned up so
-// the pastels actually read as colour, not a washed-out grey.
+// BRILLIANT SPRING PASTELS per card (Roland 2026-06-19: "brilliant spring colours,
+// in pastel… give the website some cheer"). Tailwind 100/50 tints read as fresh,
+// bright pastel — varied hue per tone so the grid feels alive, not a grey morgue.
 const TONE_WASH: Record<CardIconTone, string> = {
-  critical: "bg-gradient-to-br from-critical/[0.26] to-critical/[0.09] ring-1 ring-critical/25",
-  warning: "bg-gradient-to-br from-warning/[0.30] to-warning/[0.10] ring-1 ring-warning/25",
-  success: "bg-gradient-to-br from-success/[0.26] to-success/[0.09] ring-1 ring-success/25",
-  info: "bg-gradient-to-br from-info/[0.26] to-info/[0.09] ring-1 ring-info/25",
-  accent: "bg-gradient-to-br from-accent/[0.34] to-accent/[0.11] ring-1 ring-accent/30",
-  neutral: "bg-gradient-to-br from-slate-500/[0.20] to-slate-500/[0.06] ring-1 ring-slate-500/20",
-  brand: "bg-gradient-to-br from-info/[0.24] to-accent/[0.12] ring-1 ring-info/25",
+  critical: "bg-gradient-to-br from-rose-100 to-rose-50 ring-1 ring-rose-200/70",
+  warning: "bg-gradient-to-br from-amber-100 to-amber-50 ring-1 ring-amber-200/70",
+  success: "bg-gradient-to-br from-emerald-100 to-emerald-50 ring-1 ring-emerald-200/70",
+  info: "bg-gradient-to-br from-sky-100 to-sky-50 ring-1 ring-sky-200/70",
+  accent: "bg-gradient-to-br from-teal-100 to-teal-50 ring-1 ring-teal-200/70",
+  neutral: "bg-gradient-to-br from-violet-100 to-violet-50 ring-1 ring-violet-200/70",
+  brand: "bg-gradient-to-br from-indigo-100 to-sky-50 ring-1 ring-indigo-200/70",
 };
 
 /**

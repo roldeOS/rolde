@@ -73,7 +73,7 @@ export function MemberFields({
         )}
         <div className="col-span-2 sm:col-span-1">
           <Field label="Role" htmlFor="mf_role">
-            <Select id="mf_role" value={form.role} onChange={(e) => onRoleChange(e.target.value)}>
+            <Select id="mf_role" value={form.role} onChange={onRoleChange}>
               {ASSIGNABLE.map((r) => (
                 <option key={r.key} value={r.key}>
                   {r.label}
@@ -87,7 +87,7 @@ export function MemberFields({
             <Select
               id="mf_designation"
               value={form.designation}
-              onChange={(e) => onChange({ designation: e.target.value })}
+              onChange={(designation) => onChange({ designation })}
             >
               {DESIGNATIONS.map((d) => (
                 <option key={d} value={d}>
@@ -122,7 +122,7 @@ export function MemberFields({
             <Select
               id="mf_licensetype"
               value={form.licenseType}
-              onChange={(e) => onChange({ licenseType: e.target.value })}
+              onChange={(licenseType) => onChange({ licenseType })}
             >
               <option value="">— None —</option>
               {licenseTypes.map((l) => (

@@ -1,5 +1,9 @@
-import { Check, ChevronDown, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// The themed dropdown lives in its own client component (a native <select> can't
+// style its open list); re-exported here so callers keep importing from `form`.
+export { Select } from "./Select";
 
 /**
  * RolDe form fields (Roland 2026-06-11): FLOATING — no flat border, a soft
@@ -83,25 +87,3 @@ export function Input({
   );
 }
 
-export function Select({
-  valid,
-  className,
-  ...props
-}: React.ComponentProps<"select"> & { valid?: boolean }) {
-  // `appearance-none` drops the GENERIC browser arrow; we draw OUR own integrated
-  // chevron instead (Roland 2026-06-11). The valid tick sits to its left.
-  return (
-    <div className="relative">
-      <select
-        {...props}
-        className={cn(fieldFloat, "appearance-none", valid ? "pr-16" : "pr-9", className)}
-      />
-      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-      {valid && (
-        <span className="tick-squircle pointer-events-none absolute right-8 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-[7px] text-emerald-600">
-          <Check className="size-3.5" strokeWidth={2.75} />
-        </span>
-      )}
-    </div>
-  );
-}

@@ -31,7 +31,7 @@ export function Segmented<T extends string>({
             "flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-all outline-none",
             "focus-visible:ring-2 focus-visible:ring-foreground/20",
             value === o.value
-              ? "bg-accent/40 text-foreground shadow-sm"
+              ? "bg-emerald-100 text-emerald-900 shadow-sm"
               : "text-muted-foreground hover:text-foreground",
           )}
         >

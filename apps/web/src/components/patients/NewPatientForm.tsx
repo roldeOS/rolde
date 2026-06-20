@@ -77,7 +77,7 @@ export function NewPatientForm() {
             id="sex_at_birth"
             name="sex_at_birth"
             value={v.sex_at_birth}
-            onChange={set("sex_at_birth")}
+            onChange={(value) => setV((s) => ({ ...s, sex_at_birth: value }))}
             valid={ok.sex_at_birth}
           >
             <option value="" disabled>
