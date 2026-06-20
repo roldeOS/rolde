@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Download, FileText, FileType, Loader2 } from "lucide-react";
 import { DialogHeaderRow } from "@/components/ui/DialogHeaderRow";
@@ -11,6 +11,10 @@ import { cn } from "@/lib/utils";
  * portal modal and exports the table's FILTERED rows as CSV (client-side) or an
  * audit-grade PDF (the URDS PDF Kit, rendered server-side — it adds the clinic
  * logo, the exporter's identity, an export reference + SHA-256 fingerprint).
+ *
+ * Pass 2 (Roland 2026-06-21): a column picker (tune exactly which columns go),
+ * an orientation toggle, and a LIVE preview of the PDF — rendered from a small
+ * sample of rows and fit-to-page — so you never export the wrong shape.
  */
 
 export interface TableExportData {
@@ -22,6 +26,10 @@ export interface TableExportData {
 }
 
 type Format = "csv" | "pdf";
+type Orientation = "landscape" | "portrait";
+
+/** The live preview renders only a sample — fast, and enough to judge layout. */
+const PREVIEW_ROWS = 60;
 
 const FORMATS: { value: Format; label: string; icon: React.ComponentType<{ className?: string }>; hint: string }[] = [
   { value: "csv", label: "CSV", icon: FileText, hint: "Opens in Excel / Sheets" },
@@ -50,14 +58,61 @@ export function TableExport({
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [format, setFormat] = useState<Format>("csv");
+  const [orientation, setOrientation] = useState<Orientation>("landscape");
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(data.columns.map((c) => c.key)));
   const [busy, setBusy] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewBusy, setPreviewBusy] = useState(false);
+  const previewUrlRef = useRef<string | null>(null);
   useEffect(() => setMounted(true), []);
+
+  // Keep the selection in step if the table's column set changes underneath us.
+  useEffect(() => {
+    setSelected((prev) => {
+      const keys = data.columns.map((c) => c.key);
+      const next = new Set(keys.filter((k) => prev.has(k)));
+      return next.size === 0 ? new Set(keys) : next;
+    });
+  }, [data.columns]);
+
+  // The columns to export, in the table's own order, honouring the picker.
+  const activeColumns = useMemo(
+    () => data.columns.filter((c) => selected.has(c.key)),
+    [data.columns, selected],
+  );
+  const selectedSig = activeColumns.map((c) => c.key).join(",");
+  const allSelected = selected.size === data.columns.length;
+
+  const rowFor = useCallback(
+    (cols: { key: string }[]) => (r: Record<string, unknown>) =>
+      Object.fromEntries(cols.map((c) => [c.key, cell(r[c.key])])),
+    [],
+  );
+
+  function setPreview(url: string | null) {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    previewUrlRef.current = url;
+    setPreviewUrl(url);
+  }
+
+  function toggleColumn(key: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        if (next.size <= 1) return prev; // never export zero columns
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }
 
   function downloadCsv() {
     const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
-    const head = data.columns.map((c) => esc(c.header)).join(",");
+    const head = activeColumns.map((c) => esc(c.header)).join(",");
     const body = data.rows
-      .map((r) => data.columns.map((c) => esc(cell(r[c.key]))).join(","))
+      .map((r) => activeColumns.map((c) => esc(cell(r[c.key]))).join(","))
       .join("\r\n");
     const blob = new Blob([`﻿${head}\r\n${body}`], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -73,21 +128,27 @@ export function TableExport({
   // PDF — rendered SERVER-SIDE by the URDS PDF Kit (@react-pdf/renderer). The
   // server owns the identity: it adds the clinic logo (rasterised), the exporter's
   // name + role, the export reference + SHA-256 fingerprint, and streams back an
-  // audit-grade PDF. The client just posts what it's looking at (Wave C; URDS §9.5).
-  async function downloadPdf() {
+  // audit-grade PDF. The client posts what it's looking at, with the chosen columns
+  // and orientation (Wave C / Pass 2; URDS §9.5).
+  async function renderPdf(rows: Record<string, unknown>[], signal?: AbortSignal): Promise<Blob> {
     const res = await fetch("/api/export/pdf", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal,
       body: JSON.stringify({
         title: data.title,
         scope: data.scope,
-        orientation: "landscape",
-        columns: data.columns,
-        rows: data.rows.map((r) => Object.fromEntries(data.columns.map((c) => [c.key, cell(r[c.key])]))),
+        orientation,
+        columns: activeColumns,
+        rows: rows.map(rowFor(activeColumns)),
       }),
     });
     if (!res.ok) throw new Error("export failed");
-    const blob = await res.blob();
+    return res.blob();
+  }
+
+  async function downloadPdf() {
+    const blob = await renderPdf(data.rows);
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -111,6 +172,46 @@ export function TableExport({
     }
   }
 
+  // ── Live PDF preview — debounced; re-renders a row sample whenever the columns
+  //    or orientation change. Only while the modal is open AND PDF is chosen. ──
+  useEffect(() => {
+    if (!open || format !== "pdf" || activeColumns.length === 0) {
+      setPreviewBusy(false);
+      return;
+    }
+    const controller = new AbortController();
+    let cancelled = false;
+    setPreviewBusy(true);
+    const t = setTimeout(async () => {
+      try {
+        const blob = await renderPdf(data.rows.slice(0, PREVIEW_ROWS), controller.signal);
+        if (cancelled) return;
+        setPreview(URL.createObjectURL(blob));
+      } catch {
+        if (!cancelled) setPreview(null);
+      } finally {
+        if (!cancelled) setPreviewBusy(false);
+      }
+    }, 350);
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, format, orientation, selectedSig]);
+
+  // Tidy the preview blob URL when the modal closes or we switch back to CSV.
+  useEffect(() => {
+    if (!open || format !== "pdf") setPreview(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, format]);
+  useEffect(() => () => setPreview(null), []);
+
+  const isPdf = format === "pdf";
+  const sampled = data.rows.length > PREVIEW_ROWS;
+  const tightFit = orientation === "portrait" && activeColumns.length > 6;
+
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className={toolbarBtn(floating)}>
@@ -122,10 +223,16 @@ export function TableExport({
         mounted &&
         createPortal(
           <div
-            className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-foreground/20 p-4 py-[10vh] backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-foreground/20 p-4 py-[8vh] backdrop-blur-sm"
             onClick={() => !busy && setOpen(false)}
           >
-            <div className="w-full max-w-md rounded-2xl bg-card shadow-overlay" onClick={(e) => e.stopPropagation()}>
+            <div
+              className={cn(
+                "w-full rounded-2xl bg-card shadow-overlay transition-[max-width] duration-200",
+                isPdf ? "max-w-4xl" : "max-w-md",
+              )}
+              onClick={(e) => e.stopPropagation()}
+            >
               <DialogHeaderRow
                 icon={Download}
                 tone="info"
@@ -134,9 +241,9 @@ export function TableExport({
                 onClose={() => !busy && setOpen(false)}
               />
 
-              <div className="space-y-4 px-6 py-5">
-                <div className="space-y-1.5">
-                  <p className="text-xs font-semibold text-foreground">Format</p>
+              <div className="space-y-5 px-6 py-5">
+                {/* Format */}
+                <Field label="Format">
                   <div className="grid grid-cols-2 gap-2">
                     {FORMATS.map((f) => {
                       const Icon = f.icon;
@@ -160,7 +267,89 @@ export function TableExport({
                       );
                     })}
                   </div>
-                </div>
+                </Field>
+
+                {isPdf ? (
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-[15rem_1fr]">
+                    {/* Controls */}
+                    <div className="space-y-5">
+                      <Field label="Orientation">
+                        <div className="grid grid-cols-2 gap-2">
+                          {(["landscape", "portrait"] as const).map((o) => (
+                            <button
+                              key={o}
+                              type="button"
+                              onClick={() => setOrientation(o)}
+                              className={cn(
+                                "rounded-lg h-8 text-xs font-medium capitalize transition-colors",
+                                orientation === o
+                                  ? "bg-selected text-foreground ring-1 ring-border"
+                                  : "bg-muted/50 text-muted-foreground hover:text-foreground",
+                              )}
+                            >
+                              {o}
+                            </button>
+                          ))}
+                        </div>
+                      </Field>
+
+                      <ColumnPicker
+                        columns={data.columns}
+                        selected={selected}
+                        allSelected={allSelected}
+                        onToggle={toggleColumn}
+                        onSelectAll={() => setSelected(new Set(data.columns.map((c) => c.key)))}
+                      />
+                    </div>
+
+                    {/* Live preview */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold text-foreground">Preview</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {sampled ? `First ${PREVIEW_ROWS} of ${data.rows.length} rows` : "Live"}
+                        </p>
+                      </div>
+                      <div
+                        className="relative w-full overflow-hidden rounded-lg border border-border bg-neutral-700"
+                        style={{ height: 360 }}
+                      >
+                        {previewUrl ? (
+                          <iframe
+                            key={orientation}
+                            title="PDF preview"
+                            src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0&view=Fit`}
+                            className="size-full"
+                          />
+                        ) : (
+                          !previewBusy && (
+                            <div className="flex size-full items-center justify-center px-4 text-center text-xs text-white/70">
+                              Pick at least one column to preview.
+                            </div>
+                          )
+                        )}
+                        {previewBusy && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-neutral-700/60 backdrop-blur-[1px]">
+                            <Loader2 className="size-5 animate-spin text-white/80" />
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-[10px] leading-relaxed text-muted-foreground">
+                        {tightFit
+                          ? "Lots of columns for portrait — Landscape fits more across before text wraps."
+                          : "Columns scale to fill the page width; long values wrap rather than clip."}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <ColumnPicker
+                    columns={data.columns}
+                    selected={selected}
+                    allSelected={allSelected}
+                    onToggle={toggleColumn}
+                    onSelectAll={() => setSelected(new Set(data.columns.map((c) => c.key)))}
+                  />
+                )}
               </div>
 
               <div className="flex items-center justify-end gap-2 border-t border-border px-6 py-4">
@@ -173,11 +362,11 @@ export function TableExport({
                 </button>
                 <button
                   onClick={download}
-                  disabled={busy}
+                  disabled={busy || activeColumns.length === 0}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3.5 py-1.5 text-sm font-medium text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:opacity-60"
                 >
                   {busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
-                  Download
+                  Download {format.toUpperCase()}
                 </button>
               </div>
             </div>
@@ -185,6 +374,76 @@ export function TableExport({
           document.body,
         )}
     </>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs font-semibold text-foreground">{label}</p>
+      {children}
+    </div>
+  );
+}
+
+function ColumnPicker({
+  columns,
+  selected,
+  allSelected,
+  onToggle,
+  onSelectAll,
+}: {
+  columns: { key: string; header: string }[];
+  selected: Set<string>;
+  allSelected: boolean;
+  onToggle: (key: string) => void;
+  onSelectAll: () => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-foreground">Columns</p>
+        <div className="flex items-center gap-2 text-[10px]">
+          <span className="text-muted-foreground">
+            {selected.size} of {columns.length}
+          </span>
+          {!allSelected && (
+            <button
+              type="button"
+              onClick={onSelectAll}
+              className="font-medium text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline"
+            >
+              Select all
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="max-h-[15rem] space-y-0.5 overflow-y-auto rounded-lg border border-border bg-muted/30 p-1.5">
+        {columns.map((c) => {
+          const on = selected.has(c.key);
+          const last = on && selected.size <= 1;
+          return (
+            <label
+              key={c.key}
+              className={cn(
+                "flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors hover:bg-hover",
+                last && "cursor-not-allowed",
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={on}
+                disabled={last}
+                onChange={() => onToggle(c.key)}
+                className="size-3.5 rounded"
+                style={{ accentColor: "var(--foreground, #18181b)" }}
+              />
+              <span className={cn("truncate", on ? "text-foreground" : "text-muted-foreground")}>{c.header}</span>
+            </label>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
