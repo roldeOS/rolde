@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import Link from "next/link";
-import { Download, FileText, FileType, FileClock, Loader2 } from "lucide-react";
+import { Download, FileText, FileType, Loader2 } from "lucide-react";
 import { DialogHeaderRow } from "@/components/ui/DialogHeaderRow";
 import { cn } from "@/lib/utils";
 
@@ -344,30 +343,22 @@ export function TableExport({
                 )}
               </div>
 
-              <div className="flex items-center justify-between gap-2 border-t border-border px-6 py-4">
-                <Link
-                  href="/settings/exports"
-                  className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+              <div className="flex items-center justify-end gap-2 border-t border-border px-6 py-4">
+                <button
+                  onClick={() => setOpen(false)}
+                  disabled={busy}
+                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground disabled:opacity-50"
                 >
-                  <FileClock className="size-3.5" /> Export Log
-                </Link>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setOpen(false)}
-                    disabled={busy}
-                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={download}
-                    disabled={busy || activeColumns.length === 0}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3.5 py-1.5 text-sm font-medium text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:opacity-60"
-                  >
-                    {busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
-                    Download {format.toUpperCase()}
-                  </button>
-                </div>
+                  Cancel
+                </button>
+                <button
+                  onClick={download}
+                  disabled={busy || activeColumns.length === 0}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3.5 py-1.5 text-sm font-medium text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:opacity-60"
+                >
+                  {busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+                  Download {format.toUpperCase()}
+                </button>
               </div>
             </div>
           </div>,

@@ -9,11 +9,13 @@
 -- finicky) — never a 3rd-party store. Soft-delete only (deleted_at) — never
 -- hard-deleted.
 --
--- Access: EVERY clinic member reads their clinic's export log (everyone exports —
--- nurses, doctors, all roles), Custodian reads all; the SERVER (service role)
--- writes the row — no client write path. The `reference` is deterministic from
--- the data + date, so it is NOT unique (re-exporting the same data, or the same
--- data as both CSV + PDF, repeats it) — the `id` is the key. Re-runnable.
+-- Access: EVERY role EXPORTS and EVERY export is LOGGED, role-blind — the SERVER
+-- (service role) writes the row, so a nurse's export is recorded just like a
+-- Caretaker's; there is no client write path. But only the CARETAKER (their
+-- clinic) / CUSTODIAN (platform) may READ the log — it's a governance surface, not
+-- for junior roles. The `reference` is deterministic from the data + date, so it
+-- is NOT unique (same data, or same data as CSV + PDF, repeats it) — `id` is the
+-- key. Soft-delete only. Re-runnable.
 -- ---------------------------------------------------------------------------
 
 create table if not exists public.export_log (
@@ -41,13 +43,10 @@ create index if not exists export_log_reference_idx on public.export_log (refere
 
 alter table public.export_log enable row level security;
 
--- Every clinic member reads their clinic's exports; Custodian reads all. Live rows only.
+-- Only the Caretaker (their clinic) / Custodian (platform) reads the log. Live rows only.
 drop policy if exists export_log_read on public.export_log;
 create policy export_log_read on public.export_log
   for select to authenticated
-  using (
-    (public.is_custodian() or tenant_id in (select public.current_user_tenant_ids()))
-    and deleted_at is null
-  );
+  using ((public.is_custodian() or public.is_caretaker_of(tenant_id)) and deleted_at is null);
 
 -- No client insert/update/delete — the server (service role) owns the writes.
