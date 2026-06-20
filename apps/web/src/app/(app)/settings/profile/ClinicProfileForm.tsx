@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UploadCloud, Trash2, ImageOff } from "lucide-react";
+import { UploadCloud, Trash2 } from "lucide-react";
 import { Field, Input } from "@/components/ui/form";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
+import { cn } from "@/lib/utils";
 
 export type ClinicProfile = {
   name: string;
@@ -19,6 +20,7 @@ export type ClinicProfile = {
   his_registration: string | null;
   cqc_registration: string | null;
   logo_svg: string | null;
+  logo_svg_dark: string | null;
 };
 
 /**
@@ -43,6 +45,7 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
     his_registration: profile.his_registration ?? "",
     cqc_registration: profile.cqc_registration ?? "",
     logo_svg: profile.logo_svg ?? "",
+    logo_svg_dark: profile.logo_svg_dark ?? "",
   };
   const [form, setForm] = useState(initial);
   const [saving, setSaving] = useState(false);
@@ -52,41 +55,36 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
-  // ── Brand logo (SVG) ──────────────────────────────────────────────────────
-  const fileRef = useRef<HTMLInputElement>(null);
+  // ── Brand logos (SVG) — two variants: light-bg (coloured) + dark-bg (white) ──
   const [logoError, setLogoError] = useState<string | null>(null);
 
-  function onLogoFile(e: React.ChangeEvent<HTMLInputElement>) {
-    setLogoError(null);
-    const file = e.target.files?.[0];
-    e.target.value = ""; // allow re-picking the same file
-    if (!file) return;
-    if (!/svg/i.test(file.type) && !/\.svg$/i.test(file.name)) {
-      setLogoError("Please choose an SVG file.");
-      return;
-    }
-    if (file.size > 256 * 1024) {
-      setLogoError("That SVG is over 256 KB — please use a smaller logo.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const text = typeof reader.result === "string" ? reader.result : "";
-      if (!/<svg[\s>]/i.test(text)) {
-        setLogoError("That file doesn't look like an SVG.");
-        return;
+  function makeLogoHandler(key: "logo_svg" | "logo_svg_dark") {
+    return (e: React.ChangeEvent<HTMLInputElement>) => {
+      setLogoError(null);
+      const file = e.target.files?.[0];
+      e.target.value = ""; // allow re-picking the same file
+      if (!file) return;
+      if (!/svg/i.test(file.type) && !/\.svg$/i.test(file.name)) {
+        return setLogoError("Please choose an SVG file.");
       }
-      set("logo_svg", text);
+      if (file.size > 256 * 1024) {
+        return setLogoError("That SVG is over 256 KB — please use a smaller logo.");
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const text = typeof reader.result === "string" ? reader.result : "";
+        if (!/<svg[\s>]/i.test(text)) return setLogoError("That file doesn't look like an SVG.");
+        set(key, text);
+      };
+      reader.onerror = () => setLogoError("Couldn't read that file.");
+      reader.readAsText(file);
     };
-    reader.onerror = () => setLogoError("Couldn't read that file.");
-    reader.readAsText(file);
   }
 
   // Render the (untrusted) SVG sandboxed as an <img> data-URL — it can't run
   // script or reach the page this way.
-  const logoSrc = form.logo_svg
-    ? `data:image/svg+xml;utf8,${encodeURIComponent(form.logo_svg)}`
-    : null;
+  const logoSrc = (svg: string) =>
+    svg ? `data:image/svg+xml;utf8,${encodeURIComponent(svg)}` : null;
 
   const canSave = form.name.trim() !== "" && form.legal_name.trim() !== "";
   const dirty =
@@ -131,10 +129,10 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
     // Two columns so the profile fills the width and fits one screen — no scroll
     // to reach Save (Roland 2026-06-18). Identity + Registrations stack on the
     // left; the taller Contact card takes the right.
-    <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-      <div className="space-y-6">
+    <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
+      <div className="space-y-5">
         {/* Identity */}
-        <section className="space-y-4 rounded-xl bg-card p-6 shadow-float">
+        <section className="space-y-4 rounded-xl bg-card p-5 shadow-float">
           <h2 className="font-heading text-sm font-semibold tracking-tight">Identity</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Clinic Name" htmlFor="name" required hint="Shown across RolDe OS">
@@ -156,61 +154,78 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
           </div>
         </section>
 
-        {/* Brand Logo — shown top-right on this clinic's PDFs, letters + invoices. */}
-        <section className="space-y-4 rounded-xl bg-card p-6 shadow-float">
+        {/* Brand Logo — TWO SVG variants (light-bg + dark-bg); the URDS PDF Kit
+            puts the light-bg one top-right on this clinic's PDFs. */}
+        <section className="space-y-4 rounded-xl bg-card p-5 shadow-float">
           <div>
             <h2 className="font-heading text-sm font-semibold tracking-tight">Brand Logo</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              An SVG logo — shown top-right on this clinic&apos;s PDF exports, letters and invoices.
+              SVG logos — the light-background one prints top-right on this clinic&apos;s PDFs,
+              letters and invoices; the dark one is for dark surfaces.
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex h-20 w-32 shrink-0 items-center justify-center rounded-lg border border-border bg-card p-2 shadow-raised">
-              {logoSrc ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoSrc} alt="Clinic logo preview" className="max-h-full max-w-full object-contain" />
-              ) : (
-                <span className="flex flex-col items-center gap-1 text-muted-foreground">
-                  <ImageOff className="size-5" />
-                  <span className="text-[10px]">No Logo Yet</span>
-                </span>
-              )}
-            </div>
-            <div className="flex flex-col items-start gap-2">
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-input bg-card px-3 text-sm font-medium text-foreground transition-colors hover:bg-hover"
-              >
-                <UploadCloud className="size-4 text-muted-foreground" />
-                {logoSrc ? "Replace SVG" : "Upload SVG"}
-              </button>
-              {logoSrc && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    set("logo_svg", "");
-                    setLogoError(null);
-                  }}
-                  className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-critical transition-colors hover:bg-critical/10"
-                >
-                  <Trash2 className="size-3.5" /> Remove
-                </button>
-              )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".svg,image/svg+xml"
-                onChange={onLogoFile}
-                className="hidden"
-              />
-            </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {(
+              [
+                { key: "logo_svg", label: "On Light Backgrounds", hint: "PDFs · Invoices", dark: false },
+                { key: "logo_svg_dark", label: "On Dark Backgrounds", hint: "Dark UI · Emails", dark: true },
+              ] as const
+            ).map(({ key, label, hint, dark }) => {
+              const src = logoSrc(form[key]);
+              return (
+                <div key={key} className="space-y-2">
+                  <p className="text-xs font-semibold text-foreground">
+                    {label} <span className="font-normal text-muted-foreground">· {hint}</span>
+                  </p>
+                  <div
+                    className={cn(
+                      "flex h-16 items-center justify-center rounded-lg border border-border p-2",
+                      dark ? "bg-foreground" : "bg-card shadow-raised",
+                    )}
+                  >
+                    {src ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={src} alt={`${label} logo`} className="max-h-full max-w-full object-contain" />
+                    ) : (
+                      <span className={cn("text-[10px]", dark ? "text-background/60" : "text-muted-foreground")}>
+                        No Logo Yet
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label
+                      htmlFor={`logo-${key}`}
+                      className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-input bg-card px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-hover"
+                    >
+                      <UploadCloud className="size-3.5 text-muted-foreground" />
+                      {src ? "Replace" : "Upload"}
+                    </label>
+                    {src && (
+                      <button
+                        type="button"
+                        onClick={() => set(key, "")}
+                        className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-critical transition-colors hover:bg-critical/10"
+                      >
+                        <Trash2 className="size-3.5" /> Remove
+                      </button>
+                    )}
+                    <input
+                      id={`logo-${key}`}
+                      type="file"
+                      accept=".svg,image/svg+xml"
+                      onChange={makeLogoHandler(key)}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
           {logoError && <p className="text-xs font-medium text-critical">{logoError}</p>}
         </section>
 
         {/* Registrations */}
-        <section className="space-y-4 rounded-xl bg-card p-6 shadow-float">
+        <section className="space-y-4 rounded-xl bg-card p-5 shadow-float">
           <div>
             <h2 className="font-heading text-sm font-semibold tracking-tight">Registrations</h2>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -245,7 +260,7 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
       </div>
 
       {/* Contact */}
-      <section className="space-y-4 rounded-xl bg-card p-6 shadow-float">
+      <section className="space-y-4 rounded-xl bg-card p-5 shadow-float">
         <h2 className="font-heading text-sm font-semibold tracking-tight">Contact</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Email" htmlFor="contact_email">

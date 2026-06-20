@@ -32,14 +32,16 @@ export async function PATCH(request: Request) {
     );
   }
 
-  // Brand logo — only touched when the key is present. An empty string clears it;
-  // a non-empty value is SANITISED (script vectors stripped) before storage, and
-  // rejected if it isn't a plausible SVG (Wave B / URDS PDF Kit §9.5).
-  let logoPatch: { logo_svg: string | null } | Record<string, never> = {};
-  if ("logo_svg" in b) {
-    const raw = str(b.logo_svg);
+  // Brand logos — two variants (light-bg coloured + dark-bg). Each is only touched
+  // when its key is present: an empty string clears it; a non-empty value is
+  // SANITISED (script vectors stripped) before storage and rejected if it isn't a
+  // plausible SVG (Wave B / URDS PDF Kit §9.5).
+  const logoPatch: Record<string, string | null> = {};
+  for (const key of ["logo_svg", "logo_svg_dark"] as const) {
+    if (!(key in b)) continue;
+    const raw = str(b[key]);
     if (!raw) {
-      logoPatch = { logo_svg: null };
+      logoPatch[key] = null;
     } else {
       const clean = sanitizeSvg(raw);
       if (!clean) {
@@ -48,7 +50,7 @@ export async function PATCH(request: Request) {
           { status: 400 },
         );
       }
-      logoPatch = { logo_svg: clean };
+      logoPatch[key] = clean;
     }
   }
 

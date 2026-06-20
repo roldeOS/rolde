@@ -763,6 +763,7 @@ export type Database = {
           country: string
           cqc_registration: string | null
           logo_svg: string | null
+          logo_svg_dark: string | null
           created_at: string
           custom_domain: string | null
           his_registration: string | null
@@ -793,6 +794,7 @@ export type Database = {
           country?: string
           cqc_registration?: string | null
           logo_svg?: string | null
+          logo_svg_dark?: string | null
           created_at?: string
           custom_domain?: string | null
           his_registration?: string | null
@@ -823,6 +825,7 @@ export type Database = {
           country?: string
           cqc_registration?: string | null
           logo_svg?: string | null
+          logo_svg_dark?: string | null
           created_at?: string
           custom_domain?: string | null
           his_registration?: string | null

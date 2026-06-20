@@ -22,7 +22,7 @@ export default async function ClinicProfilePage() {
   if (tenantId) profile = await loadProfile(tenantId);
 
   return (
-    <div className="w-full space-y-6 p-6 lg:p-8">
+    <div className="w-full space-y-4 p-6 lg:p-6">
       <PageHeaderRow
         icon={sec.icon}
         tone={sec.tone}
@@ -55,7 +55,7 @@ async function loadProfile(tenantId: string) {
   const { data } = await supabase
     .from("tenants")
     .select(
-      "name, legal_name, contact_email, contact_phone, address_line1, address_line2, city, postcode, ico_registration, his_registration, cqc_registration, logo_svg",
+      "name, legal_name, contact_email, contact_phone, address_line1, address_line2, city, postcode, ico_registration, his_registration, cqc_registration, logo_svg, logo_svg_dark",
     )
     .eq("id", tenantId)
     .maybeSingle();
