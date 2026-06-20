@@ -15,13 +15,13 @@ const TONE: Record<
   CardIconTone,
   { bg: string; value: string }
 > = {
-  critical: { bg: "bg-gradient-to-br from-critical/[0.18] to-critical/[0.05] ring-1 ring-critical/15", value: "text-critical" },
-  warning: { bg: "bg-gradient-to-br from-warning/20 to-warning/[0.06] ring-1 ring-warning/15", value: "text-warning" },
-  success: { bg: "bg-gradient-to-br from-success/[0.18] to-success/[0.05] ring-1 ring-success/15", value: "text-success" },
-  info: { bg: "bg-gradient-to-br from-info/[0.18] to-info/[0.05] ring-1 ring-info/15", value: "text-info" },
-  accent: { bg: "bg-gradient-to-br from-accent/25 to-accent/[0.06] ring-1 ring-accent/20", value: "text-accent" },
-  neutral: { bg: "bg-gradient-to-br from-slate-500/[0.14] to-slate-500/[0.04] ring-1 ring-slate-500/15", value: "text-slate-600" },
-  brand: { bg: "bg-gradient-to-br from-info/[0.16] to-accent/[0.06] ring-1 ring-info/15", value: "text-info" },
+  critical: { bg: "bg-gradient-to-br from-coral/[0.18] to-coral/[0.05] ring-1 ring-coral/25", value: "text-rose-700" },
+  warning: { bg: "bg-gradient-to-br from-honey/[0.24] to-honey/[0.07] ring-1 ring-honey/30", value: "text-amber-800" },
+  success: { bg: "bg-gradient-to-br from-bloom/40 to-bloom/[0.12] ring-1 ring-bloom/45", value: "text-emerald-800" },
+  info: { bg: "bg-gradient-to-br from-info/[0.14] to-info/[0.05] ring-1 ring-info/20", value: "text-sky-700" },
+  accent: { bg: "bg-gradient-to-br from-bloom/40 to-bloom/[0.12] ring-1 ring-bloom/45", value: "text-emerald-800" },
+  neutral: { bg: "bg-gradient-to-br from-lavender/45 to-lavender/[0.14] ring-1 ring-lavender/45", value: "text-violet-800" },
+  brand: { bg: "bg-gradient-to-br from-cream/55 to-cream/[0.18] ring-1 ring-honey/25", value: "text-amber-900" },
 };
 
 export function StatTile({

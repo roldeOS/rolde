@@ -6,17 +6,18 @@ import { SETTINGS_GROUPS, SETTINGS_SECTIONS } from "./sections";
 import { getSettingsAccess, SettingsRestricted } from "./access";
 import { cn } from "@/lib/utils";
 
-// BRILLIANT SPRING PASTELS per card (Roland 2026-06-19: "brilliant spring colours,
-// in pastel… give the website some cheer"). Tailwind 100/50 tints read as fresh,
-// bright pastel — varied hue per tone so the grid feels alive, not a grey morgue.
+// WARM EARTH & BLOOM PASTELS per card (Roland 2026-06-20: warm, elegant, reduced
+// opacity — like the mindate dashboard, "not fluorescent"). Soft washes of the
+// iOS palette: coral, honey, cream, lavender, sage. Warm-leaning + varied hue so
+// the grid feels alive and elegant, never washed-out grey or jarring neon.
 const TONE_WASH: Record<CardIconTone, string> = {
-  critical: "bg-gradient-to-br from-rose-100 to-rose-50 ring-1 ring-rose-200/70",
-  warning: "bg-gradient-to-br from-amber-100 to-amber-50 ring-1 ring-amber-200/70",
-  success: "bg-gradient-to-br from-emerald-100 to-emerald-50 ring-1 ring-emerald-200/70",
-  info: "bg-gradient-to-br from-sky-100 to-sky-50 ring-1 ring-sky-200/70",
-  accent: "bg-gradient-to-br from-teal-100 to-teal-50 ring-1 ring-teal-200/70",
-  neutral: "bg-gradient-to-br from-violet-100 to-violet-50 ring-1 ring-violet-200/70",
-  brand: "bg-gradient-to-br from-indigo-100 to-sky-50 ring-1 ring-indigo-200/70",
+  critical: "bg-gradient-to-br from-coral/[0.18] to-coral/[0.05] ring-1 ring-coral/25",
+  warning: "bg-gradient-to-br from-honey/[0.24] to-honey/[0.07] ring-1 ring-honey/30",
+  success: "bg-gradient-to-br from-bloom/40 to-bloom/[0.12] ring-1 ring-bloom/45",
+  info: "bg-gradient-to-br from-info/[0.14] to-info/[0.05] ring-1 ring-info/20",
+  accent: "bg-gradient-to-br from-bloom/40 to-bloom/[0.12] ring-1 ring-bloom/45",
+  neutral: "bg-gradient-to-br from-lavender/45 to-lavender/[0.14] ring-1 ring-lavender/45",
+  brand: "bg-gradient-to-br from-cream/55 to-cream/[0.18] ring-1 ring-honey/25",
 };
 
 /**

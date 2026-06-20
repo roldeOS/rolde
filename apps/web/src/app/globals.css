@@ -82,6 +82,17 @@
   --color-success: var(--signal-success);
   --color-info: var(--signal-info);
   --color-accent: var(--clinic-accent); /* sage — the RolDe steward accent */
+
+  /* Earth & Bloom — mindate's warm pastel palette (Roland: "hardcore fan of
+     pastels… opacity reduced, muted + pleasant, not jarring-in-your-face").
+     Used as soft washes (/15–/40) for cards + selected states — warm + elegant,
+     never fluorescent. Mirrors mindate src/lib/pill-colors.ts. */
+  --color-coral: #f07167; /* warm salmon-coral */
+  --color-honey: #d4a843; /* honey gold */
+  --color-cream: #f0d9b5; /* honey cream — warm peach */
+  --color-lavender: #d4c4e0; /* dusty lavender */
+  --color-bloom: #c2d4b8; /* soft sage-green */
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-border: var(--sidebar-border);
