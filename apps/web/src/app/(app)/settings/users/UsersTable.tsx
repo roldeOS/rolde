@@ -10,7 +10,6 @@ import { ROLES } from "@/lib/roles";
 import { accessWindowBadge } from "@/lib/accessWindow";
 import { cn } from "@/lib/utils";
 import { InviteTeammate } from "./InviteTeammate";
-import { RowActions } from "./RowActions";
 import { EditMember, type EditableMember } from "./EditMember";
 
 /**
@@ -97,6 +96,14 @@ function fmtJoined(iso: string): string {
   return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "2-digit" }).format(Date.parse(iso));
 }
 
+// Designation + name, without doubling a title the name already carries
+// (e.g. designation "Dr" + display_name "Dr Roland …" → "Dr Roland …", not "Dr Dr …").
+function fullName(s: StaffMember): string {
+  const d = s.designation?.trim();
+  if (d && !s.display_name.trim().toLowerCase().startsWith(d.toLowerCase())) return `${d} ${s.display_name}`;
+  return s.display_name;
+}
+
 function toEditable(s: StaffMember): EditableMember {
   return {
     id: s.id,
@@ -118,6 +125,7 @@ export function UsersTable({
   meId,
   nowMs,
   country,
+  clinicName,
   title,
   blurb,
 }: {
@@ -125,9 +133,12 @@ export function UsersTable({
   meId: string | null;
   nowMs: number;
   country: string;
+  clinicName: string;
   title: string;
   blurb: string;
 }) {
+  // Who's running the export — for the PDF's audit footer.
+  const exportedBy = staff.find((s) => s.user_id === meId)?.display_name ?? "";
   // Row click opens the editor (Roland 2026-06-21 — rows hover + click to edit,
   // not a buried ⋯). The ⋯ keeps only the secondary actions (reset / pause).
   const [editing, setEditing] = useState<StaffMember | null>(null);
@@ -171,10 +182,10 @@ export function UsersTable({
     {
       id: "person",
       header: "Person",
-      width: "26%",
+      width: "23%",
       wrap: true,
       cell: (s) => {
-        const name = [s.designation, s.display_name].filter(Boolean).join(" ");
+        const name = fullName(s);
         return (
           <div className="flex items-center gap-2.5">
             <span
@@ -204,7 +215,7 @@ export function UsersTable({
     {
       id: "role",
       header: "Role",
-      width: "11rem",
+      width: "10rem",
       cell: (s) => {
         const role = ROLE_BY_KEY[s.role];
         if (!role) return <span className="text-muted-foreground">—</span>;
@@ -214,7 +225,7 @@ export function UsersTable({
     {
       id: "job",
       header: "Job Title",
-      width: "16%",
+      width: "14%",
       truncate: true,
       title: (s) => s.job_title || ROLE_BY_KEY[s.role]?.meaning || "",
       cell: (s) => <span className="text-muted-foreground">{s.job_title || ROLE_BY_KEY[s.role]?.meaning || "—"}</span>,
@@ -236,7 +247,7 @@ export function UsersTable({
     {
       id: "access",
       header: "Access",
-      width: "9.5rem",
+      width: "9rem",
       cell: (s) => {
         if (s.status !== "active") {
           return <span className="inline-block rounded-md bg-critical/12 px-2 py-0.5 text-xs font-medium text-critical">Paused</span>;
@@ -248,7 +259,7 @@ export function UsersTable({
     {
       id: "seen",
       header: "Last Seen",
-      width: "8rem",
+      width: "7.5rem",
       cell: (s) => <span className="text-muted-foreground tabular-nums">{lastSeen(s.last_login_at, nowMs)}</span>,
     },
     {
@@ -257,22 +268,10 @@ export function UsersTable({
       width: "6.5rem",
       cell: (s) => <span className="text-muted-foreground tabular-nums">{fmtJoined(s.created_at)}</span>,
     },
-    {
-      id: "actions",
-      header: "",
-      width: "3rem",
-      align: "right",
-      stopRowClick: true,
-      cell: (s) => (
-        <div className="flex justify-end">
-          <RowActions member={{ id: s.id, display_name: s.display_name, status: s.status }} isMe={s.user_id === meId} />
-        </div>
-      ),
-    },
   ];
 
   const exportColumns = [
-    { header: "Name", value: (s: StaffMember) => [s.designation, s.display_name].filter(Boolean).join(" ") },
+    { header: "Name", value: (s: StaffMember) => fullName(s) },
     { header: "Role", value: (s: StaffMember) => ROLE_BY_KEY[s.role]?.label ?? s.role },
     { header: "Job Title", value: (s: StaffMember) => s.job_title || ROLE_BY_KEY[s.role]?.meaning || "" },
     { header: "Email", value: (s: StaffMember) => s.email ?? "" },
@@ -297,6 +296,7 @@ export function UsersTable({
         freezeColumns={["Person"]}
         exportColumns={exportColumns}
         exportTitle="Users & Roles"
+        exportBrand={{ clinic: clinicName, exportedBy }}
         toolbarTrailing={<InviteTeammate country={country} />}
         defaultPageSize={20}
       >
@@ -308,7 +308,7 @@ export function UsersTable({
             density={DENSITY_CLASSES[density]}
             onRowClick={(s) => setEditing(s)}
             rowClassName={(s) => (s.status !== "active" ? "opacity-60" : undefined)}
-            minWidth="68rem"
+            minWidth="60rem"
             bare
             freezeCount={freezeCount}
             rowNumbers
@@ -326,6 +326,8 @@ export function UsersTable({
           member={toEditable(editing)}
           country={country}
           open
+          isMe={editing.user_id === meId}
+          status={editing.status}
           onClose={() => setEditing(null)}
         />
       )}

@@ -49,7 +49,7 @@ export default async function UsersRolesPage() {
     );
   }
 
-  const { staff, nowMs, country } = await loadStaff(tenantId);
+  const { staff, nowMs, country, clinicName } = await loadStaff(tenantId);
 
   return (
     <div className="w-full p-6 lg:p-8">
@@ -58,6 +58,7 @@ export default async function UsersRolesPage() {
         meId={meId}
         nowMs={nowMs}
         country={country}
+        clinicName={clinicName}
         title={sec.title}
         blurb={sec.blurb}
       />
@@ -75,7 +76,7 @@ async function loadStaff(tenantId: string) {
       )
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: true }),
-    supabase.from("tenants").select("country").eq("id", tenantId).maybeSingle(),
+    supabase.from("tenants").select("country, name").eq("id", tenantId).maybeSingle(),
   ]);
 
   const rows = data ?? [];
@@ -86,6 +87,7 @@ async function loadStaff(tenantId: string) {
     staff: rows.map((r) => ({ ...r, email: emails.get(r.user_id) ?? null })) as StaffMember[],
     nowMs: Date.now(),
     country: tenant?.country ?? "GB",
+    clinicName: tenant?.name ?? "",
   };
 }
 

@@ -21,6 +21,12 @@ export interface TableExportData {
   rows: Record<string, unknown>[];
 }
 
+/** Branding for the PDF header/footer — clinic name + who ran the export. */
+export interface TableExportBrand {
+  clinic?: string;
+  exportedBy?: string;
+}
+
 type Format = "csv" | "pdf";
 
 const FORMATS: { value: Format; label: string; icon: React.ComponentType<{ className?: string }>; hint: string }[] = [
@@ -40,7 +46,15 @@ function toolbarBtn(floating?: boolean): string {
   );
 }
 
-export function TableExport({ data, floating }: { data: TableExportData; floating?: boolean }) {
+export function TableExport({
+  data,
+  brand,
+  floating,
+}: {
+  data: TableExportData;
+  brand?: TableExportBrand;
+  floating?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [format, setFormat] = useState<Format>("csv");
@@ -64,37 +78,91 @@ export function TableExport({ data, floating }: { data: TableExportData; floatin
     URL.revokeObjectURL(url);
   }
 
-  // Generate a real, downloadable PDF (no popup / print dialog — a file lands in
-  // Downloads, like the CSV). jsPDF + autoTable are lazy-imported only on demand,
-  // so they never weigh on page load. Branded to RolDe: parchment header, a gold
-  // accent rule, the RolDe OS stamp.
+  // Generate a real, downloadable, AUDIT-GRADE PDF (no popup / print dialog — a
+  // file lands in Downloads, like the CSV). jsPDF + autoTable are lazy-imported
+  // only on demand, so they never weigh on page load. Branded to RolDe on every
+  // page: a parchment header band (RolDe OS wordmark + clinic · document title +
+  // count), a honey-gold accent rule, an elegant striped table, and a footer
+  // (Confidential · clinic · exported-by · date · Page X of Y).
   async function downloadPdf() {
     const [{ jsPDF }, autoTableMod] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
     const autoTable = autoTableMod.default;
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
-    const when = new Date().toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(15);
-    doc.setTextColor(24, 24, 27);
-    doc.text(data.title, 40, 44);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(113, 113, 122);
-    doc.text(`${data.rows.length} ${data.rows.length === 1 ? "row" : "rows"} · ${when} · RolDe OS`, 40, 60);
-    doc.setDrawColor(212, 168, 67); // honey-gold accent rule
-    doc.setLineWidth(1.4);
-    doc.line(40, 68, 150, 68);
+    const when = new Date().toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+    const clinic = brand?.clinic?.trim();
+    const rowsLabel = `${data.rows.length.toLocaleString()} ${data.rows.length === 1 ? "row" : "rows"}`;
+
+    // Drawn on EVERY page so a multi-page audit export stays branded throughout.
+    const drawChrome = () => {
+      const pw = doc.internal.pageSize.getWidth();
+      const ph = doc.internal.pageSize.getHeight();
+
+      // ── Header band ──────────────────────────────────────────────
+      doc.setFillColor(240, 239, 235); // parchment
+      doc.rect(0, 0, pw, 64, "F");
+      // Wordmark (IBM Plex Serif isn't embedded — bold Helvetica reads as a clean
+      // wordmark; swap for the supplied RolDe SVG when it lands, APPROVALS §2.1).
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(24, 24, 27);
+      doc.text("RolDe OS", 40, 30);
+      if (clinic) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(113, 113, 122);
+        doc.text(clinic, 40, 46);
+      }
+      // Right: the document title + the row count.
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(24, 24, 27);
+      doc.text(data.title, pw - 40, 30, { align: "right" });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(113, 113, 122);
+      doc.text(`${rowsLabel} · ${when}`, pw - 40, 46, { align: "right" });
+      // Honey-gold accent rule under the band.
+      doc.setDrawColor(212, 168, 67);
+      doc.setLineWidth(1.5);
+      doc.line(40, 60, pw - 40, 60);
+
+      // ── Footer ───────────────────────────────────────────────────
+      doc.setDrawColor(228, 226, 220);
+      doc.setLineWidth(0.5);
+      doc.line(40, ph - 36, pw - 40, ph - 36);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(140, 140, 145);
+      doc.text(`Confidential · ${clinic || "RolDe OS"}`, 40, ph - 22);
+      const stamp = brand?.exportedBy ? `Exported by ${brand.exportedBy} · ${when}` : `Exported ${when}`;
+      doc.text(stamp, pw / 2, ph - 22, { align: "center" });
+      // Page "X of Y" is filled in the final pass (Y is unknown until the end).
+    };
 
     autoTable(doc, {
-      startY: 82,
       head: [data.columns.map((c) => c.header)],
       body: data.rows.map((r) => data.columns.map((c) => cell(r[c.key]))),
-      styles: { fontSize: 8, cellPadding: 5, textColor: [24, 24, 27], lineColor: [236, 236, 236], lineWidth: 0.5, overflow: "linebreak" },
-      headStyles: { fillColor: [240, 239, 235], textColor: [24, 24, 27], fontStyle: "bold", lineColor: [228, 226, 220], lineWidth: 0.6 },
+      startY: 80,
+      margin: { top: 80, bottom: 52, left: 40, right: 40 },
+      theme: "striped",
+      styles: { font: "helvetica", fontSize: 8, cellPadding: { top: 5, bottom: 5, left: 7, right: 7 }, textColor: [39, 39, 42], lineColor: [236, 236, 236], lineWidth: 0.5, overflow: "linebreak" },
+      headStyles: { fillColor: [240, 239, 235], textColor: [24, 24, 27], fontStyle: "bold", fontSize: 8.5, lineColor: [212, 168, 67], lineWidth: { bottom: 1 } },
       alternateRowStyles: { fillColor: [250, 249, 247] },
-      margin: { left: 40, right: 40 },
+      didDrawPage: drawChrome,
     });
+
+    // Final pass — now that the page count is known, stamp "Page X of Y".
+    const pages = doc.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) {
+      doc.setPage(i);
+      const pw = doc.internal.pageSize.getWidth();
+      const ph = doc.internal.pageSize.getHeight();
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(140, 140, 145);
+      doc.text(`Page ${i} of ${pages}`, pw - 40, ph - 22, { align: "right" });
+    }
 
     doc.save(`${slug(data.title)}.pdf`);
   }

@@ -50,14 +50,15 @@ export function Field({
         htmlFor={htmlFor}
         // flex-wrap + a nowrap label keeps the field name on one line and lets a
         // long hint flow to the next line in narrow columns — never breaking the
-        // label mid-word (Roland 2026-06-18).
-        className="flex flex-wrap items-baseline gap-x-1.5 text-xs font-medium text-muted-foreground"
+        // label mid-word (Roland 2026-06-18). BOLD + near-black so the field name
+        // reads as a clear heading over its input (Roland 2026-06-21).
+        className="flex flex-wrap items-baseline gap-x-1.5 text-xs font-semibold text-foreground"
       >
         <span className="whitespace-nowrap">
           {label}
           {required && <span className="ml-0.5 text-destructive">*</span>}
         </span>
-        {hint && <span className="font-normal opacity-80">{hint}</span>}
+        {hint && <span className="font-normal text-muted-foreground">{hint}</span>}
       </label>
       {children}
     </div>
