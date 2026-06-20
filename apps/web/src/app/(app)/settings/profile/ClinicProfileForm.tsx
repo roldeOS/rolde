@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UploadCloud, Trash2 } from "lucide-react";
+import { UploadCloud, Trash2, TriangleAlert } from "lucide-react";
 import { Field, Input } from "@/components/ui/form";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { cn } from "@/lib/utils";
@@ -85,10 +85,12 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
 
   // ── Brand logos (SVG) — two variants: light-bg (coloured) + dark-bg (white) ──
   const [logoError, setLogoError] = useState<string | null>(null);
+  const [logoWarning, setLogoWarning] = useState<string | null>(null);
 
   function makeLogoHandler(key: "logo_svg" | "logo_svg_dark") {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
       setLogoError(null);
+      setLogoWarning(null);
       const file = e.target.files?.[0];
       e.target.value = ""; // allow re-picking the same file
       if (!file) return;
@@ -102,6 +104,13 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
       reader.onload = () => {
         const text = typeof reader.result === "string" ? reader.result : "";
         if (!/<svg[\s>]/i.test(text)) return setLogoError("That file doesn't look like an SVG.");
+        // Warn (don't block) if the SVG still has LIVE TEXT rather than outlined
+        // shapes — the font may be missing when it prints (Roland 2026-06-21).
+        if (/<text[\s>]/i.test(text)) {
+          setLogoWarning(
+            "Heads up — this SVG has live text, not outlines. Convert the text to outlines / shapes in your design tool and re-upload, or the font may be missing when it prints.",
+          );
+        }
         set(key, text);
         // The light logo also gets rasterised to a PNG here in the browser — the PDF
         // Kit renders that (the lambda can't rasterise SVG). The dark variant isn't
@@ -196,8 +205,11 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
           <div>
             <h2 className="font-heading text-sm font-semibold tracking-tight">Brand Logo</h2>
             <p className="mt-1 text-xs text-muted-foreground">
-              SVG logos — the light-background one prints top-right on this clinic&apos;s PDFs,
-              letters and invoices; the dark one is for dark surfaces.
+              SVG logos — the light one prints top-right on this clinic&apos;s PDFs, letters and
+              invoices; the dark one is for dark surfaces. Best as a wide landscape SVG (about
+              3:1, e.g. <span className="font-medium text-foreground">600×200</span>), with any
+              text <span className="font-medium text-foreground">converted to outlines</span> so
+              fonts can never go missing.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -261,6 +273,12 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
             })}
           </div>
           {logoError && <p className="text-xs font-medium text-critical">{logoError}</p>}
+          {logoWarning && (
+            <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
+              <TriangleAlert className="mt-px size-3.5 shrink-0" />
+              <span>{logoWarning}</span>
+            </div>
+          )}
         </section>
 
         {/* Registrations */}

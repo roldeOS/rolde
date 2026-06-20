@@ -66,7 +66,7 @@ export async function POST(request: Request) {
   // Integrity — a deterministic fingerprint of exactly what's exported, and a
   // human export reference derived from it (both will be logged in Wave D).
   const fpFull = crypto.createHash("sha256").update(JSON.stringify({ columns, rows })).digest("hex");
-  const fingerprint = `${fpFull.slice(0, 16)}…`;
+  const fingerprint = fpFull; // the FULL 64-char SHA-256 — an audit must see all of it
   const now = new Date();
   const yyyymmdd = now.toISOString().slice(0, 10).replace(/-/g, "");
   const reference = `EXP-${yyyymmdd}-${fpFull.slice(0, 6).toUpperCase()}`;

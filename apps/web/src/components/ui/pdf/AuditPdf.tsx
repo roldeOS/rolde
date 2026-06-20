@@ -51,17 +51,21 @@ const C = {
 };
 
 const styles = StyleSheet.create({
-  page: { paddingTop: 98, paddingBottom: 54, paddingHorizontal: 32, fontSize: 7, color: C.ink, fontFamily: "Helvetica" },
-  // ── Header band (fixed, every page) ──
-  header: { position: "absolute", top: 0, left: 0, right: 0, height: 82, backgroundColor: C.parchment, paddingHorizontal: 32, paddingTop: 12 },
-  headRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  page: { paddingTop: 72, paddingBottom: 54, paddingHorizontal: 32, fontSize: 7, color: C.ink, fontFamily: "Helvetica" },
+  // ── Header band (fixed, every page) — wordmark left · title CENTRED · logo right,
+  //    all on one slim band to save vertical space (Roland 2026-06-21). ──
+  header: { position: "absolute", top: 0, left: 0, right: 0, height: 58, backgroundColor: C.parchment, paddingHorizontal: 32, paddingTop: 10 },
+  headRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  headLeft: { flexGrow: 1, flexBasis: 0, alignItems: "flex-start" },
+  headCenter: { flexGrow: 1.4, flexBasis: 0, alignItems: "center" },
+  headRight: { flexGrow: 1, flexBasis: 0, alignItems: "flex-end" },
   wordmark: { fontSize: 13, fontFamily: "Helvetica-Bold", color: C.ink },
-  wordmarkImg: { height: 18, maxWidth: 170, objectFit: "contain" },
-  clinicName: { fontSize: 8.5, color: C.muted, marginTop: 4 },
-  logo: { maxHeight: 26, maxWidth: 150, objectFit: "contain" },
-  title: { fontSize: 12, fontFamily: "Helvetica-Bold", color: C.ink, marginTop: 8 },
-  scope: { fontSize: 7.5, color: C.muted, marginTop: 2 },
-  goldRule: { position: "absolute", left: 32, right: 32, top: 80, height: 1.4, backgroundColor: C.gold },
+  wordmarkImg: { height: 17, maxWidth: 160, objectFit: "contain" },
+  clinicName: { fontSize: 8.5, color: C.muted, marginTop: 3 },
+  logo: { maxHeight: 30, maxWidth: 150, objectFit: "contain" },
+  title: { fontSize: 12, fontFamily: "Helvetica-Bold", color: C.ink, textAlign: "center" },
+  scope: { fontSize: 7.5, color: C.muted, marginTop: 2, textAlign: "center" },
+  goldRule: { position: "absolute", left: 32, right: 32, top: 56, height: 1.4, backgroundColor: C.gold },
   // ── Table ──
   theadRow: { flexDirection: "row", backgroundColor: C.parchment, borderBottomWidth: 1, borderBottomColor: C.gold },
   th: { fontSize: 7.2, fontFamily: "Helvetica-Bold", color: C.ink, paddingVertical: 5, paddingHorizontal: 5 },
@@ -94,10 +98,10 @@ export function AuditPdf(data: AuditPdfData) {
       producer={`${brand.product} · URDS PDF Kit`}
     >
       <Page size="A4" orientation={orientation} style={styles.page} wrap>
-        {/* Header band — repeats on every page */}
+        {/* Header band — wordmark left · title CENTRED · logo right; repeats every page */}
         <View style={styles.header} fixed>
           <View style={styles.headRow}>
-            <View>
+            <View style={styles.headLeft}>
               {brand.wordmarkPng ? (
                 <Image style={styles.wordmarkImg} src={brand.wordmarkPng} />
               ) : (
@@ -105,10 +109,14 @@ export function AuditPdf(data: AuditPdfData) {
               )}
               {brand.clinic ? <Text style={styles.clinicName}>{brand.clinic}</Text> : null}
             </View>
-            {brand.logoPng ? <Image style={styles.logo} src={brand.logoPng} /> : null}
+            <View style={styles.headCenter}>
+              <Text style={styles.title}>{title}</Text>
+              {scope ? <Text style={styles.scope}>{scope}</Text> : null}
+            </View>
+            <View style={styles.headRight}>
+              {brand.logoPng ? <Image style={styles.logo} src={brand.logoPng} /> : null}
+            </View>
           </View>
-          <Text style={styles.title}>{title}</Text>
-          {scope ? <Text style={styles.scope}>{scope}</Text> : null}
         </View>
         <View style={styles.goldRule} fixed />
 
