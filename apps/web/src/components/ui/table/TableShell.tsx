@@ -122,8 +122,14 @@ interface Props<T> {
   /** Labels of the leftmost columns that may be frozen — shows a Freeze control. */
   freezeColumns?: string[];
   floating?: boolean;
-  /** Enables Export → CSV / PDF over the FILTERED rows. */
-  exportColumns?: { header: string; value: (row: T) => string | number | null | undefined }[];
+  /** Enables Export → CSV / PDF over the FILTERED rows. `w` is a relative width
+   *  weight for the PDF (default 1 — e.g. give Email 2.2); `align` right-aligns. */
+  exportColumns?: {
+    header: string;
+    value: (row: T) => string | number | null | undefined;
+    w?: number;
+    align?: "left" | "right";
+  }[];
   exportTitle?: string;
   /** Trailing toolbar control after Density/Export (e.g. a page-specific action). */
   toolbarTrailing?: ReactNode;
@@ -251,7 +257,7 @@ export function TableShell<T>({
     ? {
         title: exportTitle ?? headerTitle ?? (label === "rows" ? "Export" : label),
         scope: exportScope,
-        columns: exportColumns.map((c, i) => ({ key: `c${i}`, header: c.header })),
+        columns: exportColumns.map((c, i) => ({ key: `c${i}`, header: c.header, w: c.w, align: c.align })),
         rows: sorted.map((row) =>
           Object.fromEntries(exportColumns.map((c, i) => [`c${i}`, c.value(row) ?? ""])),
         ),

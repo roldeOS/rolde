@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { getSessionContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { ROLES } from "@/lib/roles";
 import { ROLDE_WORDMARK_PNG } from "@/lib/brandAssets";
 import { AuditPdf, type AuditColumn } from "@/components/ui/pdf/AuditPdf";
@@ -33,6 +34,8 @@ export async function POST(request: Request) {
     columns?: AuditColumn[];
     rows?: Record<string, string>[];
     orientation?: "portrait" | "landscape";
+    /** The live in-dialog preview renders but must NOT be logged as an export. */
+    preview?: boolean;
   };
   try {
     body = await request.json();
@@ -86,12 +89,15 @@ export async function POST(request: Request) {
     (desig && dn && !dn.toLowerCase().startsWith(desig.toLowerCase()) ? `${desig} ${dn}` : dn) || undefined;
   const exporterRole = me?.role ? (ROLE_LABEL[me.role] ?? me.role) : undefined;
 
+  const scopeText = body.scope ? String(body.scope).slice(0, 200) : `${rows.length} ${rows.length === 1 ? "row" : "rows"}`;
+  const orient = body.orientation === "portrait" ? "portrait" : "landscape";
+
   const element = AuditPdf({
     title,
-    scope: body.scope ? String(body.scope).slice(0, 200) : `${rows.length} ${rows.length === 1 ? "row" : "rows"}`,
+    scope: scopeText,
     columns,
     rows,
-    orientation: body.orientation === "portrait" ? "portrait" : "landscape",
+    orientation: orient,
     brand: { product: "RolDe OS", clinic: tenant?.name ?? undefined, wordmarkPng, logoPng, exporterName, exporterRole },
     reference,
     fingerprint,
@@ -104,6 +110,33 @@ export async function POST(request: Request) {
   } catch (e) {
     console.error("[export/pdf]", e instanceof Error ? e.message : e);
     return NextResponse.json({ error: "render_failed" }, { status: 500 });
+  }
+
+  // Wave D — record the export (the audit trail), WITH the artifact, unless this
+  // is the live in-dialog preview. Best-effort: a logging hiccup must never fail
+  // the user's download, but every real export should be captured (URDS §9.5).
+  if (!body.preview) {
+    try {
+      const admin = createAdminClient();
+      await admin.from("export_log").insert({
+        tenant_id: tenantId,
+        user_id: ctx.user.id,
+        reference,
+        fingerprint,
+        title,
+        scope: scopeText,
+        format: "pdf",
+        orientation: orient,
+        columns: columns.map((c) => c.header),
+        row_count: rows.length,
+        byte_size: buffer.length,
+        exporter_name: exporterName ?? null,
+        exporter_role: exporterRole ?? null,
+        pdf_base64: buffer.toString("base64"),
+      });
+    } catch (e) {
+      console.error("[export/pdf] log", e instanceof Error ? e.message : e);
+    }
   }
 
   const filename = `${slug(title)}.pdf`;

@@ -2,6 +2,7 @@ import {
   Building2,
   Palette,
   Hash,
+  FileClock,
   LayoutPanelTop,
   DoorOpen,
   UsersRound,
@@ -78,6 +79,17 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     tone: "neutral",
     source: "Bible 4.4 §2",
     status: "soon",
+    group: "Your Clinic",
+  },
+  {
+    key: "exports",
+    title: "Export Log",
+    blurb:
+      "Every audit-grade PDF your clinic has exported — who, when, what, and the original file — kept for the record.",
+    icon: FileClock,
+    tone: "neutral",
+    source: "URDS §9.5",
+    status: "ready",
     group: "Your Clinic",
   },
   // — Spaces & People —

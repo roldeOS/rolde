@@ -150,7 +150,15 @@ export function AuditPdf(data: AuditPdfData) {
             <Text style={styles.footText}>{stamp}</Text>
             <Text style={styles.footText} render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
           </View>
-          <Text style={[styles.footText, { marginTop: 2 }]}>Integrity SHA-256 · {fingerprint}</Text>
+          {/* The full 64-char hash prints ONCE, on the last page (industry standard —
+              the per-page Ref already carries the short fingerprint). */}
+          <Text
+            style={[styles.footText, { marginTop: 2 }]}
+            render={({ pageNumber, totalPages }) =>
+              pageNumber === totalPages ? `Integrity SHA-256 · ${fingerprint}` : ""
+            }
+            fixed
+          />
         </View>
       </Page>
     </Document>

@@ -263,6 +263,74 @@ export type Database = {
         }
         Relationships: []
       }
+      export_log: {
+        Row: {
+          byte_size: number
+          columns: Json
+          created_at: string
+          deleted_at: string | null
+          exporter_name: string | null
+          exporter_role: string | null
+          fingerprint: string
+          format: string
+          id: string
+          orientation: string | null
+          pdf_base64: string | null
+          reference: string
+          row_count: number
+          scope: string | null
+          tenant_id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          byte_size?: number
+          columns?: Json
+          created_at?: string
+          deleted_at?: string | null
+          exporter_name?: string | null
+          exporter_role?: string | null
+          fingerprint: string
+          format?: string
+          id?: string
+          orientation?: string | null
+          pdf_base64?: string | null
+          reference: string
+          row_count?: number
+          scope?: string | null
+          tenant_id: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          byte_size?: number
+          columns?: Json
+          created_at?: string
+          deleted_at?: string | null
+          exporter_name?: string | null
+          exporter_role?: string | null
+          fingerprint?: string
+          format?: string
+          id?: string
+          orientation?: string | null
+          pdf_base64?: string | null
+          reference?: string
+          row_count?: number
+          scope?: string | null
+          tenant_id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "export_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_access_log: {
         Row: {
           action: string

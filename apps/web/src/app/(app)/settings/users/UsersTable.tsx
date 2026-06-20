@@ -268,16 +268,16 @@ export function UsersTable({
   ];
 
   const exportColumns = [
-    { header: "Name", value: (s: StaffMember) => fullName(s) },
-    { header: "Role", value: (s: StaffMember) => ROLE_BY_KEY[s.role]?.label ?? s.role },
-    { header: "Job Title", value: (s: StaffMember) => s.job_title || ROLE_BY_KEY[s.role]?.meaning || "" },
-    { header: "Email", value: (s: StaffMember) => s.email ?? "" },
-    { header: "Prescriber", value: (s: StaffMember) => (s.prescribing_rights ? "Yes" : "No") },
-    { header: "Status", value: (s: StaffMember) => (s.status === "active" ? "Active" : "Paused") },
-    { header: "Access", value: (s: StaffMember) => accessWindowBadge(s.access_starts_at, s.access_ends_at, nowMs).label },
-    { header: "Licence", value: (s: StaffMember) => [s.license_type, s.license_number].filter(Boolean).join(" ") },
-    { header: "Joined", value: (s: StaffMember) => fmtJoined(s.created_at) },
-    { header: "Last Seen", value: (s: StaffMember) => lastSeen(s.last_login_at, nowMs) },
+    { header: "Name", w: 1.7, value: (s: StaffMember) => fullName(s) },
+    { header: "Role", w: 1.1, value: (s: StaffMember) => ROLE_BY_KEY[s.role]?.label ?? s.role },
+    { header: "Job Title", w: 1.6, value: (s: StaffMember) => s.job_title || ROLE_BY_KEY[s.role]?.meaning || "" },
+    { header: "Email", w: 2.3, value: (s: StaffMember) => s.email ?? "" },
+    { header: "Prescriber", w: 0.9, value: (s: StaffMember) => (s.prescribing_rights ? "Yes" : "No") },
+    { header: "Status", w: 0.9, value: (s: StaffMember) => (s.status === "active" ? "Active" : "Paused") },
+    { header: "Access", w: 1, value: (s: StaffMember) => accessWindowBadge(s.access_starts_at, s.access_ends_at, nowMs).label },
+    { header: "Licence", w: 1.3, value: (s: StaffMember) => [s.license_type, s.license_number].filter(Boolean).join(" ") },
+    { header: "Joined", w: 0.95, align: "right" as const, value: (s: StaffMember) => fmtJoined(s.created_at) },
+    { header: "Last Seen", w: 1, align: "right" as const, value: (s: StaffMember) => lastSeen(s.last_login_at, nowMs) },
   ];
 
   return (

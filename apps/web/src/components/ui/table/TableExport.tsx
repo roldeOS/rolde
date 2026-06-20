@@ -21,7 +21,7 @@ export interface TableExportData {
   title: string;
   /** A short description of what's included (filters/sort/count) for the PDF. */
   scope?: string;
-  columns: { key: string; header: string }[];
+  columns: { key: string; header: string; w?: number; align?: "left" | "right" }[];
   rows: Record<string, unknown>[];
 }
 
@@ -130,17 +130,21 @@ export function TableExport({
   // name + role, the export reference + SHA-256 fingerprint, and streams back an
   // audit-grade PDF. The client posts what it's looking at, with the chosen columns
   // and orientation (Wave C / Pass 2; URDS §9.5).
-  async function renderPdf(rows: Record<string, unknown>[], signal?: AbortSignal): Promise<Blob> {
+  async function renderPdf(
+    rows: Record<string, unknown>[],
+    opts: { signal?: AbortSignal; preview?: boolean } = {},
+  ): Promise<Blob> {
     const res = await fetch("/api/export/pdf", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      signal,
+      signal: opts.signal,
       body: JSON.stringify({
         title: data.title,
         scope: data.scope,
         orientation,
         columns: activeColumns,
         rows: rows.map(rowFor(activeColumns)),
+        preview: opts.preview ?? false,
       }),
     });
     if (!res.ok) throw new Error("export failed");
@@ -184,7 +188,10 @@ export function TableExport({
     setPreviewBusy(true);
     const t = setTimeout(async () => {
       try {
-        const blob = await renderPdf(data.rows.slice(0, PREVIEW_ROWS), controller.signal);
+        const blob = await renderPdf(data.rows.slice(0, PREVIEW_ROWS), {
+          signal: controller.signal,
+          preview: true,
+        });
         if (cancelled) return;
         setPreview(URL.createObjectURL(blob));
       } catch {
