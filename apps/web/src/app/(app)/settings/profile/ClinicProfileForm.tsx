@@ -21,7 +21,34 @@ export type ClinicProfile = {
   cqc_registration: string | null;
   logo_svg: string | null;
   logo_svg_dark: string | null;
+  logo_png: string | null;
 };
+
+/** Rasterise an SVG → PNG data-URL in the browser (canvas), so the PDF Kit can
+ *  render the logo without a server-side image lib. 2× for crispness. */
+function svgToPng(svg: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = 2;
+      const w = Math.round((img.naturalWidth || 600) * scale);
+      const h = Math.round((img.naturalHeight || 200) * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return resolve(null);
+      try {
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/png"));
+      } catch {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+  });
+}
 
 /**
  * Settings → Clinic Profile (Caretaker, Bible 4.3 §5). The clinic's identity,
@@ -46,6 +73,7 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
     cqc_registration: profile.cqc_registration ?? "",
     logo_svg: profile.logo_svg ?? "",
     logo_svg_dark: profile.logo_svg_dark ?? "",
+    logo_png: profile.logo_png ?? "",
   };
   const [form, setForm] = useState(initial);
   const [saving, setSaving] = useState(false);
@@ -75,6 +103,14 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
         const text = typeof reader.result === "string" ? reader.result : "";
         if (!/<svg[\s>]/i.test(text)) return setLogoError("That file doesn't look like an SVG.");
         set(key, text);
+        // The light logo also gets rasterised to a PNG here in the browser — the PDF
+        // Kit renders that (the lambda can't rasterise SVG). The dark variant isn't
+        // used in PDFs, so it needs no PNG.
+        if (key === "logo_svg") {
+          svgToPng(text).then((png) => {
+            if (png) set("logo_png", png);
+          });
+        }
       };
       reader.onerror = () => setLogoError("Couldn't read that file.");
       reader.readAsText(file);
@@ -203,7 +239,10 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
                     {src && (
                       <button
                         type="button"
-                        onClick={() => set(key, "")}
+                        onClick={() => {
+                          set(key, "");
+                          if (key === "logo_svg") set("logo_png", "");
+                        }}
                         className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-critical transition-colors hover:bg-critical/10"
                       >
                         <Trash2 className="size-3.5" /> Remove

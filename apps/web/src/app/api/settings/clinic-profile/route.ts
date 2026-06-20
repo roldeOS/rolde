@@ -53,6 +53,19 @@ export async function PATCH(request: Request) {
       logoPatch[key] = clean;
     }
   }
+  // logo_png — the browser-rasterised PNG of the light logo (for the PDF Kit; the
+  // lambda can't rasterise). A raster can't carry script, but validate the shape
+  // + cap the size. '' clears it; only stored when present.
+  if ("logo_png" in b) {
+    const png = str(b.logo_png);
+    if (!png) {
+      logoPatch.logo_png = null;
+    } else if (/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(png) && png.length < 3_000_000) {
+      logoPatch.logo_png = png;
+    } else {
+      return NextResponse.json({ ok: false, error: "The logo image wasn't valid." }, { status: 400 });
+    }
+  }
 
   const { error } = await createAdminClient()
     .from("tenants")

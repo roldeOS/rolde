@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
-import sharp from "sharp";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { getSessionContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ROLES } from "@/lib/roles";
-import { ROLDE_WORDMARK_SVG } from "@/lib/brandAssets";
+import { ROLDE_WORDMARK_PNG } from "@/lib/brandAssets";
 import { AuditPdf, type AuditColumn } from "@/components/ui/pdf/AuditPdf";
 
 /**
@@ -49,7 +48,7 @@ export async function POST(request: Request) {
   // Identity the SERVER owns — clinic + logo, and the exporter's name + role.
   const supabase = await createClient();
   const [{ data: tenant }, { data: me }] = await Promise.all([
-    supabase.from("tenants").select("name, logo_svg").eq("id", tenantId).maybeSingle(),
+    supabase.from("tenants").select("name, logo_png").eq("id", tenantId).maybeSingle(),
     supabase
       .from("tenant_users")
       .select("display_name, designation, role")
@@ -58,21 +57,11 @@ export async function POST(request: Request) {
       .maybeSingle(),
   ]);
 
-  // Rasterise SVGs → PNG (sharp can't run inside @react-pdf, so we pre-bake them).
-  // The RolDe OS wordmark + the clinic's own logo both go in the header. A failure
-  // is a nicety lost, never a blocked export.
-  const rasterize = async (svg: string, width: number): Promise<string | null> => {
-    try {
-      const png = await sharp(Buffer.from(svg)).resize({ width }).png().toBuffer();
-      return `data:image/png;base64,${png.toString("base64")}`;
-    } catch {
-      return null;
-    }
-  };
-  const [wordmarkPng, logoPng] = await Promise.all([
-    rasterize(ROLDE_WORDMARK_SVG, 600),
-    tenant?.logo_svg ? rasterize(tenant.logo_svg, 440) : Promise.resolve(null),
-  ]);
+  // Logos are PRE-RASTERISED PNG data-URLs (the RolDe wordmark baked at build, the
+  // clinic logo rasterised in the browser at upload) — so the lambda needs NO native
+  // image lib, only @react-pdf. A missing clinic logo is a nicety lost, never a block.
+  const wordmarkPng = ROLDE_WORDMARK_PNG;
+  const logoPng = typeof tenant?.logo_png === "string" && tenant.logo_png.startsWith("data:image/") ? tenant.logo_png : null;
 
   // Integrity — a deterministic fingerprint of exactly what's exported, and a
   // human export reference derived from it (both will be logged in Wave D).

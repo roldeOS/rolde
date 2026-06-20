@@ -1,35 +1,34 @@
 import { NextResponse } from "next/server";
+import { renderToBuffer } from "@react-pdf/renderer";
+import { AuditPdf } from "@/components/ui/pdf/AuditPdf";
+import { ROLDE_WORDMARK_PNG } from "@/lib/brandAssets";
 
 /**
- * TEMPORARY smoke test (Wave C) — confirms sharp + @react-pdf actually load and
- * run in the Vercel lambda. DYNAMIC imports inside try/catch so a load failure is
- * reported as JSON (not a bare 500), pinpointing which module fails. Remove once
- * prod is green.
+ * TEMPORARY smoke test (Wave C) — renders the REAL AuditPdf (with a PNG logo image)
+ * in the lambda, proving the sharp-free export path works on prod. Remove once green.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// 1×1 transparent PNG — stands in for the clinic logo to exercise <Image>.
+const TINY_PNG =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
 export async function GET() {
-  const out: Record<string, unknown> = {};
   try {
-    const sharp = (await import("sharp")).default;
-    const png = await sharp(
-      Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="#000"/></svg>'),
-    )
-      .png()
-      .toBuffer();
-    out.sharp = `ok (${png.length} bytes)`;
+    const el = AuditPdf({
+      title: "Health Check",
+      scope: "smoke test",
+      columns: [{ key: "a", header: "A" }, { key: "b", header: "B" }],
+      rows: [{ a: "1", b: "2" }],
+      brand: { product: "RolDe OS", clinic: "Test", wordmarkPng: ROLDE_WORDMARK_PNG, logoPng: TINY_PNG },
+      reference: "EXP-TEST",
+      fingerprint: "test",
+      generatedAt: "now",
+    });
+    const buf = await renderToBuffer(el);
+    return NextResponse.json({ auditPdf: `ok (${buf.length} bytes)` });
   } catch (e) {
-    out.sharp = `FAIL: ${e instanceof Error ? e.message : String(e)}`;
+    return NextResponse.json({ auditPdf: `FAIL: ${e instanceof Error ? e.message : String(e)}` });
   }
-  try {
-    const { renderToBuffer, Document, Page, Text } = await import("@react-pdf/renderer");
-    const { createElement } = await import("react");
-    const doc = createElement(Document, null, createElement(Page, null, createElement(Text, null, "ok")));
-    const buf = await renderToBuffer(doc as Parameters<typeof renderToBuffer>[0]);
-    out.reactPdf = `ok (${buf.length} bytes)`;
-  } catch (e) {
-    out.reactPdf = `FAIL: ${e instanceof Error ? e.message : String(e)}`;
-  }
-  return NextResponse.json(out);
 }
