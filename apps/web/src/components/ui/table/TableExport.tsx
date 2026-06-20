@@ -64,43 +64,49 @@ export function TableExport({ data, floating }: { data: TableExportData; floatin
     URL.revokeObjectURL(url);
   }
 
-  function printPdf() {
-    const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]!);
+  // Generate a real, downloadable PDF (no popup / print dialog — a file lands in
+  // Downloads, like the CSV). jsPDF + autoTable are lazy-imported only on demand,
+  // so they never weigh on page load. Branded to RolDe: parchment header, a gold
+  // accent rule, the RolDe OS stamp.
+  async function downloadPdf() {
+    const [{ jsPDF }, autoTableMod] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
+    const autoTable = autoTableMod.default;
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
     const when = new Date().toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
-    const head = `<tr>${data.columns.map((c) => `<th>${esc(c.header)}</th>`).join("")}</tr>`;
-    const body = data.rows
-      .map((r) => `<tr>${data.columns.map((c) => `<td>${esc(cell(r[c.key]))}</td>`).join("")}</tr>`)
-      .join("");
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(data.title)}</title>
-<style>
-  *{box-sizing:border-box}
-  body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#18181b;margin:32px}
-  h1{font-size:18px;margin:0 0 2px}
-  .meta{color:#71717a;font-size:11px;margin:0 0 18px}
-  table{width:100%;border-collapse:collapse;font-size:11px}
-  th{text-align:left;background:#f0efeb;border-bottom:1.5px solid #e4e2dc;padding:7px 9px;font-weight:600}
-  td{padding:6px 9px;border-bottom:1px solid #ececec;vertical-align:top}
-  tr:nth-child(even) td{background:#faf9f7}
-  @media print{body{margin:12mm}}
-</style></head><body>
-  <h1>${esc(data.title)}</h1>
-  <p class="meta">${data.rows.length} ${data.rows.length === 1 ? "row" : "rows"} · ${esc(when)} · RolDe OS</p>
-  <table><thead>${head}</thead><tbody>${body}</tbody></table>
-  <script>window.onload=function(){setTimeout(function(){window.print()},150)}</script>
-</body></html>`;
-    const w = window.open("", "_blank", "noopener,noreferrer,width=900,height=700");
-    if (!w) return;
-    w.document.open();
-    w.document.write(html);
-    w.document.close();
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.setTextColor(24, 24, 27);
+    doc.text(data.title, 40, 44);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(113, 113, 122);
+    doc.text(`${data.rows.length} ${data.rows.length === 1 ? "row" : "rows"} · ${when} · RolDe OS`, 40, 60);
+    doc.setDrawColor(212, 168, 67); // honey-gold accent rule
+    doc.setLineWidth(1.4);
+    doc.line(40, 68, 150, 68);
+
+    autoTable(doc, {
+      startY: 82,
+      head: [data.columns.map((c) => c.header)],
+      body: data.rows.map((r) => data.columns.map((c) => cell(r[c.key]))),
+      styles: { fontSize: 8, cellPadding: 5, textColor: [24, 24, 27], lineColor: [236, 236, 236], lineWidth: 0.5, overflow: "linebreak" },
+      headStyles: { fillColor: [240, 239, 235], textColor: [24, 24, 27], fontStyle: "bold", lineColor: [228, 226, 220], lineWidth: 0.6 },
+      alternateRowStyles: { fillColor: [250, 249, 247] },
+      margin: { left: 40, right: 40 },
+    });
+
+    doc.save(`${slug(data.title)}.pdf`);
   }
 
   async function download() {
     setBusy(true);
     try {
       if (format === "csv") downloadCsv();
-      else printPdf();
+      else await downloadPdf();
       setOpen(false);
+    } catch {
+      /* a failed export shouldn't wedge the modal */
     } finally {
       setBusy(false);
     }

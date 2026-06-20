@@ -2,9 +2,11 @@ packages:
   - "apps/*"
   - "packages/*"
 
-# Native deps with prebuilt binaries. pnpm 11 requires an explicit decision
-# on their install scripts; approved so `pnpm install` completes cleanly and
-# sharp's runtime (used by next/image) is fully set up.
+# Build-script decisions. pnpm 11 requires an explicit call on each dep that ships
+# an install script (an undecided one fails install with ERR_PNPM_IGNORED_BUILDS).
+#   - sharp powers next/image; unrs-resolver is the native resolver — both build.
+#   - core-js (a jsPDF transitive dep) only prints funding info on install → skip it.
 allowBuilds:
   sharp: true
   unrs-resolver: true
+  core-js: false

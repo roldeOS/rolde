@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { UsersRound, Pill } from "lucide-react";
 import { TableShell, type SortOption, type FilterField } from "@/components/ui/table/TableShell";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
@@ -11,6 +11,7 @@ import { accessWindowBadge } from "@/lib/accessWindow";
 import { cn } from "@/lib/utils";
 import { InviteTeammate } from "./InviteTeammate";
 import { RowActions } from "./RowActions";
+import { EditMember, type EditableMember } from "./EditMember";
 
 /**
  * Users & Roles — the clinic's staff roster as a URDS table (the first RolDe
@@ -96,6 +97,22 @@ function fmtJoined(iso: string): string {
   return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "2-digit" }).format(Date.parse(iso));
 }
 
+function toEditable(s: StaffMember): EditableMember {
+  return {
+    id: s.id,
+    display_name: s.display_name,
+    role: s.role,
+    designation: s.designation,
+    preferred_name: s.preferred_name,
+    job_title: s.job_title,
+    license_type: s.license_type,
+    license_number: s.license_number,
+    prescribing_rights: s.prescribing_rights,
+    access_starts_at: s.access_starts_at,
+    access_ends_at: s.access_ends_at,
+  };
+}
+
 export function UsersTable({
   staff,
   meId,
@@ -111,6 +128,10 @@ export function UsersTable({
   title: string;
   blurb: string;
 }) {
+  // Row click opens the editor (Roland 2026-06-21 — rows hover + click to edit,
+  // not a buried ⋯). The ⋯ keeps only the secondary actions (reset / pause).
+  const [editing, setEditing] = useState<StaffMember | null>(null);
+
   // Filter options derive from the roster present (only roles in use show up).
   const roleOptions = useMemo(() => {
     const seen = new Set(staff.map((s) => s.role));
@@ -243,24 +264,9 @@ export function UsersTable({
       align: "right",
       stopRowClick: true,
       cell: (s) => (
-        <RowActions
-          member={{
-            id: s.id,
-            display_name: s.display_name,
-            role: s.role,
-            designation: s.designation,
-            preferred_name: s.preferred_name,
-            job_title: s.job_title,
-            license_type: s.license_type,
-            license_number: s.license_number,
-            prescribing_rights: s.prescribing_rights,
-            access_starts_at: s.access_starts_at,
-            access_ends_at: s.access_ends_at,
-            status: s.status,
-          }}
-          isMe={s.user_id === meId}
-          country={country}
-        />
+        <div className="flex justify-end">
+          <RowActions member={{ id: s.id, display_name: s.display_name, status: s.status }} isMe={s.user_id === meId} />
+        </div>
       ),
     },
   ];
@@ -279,35 +285,50 @@ export function UsersTable({
   ];
 
   return (
-    <TableShell<StaffMember>
-      items={staff}
-      storageKey="users-roles"
-      label="people"
-      header={{ variant: "page", icon: UsersRound, tone: "brand", title, explainer: { label: title, description: blurb } }}
-      filters={filters}
-      filterTitle="Filter People"
-      sortOptions={sortOptions}
-      freezeColumns={["Person"]}
-      exportColumns={exportColumns}
-      exportTitle="Users & Roles"
-      toolbarTrailing={<InviteTeammate country={country} />}
-      defaultPageSize={20}
-    >
-      {({ rows, startIndex, density, freezeCount }) => (
-        <DataTable<StaffMember>
-          columns={columns}
-          rows={rows}
-          rowKey={(s) => s.id}
-          density={DENSITY_CLASSES[density]}
-          rowClassName={(s) => (s.status !== "active" ? "opacity-60" : undefined)}
-          minWidth="68rem"
-          bare
-          freezeCount={freezeCount}
-          rowNumbers
-          rowNumberStart={startIndex}
-          empty="No one matches these filters."
+    <>
+      <TableShell<StaffMember>
+        items={staff}
+        storageKey="users-roles"
+        label="people"
+        header={{ variant: "page", icon: UsersRound, tone: "brand", title, explainer: { label: title, description: blurb } }}
+        filters={filters}
+        filterTitle="Filter People"
+        sortOptions={sortOptions}
+        freezeColumns={["Person"]}
+        exportColumns={exportColumns}
+        exportTitle="Users & Roles"
+        toolbarTrailing={<InviteTeammate country={country} />}
+        defaultPageSize={20}
+      >
+        {({ rows, startIndex, density, freezeCount }) => (
+          <DataTable<StaffMember>
+            columns={columns}
+            rows={rows}
+            rowKey={(s) => s.id}
+            density={DENSITY_CLASSES[density]}
+            onRowClick={(s) => setEditing(s)}
+            rowClassName={(s) => (s.status !== "active" ? "opacity-60" : undefined)}
+            minWidth="68rem"
+            bare
+            freezeCount={freezeCount}
+            rowNumbers
+            rowNumberStart={startIndex}
+            empty="No one matches these filters."
+          />
+        )}
+      </TableShell>
+
+      {/* Row click → edit (the ⋯ holds only reset/pause). One editor, re-seeded
+          per member; keyed so its form resets cleanly between people. */}
+      {editing && (
+        <EditMember
+          key={editing.id}
+          member={toEditable(editing)}
+          country={country}
+          open
+          onClose={() => setEditing(null)}
         />
       )}
-    </TableShell>
+    </>
   );
 }

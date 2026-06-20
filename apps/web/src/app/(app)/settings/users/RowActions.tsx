@@ -2,26 +2,20 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  MoreHorizontal,
-  Pencil,
-  KeyRound,
-  Ban,
-  RotateCcw,
-  Loader2,
-  Check,
-} from "lucide-react";
+import { MoreHorizontal, KeyRound, Ban, RotateCcw, Loader2, Check } from "lucide-react";
 import { useClickAway } from "@/lib/useClickAway";
 import { useSavedFlash } from "@/components/ui/PageActionBar";
 import { cn } from "@/lib/utils";
-import { EditMember, type EditableMember } from "./EditMember";
 
 /**
- * Per-member actions (W1.1.7 chunk 2): Edit · Send Reset Link · Pause/Restore.
+ * Per-member SECONDARY actions (W1.1.7): Send Reset Link · Pause/Restore. Edit is
+ * now the ROW CLICK (Roland 2026-06-21 — "the row should hover + be clickable to
+ * edit", not buried in a ⋯). The ⋯ keeps the careful, less-frequent actions.
+ *
  * Pausing never deletes the login — it flips the membership status to `paused`
- * (the schema's restorable state), so a restored member walks back in with their
- * records intact. The Caretaker's OWN row can only be edited (no self-pause /
- * self-reset → no self-lockout).
+ * (the restorable state), so a restored member walks back in with their records
+ * intact. The Caretaker's OWN row has no secondary actions (no self-lockout) →
+ * the menu doesn't render for self.
  */
 const ITEM =
   "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-hover disabled:opacity-60";
@@ -29,16 +23,13 @@ const ITEM =
 export function RowActions({
   member,
   isMe,
-  country,
 }: {
-  member: EditableMember & { status: string };
+  member: { id: string; display_name: string; status: string };
   isMe: boolean;
-  country: string;
 }) {
   const router = useRouter();
   const flashSaved = useSavedFlash();
   const [open, setOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmPause, setConfirmPause] = useState(false);
@@ -46,6 +37,10 @@ export function RowActions({
     setOpen(false);
     setConfirmPause(false);
   });
+
+  // Self has no secondary actions — Edit (the row click) is the only thing they
+  // can do to their own row, so there's nothing to put behind a menu.
+  if (isMe) return null;
 
   const paused = member.status !== "active";
 
@@ -94,7 +89,8 @@ export function RowActions({
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-        aria-label="Member actions"
+        aria-label="More actions"
+        title="More actions"
       >
         <MoreHorizontal className="size-4" />
       </button>
@@ -107,17 +103,7 @@ export function RowActions({
             </div>
           ) : (
             <>
-              <button
-                onClick={() => {
-                  setEditOpen(true);
-                  setOpen(false);
-                }}
-                className={ITEM}
-              >
-                <Pencil className="size-4 text-muted-foreground" /> Edit
-              </button>
-
-              {!isMe && !paused && (
+              {!paused && (
                 <button onClick={sendReset} disabled={!!busy} className={ITEM}>
                   {busy === "reset" ? (
                     <Loader2 className="size-4 animate-spin" />
@@ -128,52 +114,25 @@ export function RowActions({
                 </button>
               )}
 
-              {!isMe &&
-                (paused ? (
-                  <button
-                    onClick={() => setStatus("active")}
-                    disabled={!!busy}
-                    className={cn(ITEM, "text-success")}
-                  >
-                    {busy === "status" ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <RotateCcw className="size-4" />
-                    )}
-                    Restore Access
-                  </button>
-                ) : confirmPause ? (
-                  <button
-                    onClick={() => setStatus("paused")}
-                    disabled={!!busy}
-                    className={cn(ITEM, "font-semibold text-critical")}
-                  >
-                    {busy === "status" ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <Ban className="size-4" />
-                    )}
-                    Tap Again to Pause
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setConfirmPause(true)}
-                    className={cn(ITEM, "text-critical")}
-                  >
-                    <Ban className="size-4" /> Pause Access
-                  </button>
-                ))}
+              {paused ? (
+                <button onClick={() => setStatus("active")} disabled={!!busy} className={cn(ITEM, "text-success")}>
+                  {busy === "status" ? <Loader2 className="size-4 animate-spin" /> : <RotateCcw className="size-4" />}
+                  Restore Access
+                </button>
+              ) : confirmPause ? (
+                <button onClick={() => setStatus("paused")} disabled={!!busy} className={cn(ITEM, "font-semibold text-critical")}>
+                  {busy === "status" ? <Loader2 className="size-4 animate-spin" /> : <Ban className="size-4" />}
+                  Tap Again to Pause
+                </button>
+              ) : (
+                <button onClick={() => setConfirmPause(true)} className={cn(ITEM, "text-critical")}>
+                  <Ban className="size-4" /> Pause Access
+                </button>
+              )}
             </>
           )}
         </div>
       )}
-
-      <EditMember
-        member={member}
-        country={country}
-        open={editOpen}
-        onClose={() => setEditOpen(false)}
-      />
     </div>
   );
 }
