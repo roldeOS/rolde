@@ -8,23 +8,17 @@ import { cn } from "@/lib/utils";
 
 /**
  * TableExport — the URDS table Export control for RolDe. Opens the canonical
- * portal modal (the same chrome as every RolDe dialog) and exports the table's
- * FILTERED rows as CSV or a printable PDF — fully client-side (a clinic's data
- * never leaves the browser for an export). Two formats by Roland's spec
- * (2026-06-20: "export (csv, pdf)"); Excel/JSON + server-scoped export are a
- * future extension when RolDe grows export endpoints.
+ * portal modal and exports the table's FILTERED rows as CSV (client-side) or an
+ * audit-grade PDF (the URDS PDF Kit, rendered server-side — it adds the clinic
+ * logo, the exporter's identity, an export reference + SHA-256 fingerprint).
  */
 
 export interface TableExportData {
   title: string;
+  /** A short description of what's included (filters/sort/count) for the PDF. */
+  scope?: string;
   columns: { key: string; header: string }[];
   rows: Record<string, unknown>[];
-}
-
-/** Branding for the PDF header/footer — clinic name + who ran the export. */
-export interface TableExportBrand {
-  clinic?: string;
-  exportedBy?: string;
 }
 
 type Format = "csv" | "pdf";
@@ -48,11 +42,9 @@ function toolbarBtn(floating?: boolean): string {
 
 export function TableExport({
   data,
-  brand,
   floating,
 }: {
   data: TableExportData;
-  brand?: TableExportBrand;
   floating?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -78,98 +70,32 @@ export function TableExport({
     URL.revokeObjectURL(url);
   }
 
-  // Generate a real, downloadable, AUDIT-GRADE PDF (no popup / print dialog — a
-  // file lands in Downloads, like the CSV). jsPDF + autoTable are lazy-imported
-  // only on demand, so they never weigh on page load. Branded to RolDe on every
-  // page: a parchment header band (RolDe OS wordmark + clinic · document title +
-  // count), a honey-gold accent rule, an elegant striped table, and a footer
-  // (Confidential · clinic · exported-by · date · Page X of Y).
+  // PDF — rendered SERVER-SIDE by the URDS PDF Kit (@react-pdf/renderer). The
+  // server owns the identity: it adds the clinic logo (rasterised), the exporter's
+  // name + role, the export reference + SHA-256 fingerprint, and streams back an
+  // audit-grade PDF. The client just posts what it's looking at (Wave C; URDS §9.5).
   async function downloadPdf() {
-    const [{ jsPDF }, autoTableMod] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
-    const autoTable = autoTableMod.default;
-    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
-
-    const now = new Date();
-    const when = now.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
-    const at = now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
-    const stampWhen = `${when} at ${at}`;
-    const clinic = brand?.clinic?.trim();
-    const rowsLabel = `${data.rows.length.toLocaleString()} ${data.rows.length === 1 ? "row" : "rows"}`;
-
-    // Drawn on EVERY page so a multi-page audit export stays branded throughout.
-    const drawChrome = () => {
-      const pw = doc.internal.pageSize.getWidth();
-      const ph = doc.internal.pageSize.getHeight();
-
-      // ── Header band ──────────────────────────────────────────────
-      doc.setFillColor(240, 239, 235); // parchment
-      doc.rect(0, 0, pw, 64, "F");
-      // Wordmark (IBM Plex Serif isn't embedded — bold Helvetica reads as a clean
-      // wordmark; swap for the supplied RolDe SVG when it lands, APPROVALS §2.1).
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.setTextColor(24, 24, 27);
-      doc.text("RolDe OS", 40, 30);
-      if (clinic) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.setTextColor(113, 113, 122);
-        doc.text(clinic, 40, 46);
-      }
-      // Right: the document title + the row count.
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(13);
-      doc.setTextColor(24, 24, 27);
-      doc.text(data.title, pw - 40, 30, { align: "right" });
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setTextColor(113, 113, 122);
-      doc.text(`${rowsLabel} · ${when}`, pw - 40, 46, { align: "right" });
-      // Honey-gold accent rule under the band.
-      doc.setDrawColor(212, 168, 67);
-      doc.setLineWidth(1.5);
-      doc.line(40, 60, pw - 40, 60);
-
-      // ── Footer ───────────────────────────────────────────────────
-      doc.setDrawColor(228, 226, 220);
-      doc.setLineWidth(0.5);
-      doc.line(40, ph - 36, pw - 40, ph - 36);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(140, 140, 145);
-      doc.text(`Confidential · ${clinic || "RolDe OS"}`, 40, ph - 22);
-      const stamp = brand?.exportedBy ? `Exported by ${brand.exportedBy} · ${stampWhen}` : `Exported ${stampWhen}`;
-      doc.text(stamp, pw / 2, ph - 22, { align: "center" });
-      // Page "X of Y" is filled in the final pass (Y is unknown until the end).
-    };
-
-    autoTable(doc, {
-      head: [data.columns.map((c) => c.header)],
-      body: data.rows.map((r) => data.columns.map((c) => cell(r[c.key]))),
-      startY: 80,
-      margin: { top: 80, bottom: 52, left: 32, right: 32 },
-      theme: "striped",
-      // Smaller type + tight padding so every value sits on ONE line (no ugly
-      // mid-cell folding) — Roland's "reduced scaling" until the column-picker lands.
-      styles: { font: "helvetica", fontSize: 6.8, cellPadding: { top: 4, bottom: 4, left: 5, right: 5 }, textColor: [39, 39, 42], lineColor: [236, 236, 236], lineWidth: 0.5, overflow: "linebreak", valign: "middle" },
-      headStyles: { fillColor: [240, 239, 235], textColor: [24, 24, 27], fontStyle: "bold", fontSize: 7.2, lineColor: [212, 168, 67], lineWidth: { bottom: 1 } },
-      alternateRowStyles: { fillColor: [250, 249, 247] },
-      didDrawPage: drawChrome,
+    const res = await fetch("/api/export/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: data.title,
+        scope: data.scope,
+        orientation: "landscape",
+        columns: data.columns,
+        rows: data.rows.map((r) => Object.fromEntries(data.columns.map((c) => [c.key, cell(r[c.key])]))),
+      }),
     });
-
-    // Final pass — now that the page count is known, stamp "Page X of Y".
-    const pages = doc.getNumberOfPages();
-    for (let i = 1; i <= pages; i++) {
-      doc.setPage(i);
-      const pw = doc.internal.pageSize.getWidth();
-      const ph = doc.internal.pageSize.getHeight();
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(140, 140, 145);
-      doc.text(`Page ${i} of ${pages}`, pw - 40, ph - 22, { align: "right" });
-    }
-
-    doc.save(`${slug(data.title)}.pdf`);
+    if (!res.ok) throw new Error("export failed");
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slug(data.title)}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   async function download() {

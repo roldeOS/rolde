@@ -126,7 +126,6 @@ export function UsersTable({
   meId,
   nowMs,
   country,
-  clinicName,
   title,
   blurb,
 }: {
@@ -134,12 +133,9 @@ export function UsersTable({
   meId: string | null;
   nowMs: number;
   country: string;
-  clinicName: string;
   title: string;
   blurb: string;
 }) {
-  // Who's running the export — for the PDF's audit footer.
-  const exportedBy = staff.find((s) => s.user_id === meId)?.display_name ?? "";
   // Row click opens the editor (Roland 2026-06-21 — rows hover + click to edit,
   // not a buried ⋯). The ⋯ keeps only the secondary actions (reset / pause).
   const [editing, setEditing] = useState<StaffMember | null>(null);
@@ -297,7 +293,6 @@ export function UsersTable({
         freezeColumns={["Person"]}
         exportColumns={exportColumns}
         exportTitle="Users & Roles"
-        exportBrand={{ clinic: clinicName, exportedBy }}
         toolbarTrailing={<InviteTeammate country={country} />}
         defaultPageSize={20}
       >

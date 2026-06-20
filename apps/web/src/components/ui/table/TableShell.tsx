@@ -21,7 +21,7 @@ import {
 import { PageSizeSelector } from "@/components/ui/table/PageSizeSelector";
 import { NumberedPagination } from "@/components/ui/table/NumberedPagination";
 import { ActivePill } from "@/components/ui/table/ActivePill";
-import { TableExport, type TableExportBrand } from "@/components/ui/table/TableExport";
+import { TableExport } from "@/components/ui/table/TableExport";
 import { type PageSize } from "@/lib/page-sizes";
 
 /**
@@ -125,8 +125,6 @@ interface Props<T> {
   /** Enables Export → CSV / PDF over the FILTERED rows. */
   exportColumns?: { header: string; value: (row: T) => string | number | null | undefined }[];
   exportTitle?: string;
-  /** Branding for the PDF export header/footer (clinic name + who exported). */
-  exportBrand?: TableExportBrand;
   /** Trailing toolbar control after Density/Export (e.g. a page-specific action). */
   toolbarTrailing?: ReactNode;
   emptyState?: ReactNode;
@@ -150,7 +148,6 @@ export function TableShell<T>({
   floating = true,
   exportColumns,
   exportTitle,
-  exportBrand,
   toolbarTrailing,
   emptyState,
   defaultPageSize = 20,
@@ -244,9 +241,16 @@ export function TableShell<T>({
   const slice = sorted.slice(start, start + pageSize);
 
   const headerTitle = header?.title;
+  // A human description of WHAT this export contains — the audit PDF prints it as
+  // the scope line so the reader knows exactly what they're looking at.
+  const exportScope =
+    activeFilterCount > 0 || hasDateActive
+      ? `Filtered · ${sorted.length} of ${items.length} ${label}`
+      : `All ${label} · ${sorted.length}`;
   const exportData = exportColumns
     ? {
         title: exportTitle ?? headerTitle ?? (label === "rows" ? "Export" : label),
+        scope: exportScope,
         columns: exportColumns.map((c, i) => ({ key: `c${i}`, header: c.header })),
         rows: sorted.map((row) =>
           Object.fromEntries(exportColumns.map((c, i) => [`c${i}`, c.value(row) ?? ""])),
@@ -333,7 +337,7 @@ export function TableShell<T>({
         />
       )}
       <DensityToggleConnected storageKey={storageKey} floating={floating} />
-      {exportData && <TableExport data={exportData} brand={exportBrand} floating={floating} />}
+      {exportData && <TableExport data={exportData} floating={floating} />}
       {toolbarTrailing != null && <Fragment key="toolbar-trailing">{toolbarTrailing}</Fragment>}
     </>
   );

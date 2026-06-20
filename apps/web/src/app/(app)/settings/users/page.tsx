@@ -49,7 +49,7 @@ export default async function UsersRolesPage() {
     );
   }
 
-  const { staff, nowMs, country, clinicName } = await loadStaff(tenantId);
+  const { staff, nowMs, country } = await loadStaff(tenantId);
 
   return (
     <div className="w-full p-6 lg:p-8">
@@ -58,7 +58,6 @@ export default async function UsersRolesPage() {
         meId={meId}
         nowMs={nowMs}
         country={country}
-        clinicName={clinicName}
         title={sec.title}
         blurb={sec.blurb}
       />
