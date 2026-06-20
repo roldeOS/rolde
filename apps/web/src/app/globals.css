@@ -47,20 +47,30 @@
      the front-facing marketing site; the content card itself is NEVER tinted.) */
   --parchment: #f0efeb;
 
-  /* Clinic accent — an elegant, calm PLAIN pastel. NOW an ACCENT only (hovers,
-     the field-OK glow, and a clinic's OPTIONAL sidebar/paper tint) — no longer
-     the default paper; parchment (above) is. Per-clinic Caretaker setting. */
-  --clinic-accent: #8aa896; /* sage-deep — default clinic accent */
+  /* Clinic accent — an elegant, calm PLAIN pastel (sage). Used for the field-OK
+     validity glow, and available as a clinic's OPTIONAL sidebar tint. It is NOT the
+     interaction wash — that derives from --sidebar-accent below. Per-clinic setting. */
+  --clinic-accent: #8aa896; /* sage-deep — default clinic accent (field-OK glow) */
 
-  /* Interaction tokens (RDS §2.4) — a WARM GOLD wash that harmonises with the
-     parchment (warm cream) sidebar, matching mindate's standard: its hover is gold
-     #D4A843 @ 10% over an #FBEEDD cream sidebar. Sage (a COOL green) clashed with the
-     warm paper — gold sits in the same warm family (Roland 2026-06-21). Selected sits
-     a touch stronger than hover. Used everywhere via bg-hover / bg-selected. */
-  --hover: rgb(212 168 67 / 0.10);
-  --selected: rgb(212 168 67 / 0.16);
+  /* --sidebar-accent — the hue the hover + active wash DERIVE from, so they always
+     COMPLEMENT the sidebar paper (URDS §4 interaction-colour law). Default = honey-gold,
+     the warm companion to the parchment sidebar (matches mindate's locked gold-@-10% hover).
+     When a Caretaker tints the sidebar (a green / orange / any pastel), their branding
+     setting overrides BOTH --sidebar (the paper) AND --sidebar-accent (this one) together —
+     and every hover/active surface re-tones automatically, no per-component edits, because
+     --hover / --selected are computed FROM this (Roland 2026-06-21). */
+  --sidebar-accent: #d4a843; /* honey-gold — default interaction accent */
 
-  /* The paper / sidebar — parchment by default (a clinic may override). */
+  /* Interaction tokens (RDS §2.4 / URDS §4) — a low-opacity wash of --sidebar-accent, so
+     every hover/active surface is a faint tint of the sidebar's OWN family (never an
+     unrelated accent). Selected sits a touch stronger than hover (keep ≤18% — above that it
+     muddies to brown). Applied everywhere via bg-hover / bg-selected (sidebar active item,
+     dropdown selected row, Segmented pill, list rows, clickable cards). */
+  --hover: color-mix(in srgb, var(--sidebar-accent) 10%, transparent);
+  --selected: color-mix(in srgb, var(--sidebar-accent) 16%, transparent);
+
+  /* The paper / sidebar — parchment by default (a clinic may override via branding,
+     which sets --sidebar + --sidebar-accent together so the washes complement it). */
   --sidebar: var(--parchment);
   --sidebar-foreground: #2c2c2e;
   --sidebar-border: #e4e2dc;
