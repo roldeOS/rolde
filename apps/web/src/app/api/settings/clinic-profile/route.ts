@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionContext } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sanitizeSvg } from "@/lib/sanitizeSvg";
 
 /**
  * Update the CALLER'S clinic profile (Settings → Clinic Profile → Save).
@@ -31,6 +32,26 @@ export async function PATCH(request: Request) {
     );
   }
 
+  // Brand logo — only touched when the key is present. An empty string clears it;
+  // a non-empty value is SANITISED (script vectors stripped) before storage, and
+  // rejected if it isn't a plausible SVG (Wave B / URDS PDF Kit §9.5).
+  let logoPatch: { logo_svg: string | null } | Record<string, never> = {};
+  if ("logo_svg" in b) {
+    const raw = str(b.logo_svg);
+    if (!raw) {
+      logoPatch = { logo_svg: null };
+    } else {
+      const clean = sanitizeSvg(raw);
+      if (!clean) {
+        return NextResponse.json(
+          { ok: false, error: "That doesn't look like a valid SVG logo." },
+          { status: 400 },
+        );
+      }
+      logoPatch = { logo_svg: clean };
+    }
+  }
+
   const { error } = await createAdminClient()
     .from("tenants")
     .update({
@@ -45,6 +66,7 @@ export async function PATCH(request: Request) {
       ico_registration: orNull(b.ico_registration),
       his_registration: orNull(b.his_registration),
       cqc_registration: orNull(b.cqc_registration),
+      ...logoPatch,
     })
     .eq("id", tenantId);
 

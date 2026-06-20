@@ -55,7 +55,7 @@ async function loadProfile(tenantId: string) {
   const { data } = await supabase
     .from("tenants")
     .select(
-      "name, legal_name, contact_email, contact_phone, address_line1, address_line2, city, postcode, ico_registration, his_registration, cqc_registration",
+      "name, legal_name, contact_email, contact_phone, address_line1, address_line2, city, postcode, ico_registration, his_registration, cqc_registration, logo_svg",
     )
     .eq("id", tenantId)
     .maybeSingle();
