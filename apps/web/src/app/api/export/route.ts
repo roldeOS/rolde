@@ -9,14 +9,14 @@ import { ROLDE_WORDMARK_PNG } from "@/lib/brandAssets";
 import { AuditPdf, type AuditColumn } from "@/components/ui/pdf/AuditPdf";
 
 /**
- * URDS PDF Kit — server-side render of an audit-grade export (Wave C; URDS §9.5).
+ * URDS PDF Kit — server-side render + AUDIT of a data export (Wave C/D; URDS §9.5).
  *
- * The client posts the table it's looking at (title, columns, the FILTERED rows,
- * scope). The server adds the identity it owns — the clinic name + the clinic's
- * own logo (rasterised SVG→PNG via sharp), the exporter's name + role, a unique
- * export reference and a SHA-256 fingerprint of the data — renders the branded
- * @react-pdf document, and streams back the PDF. (Wave D will log this + store
- * the artifact from the same pipeline.)
+ * Handles BOTH formats — PDF (the audit-grade branded document) and CSV — through
+ * one server path, so every export is owned by the server: it adds the clinic
+ * name + logo, the exporter's name + role, a unique export reference and a SHA-256
+ * fingerprint of the data, renders the file, and — unless this is the live PDF
+ * preview — records it in `export_log` WITH THE ARTIFACT. CSV is audited exactly
+ * like PDF: data leaving the building is data leaving the building.
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,7 +34,8 @@ export async function POST(request: Request) {
     columns?: AuditColumn[];
     rows?: Record<string, string>[];
     orientation?: "portrait" | "landscape";
-    /** The live in-dialog preview renders but must NOT be logged as an export. */
+    format?: "pdf" | "csv";
+    /** The live in-dialog PDF preview renders but must NOT be logged as an export. */
     preview?: boolean;
   };
   try {
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
 
+  const format = body.format === "csv" ? "csv" : "pdf";
   const title = String(body.title ?? "Export").slice(0, 120);
   const columns = Array.isArray(body.columns) ? body.columns.slice(0, 40) : [];
   const rows = Array.isArray(body.rows) ? body.rows.slice(0, 10_000) : [];
@@ -60,16 +62,13 @@ export async function POST(request: Request) {
       .maybeSingle(),
   ]);
 
-  // Logos are PRE-RASTERISED PNG data-URLs (the RolDe wordmark baked at build, the
-  // clinic logo rasterised in the browser at upload) — so the lambda needs NO native
-  // image lib, only @react-pdf. A missing clinic logo is a nicety lost, never a block.
   const wordmarkPng = ROLDE_WORDMARK_PNG;
   const logoPng = typeof tenant?.logo_png === "string" && tenant.logo_png.startsWith("data:image/") ? tenant.logo_png : null;
 
-  // Integrity — a deterministic fingerprint of exactly what's exported, and a
-  // human export reference derived from it (both will be logged in Wave D).
+  // Integrity — a deterministic fingerprint of exactly what's exported (format-
+  // independent: the same data has the same fingerprint as PDF or CSV).
   const fpFull = crypto.createHash("sha256").update(JSON.stringify({ columns, rows })).digest("hex");
-  const fingerprint = fpFull; // the FULL 64-char SHA-256 — an audit must see all of it
+  const fingerprint = fpFull;
   const now = new Date();
   const yyyymmdd = now.toISOString().slice(0, 10).replace(/-/g, "");
   const reference = `EXP-${yyyymmdd}-${fpFull.slice(0, 6).toUpperCase()}`;
@@ -82,7 +81,6 @@ export async function POST(request: Request) {
     timeZone: "UTC",
   })} UTC`;
 
-  // Don't double a title the name already carries ("Dr" + "Dr Roland …" → "Dr Roland …").
   const dn = me?.display_name?.trim() ?? "";
   const desig = me?.designation?.trim() ?? "";
   const exporterName =
@@ -92,29 +90,38 @@ export async function POST(request: Request) {
   const scopeText = body.scope ? String(body.scope).slice(0, 200) : `${rows.length} ${rows.length === 1 ? "row" : "rows"}`;
   const orient = body.orientation === "portrait" ? "portrait" : "landscape";
 
-  const element = AuditPdf({
-    title,
-    scope: scopeText,
-    columns,
-    rows,
-    orientation: orient,
-    brand: { product: "RolDe OS", clinic: tenant?.name ?? undefined, wordmarkPng, logoPng, exporterName, exporterRole },
-    reference,
-    fingerprint,
-    generatedAt,
-  });
-
+  // Produce the artifact — CSV (text) or the branded PDF.
   let buffer: Buffer;
-  try {
-    buffer = (await renderToBuffer(element)) as Buffer;
-  } catch (e) {
-    console.error("[export/pdf]", e instanceof Error ? e.message : e);
-    return NextResponse.json({ error: "render_failed" }, { status: 500 });
+  let contentType: string;
+  let ext: string;
+  if (format === "csv") {
+    buffer = Buffer.from(buildCsv(columns, rows), "utf8");
+    contentType = "text/csv;charset=utf-8";
+    ext = "csv";
+  } else {
+    const element = AuditPdf({
+      title,
+      scope: scopeText,
+      columns,
+      rows,
+      orientation: orient,
+      brand: { product: "RolDe OS", clinic: tenant?.name ?? undefined, wordmarkPng, logoPng, exporterName, exporterRole },
+      reference,
+      fingerprint,
+      generatedAt,
+    });
+    try {
+      buffer = (await renderToBuffer(element)) as Buffer;
+    } catch (e) {
+      console.error("[export]", e instanceof Error ? e.message : e);
+      return NextResponse.json({ error: "render_failed" }, { status: 500 });
+    }
+    contentType = "application/pdf";
+    ext = "pdf";
   }
 
-  // Wave D — record the export (the audit trail), WITH the artifact, unless this
-  // is the live in-dialog preview. Best-effort: a logging hiccup must never fail
-  // the user's download, but every real export should be captured (URDS §9.5).
+  // Record the export (the audit trail), WITH the artifact, unless this is the
+  // live PDF preview. Best-effort: a logging hiccup must never fail the download.
   if (!body.preview) {
     try {
       const admin = createAdminClient();
@@ -125,29 +132,37 @@ export async function POST(request: Request) {
         fingerprint,
         title,
         scope: scopeText,
-        format: "pdf",
-        orientation: orient,
+        format,
+        orientation: format === "pdf" ? orient : null,
         columns: columns.map((c) => c.header),
         row_count: rows.length,
         byte_size: buffer.length,
         exporter_name: exporterName ?? null,
         exporter_role: exporterRole ?? null,
-        pdf_base64: buffer.toString("base64"),
+        artifact_base64: buffer.toString("base64"),
       });
     } catch (e) {
-      console.error("[export/pdf] log", e instanceof Error ? e.message : e);
+      console.error("[export] log", e instanceof Error ? e.message : e);
     }
   }
 
-  const filename = `${slug(title)}.pdf`;
+  const filename = `${slug(title)}.${ext}`;
   return new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
-      "Content-Type": "application/pdf",
+      "Content-Type": contentType,
       "Content-Disposition": `attachment; filename="${filename}"`,
       "X-Export-Reference": reference,
     },
   });
+}
+
+/** Excel-friendly CSV — UTF-8 BOM, CRLF rows, every field quoted + escaped. */
+function buildCsv(columns: AuditColumn[], rows: Record<string, string>[]): string {
+  const esc = (s: unknown) => `"${String(s ?? "").replace(/"/g, '""')}"`;
+  const head = columns.map((c) => esc(c.header)).join(",");
+  const body = rows.map((r) => columns.map((c) => esc(r[c.key])).join(",")).join("\r\n");
+  return `﻿${head}\r\n${body}`;
 }
 
 function slug(s: string): string {

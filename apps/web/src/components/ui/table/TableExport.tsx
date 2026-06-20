@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Download, FileText, FileType, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { Download, FileText, FileType, FileClock, Loader2 } from "lucide-react";
 import { DialogHeaderRow } from "@/components/ui/DialogHeaderRow";
 import { cn } from "@/lib/utils";
 
@@ -108,37 +109,22 @@ export function TableExport({
     });
   }
 
-  function downloadCsv() {
-    const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
-    const head = activeColumns.map((c) => esc(c.header)).join(",");
-    const body = data.rows
-      .map((r) => activeColumns.map((c) => esc(cell(r[c.key]))).join(","))
-      .join("\r\n");
-    const blob = new Blob([`﻿${head}\r\n${body}`], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${slug(data.title)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
-  // PDF — rendered SERVER-SIDE by the URDS PDF Kit (@react-pdf/renderer). The
-  // server owns the identity: it adds the clinic logo (rasterised), the exporter's
-  // name + role, the export reference + SHA-256 fingerprint, and streams back an
-  // audit-grade PDF. The client posts what it's looking at, with the chosen columns
-  // and orientation (Wave C / Pass 2; URDS §9.5).
-  async function renderPdf(
+  // Both formats are rendered + AUDITED SERVER-SIDE by the URDS PDF Kit. The server
+  // owns the identity (clinic logo · exporter name + role · export reference ·
+  // SHA-256 fingerprint) and records the export WITH its artifact in the Export Log
+  // — CSV exactly like PDF (data leaving the building is data leaving the building).
+  // The client posts what it's looking at, with the chosen columns + orientation.
+  async function requestExport(
+    fmt: Format,
     rows: Record<string, unknown>[],
     opts: { signal?: AbortSignal; preview?: boolean } = {},
   ): Promise<Blob> {
-    const res = await fetch("/api/export/pdf", {
+    const res = await fetch("/api/export", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: opts.signal,
       body: JSON.stringify({
+        format: fmt,
         title: data.title,
         scope: data.scope,
         orientation,
@@ -151,12 +137,11 @@ export function TableExport({
     return res.blob();
   }
 
-  async function downloadPdf() {
-    const blob = await renderPdf(data.rows);
+  function saveBlob(blob: Blob, ext: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${slug(data.title)}.pdf`;
+    a.download = `${slug(data.title)}.${ext}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -166,8 +151,8 @@ export function TableExport({
   async function download() {
     setBusy(true);
     try {
-      if (format === "csv") downloadCsv();
-      else await downloadPdf();
+      const blob = await requestExport(format, data.rows);
+      saveBlob(blob, format);
       setOpen(false);
     } catch {
       /* a failed export shouldn't wedge the modal */
@@ -188,7 +173,7 @@ export function TableExport({
     setPreviewBusy(true);
     const t = setTimeout(async () => {
       try {
-        const blob = await renderPdf(data.rows.slice(0, PREVIEW_ROWS), {
+        const blob = await requestExport("pdf", data.rows.slice(0, PREVIEW_ROWS), {
           signal: controller.signal,
           preview: true,
         });
@@ -359,22 +344,30 @@ export function TableExport({
                 )}
               </div>
 
-              <div className="flex items-center justify-end gap-2 border-t border-border px-6 py-4">
-                <button
-                  onClick={() => setOpen(false)}
-                  disabled={busy}
-                  className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground disabled:opacity-50"
+              <div className="flex items-center justify-between gap-2 border-t border-border px-6 py-4">
+                <Link
+                  href="/settings/exports"
+                  className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
                 >
-                  Cancel
-                </button>
-                <button
-                  onClick={download}
-                  disabled={busy || activeColumns.length === 0}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3.5 py-1.5 text-sm font-medium text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:opacity-60"
-                >
-                  {busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
-                  Download {format.toUpperCase()}
-                </button>
+                  <FileClock className="size-3.5" /> Export Log
+                </Link>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setOpen(false)}
+                    disabled={busy}
+                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={download}
+                    disabled={busy || activeColumns.length === 0}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3.5 py-1.5 text-sm font-medium text-background shadow-sm transition-colors hover:bg-foreground/90 disabled:opacity-60"
+                  >
+                    {busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+                    Download {format.toUpperCase()}
+                  </button>
+                </div>
               </div>
             </div>
           </div>,

@@ -275,7 +275,7 @@ export type Database = {
           format: string
           id: string
           orientation: string | null
-          pdf_base64: string | null
+          artifact_base64: string | null
           reference: string
           row_count: number
           scope: string | null
@@ -294,7 +294,7 @@ export type Database = {
           format?: string
           id?: string
           orientation?: string | null
-          pdf_base64?: string | null
+          artifact_base64?: string | null
           reference: string
           row_count?: number
           scope?: string | null
@@ -313,7 +313,7 @@ export type Database = {
           format?: string
           id?: string
           orientation?: string | null
-          pdf_base64?: string | null
+          artifact_base64?: string | null
           reference?: string
           row_count?: number
           scope?: string | null

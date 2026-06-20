@@ -83,9 +83,15 @@ export function ExportLogTable({
       cell: (r) => <span className="font-medium text-foreground">{r.title}</span>,
     },
     {
+      id: "format",
+      header: "Format",
+      width: "5rem",
+      cell: (r) => <span className="font-medium uppercase text-muted-foreground">{r.format}</span>,
+    },
+    {
       id: "scope",
       header: "Scope",
-      width: "16%",
+      width: "15%",
       truncate: true,
       title: (r) => r.scope ?? "",
       cell: (r) => <span className="text-muted-foreground">{r.scope || "—"}</span>,
@@ -155,6 +161,7 @@ export function ExportLogTable({
   const exportColumns = [
     { header: "Reference", w: 1.2, value: (r: ExportRow) => r.reference },
     { header: "Document", w: 1.4, value: (r: ExportRow) => r.title },
+    { header: "Format", w: 0.6, value: (r: ExportRow) => r.format.toUpperCase() },
     { header: "Scope", w: 1.6, value: (r: ExportRow) => r.scope ?? "" },
     { header: "Fields", w: 1.8, value: (r: ExportRow) => fieldList(r.columns) },
     { header: "Rows", w: 0.6, align: "right" as const, value: (r: ExportRow) => r.row_count },
@@ -181,7 +188,7 @@ export function ExportLogTable({
           rowKey={(r) => r.id}
           density={DENSITY_CLASSES[density]}
           onRowClick={open}
-          minWidth="74rem"
+          minWidth="78rem"
           bare
           freezeCount={freezeCount}
           rowNumbers
