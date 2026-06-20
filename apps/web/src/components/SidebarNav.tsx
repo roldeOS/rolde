@@ -12,6 +12,7 @@ import {
   Receipt,
   BarChart3,
   Settings,
+  ScrollText,
   Scale,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
@@ -42,6 +43,9 @@ const NAV: NavItem[] = [
   { href: "/billing", label: "Billing", icon: Receipt, tone: "warning", module: "billing" },
   { href: "/reports", label: "Reports", icon: BarChart3, tone: "neutral", module: "reports" },
   { href: "/settings", label: "Settings", icon: Settings, tone: "neutral", module: "settings" },
+  // Logs Hub — the Caretaker's audit shelf (Bible 4.1 §5.4). Caretaker-only;
+  // Settings is for CONFIGURING the clinic, Logs for REVIEWING what happened.
+  { href: "/logs", label: "Logs", icon: ScrollText, tone: "neutral", module: "logs" },
   // Legal & Safety — the single home for Privacy, Terms, Disclaimer, Clinical
   // Safety & consent docs, each versioned (Roland 2026-06-11).
   { href: "/legal", label: "Legal & Safety", icon: Scale, tone: "neutral", module: "legal" },

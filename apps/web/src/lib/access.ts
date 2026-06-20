@@ -37,6 +37,10 @@ export const MODULE_ACCESS: Record<string, readonly string[] | "all"> = {
   billing: ["caretaker", "curator", "concierge", "cofferer", "codewright"],
   reports: ["caretaker", "curator", "codewright"],
   settings: ["caretaker", "curator", "codewright"],
+  // Logs Hub — the audit shelf. Caretaker-ONLY (Roland: "only a caretaker gets to
+  // see the Logs"). Custodian reads platform-wide via their own area. Logging is
+  // role-blind (every role's actions are recorded); this gates only the READING.
+  logs: ["caretaker"],
   // prescribing — gated by the prescribing_rights flag (canPrescribe), not here.
 };
 

@@ -2,26 +2,25 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
-import { getSettingsAccess, SettingsRestricted } from "../access";
-import { getSection } from "../sections";
+import { getLogsAccess, LogsRestricted } from "../access";
+import { getLogSection } from "../sections";
 import { ExportLogTable, type ExportRow } from "./ExportLogTable";
 
 /**
- * Settings → Export Log (Caretaker, URDS §9.5 / Wave D). Static segment —
- * overrides the `[section]` scaffold for the `exports` key.
+ * Logs → Export Log (Caretaker, URDS §9.5 / Wave D). Static segment — overrides
+ * the `[section]` scaffold for the `exports` key.
  *
  * The clinic's audit trail of every export (PDF + CSV) — who · when · what (title
  * + scope + the columns that left) · the export reference · the SHA-256 of the
  * data — with the original file retrievable. Every role EXPORTS and every export
  * is LOGGED (the server records all of them), but only the CARETAKER / Custodian
- * READS the log — a governance surface, gated like the rest of Settings. RLS
- * enforces the same. The heavy artifact (artifact_base64) is NEVER loaded into
- * the list — only the per-row download route streams it.
+ * READS the log. RLS enforces the same. The heavy artifact (artifact_base64) is
+ * NEVER loaded into the list — only the per-row download route streams it.
  */
 export default async function ExportLogPage() {
-  const { allowed, ctx } = await getSettingsAccess();
-  if (!allowed) return <SettingsRestricted />;
-  const sec = getSection("exports");
+  const { allowed, ctx } = await getLogsAccess();
+  if (!allowed) return <LogsRestricted />;
+  const sec = getLogSection("exports");
   if (!sec) notFound();
 
   const tenantId = ctx?.membership?.tenant_id ?? null;
