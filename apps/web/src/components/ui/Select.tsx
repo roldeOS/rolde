@@ -156,12 +156,12 @@ export function Select({
                   }}
                   className={cn(
                     "flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors",
-                    isSel ? "bg-honey/20 font-medium text-foreground" : "text-foreground hover:bg-hover",
+                    isSel ? "bg-selected font-medium text-foreground" : "text-foreground hover:bg-hover",
                     o.disabled && "pointer-events-none opacity-40",
                   )}
                 >
                   <span className="truncate">{o.label}</span>
-                  {isSel && <Check className="size-4 shrink-0 text-amber-700" />}
+                  {isSel && <Check className="size-4 shrink-0 text-foreground/70" />}
                 </button>
               );
             })}

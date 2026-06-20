@@ -70,7 +70,7 @@ export function SidebarNav({
           // Sidebar labels are BLACK for visibility (Roland 2026-06-11),
           // not the muted grey — active just adds the wash + weight.
           active
-            ? "bg-foreground/6 text-foreground"
+            ? "bg-selected text-foreground"
             : "text-foreground/80 hover:bg-hover hover:text-foreground",
         )}
       >

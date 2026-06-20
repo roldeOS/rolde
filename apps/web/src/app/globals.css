@@ -52,8 +52,11 @@
      the default paper; parchment (above) is. Per-clinic Caretaker setting. */
   --clinic-accent: #8aa896; /* sage-deep — default clinic accent */
 
-  /* The ONE hover token (RDS rule) — the accent at a soft wash. */
+  /* Interaction tokens (RDS §2.4) — hover + selected are BOTH the sidebar accent
+     (sage) at a reduced opacity, so every hover/active surface matches the sidebar
+     theme (Roland 2026-06-20). Selected sits a touch stronger than hover. */
   --hover: rgb(138 168 150 / 0.2);
+  --selected: rgb(138 168 150 / 0.34);
 
   /* The paper / sidebar — parchment by default (a clinic may override). */
   --sidebar: var(--parchment);
@@ -77,6 +80,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-destructive: var(--destructive);
   --color-hover: var(--hover);
+  --color-selected: var(--selected);
   --color-critical: var(--signal-critical);
   --color-warning: var(--signal-warning);
   --color-success: var(--signal-success);
