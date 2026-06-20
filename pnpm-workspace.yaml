@@ -10,3 +10,15 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
   core-js: false
+
+# Install native binaries for BOTH the dev machine (current) and the Vercel
+# linux-x64 lambdas, so sharp (URDS PDF Kit logo rasteriser) + unrs-resolver ship
+# their linux binary in the frozen lockfile — without this, prod 500s with a
+# missing-sharp-binary error even though local dev is fine (Roland 2026-06-21).
+supportedArchitectures:
+  os:
+    - current
+    - linux
+  cpu:
+    - current
+    - x64

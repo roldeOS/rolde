@@ -5,6 +5,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { getSessionContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { ROLES } from "@/lib/roles";
+import { ROLDE_WORDMARK_SVG } from "@/lib/brandAssets";
 import { AuditPdf, type AuditColumn } from "@/components/ui/pdf/AuditPdf";
 
 /**
@@ -57,17 +58,21 @@ export async function POST(request: Request) {
       .maybeSingle(),
   ]);
 
-  // Rasterise the clinic's SVG logo → PNG (sharp can't run in @react-pdf, so we
-  // pre-bake it). A failure is a nicety lost, never a blocked export.
-  let logoPng: string | null = null;
-  if (tenant?.logo_svg) {
+  // Rasterise SVGs → PNG (sharp can't run inside @react-pdf, so we pre-bake them).
+  // The RolDe OS wordmark + the clinic's own logo both go in the header. A failure
+  // is a nicety lost, never a blocked export.
+  const rasterize = async (svg: string, width: number): Promise<string | null> => {
     try {
-      const png = await sharp(Buffer.from(tenant.logo_svg)).resize({ width: 440 }).png().toBuffer();
-      logoPng = `data:image/png;base64,${png.toString("base64")}`;
+      const png = await sharp(Buffer.from(svg)).resize({ width }).png().toBuffer();
+      return `data:image/png;base64,${png.toString("base64")}`;
     } catch {
-      /* ignore */
+      return null;
     }
-  }
+  };
+  const [wordmarkPng, logoPng] = await Promise.all([
+    rasterize(ROLDE_WORDMARK_SVG, 600),
+    tenant?.logo_svg ? rasterize(tenant.logo_svg, 440) : Promise.resolve(null),
+  ]);
 
   // Integrity — a deterministic fingerprint of exactly what's exported, and a
   // human export reference derived from it (both will be logged in Wave D).
@@ -98,7 +103,7 @@ export async function POST(request: Request) {
     columns,
     rows,
     orientation: body.orientation === "portrait" ? "portrait" : "landscape",
-    brand: { product: "RolDe OS", clinic: tenant?.name ?? undefined, logoPng, exporterName, exporterRole },
+    brand: { product: "RolDe OS", clinic: tenant?.name ?? undefined, wordmarkPng, logoPng, exporterName, exporterRole },
     reference,
     fingerprint,
     generatedAt,

@@ -27,6 +27,9 @@ export interface AuditPdfData {
   brand: {
     product: string;
     clinic?: string;
+    /** The RolDe OS wordmark (rasterised SVG) — the product brand, top-left. */
+    wordmarkPng?: string | null;
+    /** The clinic's own logo (rasterised SVG) — top-right. */
     logoPng?: string | null;
     exporterName?: string;
     exporterRole?: string;
@@ -53,7 +56,8 @@ const styles = StyleSheet.create({
   header: { position: "absolute", top: 0, left: 0, right: 0, height: 82, backgroundColor: C.parchment, paddingHorizontal: 32, paddingTop: 12 },
   headRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
   wordmark: { fontSize: 13, fontFamily: "Helvetica-Bold", color: C.ink },
-  clinicName: { fontSize: 8.5, color: C.muted, marginTop: 3 },
+  wordmarkImg: { height: 18, maxWidth: 170, objectFit: "contain" },
+  clinicName: { fontSize: 8.5, color: C.muted, marginTop: 4 },
   logo: { maxHeight: 26, maxWidth: 150, objectFit: "contain" },
   title: { fontSize: 12, fontFamily: "Helvetica-Bold", color: C.ink, marginTop: 8 },
   scope: { fontSize: 7.5, color: C.muted, marginTop: 2 },
@@ -94,7 +98,11 @@ export function AuditPdf(data: AuditPdfData) {
         <View style={styles.header} fixed>
           <View style={styles.headRow}>
             <View>
-              <Text style={styles.wordmark}>{brand.product}</Text>
+              {brand.wordmarkPng ? (
+                <Image style={styles.wordmarkImg} src={brand.wordmarkPng} />
+              ) : (
+                <Text style={styles.wordmark}>{brand.product}</Text>
+              )}
               {brand.clinic ? <Text style={styles.clinicName}>{brand.clinic}</Text> : null}
             </View>
             {brand.logoPng ? <Image style={styles.logo} src={brand.logoPng} /> : null}
