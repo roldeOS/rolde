@@ -18,6 +18,21 @@ export type HubSection = {
   tone: CardIconTone;
   status: "ready" | "soon";
   group: string;
+  /** Counter pattern (URDS §StatTile): a live count shown as a big tinted number. */
+  count?: number;
+  /** The thing being counted, e.g. "members" — shown small under the number. */
+  countNoun?: string;
+};
+
+// The big-number colour per tone (mirrors StatTile's value colour) — a calm splash.
+const VALUE: Record<CardIconTone, string> = {
+  critical: "text-rose-700",
+  warning: "text-amber-800",
+  success: "text-emerald-800",
+  info: "text-sky-700",
+  accent: "text-emerald-800",
+  neutral: "text-violet-800",
+  brand: "text-amber-900",
 };
 
 // WARM EARTH & BLOOM PASTELS per card (Roland 2026-06-20: warm, elegant, reduced
@@ -59,13 +74,24 @@ export function SectionHubGrid({
                     TONE_WASH[s.tone],
                   )}
                 >
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start justify-between gap-2">
                     <CardIcon icon={s.icon} tone={s.tone} variant="badge" />
-                    {s.status === "soon" && (
+                    {s.status === "soon" ? (
                       <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                         Coming Next
                       </span>
-                    )}
+                    ) : s.count !== undefined ? (
+                      <div className="text-right leading-none">
+                        <span className={cn("text-2xl font-semibold tabular-nums", VALUE[s.tone])}>
+                          {s.count}
+                        </span>
+                        {s.countNoun && (
+                          <span className="mt-1 block text-[10px] font-medium text-muted-foreground">
+                            {s.countNoun}
+                          </span>
+                        )}
+                      </div>
+                    ) : null}
                   </div>
                   <div>
                     <h3 className="font-heading text-base font-semibold tracking-tight">{s.title}</h3>
