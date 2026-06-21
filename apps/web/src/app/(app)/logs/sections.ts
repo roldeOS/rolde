@@ -52,8 +52,8 @@ export const LOG_SECTIONS: LogSection[] = [
       "Logins, sign-outs, failed attempts and password changes — your clinic's security trail.",
     icon: ShieldCheck,
     tone: "info",
-    source: "Bible 4.1 §13",
-    status: "soon",
+    source: "Bible 4.1 §5.4 / §13",
+    status: "ready",
     group: "Activity & Security",
   },
   // — Records & Access —

@@ -415,7 +415,8 @@ Patient sessions are scoped to their own data only. RLS policies ensure a patien
 - **Session duration**: 8 hours of inactivity for clinical users; 30 minutes for patient portal
 - **Refresh tokens**: rotated on each use (security best practice)
 - **MFA**: optional in Phase 1, mandatory for Caretaker role in Phase 2, mandatory for prescribing actions even in Phase 1 (re-authenticate with password before prescribing)
-- **Audit on auth events**: every login, logout, failed login, password change, MFA event logged to `auth_audit_log` table
+- **Audit on auth events**: every login, logout, failed login, password change, MFA event logged to `auth_audit_log` table — surfaced in Logs → Sign-in & Security
+  - **Built (2026-06-21).** `auth_audit_log` is durable, append-only, and IP + device stamped. Two feeders, because no single source has it all: (1) a **pg_cron mirror** (`mirror_auth_audit()`, every minute) copies GoTrue's own journal `auth.audit_log_entries` — the authoritative, IP-bearing source for login / logout / password / MFA — into our table, because GoTrue **auto-prunes** its journal. An Auth Hook can't do this: hook payloads carry no IP, only `user_id`. (2) Our **login layer** writes `login_failed` rows directly (the one event GoTrue's journal doesn't stamp with an IP), the server reading the request IP. RLS read = Custodian (all) **or** a Caretaker of a clinic the actor belongs to (scoped by membership — an auth event isn't tenant-bound); only the service role writes. `token_refreshed` is filtered out as noise.
 
 ---
 

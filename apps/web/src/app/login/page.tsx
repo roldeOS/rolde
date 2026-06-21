@@ -85,6 +85,13 @@ export default function LoginPage() {
       setPwError(true);
       setLoading(false);
       resetCaptcha(); // single-use token — get a fresh one for the retry
+      // Record the failed attempt in the Sign-in & Security log — fire-and-forget,
+      // the SERVER stamps the IP + device. Never blocks the retry.
+      void fetch("/api/auth/sign-in-attempt", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      }).catch(() => {});
       return;
     }
     router.push("/");

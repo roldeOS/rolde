@@ -307,6 +307,42 @@ export type Database = {
           },
         ]
       }
+      auth_audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json
+          source_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          source_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          source_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       export_log: {
         Row: {
           byte_size: number
@@ -1042,8 +1078,10 @@ export type Database = {
       email_exists: { Args: { p_email: string }; Returns: boolean }
       is_caretaker_of: { Args: { p_tenant_id: string }; Returns: boolean }
       is_custodian: { Args: never; Returns: boolean }
+      mirror_auth_audit: { Args: never; Returns: undefined }
       next_patient_number: { Args: { p_tenant: string }; Returns: string }
       publish_legal_draft: { Args: { p_doc_key: string }; Returns: undefined }
+      user_id_for_email: { Args: { p_email: string }; Returns: string }
     }
     Enums: {
       alert_priority: "info" | "warning" | "critical"
