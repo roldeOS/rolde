@@ -76,7 +76,7 @@ export const LOG_SECTIONS: LogSection[] = [
     icon: Send,
     tone: "neutral",
     source: "Bible 4.4 §6",
-    status: "soon",
+    status: "ready",
     group: "Records & Access",
   },
   // — Data & Compliance —
