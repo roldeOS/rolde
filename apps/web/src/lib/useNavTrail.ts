@@ -53,6 +53,9 @@ function write(trail: TrailEntry[]): void {
 export function useNavTrail(
   current: TrailEntry | null,
   parents: TrailEntry[] = [],
+  /** The "/" home crumb — Dashboard for clinic roles, Overview for a Custodian.
+   *  Defaults to DASH, so existing (clinic-role) callers behave identically. */
+  root: TrailEntry = DASH,
 ): TrailEntry[] {
   const [trail, setTrail] = useState<TrailEntry[]>([]);
 
@@ -68,7 +71,7 @@ export function useNavTrail(
     let next: TrailEntry[];
 
     if (current.href === "/") {
-      next = [DASH];
+      next = [root];
     } else {
       const idx = prev.findIndex((e) => e.href === current.href);
       if (idx >= 0) {
@@ -77,20 +80,22 @@ export function useNavTrail(
         next = prev.slice(0, idx + 1);
         next[idx] = { ...next[idx], label: current.label, kind: current.kind };
       } else if (prev.length === 0) {
-        // Cold load — seed Dashboard + inferred parents + current.
-        next = [DASH, ...parents, current];
+        // Cold load — seed home + inferred parents + current.
+        next = [root, ...parents, current];
       } else {
         next = [...prev, current];
       }
     }
 
-    // Always rooted at Dashboard.
-    if (next[0]?.href !== "/") next = [DASH, ...next];
+    // Always rooted at home ("/"); its label/kind follows the role (Dashboard ↔ Overview).
+    if (next[0]?.href !== "/") next = [root, ...next];
+    if (next[0]?.href === "/") next[0] = root;
     // Cap length: keep the root + the most recent crumbs.
     if (next.length > MAX) next = [next[0], ...next.slice(next.length - (MAX - 1))];
 
     write(next);
     setTrail(next);
+    // root is stable per session (role doesn't change mid-session) — not a dep.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.href, current?.label, current?.kind, parentSig]);
 

@@ -32,6 +32,7 @@ import { ProfileMenu } from "./ProfileMenu";
 import { useNavTrail, type TrailEntry } from "@/lib/useNavTrail";
 import { SETTINGS_SECTIONS, getSection } from "@/app/(app)/settings/sections";
 import { LOG_SECTIONS, getLogSection } from "@/app/(app)/logs/sections";
+import { CONTROL_NAV, CONTROL_HUB, getControlSection } from "@/app/(app)/custodian/sections";
 import { cn } from "@/lib/utils";
 
 /**
@@ -79,6 +80,9 @@ const SETTINGS_ICON: Record<string, LucideIcon> = Object.fromEntries(
 const LOGS_ICON: Record<string, LucideIcon> = Object.fromEntries(
   LOG_SECTIONS.map((s) => [s.key, s.icon as LucideIcon]),
 );
+const CONTROL_ICON: Record<string, LucideIcon> = Object.fromEntries(
+  [...CONTROL_NAV, ...CONTROL_HUB].map((s) => [s.key, s.icon as LucideIcon]),
+);
 
 const VIEWS: { key: WorkspaceView; label: string }[] = [
   { key: "consult", label: "Consult" },
@@ -106,6 +110,13 @@ export function Topbar({
     /^\/patients\/[^/]+$/.test(pathname) && pathname !== "/patients/new";
   const firstSeg = pathname === "/" ? "/" : "/" + pathname.split("/")[1];
   const sectionMatch = SECTIONS.find((s) => s.re.test(pathname));
+
+  // The "/" home crumb follows the role: clinic roles land on the Dashboard, a
+  // Custodian lands on the platform Overview (which also lives at "/").
+  const home: TrailEntry =
+    role === "custodian"
+      ? { href: "/", label: "Overview", kind: "overview" }
+      : { href: "/", label: "Dashboard", kind: "dashboard" };
 
   let trailCurrent: TrailEntry | null = null;
   let parents: TrailEntry[] = [];
@@ -143,15 +154,24 @@ export function Topbar({
       label: getLogSection(slug)?.title ?? "Logs",
       kind: slug,
     };
-  } else if (sectionMatch) {
+  } else if (/^\/custodian\/[^/]+$/.test(pathname)) {
+    // A Custodian (Platform) SUB-page: the Overview is the clickable PARENT, the
+    // control section is the current crumb — mirrors Settings/Logs.
+    const slug = pathname.split("/")[2];
+    parents = [home];
     trailCurrent = {
-      href: sectionMatch.kind === "dashboard" ? "/" : firstSeg,
-      label: sectionMatch.label,
-      kind: sectionMatch.kind,
+      href: pathname,
+      label: getControlSection(slug)?.label ?? "Platform",
+      kind: slug,
     };
+  } else if (sectionMatch) {
+    trailCurrent =
+      sectionMatch.kind === "dashboard"
+        ? home
+        : { href: firstSeg, label: sectionMatch.label, kind: sectionMatch.kind };
   }
 
-  const trail = useNavTrail(trailCurrent, parents);
+  const trail = useNavTrail(trailCurrent, parents, home);
 
   return (
     <div className="search-hideable sticky top-0 z-40 px-3 pt-3 sm:px-4">
@@ -178,7 +198,8 @@ export function Topbar({
             // icons to save room) — Roland 2026-06-11.
             const showLabel =
               i === 0 ? trail.length === 1 : i >= trail.length - 2;
-            const Icon = KIND_ICON[seg.kind] ?? SETTINGS_ICON[seg.kind] ?? LOGS_ICON[seg.kind] ?? User;
+            const Icon =
+              KIND_ICON[seg.kind] ?? SETTINGS_ICON[seg.kind] ?? LOGS_ICON[seg.kind] ?? CONTROL_ICON[seg.kind] ?? User;
 
             // Terminal patient crumb keeps the rich PatientIsland (name +
             // allergy flag + click-to-open island).
