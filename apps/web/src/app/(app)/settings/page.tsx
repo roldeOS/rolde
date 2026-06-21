@@ -52,7 +52,7 @@ export default async function SettingsPage() {
           ],
         }}
       />
-      <SectionHubGrid groups={SETTINGS_GROUPS} sections={sections} baseHref="/settings" />
+      <SectionHubGrid groups={SETTINGS_GROUPS} sections={sections} baseHref="/settings" cardVariant="counter" />
     </div>
   );
 }
