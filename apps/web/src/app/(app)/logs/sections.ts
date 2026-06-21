@@ -42,7 +42,7 @@ export const LOG_SECTIONS: LogSection[] = [
     icon: Activity,
     tone: "brand",
     source: "Bible 4.1 §5.4 / 4.3 §5.12",
-    status: "soon",
+    status: "ready",
     group: "Activity & Security",
   },
   {

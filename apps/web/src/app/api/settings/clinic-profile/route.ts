@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionContext } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logAudit } from "@/lib/audit";
 import { sanitizeSvg } from "@/lib/sanitizeSvg";
 
 /**
@@ -88,5 +89,14 @@ export async function PATCH(request: Request) {
   if (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
+  // Activity Log (Bible 4.1 §5.4) — a clinically-significant settings change.
+  await logAudit({
+    tenantId,
+    actorUserId: ctx.user.id,
+    action: "profile.update",
+    resourceType: "clinic_profile",
+    resourceId: tenantId,
+    summary: "Updated the clinic profile",
+  });
   return NextResponse.json({ ok: true });
 }

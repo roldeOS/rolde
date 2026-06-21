@@ -4,6 +4,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { getSessionContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logAudit } from "@/lib/audit";
 import { ROLES } from "@/lib/roles";
 import { ROLDE_WORDMARK_PNG } from "@/lib/brandAssets";
 import { AuditPdf, type AuditColumn } from "@/components/ui/pdf/AuditPdf";
@@ -144,6 +145,15 @@ export async function POST(request: Request) {
     } catch (e) {
       console.error("[export] log", e instanceof Error ? e.message : e);
     }
+    // Activity Log (the unified timeline) — exports are significant data egress.
+    await logAudit({
+      tenantId,
+      actorUserId: ctx.user.id,
+      action: "export.create",
+      resourceType: "export",
+      resourceId: reference,
+      summary: `Exported ${title} (${format.toUpperCase()}, ${rows.length} ${rows.length === 1 ? "row" : "rows"})`,
+    });
   }
 
   const filename = `${slug(title)}.${ext}`;
