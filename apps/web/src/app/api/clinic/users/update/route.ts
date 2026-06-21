@@ -3,6 +3,7 @@ import type { Database } from "@rolde/db";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSessionContext } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { ROLES } from "@/lib/roles";
 
 /**
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: target } = await supabase
     .from("tenant_users")
-    .select("id, user_id, role, tenant_id")
+    .select("id, user_id, role, tenant_id, display_name, status, prescribing_rights")
     .eq("id", id)
     .maybeSingle();
   if (!target || target.tenant_id !== tenantId) return fail("not_found", 404);
@@ -123,15 +124,65 @@ export async function POST(request: Request) {
         if (!taken) console.error("[users/update email]", emailErr.message);
         return fail(taken ? "email_taken" : "email_failed", taken ? 400 : 500);
       }
-      // Audit breadcrumb in the server log until a dedicated user-admin audit
-      // table lands (the access-log covers patient records, not staff identity).
-      console.warn(`[users/update] ${ctx.user.id} changed login email of ${target.user_id} to ${newEmail}`);
+      // The change itself is recorded in the Activity Log below (member.email_change) —
+      // the event + actor + time, never the address (PII stays out of a platform-read log).
       didEmail = true;
     }
   }
 
+  // ── Activity Log events ──────────────────────────────────────────────────
+  // Each security-relevant change (access · role · prescribing · login email) is
+  // its own audit row; a pure-detail edit gets one generic row. The member's name
+  // is fine here — staff identity within their own clinic — and resource is the
+  // membership, so the Custodian platform view shows the clinic, not patients.
+  const label =
+    (patch.display_name as string | undefined)?.trim() || target.display_name?.trim() || "a member";
+  const roleName = (k: string) => ROLES.find((r) => r.key === k)?.label ?? k;
+  const events: { action: string; summary: string }[] = [];
+  if (patch.status && patch.status !== target.status) {
+    if (patch.status === "paused") events.push({ action: "member.pause", summary: `Paused ${label}'s access` });
+    else if (patch.status === "archived") events.push({ action: "member.archive", summary: `Archived ${label}` });
+    else if (patch.status === "active") events.push({ action: "member.restore", summary: `Restored ${label}'s access` });
+  }
+  if (patch.role && patch.role !== target.role) {
+    events.push({ action: "member.role_change", summary: `Changed ${label}'s role to ${roleName(patch.role as string)}` });
+  }
+  if (typeof patch.prescribing_rights === "boolean" && patch.prescribing_rights !== target.prescribing_rights) {
+    events.push({
+      action: "member.prescribing",
+      summary: patch.prescribing_rights
+        ? `Granted prescribing rights to ${label}`
+        : `Removed prescribing rights from ${label}`,
+    });
+  }
+  if (didEmail) events.push({ action: "member.email_change", summary: `Changed ${label}'s login email` });
+  const DETAIL_KEYS = [
+    "display_name", "designation", "preferred_name", "job_title",
+    "license_type", "license_number", "access_starts_at", "access_ends_at",
+  ];
+  if (events.length === 0 && DETAIL_KEYS.some((k) => k in patch)) {
+    events.push({ action: "member.update", summary: `Updated ${label}'s details` });
+  }
+  const flushAudit = () =>
+    Promise.all(
+      events.map((e) =>
+        logAudit({
+          tenantId,
+          actorUserId: ctx.user.id,
+          action: e.action,
+          resourceType: "member",
+          resourceId: target.id,
+          summary: e.summary,
+        }),
+      ),
+    );
+
   if (Object.keys(patch).length === 0) {
-    return didEmail ? NextResponse.json({ ok: true, emailChanged: true }) : fail("nothing_to_update");
+    if (didEmail) {
+      await flushAudit();
+      return NextResponse.json({ ok: true, emailChanged: true });
+    }
+    return fail("nothing_to_update");
   }
   patch.updated_at = new Date().toISOString();
 
@@ -140,5 +191,6 @@ export async function POST(request: Request) {
     console.error("[users/update]", upErr.message);
     return fail("update_failed", 500);
   }
+  await flushAudit();
   return NextResponse.json({ ok: true, emailChanged: didEmail });
 }

@@ -3,6 +3,7 @@ import type { Database } from "@rolde/db";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSessionContext } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 import { sendTemplatedEmail } from "@/lib/email";
 import { accessSentence } from "@/lib/accessWindow";
 import { ROLES } from "@/lib/roles";
@@ -112,27 +113,41 @@ export async function POST(request: Request) {
     }
 
     // 3. Add the membership through the caretaker's session (RLS re-checks).
-    const { error: insErr } = await supabase.from("tenant_users").insert({
-      tenant_id: tenantId,
-      user_id: userId,
-      role: newRole as UserRole,
-      display_name: displayName,
-      designation: trimOrNull(body.designation),
-      preferred_name: trimOrNull(body.preferred_name),
-      job_title: trimOrNull(body.job_title),
-      license_type: trimOrNull(body.license_type),
-      license_number: trimOrNull(body.license_number),
-      prescribing_rights: prescribing,
-      access_starts_at: startsAt,
-      access_ends_at: endsAt,
-      status: "active",
-      invited_by: ctx.user.id,
-      invited_at: new Date().toISOString(),
-    });
+    const { data: membership, error: insErr } = await supabase
+      .from("tenant_users")
+      .insert({
+        tenant_id: tenantId,
+        user_id: userId,
+        role: newRole as UserRole,
+        display_name: displayName,
+        designation: trimOrNull(body.designation),
+        preferred_name: trimOrNull(body.preferred_name),
+        job_title: trimOrNull(body.job_title),
+        license_type: trimOrNull(body.license_type),
+        license_number: trimOrNull(body.license_number),
+        prescribing_rights: prescribing,
+        access_starts_at: startsAt,
+        access_ends_at: endsAt,
+        status: "active",
+        invited_by: ctx.user.id,
+        invited_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
     if (insErr) {
       console.error("[invite] membership insert:", insErr.message);
       return NextResponse.json({ ok: false, error: "membership_failed" }, { status: 500 });
     }
+
+    // Activity Log: a teammate was added to the clinic.
+    await logAudit({
+      tenantId,
+      actorUserId: ctx.user.id,
+      action: "member.invite",
+      resourceType: "member",
+      resourceId: membership?.id,
+      summary: `Invited ${displayName} as ${ROLES.find((r) => r.key === newRole)?.label ?? newRole}`,
+    });
 
     // 4. Onboarding email — role, clinic, access duration, set-password link.
     const tRel = ctx.membership?.tenants as

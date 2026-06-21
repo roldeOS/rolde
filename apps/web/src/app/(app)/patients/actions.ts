@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionContext } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
 
 /**
  * Create a patient in the caller's clinic. The clinic (tenant) comes from the
@@ -33,18 +34,36 @@ export async function createPatient(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("patients").insert({
-    tenant_id: tenantId,
-    first_name,
-    last_name,
-    date_of_birth,
-    sex_at_birth,
-    email,
-    phone_mobile,
-    nhs_number,
-    created_by: ctx?.user.id ?? null,
-  });
+  const { data: created, error } = await supabase
+    .from("patients")
+    .insert({
+      tenant_id: tenantId,
+      first_name,
+      last_name,
+      date_of_birth,
+      sex_at_birth,
+      email,
+      phone_mobile,
+      nhs_number,
+      created_by: ctx?.user.id ?? null,
+    })
+    .select("id, patient_number")
+    .single();
   if (error) throw new Error(error.message);
+
+  // Activity Log: a new patient registration. The summary carries the clinic
+  // PATIENT NUMBER (a non-identifying reference), never the name — the same row
+  // is read platform-wide by a Custodian.
+  await logAudit({
+    tenantId,
+    actorUserId: ctx?.user.id,
+    action: "patient.create",
+    resourceType: "patient",
+    resourceId: created?.id,
+    summary: created?.patient_number
+      ? `Registered patient ${created.patient_number}`
+      : "Registered a new patient",
+  });
 
   revalidatePath("/patients");
   redirect("/patients");
@@ -73,6 +92,17 @@ export async function saveNote(formData: FormData) {
   });
   if (error) throw new Error(error.message);
 
+  // Activity Log: a clinical note was written. Summary is content-free metadata —
+  // never the note text, never the patient name.
+  await logAudit({
+    tenantId,
+    actorUserId: ctx?.user.id,
+    action: "note.create",
+    resourceType: "patient",
+    resourceId: patientId,
+    summary: "Added a clinical note",
+  });
+
   revalidatePath(`/patients/${patientId}`);
 }
 
@@ -92,6 +122,7 @@ export async function editNote(formData: FormData) {
 
   const ctx = await getSessionContext();
   const userId = ctx?.user.id;
+  const tenantId = ctx?.membership?.tenant_id;
   if (!userId) throw new Error("Not signed in.");
 
   const supabase = await createClient();
@@ -117,6 +148,15 @@ export async function editNote(formData: FormData) {
     .eq("id", entryId);
   if (error) throw new Error(error.message);
 
+  await logAudit({
+    tenantId,
+    actorUserId: userId,
+    action: "note.edit",
+    resourceType: "patient",
+    resourceId: patientId,
+    summary: "Edited a clinical note within the edit window",
+  });
+
   revalidatePath(`/patients/${patientId}`);
 }
 
@@ -128,6 +168,7 @@ export async function strikeNote(formData: FormData) {
 
   const ctx = await getSessionContext();
   const userId = ctx?.user.id;
+  const tenantId = ctx?.membership?.tenant_id;
   if (!userId) throw new Error("Not signed in.");
 
   const supabase = await createClient();
@@ -139,6 +180,15 @@ export async function strikeNote(formData: FormData) {
     })
     .eq("id", entryId);
   if (error) throw new Error(error.message);
+
+  await logAudit({
+    tenantId,
+    actorUserId: userId,
+    action: strike ? "note.strike" : "note.unstrike",
+    resourceType: "patient",
+    resourceId: patientId,
+    summary: strike ? "Struck through a clinical note" : "Lifted a strike on a clinical note",
+  });
 
   revalidatePath(`/patients/${patientId}`);
 }
@@ -168,6 +218,15 @@ export async function amendNote(formData: FormData) {
     created_by: ctx?.user.id ?? null,
   });
   if (error) throw new Error(error.message);
+
+  await logAudit({
+    tenantId,
+    actorUserId: ctx?.user.id,
+    action: "note.amend",
+    resourceType: "patient",
+    resourceId: patientId,
+    summary: "Amended a clinical note",
+  });
 
   revalidatePath(`/patients/${patientId}`);
 }
