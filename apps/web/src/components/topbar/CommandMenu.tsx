@@ -17,6 +17,8 @@ import {
   Receipt,
   BarChart3,
   Settings,
+  ScrollText,
+  Scale,
   type LucideIcon,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -40,6 +42,8 @@ const PAGES: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/billing", label: "Billing", icon: Receipt },
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/logs", label: "Logs", icon: ScrollText },
+  { href: "/legal", label: "Legal & Safety", icon: Scale },
 ];
 
 /** A flat, navigable row — either a patient hit or a page. */

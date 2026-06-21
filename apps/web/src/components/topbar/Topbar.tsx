@@ -17,6 +17,7 @@ import {
   Receipt,
   BarChart3,
   Settings,
+  ScrollText,
   Scale,
   type LucideIcon,
 } from "lucide-react";
@@ -30,6 +31,7 @@ import { RolesGlossaryButton } from "./RolesGlossaryButton";
 import { ProfileMenu } from "./ProfileMenu";
 import { useNavTrail, type TrailEntry } from "@/lib/useNavTrail";
 import { SETTINGS_SECTIONS, getSection } from "@/app/(app)/settings/sections";
+import { LOG_SECTIONS, getLogSection } from "@/app/(app)/logs/sections";
 import { cn } from "@/lib/utils";
 
 /**
@@ -49,6 +51,7 @@ const SECTIONS: { re: RegExp; label: string; kind: string }[] = [
   { re: /^\/billing/, label: "Billing", kind: "billing" },
   { re: /^\/reports/, label: "Reports", kind: "reports" },
   { re: /^\/settings/, label: "Settings", kind: "settings" },
+  { re: /^\/logs/, label: "Logs", kind: "logs" },
   { re: /^\/legal/, label: "Legal & Safety", kind: "legal" },
 ];
 
@@ -64,13 +67,17 @@ const KIND_ICON: Record<string, LucideIcon> = {
   billing: Receipt,
   reports: BarChart3,
   settings: Settings,
+  logs: ScrollText,
   legal: Scale,
 };
 
-// A settings SUB-page crumb (e.g. Clinic Profile) carries its section's own icon,
-// drawn from the single Settings registry so the two never drift.
+// A settings/logs SUB-page crumb (e.g. Clinic Profile, Activity Log) carries its
+// section's own icon, drawn from the single registry so the two never drift.
 const SETTINGS_ICON: Record<string, LucideIcon> = Object.fromEntries(
   SETTINGS_SECTIONS.map((s) => [s.key, s.icon as LucideIcon]),
+);
+const LOGS_ICON: Record<string, LucideIcon> = Object.fromEntries(
+  LOG_SECTIONS.map((s) => [s.key, s.icon as LucideIcon]),
 );
 
 const VIEWS: { key: WorkspaceView; label: string }[] = [
@@ -126,6 +133,16 @@ export function Topbar({
       label: getSection(slug)?.title ?? "Settings",
       kind: slug,
     };
+  } else if (/^\/logs\/[^/]+$/.test(pathname)) {
+    // A Logs SUB-page (e.g. Activity Log): Logs is the clickable PARENT, the log
+    // is the current crumb — so the breadcrumb steps back to the hub.
+    const slug = pathname.split("/")[2];
+    parents = [{ href: "/logs", label: "Logs", kind: "logs" }];
+    trailCurrent = {
+      href: pathname,
+      label: getLogSection(slug)?.title ?? "Logs",
+      kind: slug,
+    };
   } else if (sectionMatch) {
     trailCurrent = {
       href: sectionMatch.kind === "dashboard" ? "/" : firstSeg,
@@ -161,7 +178,7 @@ export function Topbar({
             // icons to save room) — Roland 2026-06-11.
             const showLabel =
               i === 0 ? trail.length === 1 : i >= trail.length - 2;
-            const Icon = KIND_ICON[seg.kind] ?? SETTINGS_ICON[seg.kind] ?? User;
+            const Icon = KIND_ICON[seg.kind] ?? SETTINGS_ICON[seg.kind] ?? LOGS_ICON[seg.kind] ?? User;
 
             // Terminal patient crumb keeps the rich PatientIsland (name +
             // allergy flag + click-to-open island).

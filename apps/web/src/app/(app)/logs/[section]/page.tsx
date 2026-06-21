@@ -32,8 +32,8 @@ export default async function LogSectionPage({
 
       <div className="rounded-xl bg-card p-8 shadow-float">
         <p className="py-6 text-center text-sm text-muted-foreground">
-          This log is specified in {sec.source} and arrives in a coming build pass. The events
-          are being recorded; this is where you&apos;ll review them.
+          These events are already being recorded — the page to review them here lands in a
+          coming build pass.
         </p>
       </div>
     </div>
