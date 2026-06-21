@@ -4,18 +4,19 @@ import { SectionExplainer } from "@/components/ui/SectionExplainer";
 import { cn } from "@/lib/utils";
 
 /**
- * SectionHubGrid — the shared grouped card grid behind every Caretaker hub
- * (Settings, Logs, and whatever comes next). One implementation, so every hub
- * looks and behaves identically (URDS peer-consistency). A hub page supplies its
- * groups + sections + base href; cards route to `${baseHref}/${key}`.
+ * SectionHubGrid — the shared grouped card grid behind every Caretaker / Custodian
+ * hub (Settings, Logs, Control). One implementation so every hub is peer-consistent
+ * (URDS §0 rule 6: a standard lands → every hub uses it).
  *
- * Two card shapes:
- *   - "nav" (default): icon + title + blurb — a navigation tile (the Logs Hub).
- *   - "counter": the mindate Counter / URDS StatTile — icon-badge + label on the
- *     top row (with the (i) glossary beside it), then a BIG tinted number as the
- *     hero, with the noun beneath. A section with no count shows its blurb instead.
- *     This is the canonical "card that catches the eye" (mindate Dashboard parity).
- * Any section still `status: "soon"` shows an honest "Coming Next" pill.
+ * Card shapes:
+ *   - "counter" (the mindate Counter / URDS §8.1): SMALL tone-washed tile — icon-badge
+ *     + label (+ `(i)`) on the top row, then ONE relevant value as the hero (a count,
+ *     a config value like "Parchment" / "DFS" / "VAT 20%", or "Coming Next"). No prose
+ *     on the card — the blurb lives in the `(i)`. The number/value is the hero.
+ *   - "nav" (legacy): icon + title + blurb navigation tile.
+ *
+ * COLOUR: a FLAT solid tint of the Earth & Bloom hue (never a fade-to-transparent
+ * gradient — that reads dead), deepening on hover, mindate-calibrated per hue.
  */
 
 export type HubSection = {
@@ -26,25 +27,25 @@ export type HubSection = {
   tone: CardIconTone;
   status: "ready" | "soon";
   group: string;
-  /** Counter pattern (mindate Counter): a live count shown as the big number. */
-  count?: number;
-  /** The thing being counted, e.g. "members" — shown small under the number. */
-  countNoun?: string;
+  /** The hero value: a count (number) or a short config value ("Parchment", "VAT 20%"). */
+  value?: string | number;
+  /** Optional small line under the value (e.g. "members", "events"). */
+  valueSub?: string;
 };
 
-// WARM EARTH & BLOOM PASTELS per card (Roland 2026-06-20: warm, elegant, reduced
-// opacity — soft washes of the iOS palette; never fluorescent or washed-out grey).
+// FLAT solid tints — mindate-calibrated per hue (saturated hues lighter, pale hues
+// heavier) so every card reads alive. NOT a gradient fading to transparent.
 const TONE_WASH: Record<CardIconTone, string> = {
-  critical: "bg-gradient-to-br from-coral/[0.18] to-coral/[0.05] ring-1 ring-coral/25",
-  warning: "bg-gradient-to-br from-honey/[0.24] to-honey/[0.07] ring-1 ring-honey/30",
-  success: "bg-gradient-to-br from-bloom/40 to-bloom/[0.12] ring-1 ring-bloom/45",
-  info: "bg-gradient-to-br from-info/[0.14] to-info/[0.05] ring-1 ring-info/20",
-  accent: "bg-gradient-to-br from-bloom/40 to-bloom/[0.12] ring-1 ring-bloom/45",
-  neutral: "bg-gradient-to-br from-lavender/45 to-lavender/[0.14] ring-1 ring-lavender/45",
-  brand: "bg-gradient-to-br from-cream/55 to-cream/[0.18] ring-1 ring-honey/25",
+  critical: "bg-coral/[0.12] hover:bg-coral/[0.20]",
+  warning: "bg-honey/[0.18] hover:bg-honey/[0.28]",
+  success: "bg-bloom/40 hover:bg-bloom/[0.55]",
+  info: "bg-info/[0.14] hover:bg-info/[0.24]",
+  accent: "bg-bloom/40 hover:bg-bloom/[0.55]",
+  neutral: "bg-lavender/40 hover:bg-lavender/[0.55]",
+  brand: "bg-cream/55 hover:bg-cream/75",
 };
 
-// The big-number colour per tone (mirrors the mindate Counter value colour).
+// The hero-value colour per tone (mindate Counter value colour).
 const VALUE: Record<CardIconTone, string> = {
   critical: "text-rose-700",
   warning: "text-amber-800",
@@ -74,7 +75,7 @@ export function SectionHubGrid({
         return (
           <section key={group} className="space-y-3">
             <h2 className="px-1 text-sm font-semibold text-muted-foreground">{group}</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {inGroup.map((s) =>
                 cardVariant === "counter" ? (
                   <CounterCard key={s.key} section={s} href={`${baseHref}/${s.key}`} />
@@ -90,13 +91,69 @@ export function SectionHubGrid({
   );
 }
 
-/** The navigation tile — icon, title, blurb (the Logs Hub). Unchanged. */
+/**
+ * The Counter tile (mindate Counter / URDS §8.1). Small, flat-tinted, the value is
+ * the hero. Stretched-link clickability: an absolute `<Link>` overlay (z-0) makes
+ * the whole tile navigate while the `(i)` button escapes via `relative z-10` (no
+ * `<button>` inside `<a>` — Safari reparents it → hydration bug).
+ */
+export function CounterCard({
+  section: s,
+  href,
+}: {
+  section: Omit<HubSection, "group">;
+  href: string;
+}) {
+  const hasValue = s.value !== undefined && s.value !== null;
+  const isNum = typeof s.value === "number";
+  return (
+    <div
+      className={cn(
+        "group relative flex flex-col rounded-xl p-3 shadow-float transition-all hover:-translate-y-0.5 hover:shadow-raised",
+        TONE_WASH[s.tone],
+      )}
+    >
+      <Link
+        href={href}
+        aria-label={s.title}
+        className="absolute inset-0 z-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+      />
+      <div className="flex items-center gap-2">
+        <CardIcon icon={s.icon} tone={s.tone} variant="badge" size="sm" />
+        <p className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{s.title}</p>
+        <div className="relative z-10 shrink-0">
+          <SectionExplainer label={s.title} description={s.blurb} />
+        </div>
+      </div>
+      <div className="mt-2">
+        {hasValue ? (
+          <>
+            <p
+              className={cn(
+                "font-semibold leading-none",
+                isNum ? "text-2xl tabular-nums" : "text-lg",
+                VALUE[s.tone],
+              )}
+            >
+              {isNum ? (s.value as number).toLocaleString() : s.value}
+            </p>
+            {s.valueSub && <p className="mt-1 text-xs text-muted-foreground">{s.valueSub}</p>}
+          </>
+        ) : (
+          <p className="text-sm font-medium text-muted-foreground">Coming Next</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** The legacy navigation tile — icon, title, blurb. Same flat tint. */
 function NavCard({ section: s, href }: { section: HubSection; href: string }) {
   return (
     <Link
       href={href}
       className={cn(
-        "flex flex-col gap-3 rounded-xl p-5 shadow-float transition-shadow hover:shadow-raised",
+        "flex flex-col gap-3 rounded-xl p-5 shadow-float transition-all hover:-translate-y-0.5 hover:shadow-raised",
         TONE_WASH[s.tone],
       )}
     >
@@ -113,54 +170,5 @@ function NavCard({ section: s, href }: { section: HubSection; href: string }) {
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{s.blurb}</p>
       </div>
     </Link>
-  );
-}
-
-/**
- * The Counter tile (mindate Counter / URDS StatTile) — icon-badge + label on top,
- * then the big tinted number as the hero. Stretched-link clickability so the whole
- * tile navigates while the (i) glossary stays its own button (no <button> inside
- * <a>, which Safari reparents — mindate's hydration fix).
- */
-function CounterCard({ section: s, href }: { section: HubSection; href: string }) {
-  const soon = s.status === "soon";
-  const hasCount = s.count !== undefined && !soon;
-  return (
-    <div
-      className={cn(
-        "relative flex flex-col rounded-xl p-4 shadow-float transition-all hover:-translate-y-0.5 hover:shadow-raised",
-        TONE_WASH[s.tone],
-        soon && "opacity-70",
-      )}
-    >
-      <Link
-        href={href}
-        aria-label={s.title}
-        className="absolute inset-0 z-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-      />
-      <div className="flex items-center gap-2">
-        <CardIcon icon={s.icon} tone={s.tone} variant="badge" size="sm" />
-        <p className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">{s.title}</p>
-        {soon ? (
-          <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-            Coming Next
-          </span>
-        ) : hasCount ? (
-          <div className="relative z-10">
-            <SectionExplainer label={s.title} description={s.blurb} />
-          </div>
-        ) : null}
-      </div>
-      {hasCount ? (
-        <div className="mt-3">
-          <p className={cn("text-2xl font-semibold leading-none tabular-nums", VALUE[s.tone])}>
-            {s.count}
-          </p>
-          {s.countNoun && <p className="mt-1 text-xs text-muted-foreground">{s.countNoun}</p>}
-        </div>
-      ) : (
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.blurb}</p>
-      )}
-    </div>
   );
 }

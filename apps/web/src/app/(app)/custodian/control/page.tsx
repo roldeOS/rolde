@@ -1,15 +1,28 @@
-import Link from "next/link";
 import { SlidersHorizontal } from "lucide-react";
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
-import { CardIcon } from "@/components/ui/CardIcon";
+import { CounterCard } from "@/components/ui/SectionHubGrid";
+import { createClient } from "@/lib/supabase/server";
+import { LEGAL_DOCS } from "@/lib/legal";
 import { CONTROL_HUB } from "../sections";
 
 /**
  * Control (Bible 4.8 §16, W1.5.2) — the Custodian's equivalent of a clinic's
  * Settings: one destination gathering every platform lever they own (legal docs,
- * the email system, fellow Custodians). The /custodian layout gates to Custodians.
+ * the email system, fellow Custodians). Mindate Counter cards (URDS §8.1): each
+ * shows its live count. The /custodian layout gates to Custodians.
  */
-export default function ControlHubPage() {
+export default async function ControlHubPage() {
+  const supabase = await createClient();
+  const [emails, custodians] = await Promise.all([
+    supabase.from("email_templates").select("id", { count: "exact", head: true }).is("tenant_id", null),
+    supabase.from("custodian_users").select("user_id", { count: "exact", head: true }),
+  ]);
+  const values: Record<string, { value: number; valueSub: string }> = {
+    legal: { value: LEGAL_DOCS.length, valueSub: "documents" },
+    emails: { value: emails.count ?? 0, valueSub: "templates" },
+    custodians: { value: custodians.count ?? 0, valueSub: "custodians" },
+  };
+
   return (
     <div className="w-full space-y-6 p-6 lg:p-8">
       <PageHeaderRow
@@ -23,24 +36,21 @@ export default function ControlHubPage() {
         }}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {CONTROL_HUB.map((s) => (
-          <Link
+          <CounterCard
             key={s.key}
             href={s.href}
-            className="block rounded-xl bg-card p-5 shadow-float transition-shadow hover:shadow-raised"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <CardIcon icon={s.icon} tone={s.tone} variant="badge" size="md" />
-              {s.status === "soon" && (
-                <span className="rounded-md bg-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Soon
-                </span>
-              )}
-            </div>
-            <h3 className="mt-3 font-heading text-base font-semibold tracking-tight">{s.label}</h3>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{s.blurb}</p>
-          </Link>
+            section={{
+              key: s.key,
+              title: s.label,
+              blurb: s.blurb,
+              icon: s.icon,
+              tone: s.tone,
+              status: s.status,
+              ...values[s.key],
+            }}
+          />
         ))}
       </div>
     </div>
