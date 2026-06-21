@@ -65,7 +65,7 @@ export const LOG_SECTIONS: LogSection[] = [
     icon: FileSearch,
     tone: "info",
     source: "W1.1.7 §6.14",
-    status: "soon",
+    status: "ready",
     group: "Records & Access",
   },
   {

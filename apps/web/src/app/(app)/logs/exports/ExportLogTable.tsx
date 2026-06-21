@@ -4,6 +4,7 @@ import { FileClock, ExternalLink } from "lucide-react";
 import { TableShell, type SortOption } from "@/components/ui/table/TableShell";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { DENSITY_CLASSES } from "@/components/ui/table/TableDensityToggle";
+import { fmtWhen } from "@/lib/logFormat";
 
 /**
  * ExportLogTable — the clinic's audit trail of PDF exports (URDS §9.5 / Wave D),
@@ -26,18 +27,6 @@ export type ExportRow = {
   exporter_role: string | null;
   created_at: string;
 };
-
-function fmtWhen(iso: string): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 function fmtBytes(n: number): string {
   if (!n) return "—";
