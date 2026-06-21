@@ -9,8 +9,11 @@ import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { Field, Input } from "@/components/ui/form";
 
 export type CommercialSettings = {
-  vat_enabled: boolean;
-  vat_rate_bps: number;
+  tax_enabled: boolean;
+  tax_rate_bps: number;
+  tax_name: string;
+  tax_registration: string | null;
+  tax_inclusive: boolean;
   deposit_enabled: boolean;
   deposit_default_pence: number;
   consult_credit_enabled: boolean;
@@ -21,16 +24,21 @@ export type CommercialSettings = {
 
 /**
  * Commercial Settings (W1.1.16) — the clinic's money policy, toggle-first. Each
- * card is a switch; its detail fields appear ONLY when it's on, so a VAT-free,
+ * card is a switch; its detail fields appear ONLY when it's on, so a tax-free,
  * deposit-free clinic sees a clean page. Saved through the shared pinned save-bar
- * (§1.12) — no in-page Save button. Money stored as pence, VAT rate as bps.
+ * (§1.12) — no in-page Save button. Money stored as pence, the tax rate as bps.
+ * Tax v2: the tax is GLOBAL — its name (VAT · GST · Sales Tax), rate, registration
+ * number and inclusive/exclusive pricing are all the clinic's own (roadmap §15.7).
  */
 export function CommercialSettingsForm({ initial }: { initial: CommercialSettings }) {
   const router = useRouter();
   const flashSaved = useSavedFlash();
 
-  const [vatOn, setVatOn] = useState(initial.vat_enabled);
-  const [vatRate, setVatRate] = useState(trimPercent(initial.vat_rate_bps));
+  const [taxOn, setTaxOn] = useState(initial.tax_enabled);
+  const [taxRate, setTaxRate] = useState(trimPercent(initial.tax_rate_bps));
+  const [taxName, setTaxName] = useState(initial.tax_name);
+  const [taxReg, setTaxReg] = useState(initial.tax_registration ?? "");
+  const [taxInclusive, setTaxInclusive] = useState(initial.tax_inclusive);
   const [depositOn, setDepositOn] = useState(initial.deposit_enabled);
   const [deposit, setDeposit] = useState(pounds(initial.deposit_default_pence));
   const [creditOn, setCreditOn] = useState(initial.consult_credit_enabled);
@@ -41,9 +49,15 @@ export function CommercialSettingsForm({ initial }: { initial: CommercialSetting
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // What to call the tax in labels until they've typed their own (falls back calm).
+  const taxLabel = taxName.trim() || "Tax";
+
   const payload = {
-    vat_enabled: vatOn,
-    vat_rate_bps: toBps(vatRate),
+    tax_enabled: taxOn,
+    tax_rate_bps: toBps(taxRate),
+    tax_name: taxName.trim() || "Tax",
+    tax_registration: taxReg.trim() || null,
+    tax_inclusive: taxInclusive,
     deposit_enabled: depositOn,
     deposit_default_pence: toPence(deposit),
     consult_credit_enabled: creditOn,
@@ -53,8 +67,11 @@ export function CommercialSettingsForm({ initial }: { initial: CommercialSetting
   };
 
   const dirty =
-    payload.vat_enabled !== initial.vat_enabled ||
-    payload.vat_rate_bps !== initial.vat_rate_bps ||
+    payload.tax_enabled !== initial.tax_enabled ||
+    payload.tax_rate_bps !== initial.tax_rate_bps ||
+    payload.tax_name !== (initial.tax_name || "Tax") ||
+    payload.tax_registration !== (initial.tax_registration ?? null) ||
+    payload.tax_inclusive !== initial.tax_inclusive ||
     payload.deposit_enabled !== initial.deposit_enabled ||
     payload.deposit_default_pence !== initial.deposit_default_pence ||
     payload.consult_credit_enabled !== initial.consult_credit_enabled ||
@@ -89,25 +106,61 @@ export function CommercialSettingsForm({ initial }: { initial: CommercialSetting
 
   return (
     <div className="space-y-4">
-      {/* VAT */}
+      {/* Tax — global & configurable (VAT · GST · Sales Tax · Tax) */}
       <ToggleCard
         icon={Receipt}
         tone="info"
-        title="VAT"
-        blurb="Add VAT to your services and show it on invoices. Most aesthetic clinics in the UK charge 20%."
-        checked={vatOn}
-        onChange={setVatOn}
+        title="Tax"
+        blurb="Charge tax on your services and show it on invoices — VAT, GST, sales tax, whatever applies where you practise."
+        checked={taxOn}
+        onChange={setTaxOn}
       >
-        <Field label="VAT Rate (%)" htmlFor="vat_rate" hint="e.g. 20">
-          <Input
-            id="vat_rate"
-            inputMode="decimal"
-            value={vatRate}
-            onChange={(e) => setVatRate(e.target.value)}
-            placeholder="20"
-            className="max-w-[10rem]"
-          />
-        </Field>
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Tax Name" htmlFor="tax_name" hint="What it's called where you are">
+              <Input
+                id="tax_name"
+                value={taxName}
+                onChange={(e) => setTaxName(e.target.value)}
+                placeholder="VAT"
+                maxLength={20}
+              />
+            </Field>
+            <Field label={`${taxLabel} Rate (%)`} htmlFor="tax_rate" hint="e.g. 20">
+              <Input
+                id="tax_rate"
+                inputMode="decimal"
+                value={taxRate}
+                onChange={(e) => setTaxRate(e.target.value)}
+                placeholder="20"
+              />
+            </Field>
+          </div>
+          <Field
+            label="Tax Registration Number"
+            htmlFor="tax_reg"
+            hint="Shown on invoices — your VAT no. / GSTIN (optional)"
+          >
+            <Input
+              id="tax_reg"
+              value={taxReg}
+              onChange={(e) => setTaxReg(e.target.value)}
+              placeholder="e.g. GB123456789"
+              maxLength={40}
+            />
+          </Field>
+          <label className="field-float flex cursor-pointer items-center justify-between gap-3 rounded-lg px-3 py-2.5">
+            <span className="text-sm">
+              <span className="font-medium">Prices Include {taxLabel}</span>
+              <span className="block text-xs text-muted-foreground">
+                {taxInclusive
+                  ? `Your service prices already include ${taxLabel} — patients pay the price shown.`
+                  : `${taxLabel} is added on top of your prices at checkout.`}
+              </span>
+            </span>
+            <Switch checked={taxInclusive} onChange={setTaxInclusive} label={`Prices Include ${taxLabel}`} />
+          </label>
+        </div>
       </ToggleCard>
 
       {/* Deposits */}
@@ -223,6 +276,6 @@ function ToggleCard({
 // — money/rate helpers. Pence + basis-points in, display strings out (and back). —
 const pounds = (pence: number) => (pence / 100).toFixed(2);
 const toPence = (s: string) => Math.max(0, Math.round((parseFloat(s) || 0) * 100));
-// VAT rate display drops a trailing ".00" so 20% reads "20", not "20.00".
+// Tax rate display drops a trailing ".00" so 20% reads "20", not "20.00".
 const trimPercent = (bps: number) => String(bps / 100);
 const toBps = (s: string) => Math.min(10000, Math.max(0, Math.round((parseFloat(s) || 0) * 100)));

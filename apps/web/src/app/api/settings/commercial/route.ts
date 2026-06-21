@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
  * Commercial Settings (W1.1.16) — the Caretaker saves the clinic's money policy.
  * POST upserts the single per-tenant row. The write runs through the Caretaker's
  * own session so RLS (is_caretaker_of) re-checks; the tenant scope is taken from
- * the session, never the request. Money is integer pence; the VAT rate is bps.
+ * the session, never the request. Money is integer pence; the tax rate is bps.
  */
 async function gate() {
   const ctx = await getSessionContext();
@@ -36,11 +36,20 @@ export async function POST(request: Request) {
   const label =
     (typeof body.consult_credit_label === "string" ? body.consult_credit_label.trim() : "") ||
     "Consultation Credit";
+  const taxName =
+    (typeof body.tax_name === "string" ? body.tax_name.trim() : "").slice(0, 20) || "Tax";
+  const taxReg =
+    typeof body.tax_registration === "string" && body.tax_registration.trim()
+      ? body.tax_registration.trim().slice(0, 40)
+      : null;
 
   const fields = {
     tenant_id: tenantId,
-    vat_enabled: asBool(body.vat_enabled),
-    vat_rate_bps: Math.min(10000, intMin0(body.vat_rate_bps)),
+    tax_enabled: asBool(body.tax_enabled),
+    tax_rate_bps: Math.min(10000, intMin0(body.tax_rate_bps)),
+    tax_name: taxName,
+    tax_registration: taxReg,
+    tax_inclusive: asBool(body.tax_inclusive),
     deposit_enabled: asBool(body.deposit_enabled),
     deposit_default_pence: intMin0(body.deposit_default_pence),
     consult_credit_enabled: asBool(body.consult_credit_enabled),

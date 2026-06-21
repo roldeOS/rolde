@@ -18,15 +18,17 @@ export type Service = {
   code: string | null;
   price_pence: number;
   duration_minutes: number | null;
-  vat_exempt: boolean;
+  tax_exempt: boolean;
   deposit_pence: number | null;
   active: boolean;
 };
 
 /** The clinic's money switches — they decide which conditional fields show. */
 export type CommercialContext = {
-  vat_enabled: boolean;
-  vat_rate_bps: number;
+  tax_enabled: boolean;
+  tax_rate_bps: number;
+  tax_name: string;
+  tax_inclusive: boolean;
   deposit_enabled: boolean;
   deposit_default_pence: number;
 };
@@ -164,7 +166,7 @@ function ServiceRow({
   onEdit: () => void;
   onRemove: () => void;
 }) {
-  const showNoVat = commercial.vat_enabled && s.vat_exempt;
+  const showNoTax = commercial.tax_enabled && s.tax_exempt;
   const showDeposit = commercial.deposit_enabled && s.deposit_pence != null;
   return (
     <li className={cn("flex items-center gap-3 px-5 py-3.5", !s.active && "opacity-55")}>
@@ -185,7 +187,7 @@ function ServiceRow({
         </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
           {s.description && <span className="truncate">{s.description}</span>}
-          {showNoVat && <span className="text-warning">No VAT</span>}
+          {showNoTax && <span className="text-warning">No {commercial.tax_name}</span>}
           {showDeposit && <span>Deposit {money(s.deposit_pence!)}</span>}
         </div>
       </div>
@@ -260,7 +262,7 @@ function ServiceModal({
   const [duration, setDuration] = useState(
     service?.duration_minutes != null ? String(service.duration_minutes) : "",
   );
-  const [chargeVat, setChargeVat] = useState(service ? !service.vat_exempt : true);
+  const [chargeTax, setChargeTax] = useState(service ? !service.tax_exempt : true);
   const [depositStr, setDepositStr] = useState(
     service?.deposit_pence != null ? (service.deposit_pence / 100).toFixed(2) : "",
   );
@@ -269,11 +271,14 @@ function ServiceModal({
   const [error, setError] = useState<string | null>(null);
 
   const pricePence = Math.round((parseFloat(price) || 0) * 100);
+  const taxable = commercial.tax_enabled && chargeTax;
+  // Inclusive: the entered price already contains the tax (patients pay it as shown).
+  // Exclusive: tax is added on top, so the patient pays more than the entered price.
   const grossPence =
-    commercial.vat_enabled && chargeVat
-      ? Math.round(pricePence * (1 + commercial.vat_rate_bps / 10000))
+    taxable && !commercial.tax_inclusive
+      ? Math.round(pricePence * (1 + commercial.tax_rate_bps / 10000))
       : pricePence;
-  const vatPct = (commercial.vat_rate_bps / 100).toString();
+  const taxPct = (commercial.tax_rate_bps / 100).toString();
 
   async function save() {
     setError(null);
@@ -293,7 +298,7 @@ function ServiceModal({
           code: code.trim() || null,
           price_pence: pricePence,
           duration_minutes: duration.trim() === "" ? null : Number(duration),
-          vat_exempt: commercial.vat_enabled ? !chargeVat : false,
+          tax_exempt: commercial.tax_enabled ? !chargeTax : false,
           deposit_pence: commercial.deposit_enabled
             ? depositStr.trim() === ""
               ? null
@@ -414,17 +419,19 @@ function ServiceModal({
             />
           </Field>
 
-          {/* Conditional — only when the clinic charges VAT */}
-          {commercial.vat_enabled && (
+          {/* Conditional — only when the clinic charges tax */}
+          {commercial.tax_enabled && (
             <ToggleRow
-              title="Charge VAT On This Service"
+              title={`Charge ${commercial.tax_name} On This Service`}
               hint={
-                chargeVat
-                  ? `Adds ${vatPct}% — patients pay ${money(grossPence)}.`
-                  : "This service is VAT-exempt."
+                chargeTax
+                  ? commercial.tax_inclusive
+                    ? `Price includes ${taxPct}% ${commercial.tax_name} — patients pay ${money(pricePence)}.`
+                    : `Adds ${taxPct}% — patients pay ${money(grossPence)}.`
+                  : `This service is ${commercial.tax_name}-exempt.`
               }
-              checked={chargeVat}
-              onChange={setChargeVat}
+              checked={chargeTax}
+              onChange={setChargeTax}
             />
           )}
 

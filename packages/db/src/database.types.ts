@@ -24,10 +24,13 @@ export type Database = {
           deposit_default_pence: number
           deposit_enabled: boolean
           discount_codes_enabled: boolean
+          tax_enabled: boolean
+          tax_inclusive: boolean
+          tax_name: string
+          tax_rate_bps: number
+          tax_registration: string | null
           tenant_id: string
           updated_at: string
-          vat_enabled: boolean
-          vat_rate_bps: number
         }
         Insert: {
           consult_credit_enabled?: boolean
@@ -38,10 +41,13 @@ export type Database = {
           deposit_default_pence?: number
           deposit_enabled?: boolean
           discount_codes_enabled?: boolean
+          tax_enabled?: boolean
+          tax_inclusive?: boolean
+          tax_name?: string
+          tax_rate_bps?: number
+          tax_registration?: string | null
           tenant_id: string
           updated_at?: string
-          vat_enabled?: boolean
-          vat_rate_bps?: number
         }
         Update: {
           consult_credit_enabled?: boolean
@@ -52,10 +58,13 @@ export type Database = {
           deposit_default_pence?: number
           deposit_enabled?: boolean
           discount_codes_enabled?: boolean
+          tax_enabled?: boolean
+          tax_inclusive?: boolean
+          tax_name?: string
+          tax_rate_bps?: number
+          tax_registration?: string | null
           tenant_id?: string
           updated_at?: string
-          vat_enabled?: boolean
-          vat_rate_bps?: number
         }
         Relationships: [
           {
@@ -82,9 +91,9 @@ export type Database = {
           price_pence: number
           service_type: string
           sort: number
+          tax_exempt: boolean
           tenant_id: string
           updated_at: string
-          vat_exempt: boolean
         }
         Insert: {
           active?: boolean
@@ -100,9 +109,9 @@ export type Database = {
           price_pence?: number
           service_type?: string
           sort?: number
+          tax_exempt?: boolean
           tenant_id: string
           updated_at?: string
-          vat_exempt?: boolean
         }
         Update: {
           active?: boolean
@@ -118,9 +127,9 @@ export type Database = {
           price_pence?: number
           service_type?: string
           sort?: number
+          tax_exempt?: boolean
           tenant_id?: string
           updated_at?: string
-          vat_exempt?: boolean
         }
         Relationships: [
           {

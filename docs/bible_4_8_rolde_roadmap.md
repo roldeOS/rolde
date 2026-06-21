@@ -1224,16 +1224,21 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
   VAT-free, deposit-free clinic sees a clean page. These switches GATE the conditional fields in
   Services v2, the booking widget, and billing. (`clinic_commercial_settings`, one row per tenant;
   Caretaker-write via `is_caretaker_of`.)
-  **→ Tax v2 — generalise UK-VAT to GLOBAL Tax (researched 2026-06-19, Roland; pending greenlight).**
-  Hardcoding "VAT 20%" excludes the global market. Research (HMRC + Avalara/Stripe Tax/Chargebee +
-  India GST / US sales tax / AU GST) → make Tax fully **configurable**: a **name** (VAT · GST · Sales
-  Tax · Tax — defaulted by clinic country) · an **editable rate** (so 20→25% is one field) · a **tax
-  registration number** (VAT no. / GSTIN, for invoices) · **tax-inclusive vs tax-exclusive** pricing
-  (clinic default; UK aesthetics quote inclusive). The **per-service taxable/exempt** toggle stays —
-  it's UNIVERSAL: cosmetic = taxable, therapeutic/medical = exempt (UK/US/AU/IN all draw this line;
-  HMRC actively enforces it, e.g. *Illuminate Skin Clinics v HMRC* 2025). Deep rename `vat_*` →
-  `tax_*` (+ `tax_name`, `tax_registration`, `tax_inclusive`); per-service `vat_exempt` → `tax_exempt`.
-  No "VAT" hardcoded anywhere once shipped.
+  **→ Tax v2 — UK-VAT generalised to GLOBAL Tax. ✅ BUILT 2026-06-21 (Roland greenlit).**
+  Hardcoding "VAT 20%" excluded the global market. Research (HMRC + Avalara/Stripe Tax/Chargebee +
+  India GST / US sales tax / AU GST) → Tax is now fully **configurable**: a **name** (VAT · GST · Sales
+  Tax · Tax — defaulted by clinic country via `lib/tax.ts`, then editable) · an **editable rate** (20→25%
+  is one field) · a **tax registration number** (VAT no. / GSTIN, for invoices) · **tax-inclusive vs
+  tax-exclusive** pricing (the Services modal does the right gross-price maths each way). The
+  **per-service taxable/exempt** toggle stays — it's UNIVERSAL: cosmetic = taxable, therapeutic/medical
+  = exempt (UK/US/AU/IN all draw this line; HMRC actively enforces it, e.g. *Illuminate Skin Clinics v
+  HMRC* 2025). **Deep rename done all the way down** (migration `20260621150000_tax_v2.sql`, live):
+  `vat_enabled`→`tax_enabled` · `vat_rate_bps`→`tax_rate_bps` · per-service `vat_exempt`→`tax_exempt`,
+  the rate's CHECK constraint renamed too, + new `tax_name` · `tax_registration` · `tax_inclusive`.
+  No "VAT" identifier anywhere — only "VAT" as one configurable name among GST/Sales Tax (verified).
+  Verified live: Commercial Settings saves the tax config; the Services modal reflects the name + rate +
+  inclusive/exclusive; tsc + title-case clean. Historical migrations keep their original `vat_` text
+  (immutable migration history); the live schema + all code are `tax_`.
 - **W1.2 Patient Record Tabs** — W1.2.1 Problem list · W1.2.2 Medication list + reconciliation ·
   W1.2.3 History (PMH/surgical/family/social) · W1.2.4 Document store · W1.2.5 Before/after +
   body-map · W1.2.6 Digital consents (e-sign) · W1.2.7 Vitals/growth charts · W1.2.8 Risk scores

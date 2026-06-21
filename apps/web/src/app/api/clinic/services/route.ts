@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     code: trimOrNull(body.code),
     price_pence: pricePence,
     duration_minutes: duration,
-    vat_exempt: body.vat_exempt === true,
+    tax_exempt: body.tax_exempt === true,
     deposit_pence: depositPence,
     active: body.active !== false,
   };

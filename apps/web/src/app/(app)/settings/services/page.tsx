@@ -9,10 +9,19 @@ import { ServicesManager, type CommercialContext } from "./ServicesManager";
  * Settings → Services & Pricing (Caretaker, W1.1.8 v2). Static segment overriding
  * the `services` scaffold. The clinic's treatments + prices — grouped by category,
  * each with an optional code, and (when the matching switch is on in Commercial
- * Settings) a per-service VAT and deposit. The catalogue the booking widget +
+ * Settings) a per-service tax and deposit. The catalogue the booking widget +
  * billing read. Money is held as integer pence. (Course / membership service types
  * arrive with the Memberships & Packages module, W1.1.10, where they're managed.)
  */
+const TAX_DEFAULTS: CommercialContext = {
+  tax_enabled: false,
+  tax_rate_bps: 2000,
+  tax_name: "Tax",
+  tax_inclusive: false,
+  deposit_enabled: false,
+  deposit_default_pence: 0,
+};
+
 export default async function ServicesPage() {
   const { allowed, ctx } = await getSettingsAccess();
   if (!allowed) return <SettingsRestricted />;
@@ -21,12 +30,7 @@ export default async function ServicesPage() {
 
   const tenantId = ctx?.membership?.tenant_id ?? null;
   let services: Awaited<ReturnType<typeof loadServices>> = [];
-  let commercial: CommercialContext = {
-    vat_enabled: false,
-    vat_rate_bps: 2000,
-    deposit_enabled: false,
-    deposit_default_pence: 0,
-  };
+  let commercial: CommercialContext = TAX_DEFAULTS;
   if (tenantId) {
     [services, commercial] = await Promise.all([
       loadServices(tenantId),
@@ -59,7 +63,7 @@ async function loadServices(tenantId: string) {
   const { data } = await supabase
     .from("clinic_services")
     .select(
-      "id, name, description, category, code, price_pence, duration_minutes, vat_exempt, deposit_pence, active",
+      "id, name, description, category, code, price_pence, duration_minutes, tax_exempt, deposit_pence, active",
     )
     .eq("tenant_id", tenantId)
     .order("category", { ascending: true, nullsFirst: false })
@@ -72,15 +76,8 @@ async function loadCommercial(tenantId: string): Promise<CommercialContext> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("clinic_commercial_settings")
-    .select("vat_enabled, vat_rate_bps, deposit_enabled, deposit_default_pence")
+    .select("tax_enabled, tax_rate_bps, tax_name, tax_inclusive, deposit_enabled, deposit_default_pence")
     .eq("tenant_id", tenantId)
     .maybeSingle();
-  return (
-    data ?? {
-      vat_enabled: false,
-      vat_rate_bps: 2000,
-      deposit_enabled: false,
-      deposit_default_pence: 0,
-    }
-  );
+  return data ?? TAX_DEFAULTS;
 }
