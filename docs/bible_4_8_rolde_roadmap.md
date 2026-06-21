@@ -1319,6 +1319,35 @@ spend; expiry; code usage shown against the patient)* · W4.4 Aged debt · W4.5 
 Reports/analytics · W6.4 Patient portal · W6.5 Audit-log surface · W6.6 Website builder (Puck) +
 booking plugin + custom domains
 
+### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
+
+The net-new WBS above is only half the work; alongside it runs a stream of small changes to
+things already shipped. Tracked HERE, in the Build Register, grouped by module (Roland's call:
+a section's polish lives next to the section — one doc, no new file). Tick as done; append as new
+addenda surface.
+
+- **Hubs / cards (Settings · Logs · Control):**
+  - [ ] **Card tint saturation** — the flat Counter-card tints sit at mindate's opacity; dial
+    punchier if Roland's eye wants it (a one-token change to `TONE_WASH` in `SectionHubGrid`).
+  - [ ] **Clinic Profile card value** is a placeholder (`Set`) — give it a meaningful at-a-glance
+    value (e.g. completeness) or leave as-is.
+- **W1.1.7 Users & Roles:**
+  - [ ] **"Suspend/Suspended" → "Revoke"?** Roland's naming call. If Revoke, align the DB `status`
+    value too (deep, not just the label — no old word lurking).
+  - [ ] **Retire legacy** `gmc_number/gdc_number/nmc_pin` columns (superseded by `license_type/number`).
+- **W1.1.13 Email Templates:**
+  - [ ] **Wire the RolDe OS wordmark PNG URLs** into the email shell (post-deploy; serif-text
+    placeholder until then).
+- **Logs / audit spine (Bible 4.1 §5.4):**
+  - [ ] **Reconcile `audit_log`** — the shipped table is lean (actor · action · summary · metadata);
+    the bible documents a richer schema (actor_role · before/after_state · ip · user_agent). Enrich
+    the table OR update the bible to match what we shipped. (`auth_audit_log` already carries IP + device.)
+- **W0.2 Legal:**
+  - [ ] Fill the **ICO registration number**; confirm/adjust the **£25k liability floor** (Roland's facts).
+- **W0.1 Login security (rides the pre-launch HIBP gate):**
+  - [ ] When HIBP/Pro lands: drop the interim **password-class rule → length-only** (server +
+    `lib/password.ts` + the `/reset` meter, same pass).
+
 ---
 
 ### Commerce & Booking — the money thread *(greenlit Roland 2026-06-18)*
