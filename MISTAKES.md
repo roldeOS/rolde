@@ -249,5 +249,39 @@ nothing less.
 
 ---
 
+## 9. Added a new route (Logs) but didn't register it in the breadcrumb / search maps — shipped a 90%-done page — 2026-06-21
+
+Built the Logs Hub + its pages and verified they *rendered*, but not the chrome around them. The
+topbar breadcrumb showed **"Settings"** on every `/logs/*` page, because the breadcrumb and the ⌘K
+command menu each enumerate routes in their OWN hand-maintained maps, and `/logs` wasn't in them —
+so the breadcrumb fell through to the last stored crumb. Roland caught it: *"Do I have to pick up
+after you… for all the pages? Why can't you hold yourself to a standard?"*
+
+**Fix:** A new/moved route is registered in **every** route map, not just the page:
+- **Breadcrumb** (`components/topbar/Topbar.tsx`): add to `SECTIONS` (top-level → label+icon), add a
+  `/<area>/[section]` sub-page branch if it has sub-pages, and add its icon map. It does NOT auto-derive.
+- **⌘K command menu** (`components/topbar/CommandMenu.tsx`): add to the searchable `PAGES`.
+- **Sidebar** (`components/SidebarNav.tsx`): nav item + the access-matrix module gate.
+- Then **open the page and check the WHOLE surface**: breadcrumb · ⌘K · nav · empty state · the
+  negative gate · plain-English copy (no Bible-ref jargon, no `{expr}text` whitespace bugs).
+
+**Audit (siblings found, 2026-06-21):** the **same gap exists in the Custodian area** —
+`/custodian/*` isn't in `SECTIONS` and custodians share the topbar, so their breadcrumb falls through
+too (the egregious sibling). Shallower cousins: deep Settings sub-pages (`/settings/email/[slug]`)
+and `/legal/[slug]` show the *section* label, not the leaf. *(Custodian fix attempted but not shipped
+— the dev preview's headless tab was throttling client effects so the breadcrumb couldn't be
+runtime-verified; per MISTAKES #8 + this entry, an unverified breadcrumb change touching the shared
+`useNavTrail` hook is not shipped. To fix WITH verification.)*
+
+**Trigger:** Adding OR moving ANY route/page. Before "done", grep the sibling routes in `Topbar.tsx`
+(`SECTIONS` + branches), `CommandMenu.tsx` (`PAGES`), and `SidebarNav.tsx`, register the new route in
+each, then click into the page and SEE the breadcrumb + ⌘K + nav resolve correctly.
+
+**Lesson:** A page that *renders* is not a page that's *done*. The chrome around it — breadcrumb,
+search, nav — is part of the work, and it lives in separate maps that don't auto-update. Verify the
+whole surface, every time. (Pairs with the memory *verify-whole-surface-not-just-happy-path*.)
+
+---
+
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or
 when a diagnosed regression is worth locking and Roland approves the entry.*
