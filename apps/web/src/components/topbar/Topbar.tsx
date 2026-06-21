@@ -33,6 +33,7 @@ import { useNavTrail, type TrailEntry } from "@/lib/useNavTrail";
 import { SETTINGS_SECTIONS, getSection } from "@/app/(app)/settings/sections";
 import { LOG_SECTIONS, getLogSection } from "@/app/(app)/logs/sections";
 import { CONTROL_NAV, CONTROL_HUB, getControlSection } from "@/app/(app)/custodian/sections";
+import { CUSTODIAN_LOG_SECTIONS, getCustodianLogSection } from "@/app/(app)/custodian/logs/sections";
 import { cn } from "@/lib/utils";
 
 /**
@@ -82,6 +83,9 @@ const LOGS_ICON: Record<string, LucideIcon> = Object.fromEntries(
 );
 const CONTROL_ICON: Record<string, LucideIcon> = Object.fromEntries(
   [...CONTROL_NAV, ...CONTROL_HUB].map((s) => [s.key, s.icon as LucideIcon]),
+);
+const CUSTODIAN_LOG_ICON: Record<string, LucideIcon> = Object.fromEntries(
+  CUSTODIAN_LOG_SECTIONS.map((s) => [s.key, s.icon as LucideIcon]),
 );
 
 const VIEWS: { key: WorkspaceView; label: string }[] = [
@@ -154,6 +158,15 @@ export function Topbar({
       label: getLogSection(slug)?.title ?? "Logs",
       kind: slug,
     };
+  } else if (/^\/custodian\/logs\/[^/]+$/.test(pathname)) {
+    // A Custodian Logs SUB-page (e.g. platform Activity): Overview › Logs › <log>.
+    const slug = pathname.split("/")[3];
+    parents = [home, { href: "/custodian/logs", label: "Logs", kind: "logs" }];
+    trailCurrent = {
+      href: pathname,
+      label: getCustodianLogSection(slug)?.title ?? "Logs",
+      kind: slug,
+    };
   } else if (/^\/custodian\/[^/]+$/.test(pathname)) {
     // A Custodian (Platform) SUB-page: the Overview is the clickable PARENT, the
     // control section is the current crumb — mirrors Settings/Logs.
@@ -199,7 +212,12 @@ export function Topbar({
             const showLabel =
               i === 0 ? trail.length === 1 : i >= trail.length - 2;
             const Icon =
-              KIND_ICON[seg.kind] ?? SETTINGS_ICON[seg.kind] ?? LOGS_ICON[seg.kind] ?? CONTROL_ICON[seg.kind] ?? User;
+              KIND_ICON[seg.kind] ??
+              SETTINGS_ICON[seg.kind] ??
+              LOGS_ICON[seg.kind] ??
+              CONTROL_ICON[seg.kind] ??
+              CUSTODIAN_LOG_ICON[seg.kind] ??
+              User;
 
             // Terminal patient crumb keeps the rich PatientIsland (name +
             // allergy flag + click-to-open island).

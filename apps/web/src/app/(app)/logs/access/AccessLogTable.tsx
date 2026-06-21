@@ -21,6 +21,8 @@ export type AccessRow = {
   patient_no: string;
   action: string;
   at: string;
+  /** Set only for the platform-wide (Custodian) view — adds a Clinic column. */
+  clinic?: string;
 };
 
 const ACTION_LABEL: Record<string, string> = {
@@ -39,12 +41,24 @@ export function AccessLogTable({
   rows,
   title,
   blurb,
+  showClinic = false,
 }: {
   rows: AccessRow[];
   title: string;
   blurb: string;
+  /** The Custodian platform-wide view spans clinics — add a Clinic column. */
+  showClinic?: boolean;
 }) {
+  const clinicCol: DataTableColumn<AccessRow> = {
+    id: "clinic",
+    header: "Clinic",
+    width: "12rem",
+    truncate: true,
+    title: (r) => r.clinic ?? "",
+    cell: (r) => <span className="text-muted-foreground">{r.clinic ?? "—"}</span>,
+  };
   const columns: DataTableColumn<AccessRow>[] = [
+    ...(showClinic ? [clinicCol] : []),
     {
       id: "who",
       header: "Person",
@@ -95,6 +109,7 @@ export function AccessLogTable({
   ];
 
   const exportColumns = [
+    ...(showClinic ? [{ header: "Clinic", w: 1.1, value: (r: AccessRow) => r.clinic ?? "" }] : []),
     { header: "Person", w: 1.4, value: (r: AccessRow) => `${r.who}${r.who_role ? ` (${r.who_role})` : ""}` },
     { header: "Patient", w: 1.4, value: (r: AccessRow) => `${r.patient}${r.patient_no ? ` (${r.patient_no})` : ""}` },
     { header: "Action", w: 0.7, value: (r: AccessRow) => actionLabel(r.action) },

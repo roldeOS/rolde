@@ -23,6 +23,8 @@ export type CommsRow = {
   opened_at: string | null;
   clicked_at: string | null;
   created_at: string;
+  /** Set only for the platform-wide (Custodian) view — adds a Clinic column. */
+  clinic?: string;
 };
 
 /** The furthest the email got — "sent" is not "delivered" (email-deliverability). */
@@ -39,12 +41,24 @@ export function CommsLogTable({
   rows,
   title,
   blurb,
+  showClinic = false,
 }: {
   rows: CommsRow[];
   title: string;
   blurb: string;
+  /** The Custodian platform-wide view spans clinics — add a Clinic column. */
+  showClinic?: boolean;
 }) {
+  const clinicCol: DataTableColumn<CommsRow> = {
+    id: "clinic",
+    header: "Clinic",
+    width: "11rem",
+    truncate: true,
+    title: (r) => r.clinic ?? "",
+    cell: (r) => <span className="text-muted-foreground">{r.clinic ?? "—"}</span>,
+  };
   const columns: DataTableColumn<CommsRow>[] = [
+    ...(showClinic ? [clinicCol] : []),
     {
       id: "to",
       header: "Recipient",
@@ -89,6 +103,7 @@ export function CommsLogTable({
   ];
 
   const exportColumns = [
+    ...(showClinic ? [{ header: "Clinic", w: 1.1, value: (r: CommsRow) => r.clinic ?? "" }] : []),
     { header: "Recipient", w: 1.6, value: (r: CommsRow) => `${r.to_name ? `${r.to_name} ` : ""}<${r.to_email}>` },
     { header: "Subject", w: 2.2, value: (r: CommsRow) => r.subject },
     { header: "Status", w: 0.8, value: (r: CommsRow) => delivery(r) },

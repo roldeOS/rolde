@@ -19,6 +19,8 @@ export type ActivityRow = {
   action: string;
   summary: string;
   at: string;
+  /** Set only for the platform-wide (Custodian) view — adds a Clinic column. */
+  clinic?: string;
 };
 
 /** Fallback when an action wasn't given a human summary — humanise the verb. */
@@ -34,12 +36,24 @@ export function ActivityLogTable({
   rows,
   title,
   blurb,
+  showClinic = false,
 }: {
   rows: ActivityRow[];
   title: string;
   blurb: string;
+  /** The Custodian platform-wide view spans clinics — add a Clinic column. */
+  showClinic?: boolean;
 }) {
+  const clinicCol: DataTableColumn<ActivityRow> = {
+    id: "clinic",
+    header: "Clinic",
+    width: "12rem",
+    truncate: true,
+    title: (r) => r.clinic ?? "",
+    cell: (r) => <span className="text-muted-foreground">{r.clinic ?? "—"}</span>,
+  };
   const columns: DataTableColumn<ActivityRow>[] = [
+    ...(showClinic ? [clinicCol] : []),
     {
       id: "who",
       header: "Person",
@@ -76,6 +90,7 @@ export function ActivityLogTable({
   ];
 
   const exportColumns = [
+    ...(showClinic ? [{ header: "Clinic", w: 1.1, value: (r: ActivityRow) => r.clinic ?? "" }] : []),
     { header: "Person", w: 1.3, value: (r: ActivityRow) => `${r.who}${r.who_role ? ` (${r.who_role})` : ""}` },
     { header: "Activity", w: 3, value: (r: ActivityRow) => activityText(r) },
     { header: "When", w: 1.1, align: "right" as const, value: (r: ActivityRow) => fmtWhen(r.at) },
