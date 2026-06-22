@@ -36,13 +36,13 @@ export type HubSection = {
 // FLAT solid tints — mindate-calibrated per hue (saturated hues lighter, pale hues
 // heavier) so every card reads alive. NOT a gradient fading to transparent.
 const TONE_WASH: Record<CardIconTone, string> = {
-  critical: "bg-coral/[0.12] hover:bg-coral/[0.20]",
-  warning: "bg-honey/[0.18] hover:bg-honey/[0.28]",
-  success: "bg-bloom/40 hover:bg-bloom/[0.55]",
-  info: "bg-info/[0.14] hover:bg-info/[0.24]",
-  accent: "bg-bloom/40 hover:bg-bloom/[0.55]",
-  neutral: "bg-lavender/40 hover:bg-lavender/[0.55]",
-  brand: "bg-cream/55 hover:bg-cream/75",
+  critical: "bg-coral/[0.18] hover:bg-coral/[0.28]",
+  warning: "bg-honey/[0.26] hover:bg-honey/[0.38]",
+  success: "bg-bloom/[0.55] hover:bg-bloom/[0.72]",
+  info: "bg-info/[0.20] hover:bg-info/[0.32]",
+  accent: "bg-bloom/[0.55] hover:bg-bloom/[0.72]",
+  neutral: "bg-lavender/[0.55] hover:bg-lavender/[0.72]",
+  brand: "bg-cream/70 hover:bg-cream/90",
 };
 
 // The hero-value colour per tone (mindate Counter value colour).
