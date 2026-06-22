@@ -1,3 +1,4 @@
+import { CARD_ICON_TEXT } from "@/lib/cardTones";
 import { cn } from "@/lib/utils";
 
 /**
@@ -26,19 +27,21 @@ export type CardIconTone =
   | "peach"
   | "periwinkle";
 
-const TONES: Record<CardIconTone, { bg: string; text: string }> = {
-  critical: { bg: "bg-critical/10", text: "text-critical" },
-  warning:  { bg: "bg-warning/12",  text: "text-warning" },
-  success:  { bg: "bg-success/10",  text: "text-success" },
-  info:     { bg: "bg-info/10",     text: "text-info" },
-  accent:   { bg: "bg-accent/15",   text: "text-accent" },
-  neutral:  { bg: "bg-slate-500/10", text: "text-slate-600" },
-  brand:    { bg: "bg-foreground/8", text: "text-foreground" },
-  rose:       { bg: "bg-rose/20",       text: "text-rose-700" },
-  sky:        { bg: "bg-sky/25",        text: "text-sky-700" },
-  teal:       { bg: "bg-teal/25",       text: "text-teal-700" },
-  peach:      { bg: "bg-peach/25",      text: "text-orange-700" },
-  periwinkle: { bg: "bg-periwinkle/25", text: "text-indigo-600" },
+// Icon-badge background per tone; the icon glyph colour is the shared CARD_ICON_TEXT
+// (lib/cardTones) — one source of truth, so the breadcrumb crumb-icon matches the page.
+const TONE_BG: Record<CardIconTone, string> = {
+  critical: "bg-critical/10",
+  warning:  "bg-warning/12",
+  success:  "bg-success/10",
+  info:     "bg-info/10",
+  accent:   "bg-accent/15",
+  neutral:  "bg-slate-500/10",
+  brand:    "bg-foreground/8",
+  rose:       "bg-rose/20",
+  sky:        "bg-sky/25",
+  teal:       "bg-teal/25",
+  peach:      "bg-peach/25",
+  periwinkle: "bg-periwinkle/25",
 };
 
 interface Props {
@@ -56,17 +59,18 @@ export function CardIcon({
   variant = "tinted",
   className,
 }: Props) {
-  const t = TONES[tone];
   const dims = size === "sm" ? "size-6 rounded-md" : "size-7 rounded-md";
   const iconSize = size === "sm" ? "size-3.5" : "size-4";
   const bg =
-    variant === "badge" ? "bg-card shadow-sm border border-border/40" : t.bg;
+    variant === "badge"
+      ? "bg-card shadow-sm border border-border/40"
+      : TONE_BG[tone];
   return (
     <span
       aria-hidden="true"
       className={cn("inline-flex shrink-0 items-center justify-center", dims, bg, className)}
     >
-      <Icon className={cn(iconSize, t.text)} />
+      <Icon className={cn(iconSize, CARD_ICON_TEXT[tone])} />
     </span>
   );
 }

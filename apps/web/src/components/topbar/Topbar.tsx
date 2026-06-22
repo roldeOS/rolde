@@ -34,6 +34,8 @@ import { SETTINGS_SECTIONS, getSection } from "@/app/(app)/settings/sections";
 import { LOG_SECTIONS, getLogSection } from "@/app/(app)/logs/sections";
 import { CONTROL_NAV, CONTROL_HUB, getControlSection } from "@/app/(app)/custodian/sections";
 import { CUSTODIAN_LOG_SECTIONS, getCustodianLogSection } from "@/app/(app)/custodian/logs/sections";
+import { CARD_ICON_TEXT } from "@/lib/cardTones";
+import type { CardIconTone } from "@/components/ui/CardIcon";
 import { cn } from "@/lib/utils";
 
 /**
@@ -87,6 +89,38 @@ const CONTROL_ICON: Record<string, LucideIcon> = Object.fromEntries(
 const CUSTODIAN_LOG_ICON: Record<string, LucideIcon> = Object.fromEntries(
   CUSTODIAN_LOG_SECTIONS.map((s) => [s.key, s.icon as LucideIcon]),
 );
+
+// Each crumb's icon wears the SAME colour as the icon on the page it leads to
+// (Roland 2026-06-22). Top-level kinds mirror that page's header tone; sub-page
+// kinds (settings/logs/control/custodian-logs) inherit their section's own tone
+// from the registry — so the breadcrumb chip matches its now-colourful hub card.
+const KIND_TONE: Record<string, CardIconTone> = {
+  dashboard: "brand",
+  overview: "brand",
+  patients: "brand",
+  patient: "brand",
+  "new-patient": "brand",
+  calendar: "success",
+  investigations: "info",
+  prescribing: "warning",
+  letters: "neutral",
+  billing: "warning",
+  reports: "neutral",
+  settings: "neutral",
+  logs: "neutral",
+  legal: "neutral",
+};
+const SECTION_TONE: Record<string, CardIconTone> = Object.fromEntries(
+  [
+    ...SETTINGS_SECTIONS,
+    ...LOG_SECTIONS,
+    ...CONTROL_NAV,
+    ...CONTROL_HUB,
+    ...CUSTODIAN_LOG_SECTIONS,
+  ].map((s) => [s.key, s.tone]),
+);
+const toneForKind = (kind: string): CardIconTone =>
+  KIND_TONE[kind] ?? SECTION_TONE[kind] ?? "brand";
 
 const VIEWS: { key: WorkspaceView; label: string }[] = [
   { key: "consult", label: "Consult" },
@@ -234,7 +268,9 @@ export function Topbar({
 
             const inner = (
               <>
-                <Icon className="size-4 shrink-0" />
+                <Icon
+                  className={cn("size-4 shrink-0", CARD_ICON_TEXT[toneForKind(seg.kind)])}
+                />
                 {showLabel && <span className="truncate">{seg.label}</span>}
               </>
             );
