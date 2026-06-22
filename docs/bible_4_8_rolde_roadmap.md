@@ -1348,6 +1348,33 @@ addenda surface.
   - [ ] When HIBP/Pro lands: drop the interim **password-class rule → length-only** (server +
     `lib/password.ts` + the `/reset` meter, same pass).
 
+### 15.7b Logs Enrichment — auditor-grade exports (Roland 2026-06-22)
+
+The standard (ISO 27001 A.12.4 / NIST AU-3 / NHS+GDPR): a trail must reconstruct **who (+ role) ·
+what (+ the object) · when (UTC) · where (IP/device) · source · purpose · outcome · integrity**.
+Design law: **calm screen, forensic-complete EXPORT** — the auditor's CSV/PDF carries the full set.
+
+- **Phase 1 — surface what's already captured ✅ DONE 2026-06-22** (commits `d94ec4e`, `0b34eea`):
+  - Communications → Type · Provider Message ID · delivery timeline (UTC) · Failure Reason · Source.
+  - Activity → Action code · Resource (type · id) · Details · UTC.  Sign-in → Email · Outcome ·
+    Method (best-effort) · UTC.  Export Log → Size · UTC.  Shared `fmtUtc()` for every export stamp.
+  - Verified live: all 8 surfaces (each log × clinic + Custodian) render; real CSVs carry every new
+    header; data populates. *(Known data-gaps, not bugs: Activity "Details" blank until we capture
+    before/after into metadata; Sign-in "Method" blank where the upstream has none.)*
+- **Phase 2 — Patient Access break-glass ⬜ (greenlit design, ready to build).** The thinnest, most
+  audit-critical log. Migration on `patient_access_log`: + `actor_role` · `ip_address` · `user_agent`
+  · `purpose` (`direct_care`|`administrative`|`records_request`|`safeguarding`|`other`) · `reason`
+  (free-text for "other") · `break_glass` (bool). Capture in `logPatientAccess()`: role + IP + device,
+  and **purpose INFERRED by default (zero friction)** — `direct_care` when a *legitimate relationship*
+  exists (open consultation · recent/upcoming appointment · the record's clinician · assigned);
+  `administrative` from the admin/list surfaces. **Break-glass fires ONLY on the ABSENCE of any care
+  link** (not a date): a one-tap reason chip (Continuing care · Records/SAR request · Safeguarding ·
+  Administrative · Other→type), **non-blocking** — the record opens immediately, the reason is recorded
+  just-in-time, the row flagged `break_glass`. Screen adds Role + Purpose; export adds Role · From where
+  (IP+device) · Purpose · break-glass. Verify the negative case (opening a non-linked patient → the chip
+  fires + the row is break-glass) and the inferred no-friction path (no chip mid-consultation). Folds in
+  the **`audit_log` reconciliation** above (capture before/after into metadata so Activity "Details" fills).
+
 ---
 
 ### Commerce & Booking — the money thread *(greenlit Roland 2026-06-18)*
