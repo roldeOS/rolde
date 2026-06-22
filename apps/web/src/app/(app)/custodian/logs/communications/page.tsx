@@ -23,7 +23,9 @@ async function loadComms(): Promise<CommsRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("transactional_emails")
-    .select("id, to_name, to_email, subject, status, delivered_at, opened_at, clicked_at, created_at, tenant_id")
+    .select(
+      "id, to_name, to_email, subject, status, template_slug, provider_message_id, error_message, source, delivered_at, opened_at, clicked_at, created_at, tenant_id",
+    )
     .order("created_at", { ascending: false })
     .limit(500);
 
@@ -42,6 +44,10 @@ async function loadComms(): Promise<CommsRow[]> {
     to_email: r.to_email,
     subject: r.subject,
     status: r.status,
+    template_slug: r.template_slug,
+    provider_message_id: r.provider_message_id,
+    error_message: r.error_message,
+    source: r.source,
     delivered_at: r.delivered_at,
     opened_at: r.opened_at,
     clicked_at: r.clicked_at,

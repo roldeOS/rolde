@@ -4,13 +4,17 @@ import { Send } from "lucide-react";
 import { TableShell, type SortOption } from "@/components/ui/table/TableShell";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { DENSITY_CLASSES } from "@/components/ui/table/TableDensityToggle";
-import { fmtWhen } from "@/lib/logFormat";
+import { fmtWhen, fmtUtc } from "@/lib/logFormat";
 
 /**
  * CommsLogTable — the clinic's operational-email trail (Logs Hub; Bible 4.4 §6).
  * Every email the clinic sent a patient + how far it got (delivered → opened →
  * clicked), because "sent" is not "delivered". Comms are clinical-adjacent
  * records; read by the Caretaker only.
+ *
+ * Lean on screen (Recipient · Type · Subject · Status · Sent); the EXPORT carries
+ * the full forensic set an auditor needs — the provider Message ID (to trace with
+ * the email provider), the delivery timeline in UTC, the failure reason, the source.
  */
 
 export type CommsRow = {
@@ -19,6 +23,10 @@ export type CommsRow = {
   to_email: string;
   subject: string;
   status: string;
+  template_slug: string | null;
+  provider_message_id: string | null;
+  error_message: string | null;
+  source: string | null;
   delivered_at: string | null;
   opened_at: string | null;
   clicked_at: string | null;
@@ -35,6 +43,19 @@ function delivery(r: CommsRow): string {
   if (r.delivered_at) return "Delivered";
   if (r.status === "sent" || r.status === "queued" || r.status === "processed") return "Sent";
   return r.status ? r.status[0].toUpperCase() + r.status.slice(1) : "—";
+}
+
+/** Friendly name for the email's type, from its template slug. */
+const TYPE_LABEL: Record<string, string> = {
+  auth_password_reset: "Password Reset",
+  auth_invite: "Invitation",
+};
+function typeLabel(slug: string | null): string {
+  if (!slug) return "—";
+  return (
+    TYPE_LABEL[slug] ??
+    slug.replace(/^auth_/, "").replace(/[_-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  );
 }
 
 export function CommsLogTable({
@@ -75,9 +96,17 @@ export function CommsLogTable({
       ),
     },
     {
+      id: "type",
+      header: "Type",
+      width: "10rem",
+      truncate: true,
+      title: (r) => typeLabel(r.template_slug),
+      cell: (r) => <span className="text-muted-foreground">{typeLabel(r.template_slug)}</span>,
+    },
+    {
       id: "subject",
       header: "Subject",
-      width: "26%",
+      width: "24%",
       truncate: true,
       title: (r) => r.subject,
       cell: (r) => <span className="text-foreground">{r.subject || "—"}</span>,
@@ -102,12 +131,22 @@ export function CommsLogTable({
     { key: "recipient", label: "Recipient", compare: (a, b) => a.to_email.localeCompare(b.to_email) },
   ];
 
+  // Export = the full forensic set (more than the screen) so an auditor has
+  // everything: the type, the provider Message ID to trace with, the delivery
+  // timeline in UTC, the failure reason, and the source flow.
   const exportColumns = [
     ...(showClinic ? [{ header: "Clinic", w: 1.1, value: (r: CommsRow) => r.clinic ?? "" }] : []),
+    { header: "Type", w: 1.0, value: (r: CommsRow) => typeLabel(r.template_slug) },
     { header: "Recipient", w: 1.6, value: (r: CommsRow) => `${r.to_name ? `${r.to_name} ` : ""}<${r.to_email}>` },
     { header: "Subject", w: 2.2, value: (r: CommsRow) => r.subject },
     { header: "Status", w: 0.8, value: (r: CommsRow) => delivery(r) },
-    { header: "Sent", w: 1.1, align: "right" as const, value: (r: CommsRow) => fmtWhen(r.created_at) },
+    { header: "Message ID", w: 1.8, value: (r: CommsRow) => r.provider_message_id ?? "" },
+    { header: "Sent (UTC)", w: 1.5, value: (r: CommsRow) => fmtUtc(r.created_at) },
+    { header: "Delivered (UTC)", w: 1.5, value: (r: CommsRow) => fmtUtc(r.delivered_at) },
+    { header: "Opened (UTC)", w: 1.5, value: (r: CommsRow) => fmtUtc(r.opened_at) },
+    { header: "Clicked (UTC)", w: 1.5, value: (r: CommsRow) => fmtUtc(r.clicked_at) },
+    { header: "Failure Reason", w: 1.6, value: (r: CommsRow) => r.error_message ?? "" },
+    { header: "Source", w: 1.0, value: (r: CommsRow) => r.source ?? "" },
   ];
 
   return (
