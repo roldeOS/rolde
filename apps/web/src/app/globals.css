@@ -108,6 +108,13 @@
   --color-cream: #f0d9b5; /* honey cream — warm peach */
   --color-lavender: #d4c4e0; /* dusty lavender */
   --color-bloom: #c2d4b8; /* soft sage-green */
+  /* Wider pastel spread for DECORATIVE card tints (Roland 2026-06-22: "use more of
+     the spectrum") — all muted pastels in the Earth & Bloom family, never fluorescent. */
+  --color-rose: #e6a9b8; /* soft rose-pink */
+  --color-sky: #a6c8e0; /* soft sky blue */
+  --color-teal: #97cbc4; /* soft teal */
+  --color-peach: #f1c3a2; /* soft peach */
+  --color-periwinkle: #b7b8e2; /* soft periwinkle */
 
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);

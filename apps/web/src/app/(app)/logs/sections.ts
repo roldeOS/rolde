@@ -63,7 +63,7 @@ export const LOG_SECTIONS: LogSection[] = [
     blurb:
       "Who opened which patient record, and when — the clinical-governance trail every patient can ask about.",
     icon: FileSearch,
-    tone: "info",
+    tone: "sky",
     source: "W1.1.7 §6.14",
     status: "ready",
     group: "Records & Access",
@@ -74,7 +74,7 @@ export const LOG_SECTIONS: LogSection[] = [
     blurb:
       "Every operational email your clinic sent a patient, with its delivery and open status.",
     icon: Send,
-    tone: "neutral",
+    tone: "teal",
     source: "Bible 4.4 §6",
     status: "ready",
     group: "Records & Access",
@@ -86,7 +86,7 @@ export const LOG_SECTIONS: LogSection[] = [
     blurb:
       "Every PDF and CSV exported from your clinic — who, when, what — with the original file kept.",
     icon: FileClock,
-    tone: "neutral",
+    tone: "periwinkle",
     source: "URDS §9.5",
     status: "ready",
     group: "Data & Compliance",
@@ -97,7 +97,7 @@ export const LOG_SECTIONS: LogSection[] = [
     blurb:
       "Which policy and consent version each patient accepted, and when — the lawful-basis record.",
     icon: FileCheck,
-    tone: "neutral",
+    tone: "success",
     source: "Bible 4.0 / Legal & Safety",
     status: "soon",
     group: "Data & Compliance",
@@ -119,7 +119,7 @@ export const LOG_SECTIONS: LogSection[] = [
     blurb:
       "Every prescription issued, approved or cancelled — the controlled-drug oversight trail.",
     icon: Pill,
-    tone: "warning",
+    tone: "rose",
     source: "Bible 4.5",
     status: "soon",
     group: "Data & Compliance",

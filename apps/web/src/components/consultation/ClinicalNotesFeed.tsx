@@ -59,6 +59,11 @@ const TONE_BADGE: Record<CardIconTone, string> = {
   accent: "bg-accent/15 text-accent",
   neutral: "bg-slate-500/10 text-slate-600",
   brand: "bg-foreground/8 text-foreground",
+  rose: "bg-rose/25 text-rose-700",
+  sky: "bg-sky/30 text-sky-700",
+  teal: "bg-teal/30 text-teal-700",
+  peach: "bg-peach/30 text-orange-700",
+  periwinkle: "bg-periwinkle/30 text-indigo-600",
 };
 
 function fmtTime(ts: string) {

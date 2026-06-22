@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
+import { CARD_WASH as TONE_WASH, CARD_VALUE as VALUE } from "@/lib/cardTones";
 import { cn } from "@/lib/utils";
 
 /**
@@ -31,29 +32,6 @@ export type HubSection = {
   value?: string | number;
   /** Optional small line under the value (e.g. "members", "events"). */
   valueSub?: string;
-};
-
-// FLAT solid tints — mindate-calibrated per hue (saturated hues lighter, pale hues
-// heavier) so every card reads alive. NOT a gradient fading to transparent.
-const TONE_WASH: Record<CardIconTone, string> = {
-  critical: "bg-coral/[0.18] hover:bg-coral/[0.28]",
-  warning: "bg-honey/[0.26] hover:bg-honey/[0.38]",
-  success: "bg-bloom/[0.55] hover:bg-bloom/[0.72]",
-  info: "bg-info/[0.20] hover:bg-info/[0.32]",
-  accent: "bg-bloom/[0.55] hover:bg-bloom/[0.72]",
-  neutral: "bg-lavender/[0.55] hover:bg-lavender/[0.72]",
-  brand: "bg-cream/70 hover:bg-cream/90",
-};
-
-// The hero-value colour per tone (mindate Counter value colour).
-const VALUE: Record<CardIconTone, string> = {
-  critical: "text-rose-700",
-  warning: "text-amber-800",
-  success: "text-emerald-800",
-  info: "text-sky-700",
-  accent: "text-emerald-800",
-  neutral: "text-violet-800",
-  brand: "text-amber-900",
 };
 
 export function SectionHubGrid({

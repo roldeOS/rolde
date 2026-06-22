@@ -114,7 +114,7 @@ export const CONTROL_HUB: ControlSection[] = [
     blurb: "Draft, preview and publish the platform's legal and clinical-safety documents.",
     href: "/custodian/legal",
     icon: Scale,
-    tone: "neutral",
+    tone: "teal",
     status: "ready",
   },
   {
@@ -132,7 +132,7 @@ export const CONTROL_HUB: ControlSection[] = [
     blurb: "You and your fellow Custodians — names, avatars and mandatory MFA.",
     href: "/custodian/custodians",
     icon: ShieldCheck,
-    tone: "brand",
+    tone: "peach",
     status: "soon",
   },
 ];
