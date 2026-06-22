@@ -4,7 +4,7 @@ import { Activity } from "lucide-react";
 import { TableShell, type SortOption } from "@/components/ui/table/TableShell";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { DENSITY_CLASSES } from "@/components/ui/table/TableDensityToggle";
-import { fmtWhen } from "@/lib/logFormat";
+import { fmtWhen, fmtUtc } from "@/lib/logFormat";
 
 /**
  * ActivityLogTable — the clinic's unified activity timeline (Logs Hub; Bible 4.1
@@ -19,6 +19,11 @@ export type ActivityRow = {
   action: string;
   summary: string;
   at: string;
+  /** Which object the action touched — type + id (export, for the auditor). */
+  resource_type?: string | null;
+  resource_id?: string | null;
+  /** Structured extra detail (before/after etc.) — export. */
+  metadata?: Record<string, unknown> | null;
   /** Set only for the platform-wide (Custodian) view — adds a Clinic column. */
   clinic?: string;
 };
@@ -30,6 +35,21 @@ function humanise(action: string): string {
 
 function activityText(r: ActivityRow): string {
   return r.summary || humanise(r.action);
+}
+
+/** The object the action touched, for the export — "patient · <id>". */
+function resourceText(r: ActivityRow): string {
+  if (!r.resource_type) return "";
+  return r.resource_id ? `${r.resource_type} · ${r.resource_id}` : r.resource_type;
+}
+
+/** The metadata flattened to "key: value; …" for the export. */
+function detailsText(r: ActivityRow): string {
+  const m = r.metadata;
+  if (!m || typeof m !== "object" || Object.keys(m).length === 0) return "";
+  return Object.entries(m)
+    .map(([k, v]) => `${k}: ${v && typeof v === "object" ? JSON.stringify(v) : String(v)}`)
+    .join("; ");
 }
 
 export function ActivityLogTable({
@@ -89,11 +109,16 @@ export function ActivityLogTable({
     { key: "person", label: "Person", compare: (a, b) => a.who.localeCompare(b.who) },
   ];
 
+  // Export = the forensic set: the precise action code, the object touched, the
+  // structured details, and an unambiguous UTC time — more than the calm screen.
   const exportColumns = [
     ...(showClinic ? [{ header: "Clinic", w: 1.1, value: (r: ActivityRow) => r.clinic ?? "" }] : []),
     { header: "Person", w: 1.3, value: (r: ActivityRow) => `${r.who}${r.who_role ? ` (${r.who_role})` : ""}` },
-    { header: "Activity", w: 3, value: (r: ActivityRow) => activityText(r) },
-    { header: "When", w: 1.1, align: "right" as const, value: (r: ActivityRow) => fmtWhen(r.at) },
+    { header: "Activity", w: 2.4, value: (r: ActivityRow) => activityText(r) },
+    { header: "Action", w: 1.2, value: (r: ActivityRow) => r.action },
+    { header: "Resource", w: 1.4, value: (r: ActivityRow) => resourceText(r) },
+    { header: "Details", w: 2, value: (r: ActivityRow) => detailsText(r) },
+    { header: "When (UTC)", w: 1.5, value: (r: ActivityRow) => fmtUtc(r.at) },
   ];
 
   return (

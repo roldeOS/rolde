@@ -26,7 +26,7 @@ async function loadActivity(): Promise<ActivityRow[]> {
   const supabase = await createClient();
   const { data: events } = await supabase
     .from("audit_log")
-    .select("id, action, summary, at:created_at, actor_user_id, tenant_id")
+    .select("id, action, summary, resource_type, resource_id, metadata, at:created_at, actor_user_id, tenant_id")
     .order("created_at", { ascending: false })
     .limit(500);
 
@@ -56,6 +56,9 @@ async function loadActivity(): Promise<ActivityRow[]> {
       who_role: m?.role ? (ROLE_LABEL[m.role] ?? m.role) : "",
       action: r.action,
       summary: r.summary ?? "",
+      resource_type: r.resource_type,
+      resource_id: r.resource_id,
+      metadata: r.metadata as Record<string, unknown> | null,
       at: r.at,
       clinic: tMap.get(r.tenant_id) ?? "—",
     } satisfies ActivityRow;

@@ -4,7 +4,7 @@ import { ShieldCheck } from "lucide-react";
 import { TableShell, type SortOption } from "@/components/ui/table/TableShell";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { DENSITY_CLASSES } from "@/components/ui/table/TableDensityToggle";
-import { fmtWhen } from "@/lib/logFormat";
+import { fmtWhen, fmtUtc } from "@/lib/logFormat";
 
 /**
  * SignInLogTable — the clinic's authentication trail (Logs Hub; Bible 4.1 §5.4).
@@ -21,9 +21,19 @@ export type SignInRow = {
   ip: string;
   device: string;
   at: string;
+  /** The login identifier + auth method — export (the unambiguous "who" + "how"). */
+  email?: string | null;
+  method?: string | null;
   /** Set only for the platform-wide (Custodian) view — adds a Clinic column. */
   clinic?: string;
 };
+
+/** Success / Failure — the audit "outcome" of the auth event. */
+function outcome(action: string): string {
+  if (action === "login_failed") return "Failed";
+  if (action === "token_revoked" || action === "factor_unenrolled") return "—";
+  return "Success";
+}
 
 const EVENT_LABEL: Record<string, string> = {
   login: "Signed In",
@@ -118,13 +128,18 @@ export function SignInLogTable({
     { key: "person", label: "Person", compare: (a, b) => a.who.localeCompare(b.who) },
   ];
 
+  // Export = the forensic set: the login email, the auth method, the outcome, and
+  // an unambiguous UTC time, alongside the IP + device already on screen.
   const exportColumns = [
     ...(showClinic ? [{ header: "Clinic", w: 1.1, value: (r: SignInRow) => r.clinic ?? "" }] : []),
     { header: "Person", w: 1.3, value: (r: SignInRow) => r.who },
+    { header: "Email", w: 1.6, value: (r: SignInRow) => r.email ?? "" },
     { header: "Event", w: 1.2, value: (r: SignInRow) => eventLabel(r.action) },
+    { header: "Outcome", w: 0.8, value: (r: SignInRow) => outcome(r.action) },
+    { header: "Method", w: 1, value: (r: SignInRow) => r.method ?? "" },
     { header: "IP Address", w: 1, value: (r: SignInRow) => r.ip },
     { header: "Device", w: 1.1, value: (r: SignInRow) => r.device },
-    { header: "When", w: 1.1, align: "right" as const, value: (r: SignInRow) => fmtWhen(r.at) },
+    { header: "When (UTC)", w: 1.5, value: (r: SignInRow) => fmtUtc(r.at) },
   ];
 
   return (

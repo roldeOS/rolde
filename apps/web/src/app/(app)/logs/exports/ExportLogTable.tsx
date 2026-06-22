@@ -4,7 +4,7 @@ import { FileClock, ExternalLink } from "lucide-react";
 import { TableShell, type SortOption } from "@/components/ui/table/TableShell";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { DENSITY_CLASSES } from "@/components/ui/table/TableDensityToggle";
-import { fmtWhen } from "@/lib/logFormat";
+import { fmtWhen, fmtUtc } from "@/lib/logFormat";
 
 /**
  * ExportLogTable — the clinic's audit trail of PDF exports (URDS §9.5 / Wave D),
@@ -154,8 +154,9 @@ export function ExportLogTable({
     { header: "Scope", w: 1.6, value: (r: ExportRow) => r.scope ?? "" },
     { header: "Fields", w: 1.8, value: (r: ExportRow) => fieldList(r.columns) },
     { header: "Rows", w: 0.6, align: "right" as const, value: (r: ExportRow) => r.row_count },
+    { header: "Size", w: 0.7, value: (r: ExportRow) => fmtBytes(r.byte_size) },
     { header: "Exported By", w: 1.4, value: (r: ExportRow) => exporter(r) },
-    { header: "When", w: 1.2, value: (r: ExportRow) => fmtWhen(r.created_at) },
+    { header: "When (UTC)", w: 1.5, value: (r: ExportRow) => fmtUtc(r.created_at) },
     { header: "Integrity SHA-256", w: 2.4, value: (r: ExportRow) => r.fingerprint },
   ];
 

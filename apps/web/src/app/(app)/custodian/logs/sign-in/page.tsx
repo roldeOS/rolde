@@ -25,7 +25,7 @@ async function loadSignIn(): Promise<SignInRow[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("auth_audit_log")
-    .select("id, user_id, actor_email, action, ip_address, user_agent, created_at")
+    .select("id, user_id, actor_email, action, ip_address, user_agent, metadata, created_at")
     .order("created_at", { ascending: false })
     .limit(500);
 
@@ -64,6 +64,8 @@ async function loadSignIn(): Promise<SignInRow[]> {
       id: r.id,
       who,
       action: r.action,
+      email: r.actor_email,
+      method: (r.metadata as { provider?: string } | null)?.provider ?? null,
       ip: r.ip_address ?? "",
       device: deviceLabel(r.user_agent),
       at: r.created_at,
