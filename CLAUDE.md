@@ -1,7 +1,7 @@
 # RolDe — session bootstrap
 
 **Read `docs/JARVIS_SEED.md` in full before replying to anything.** It transplants how
-Roland and Jarvis work. Then load `docs/jarvis_universal_brief.md` (identity + standards),
+Roland and Jarvis work. Then load `../JARVIS_UNIVERSAL_BRIEF.md` (identity + standards),
 `docs/bible_4_0_rolde_manifesto.md` (constitution), and `docs/bible_4_2_rolde_design_system.md`
 (visual language). Load other 4.x bibles / Bible 8 on demand for the work at hand.
 

@@ -3,7 +3,7 @@
 > **Paste this whole file (or point your new Claude Code session at `docs/JARVIS_SEED.md`) as the very first message.** It transplants the way Roland and Jarvis work — same standards, tone, and guardrails — so the new session knows Roland from message one.
 >
 > **Read in full before replying to anything:**
-> 1. `docs/jarvis_universal_brief.md` — the portable identity + working-standards layer.
+> 1. `../JARVIS_UNIVERSAL_BRIEF.md` — the portable identity + working-standards layer (the ONE shared file at the RoDee Studio root; every product reads the same file).
 > 2. **The RolDe Bibles** in this `docs/` folder (this is the richest project — ~75,000 words of platform spec):
 >    - `bible_4_0_rolde_manifesto.md` · `bible_4_1_rolde_architecture.md` · `bible_4_2_rolde_design_system.md` · `bible_4_3_rolde_multi_tenant.md` · `bible_4_4_rolde_core_modules.md` · `bible_4_5_rolde_prescribing.md` · `bible_4_6_rolde_clinical_documentation.md` · `bible_4_7_rolde_ambient_clinical_ai.md` · `bible_4_8_rolde_roadmap.md` — **what RolDe IS** (the platform source-of-truth).
 >    - `bible_8_rolde_app_website.md` — **the rolde.app marketing-website spec** (6 phased build stages).
@@ -94,7 +94,7 @@ Both at the **repo root**, git-tracked.
 
 ## 6. First-session checklist for the new Jarvis
 
-- [ ] Read `docs/jarvis_universal_brief.md`, `docs/bible_4_0_rolde_manifesto.md`, `docs/bible_4_2_rolde_design_system.md`, and this file — in full. Load other 4.x bibles + Bible 8 on demand for the work at hand.
+- [ ] Read `../JARVIS_UNIVERSAL_BRIEF.md`, `docs/bible_4_0_rolde_manifesto.md`, `docs/bible_4_2_rolde_design_system.md`, and this file — in full. Load other 4.x bibles + Bible 8 on demand for the work at hand.
 - [ ] Greet Roland as Jarvis; confirm you've absorbed the brief + manifesto; **ask which track + phase/module this session is for** (Bible 8 website? a 4.x platform area?).
 - [ ] **Before scaffolding or editing:** present 2–4 options grounded in the Bibles, let him pick, then build.
 - [ ] Create `APPROVALS.md` + `MISTAKES.md` at the repo root once there's something to govern.
@@ -103,4 +103,4 @@ Both at the **repo root**, git-tracked.
 
 ---
 
-*Seeded from the mindate-admin Jarvis on 2026-06-06. Keep the universal brief in lockstep across repos: when a cross-product preference changes, update the canonical copy (`mindate/docs/jarvis_universal_brief.md`) and re-sync it here.*
+*Seeded from the mindate-admin Jarvis on 2026-06-06. The universal brief is now ONE shared file at the RoDee Studio root — `../JARVIS_UNIVERSAL_BRIEF.md` — read identically by every product; edit it there directly, with no per-repo copy to re-sync (Roland 2026-06-22).*

@@ -18,7 +18,7 @@ Paired with `APPROVALS.md` (what's locked) and `CLAUDE.md` (read both before any
 ## 0. Inherited cross-product lessons (carry over from day one)
 
 RolDe has no regressions of its own yet. Until it does, these hard-won lessons from the mindate
-build apply here too (full detail: `docs/jarvis_universal_brief.md` §7 and
+build apply here too (full detail: `../JARVIS_UNIVERSAL_BRIEF.md` §7 and
 `../mindate-admin/MISTAKES.md`). The most relevant to the current foundation/infra work:
 
 - **Vercel "Sensitive" env vars are NEVER revealable after creation** (mindate #6). The eye icon

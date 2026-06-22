@@ -18,7 +18,7 @@ No application code yet.
 ## Start here
 
 New Claude Code session? Read **`docs/JARVIS_SEED.md`** first — it loads the working
-standards and points to the Bibles. Then load `docs/jarvis_universal_brief.md`,
+standards and points to the Bibles. Then load `../JARVIS_UNIVERSAL_BRIEF.md`,
 `docs/bible_4_0_rolde_manifesto.md`, and `docs/bible_4_2_rolde_design_system.md`.
 
 ## Planned stack (Bible 4.1)
