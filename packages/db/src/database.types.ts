@@ -423,26 +423,44 @@ export type Database = {
       patient_access_log: {
         Row: {
           action: string
+          actor_role: string | null
           at: string
+          break_glass: boolean
           id: string
+          ip_address: string | null
           patient_id: string
+          purpose: string | null
+          reason: string | null
           tenant_id: string
+          user_agent: string | null
           user_id: string
         }
         Insert: {
           action?: string
+          actor_role?: string | null
           at?: string
+          break_glass?: boolean
           id?: string
+          ip_address?: string | null
           patient_id: string
+          purpose?: string | null
+          reason?: string | null
           tenant_id: string
+          user_agent?: string | null
           user_id: string
         }
         Update: {
           action?: string
+          actor_role?: string | null
           at?: string
+          break_glass?: boolean
           id?: string
+          ip_address?: string | null
           patient_id?: string
+          purpose?: string | null
+          reason?: string | null
           tenant_id?: string
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: [

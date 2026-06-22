@@ -1361,19 +1361,30 @@ Design law: **calm screen, forensic-complete EXPORT** — the auditor's CSV/PDF 
   - Verified live: all 8 surfaces (each log × clinic + Custodian) render; real CSVs carry every new
     header; data populates. *(Known data-gaps, not bugs: Activity "Details" blank until we capture
     before/after into metadata; Sign-in "Method" blank where the upstream has none.)*
-- **Phase 2 — Patient Access break-glass ⬜ (greenlit design, ready to build).** The thinnest, most
-  audit-critical log. Migration on `patient_access_log`: + `actor_role` · `ip_address` · `user_agent`
-  · `purpose` (`direct_care`|`administrative`|`records_request`|`safeguarding`|`other`) · `reason`
-  (free-text for "other") · `break_glass` (bool). Capture in `logPatientAccess()`: role + IP + device,
-  and **purpose INFERRED by default (zero friction)** — `direct_care` when a *legitimate relationship*
-  exists (open consultation · recent/upcoming appointment · the record's clinician · assigned);
-  `administrative` from the admin/list surfaces. **Break-glass fires ONLY on the ABSENCE of any care
-  link** (not a date): a one-tap reason chip (Continuing care · Records/SAR request · Safeguarding ·
-  Administrative · Other→type), **non-blocking** — the record opens immediately, the reason is recorded
-  just-in-time, the row flagged `break_glass`. Screen adds Role + Purpose; export adds Role · From where
-  (IP+device) · Purpose · break-glass. Verify the negative case (opening a non-linked patient → the chip
-  fires + the row is break-glass) and the inferred no-friction path (no chip mid-consultation). Folds in
-  the **`audit_log` reconciliation** above (capture before/after into metadata so Activity "Details" fills).
+- **Phase 2 — Patient Access break-glass ✅ DONE 2026-06-22** (migration `20260622120000`). Migration on
+  `patient_access_log`: + `actor_role` · `ip_address` · `user_agent` · `purpose`
+  (`direct_care`|`administrative`|`records_request`|`safeguarding`|`other`, CHECK-constrained, NULL = pending)
+  · `reason` (free-text for "other") · `break_glass` (bool). `logPatientAccess()` now captures role + IP +
+  device and **infers purpose (zero friction)** — `direct_care` when a *legitimate relationship* exists.
+  **Care-link signals available today** (no appointments/consults table yet): the accessor CREATED the
+  patient record, or AUTHORED a clinical note for them. **Break-glass fires on the ABSENCE of any care link**
+  (not a date): a **non-blocking** chip (`BreakGlassPrompt`) — record opens immediately, reason captured
+  just-in-time via a service-role server action (`fillBreakGlassReason`) gated to the accessor's own
+  still-pending row (one-time; table stays append-only for users). Shared vocab in `lib/patientAccess.ts`.
+  Screen adds a Purpose column (amber Break-glass pill); export now carries Role · Purpose · Break-glass ·
+  From where (IP+device) · When (UTC) — on both the clinic and Custodian Access logs.
+  - **Verified:** no-friction path END-TO-END with a real row (caretaker opens a care-linked patient →
+    `direct_care`, `break_glass=false`, role/IP/device all captured, no chip). Negative case proven at the
+    data/logic/RLS layers: the care-link query returns *no link* for a non-creating/non-authoring user →
+    break-glass; the RLS policy *permits* that user to log their own break-glass row (JWT simulation);
+    a materialised break-glass row carries `break_glass=true, purpose=NULL`; the reason-fill sets the
+    purpose once and is **one-time gated** (a refill and a wrong-user write both no-op). Typecheck clean.
+  - **Known caveat (pre-existing, not this feature):** a Server-Component *render-time* write
+    (`logPatientAccess` runs during the patient page render) can lose its Supabase auth context when the
+    token needs refreshing, because the app has **no session-refresh `middleware.ts`**. With a fresh
+    session the write succeeds (verified); under dev-login impersonation of a second user it was rejected
+    by RLS. Hardening follow-up: add Supabase session middleware so render-time audit writes are reliable.
+  - Still open: **`audit_log` reconciliation** (capture before/after into metadata so Activity "Details" fills).
 
 ---
 

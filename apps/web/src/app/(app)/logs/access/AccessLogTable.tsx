@@ -4,7 +4,8 @@ import { FileSearch } from "lucide-react";
 import { TableShell, type SortOption } from "@/components/ui/table/TableShell";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { DENSITY_CLASSES } from "@/components/ui/table/TableDensityToggle";
-import { fmtWhen } from "@/lib/logFormat";
+import { fmtWhen, fmtUtc } from "@/lib/logFormat";
+import { accessPurposeLabel, isAccessPurpose, ACCESS_PURPOSE_LABEL } from "@/lib/patientAccess";
 
 /**
  * AccessLogTable — the clinic's Patient Access trail (Logs Hub; W1.1.7 §6.14).
@@ -21,9 +22,27 @@ export type AccessRow = {
   patient_no: string;
   action: string;
   at: string;
+  /** Why the record was opened (inferred or break-glass reason); null = pending/legacy. */
+  purpose: string | null;
+  /** Opened without any care link — the auditor's flag. */
+  break_glass: boolean;
+  /** Forensic "from where" (auditor export only). */
+  ip_address: string | null;
+  user_agent: string | null;
   /** Set only for the platform-wide (Custodian) view — adds a Clinic column. */
   clinic?: string;
 };
+
+/** "From where" for the export: IP · device, or an em-dash when neither is known. */
+function fromWhere(r: AccessRow): string {
+  return [r.ip_address, r.user_agent].filter(Boolean).join(" · ") || "—";
+}
+
+/** Screen text for the Purpose cell's non-pill part. */
+function purposeText(r: AccessRow): string {
+  if (isAccessPurpose(r.purpose)) return ACCESS_PURPOSE_LABEL[r.purpose];
+  return r.break_glass ? "reason pending" : "—";
+}
 
 const ACTION_LABEL: Record<string, string> = {
   view: "Viewed",
@@ -90,8 +109,26 @@ export function AccessLogTable({
     {
       id: "action",
       header: "Action",
-      width: "7rem",
+      width: "6rem",
       cell: (r) => <span className="text-muted-foreground">{actionLabel(r.action)}</span>,
+    },
+    {
+      id: "purpose",
+      header: "Purpose",
+      width: "12rem",
+      truncate: true,
+      title: (r) => (r.break_glass ? `Break-glass · ${purposeText(r)}` : accessPurposeLabel(r.purpose, false)),
+      cell: (r) =>
+        r.break_glass ? (
+          <span className="inline-flex min-w-0 items-center gap-1.5">
+            <span className="shrink-0 rounded-full bg-warning/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warning">
+              Break-glass
+            </span>
+            <span className="truncate text-muted-foreground">{purposeText(r)}</span>
+          </span>
+        ) : (
+          <span className="text-muted-foreground">{accessPurposeLabel(r.purpose, false)}</span>
+        ),
     },
     {
       id: "when",
@@ -108,12 +145,18 @@ export function AccessLogTable({
     { key: "patient", label: "Patient", compare: (a, b) => a.patient.localeCompare(b.patient) },
   ];
 
+  // Forensic-complete EXPORT (Bible 4.8 §15.7b): who (+ role) · what · when (UTC) ·
+  // where (IP/device) · purpose · break-glass — the auditor's full reconstruction set.
   const exportColumns = [
     ...(showClinic ? [{ header: "Clinic", w: 1.1, value: (r: AccessRow) => r.clinic ?? "" }] : []),
-    { header: "Person", w: 1.4, value: (r: AccessRow) => `${r.who}${r.who_role ? ` (${r.who_role})` : ""}` },
-    { header: "Patient", w: 1.4, value: (r: AccessRow) => `${r.patient}${r.patient_no ? ` (${r.patient_no})` : ""}` },
-    { header: "Action", w: 0.7, value: (r: AccessRow) => actionLabel(r.action) },
-    { header: "When", w: 1.1, align: "right" as const, value: (r: AccessRow) => fmtWhen(r.at) },
+    { header: "Person", w: 1.3, value: (r: AccessRow) => r.who },
+    { header: "Role", w: 0.9, value: (r: AccessRow) => r.who_role || "—" },
+    { header: "Patient", w: 1.3, value: (r: AccessRow) => `${r.patient}${r.patient_no ? ` (${r.patient_no})` : ""}` },
+    { header: "Action", w: 0.6, value: (r: AccessRow) => actionLabel(r.action) },
+    { header: "Purpose", w: 1.0, value: (r: AccessRow) => accessPurposeLabel(r.purpose, r.break_glass) },
+    { header: "Break-glass", w: 0.7, value: (r: AccessRow) => (r.break_glass ? "Yes" : "No") },
+    { header: "From where", w: 1.6, value: (r: AccessRow) => fromWhere(r) },
+    { header: "When (UTC)", w: 1.3, align: "right" as const, value: (r: AccessRow) => fmtUtc(r.at) },
   ];
 
   return (

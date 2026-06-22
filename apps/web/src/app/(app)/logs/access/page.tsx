@@ -55,7 +55,7 @@ async function loadAccessLog(tenantId: string): Promise<AccessRow[]> {
   const supabase = await createClient();
   const { data: accesses } = await supabase
     .from("patient_access_log")
-    .select("id, action, at, patient_id, user_id")
+    .select("id, action, at, patient_id, user_id, actor_role, ip_address, user_agent, purpose, break_glass")
     .eq("tenant_id", tenantId)
     .order("at", { ascending: false })
     .limit(500);
@@ -87,14 +87,21 @@ async function loadAccessLog(tenantId: string): Promise<AccessRow[]> {
     const desig = m?.designation?.trim() ?? "";
     const who =
       (desig && dn && !dn.toLowerCase().startsWith(desig.toLowerCase()) ? `${desig} ${dn}` : dn) || "Unknown";
+    // Prefer the role recorded AT access time (point-in-time, forensic), falling
+    // back to the member's current role for rows logged before the column existed.
+    const roleKey = r.actor_role ?? m?.role ?? null;
     return {
       id: r.id,
       who,
-      who_role: m?.role ? (ROLE_LABEL[m.role] ?? m.role) : "",
+      who_role: roleKey ? (ROLE_LABEL[roleKey] ?? roleKey) : "",
       patient: p ? `${p.first_name} ${p.last_name}` : "Unknown patient",
       patient_no: p?.patient_number ?? "",
       action: r.action,
       at: r.at,
+      purpose: r.purpose ?? null,
+      break_glass: r.break_glass ?? false,
+      ip_address: r.ip_address ?? null,
+      user_agent: r.user_agent ?? null,
     } satisfies AccessRow;
   });
 }

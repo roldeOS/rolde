@@ -4,6 +4,7 @@ import { getSessionContext } from "@/lib/auth";
 import { logPatientAccess } from "@/lib/audit";
 import { TopbarPatientSync } from "@/components/topbar/TopbarContext";
 import { ConsultationWorkspace } from "@/components/consultation/ConsultationWorkspace";
+import { BreakGlassPrompt } from "./BreakGlassPrompt";
 import type { FeedEntry, Author } from "@/components/consultation/ClinicalNotesFeed";
 
 function age(d: string) {
@@ -48,11 +49,14 @@ export default async function ConsultationPage({
 
   if (!patient) notFound();
 
-  // Clinical-governance trail (§6.14): record that this person opened this record.
-  await logPatientAccess({
+  // Clinical-governance trail (§6.14 / §15.7b): record that this person opened this
+  // record — who · role · from where · why. Purpose is inferred; a break-glass access
+  // (no care link) returns a flag so we can capture the reason non-blockingly below.
+  const access = await logPatientAccess({
     patientId: id,
     tenantId: ctx?.membership?.tenant_id,
     userId: currentUserId,
+    role: ctx?.membership?.role,
   });
 
   const { data: entries } = await supabase
@@ -130,6 +134,12 @@ export default async function ConsultationPage({
         authors={authors}
         currentUserId={currentUserId}
       />
+      {access?.breakGlass && (
+        <BreakGlassPrompt
+          accessId={access.id}
+          patientName={`${patient.first_name} ${patient.last_name}`}
+        />
+      )}
     </>
   );
 }

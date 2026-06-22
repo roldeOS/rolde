@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ROLES } from "@/lib/roles";
 import { getCustodianLogSection } from "../sections";
 import { AccessLogTable, type AccessRow } from "@/app/(app)/logs/access/AccessLogTable";
+
+const ROLE_LABEL: Record<string, string> = Object.fromEntries(ROLES.map((r) => [r.key, r.label]));
 
 /**
  * Custodian → Logs → Patient Access (PLATFORM-WIDE). Same AccessLogTable as a
@@ -23,7 +26,7 @@ async function loadAccess(): Promise<AccessRow[]> {
   const supabase = await createClient();
   const { data: accesses } = await supabase
     .from("patient_access_log")
-    .select("id, action, at, patient_id, user_id, tenant_id")
+    .select("id, action, at, patient_id, user_id, tenant_id, actor_role, ip_address, user_agent, purpose, break_glass")
     .order("at", { ascending: false })
     .limit(500);
 
@@ -45,11 +48,15 @@ async function loadAccess(): Promise<AccessRow[]> {
   return log.map((r) => ({
     id: r.id,
     who: mMap.get(`${r.tenant_id}:${r.user_id}`) ?? "Unknown",
-    who_role: "",
+    who_role: r.actor_role ? (ROLE_LABEL[r.actor_role] ?? r.actor_role) : "",
     patient: pMap.get(r.patient_id) ?? "—",
     patient_no: "",
     action: r.action,
     at: r.at,
+    purpose: r.purpose ?? null,
+    break_glass: r.break_glass ?? false,
+    ip_address: r.ip_address ?? null,
+    user_agent: r.user_agent ?? null,
     clinic: tMap.get(r.tenant_id) ?? "—",
   }));
 }
