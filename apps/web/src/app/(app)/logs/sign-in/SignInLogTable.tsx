@@ -81,10 +81,18 @@ export function SignInLogTable({
     {
       id: "who",
       header: "Person",
-      width: "15rem",
+      width: "13rem",
       truncate: true,
       title: (r) => r.who,
       cell: (r) => <span className="font-medium text-foreground">{r.who}</span>,
+    },
+    {
+      id: "email",
+      header: "Email",
+      width: "14rem",
+      truncate: true,
+      title: (r) => r.email ?? "",
+      cell: (r) => <span className="text-muted-foreground">{r.email || "—"}</span>,
     },
     {
       id: "event",

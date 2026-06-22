@@ -90,10 +90,18 @@ export function ActivityLogTable({
     {
       id: "activity",
       header: "Activity",
-      width: "40%",
+      width: "34%",
       truncate: true,
       title: (r) => activityText(r),
       cell: (r) => <span className="text-foreground">{activityText(r)}</span>,
+    },
+    {
+      id: "resource",
+      header: "Record",
+      width: "11rem",
+      truncate: true,
+      title: (r) => resourceText(r),
+      cell: (r) => <span className="text-muted-foreground">{resourceText(r) || "—"}</span>,
     },
     {
       id: "when",

@@ -118,6 +118,16 @@ export function CommsLogTable({
       cell: (r) => <span className="text-muted-foreground">{delivery(r)}</span>,
     },
     {
+      id: "msgid",
+      header: "Message ID",
+      width: "10rem",
+      truncate: true,
+      title: (r) => r.provider_message_id ?? "",
+      cell: (r) => (
+        <span className="font-mono text-xs text-muted-foreground">{r.provider_message_id ?? "—"}</span>
+      ),
+    },
+    {
       id: "sent",
       header: "Sent",
       width: "11rem",
