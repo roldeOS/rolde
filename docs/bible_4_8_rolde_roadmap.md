@@ -1373,17 +1373,25 @@ Design law: **calm screen, forensic-complete EXPORT** — the auditor's CSV/PDF 
   still-pending row (one-time; table stays append-only for users). Shared vocab in `lib/patientAccess.ts`.
   Screen adds a Purpose column (amber Break-glass pill); export now carries Role · Purpose · Break-glass ·
   From where (IP+device) · When (UTC) — on both the clinic and Custodian Access logs.
-  - **Verified:** no-friction path END-TO-END with a real row (caretaker opens a care-linked patient →
-    `direct_care`, `break_glass=false`, role/IP/device all captured, no chip). Negative case proven at the
-    data/logic/RLS layers: the care-link query returns *no link* for a non-creating/non-authoring user →
-    break-glass; the RLS policy *permits* that user to log their own break-glass row (JWT simulation);
-    a materialised break-glass row carries `break_glass=true, purpose=NULL`; the reason-fill sets the
-    purpose once and is **one-time gated** (a refill and a wrong-user write both no-op). Typecheck clean.
-  - **Known caveat (pre-existing, not this feature):** a Server-Component *render-time* write
-    (`logPatientAccess` runs during the patient page render) can lose its Supabase auth context when the
-    token needs refreshing, because the app has **no session-refresh `middleware.ts`**. With a fresh
-    session the write succeeds (verified); under dev-login impersonation of a second user it was rejected
-    by RLS. Hardening follow-up: add Supabase session middleware so render-time audit writes are reliable.
+  - **Bug caught + fixed by the negative-case verify (the reason this matters).** First cut had
+    `logPatientAccess()` do `.insert().select("id")` to get the id for the chip. But `.select()` forces a
+    RETURNING **read-back**, which must pass the *read* policy (`is_custodian() OR is_caretaker_of`). A
+    Caretaker passes → her access logged fine; a **clinician/nurse does not** → reading their OWN just-
+    inserted row is denied, so the whole insert failed RLS and their access (incl. break-glass) silently
+    didn't log. **Fix:** pre-generate the id (`crypto.randomUUID()`) and insert with NO read-back — the
+    write is role-blind again (inserting your own row is allowed; reading the log isn't). Without the
+    negative-case test this would have shipped as a silent audit gap for every non-Caretaker role.
+  - **Verified END-TO-END in the running app:** no-friction path — Caretaker opens a care-linked patient →
+    real row `direct_care`, `break_glass=false`, role/IP/device captured, no chip. Negative path — a
+    **clinician (no care link) opens a record → real row `break_glass=true, purpose=NULL`**, role/IP/device
+    captured, and the **chip renders** ("opening a record outside your direct care" + the 5 reason options).
+    Fill logic + one-time gate proven at the DB layer (fill sets purpose once; refill + wrong-user both
+    no-op). Typecheck clean. *(One link not exercised in-browser: the literal chip-click→fill round-trip —
+    the heavy consultation page doesn't hydrate in the headless preview, so the button had no handler to
+    fire; the fill path itself is verified via the server action + the DB-level gate test.)*
+  - **Note:** session-refresh middleware **does** exist — Next 16 renames `middleware.ts` → `proxy.ts`
+    (`src/proxy.ts` runs `updateSession` on every matched request). (An earlier note here wrongly said it
+    was missing; corrected.)
   - Still open: **`audit_log` reconciliation** (capture before/after into metadata so Activity "Details" fills).
 
 ---

@@ -62,23 +62,28 @@ export async function logPatientAccess(opts: {
     const ip =
       (h.get("x-forwarded-for") ?? "").split(",")[0].trim() || h.get("x-real-ip") || null;
 
-    const { data } = await supabase
-      .from("patient_access_log")
-      .insert({
-        tenant_id: opts.tenantId,
-        patient_id: opts.patientId,
-        user_id: opts.userId,
-        action: opts.action ?? "view",
-        actor_role: opts.role ?? null,
-        ip_address: ip,
-        user_agent: h.get("user-agent"),
-        purpose,
-        break_glass: breakGlass,
-      })
-      .select("id")
-      .single();
+    // Pre-generate the id so the insert needs NO RETURNING read-back. The access log is
+    // readable only by Caretakers/Custodians (RLS), so a clinician/nurse logging their
+    // OWN access can't read the row back — an `.insert().select()` would fail RLS for
+    // them (only caretakers passed). Inserting their own row is allowed; reading the
+    // log isn't. Generating the id here keeps the write role-blind AND yields the id
+    // the break-glass chip needs.
+    const id = crypto.randomUUID();
+    const { error } = await supabase.from("patient_access_log").insert({
+      id,
+      tenant_id: opts.tenantId,
+      patient_id: opts.patientId,
+      user_id: opts.userId,
+      action: opts.action ?? "view",
+      actor_role: opts.role ?? null,
+      ip_address: ip,
+      user_agent: h.get("user-agent"),
+      purpose,
+      break_glass: breakGlass,
+    });
+    if (error) return null;
 
-    return data ? { id: data.id, breakGlass } : null;
+    return { id, breakGlass };
   } catch {
     /* never block the page on audit logging */
     return null;
