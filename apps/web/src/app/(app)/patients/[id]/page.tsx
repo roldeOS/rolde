@@ -4,7 +4,7 @@ import { getSessionContext } from "@/lib/auth";
 import { logPatientAccess } from "@/lib/audit";
 import { TopbarPatientSync } from "@/components/topbar/TopbarContext";
 import { ConsultationWorkspace } from "@/components/consultation/ConsultationWorkspace";
-import { BreakGlassPrompt } from "./BreakGlassPrompt";
+import { BreakGlassNotice } from "./BreakGlassNotice";
 import type { FeedEntry, Author } from "@/components/consultation/ClinicalNotesFeed";
 
 function age(d: string) {
@@ -102,6 +102,16 @@ export default async function ConsultationPage({
     [patient.city, patient.postcode].filter(Boolean).join(" "),
   ].filter((l): l is string => Boolean(l && l.trim()));
 
+  const workspace = (
+    <ConsultationWorkspace
+      patient={{ id: patient.id, firstName: patient.first_name }}
+      feedEntries={feedEntries}
+      orderEntries={orderEntries}
+      authors={authors}
+      currentUserId={currentUserId}
+    />
+  );
+
   return (
     <>
       <TopbarPatientSync
@@ -127,18 +137,18 @@ export default async function ConsultationPage({
           })),
         }}
       />
-      <ConsultationWorkspace
-        patient={{ id: patient.id, firstName: patient.first_name }}
-        feedEntries={feedEntries}
-        orderEntries={orderEntries}
-        authors={authors}
-        currentUserId={currentUserId}
-      />
-      {access?.breakGlass && (
-        <BreakGlassPrompt
-          accessId={access.id}
-          patientName={`${patient.first_name} ${patient.last_name}`}
-        />
+      {access?.breakGlass ? (
+        // Opened with NO care link → a calm break-glass band sits ATOP the record
+        // (the record stays fully open below) and captures the reason just-in-time.
+        <div className="flex h-full min-h-0 flex-col">
+          <BreakGlassNotice
+            accessId={access.id}
+            patientName={`${patient.first_name} ${patient.last_name}`}
+          />
+          <div className="min-h-0 flex-1">{workspace}</div>
+        </div>
+      ) : (
+        workspace
       )}
     </>
   );
