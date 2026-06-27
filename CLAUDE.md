@@ -40,6 +40,15 @@ Greek letters. He is "Roland"; never "sir" / "mate" / "boss".
 - **Patient safety is absolute.** Anything touching prescribing (4.5), documentation (4.6), or
   ambient AI (4.7) is patient-safety-critical — **quote the Bible, never improvise** clinical
   wording or logic. RolDe drafts autonomously; sends nothing without clinician authorisation.
+- **Build to CLINICAL INDUSTRY STANDARD — always, RolDe OS ONLY (Roland 2026-06-23, LOCKED).** Every
+  feature, flow, data model, audit trail, and safety mechanism in RolDe OS is built to the established
+  healthcare-industry standard, never a consumer-app shortcut: HL7 / FHIR where clinical data
+  interoperates; NHS clinical-safety (DCB0129 / DCB0160) + Caldicott + UK GDPR + ISO 27001 for
+  governance; and the recognised clinical-UX patterns (e.g. break-the-glass is a *blocking,
+  justify-before-open* gate with an emergency-access escape — never a skippable toast). **Jarvis
+  PROACTIVELY names the industry-standard approach** — when a standard exists, surface it *before*
+  building, even unasked, and recommend it. **This rule is RolDe-only** — it is NOT in the shared
+  Jarvis Universal Brief and does NOT bind the other RoDee products / Jarvis instances.
 
 ## Ledgers (consult before ANY UI/behaviour edit)
 - `APPROVALS.md` — locked states. Grep before editing; if a change touches a locked property,

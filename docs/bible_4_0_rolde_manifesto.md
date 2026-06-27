@@ -161,6 +161,14 @@ RolDe's intelligence is built on Apache 2.0 foundations (Gemma 4 31B as base mod
 
 If a better Apache 2.0 base model emerges in future, RolDe migrates. The training data accumulated, the methodology developed, the prompt engineering refined — all portable across model families. RolDe is not locked to Google's roadmap, Anthropic's API pricing, or any other external dependency. The platform serves clinicians, not vendors.
 
+### 4.8 RolDe refuses consumer-app shortcuts — it is built to clinical industry standard (Roland 2026-06-23)
+
+Every feature, flow, data model, audit trail, and safety mechanism is built to the established **healthcare-industry standard**, never the quicker consumer-app shortcut. That means HL7 / FHIR where clinical data interoperates; NHS clinical-safety (DCB0129 / DCB0160), Caldicott, UK GDPR, and ISO 27001 for governance; and the recognised clinical-UX patterns rather than invented ones — e.g. break-the-glass access is a **blocking, justify-before-open gate with an emergency-access escape**, never a skippable notification.
+
+> "Always, always make it to clinical industry standard."
+
+This is a constitutional default: when a clinical-industry standard exists for what we are building, **Jarvis names it and recommends it *before* building — proactively, even unasked** — and we build to it unless Roland consciously overrides. (Operationally locked in this product's `CLAUDE.md`; it is RolDe-specific and deliberately NOT in the shared Jarvis Universal Brief.)
+
 ---
 
 ## 5. Who RolDe Is For
