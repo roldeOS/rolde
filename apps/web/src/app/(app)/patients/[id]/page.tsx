@@ -4,7 +4,7 @@ import { getSessionContext } from "@/lib/auth";
 import { logPatientAccess } from "@/lib/audit";
 import { TopbarPatientSync } from "@/components/topbar/TopbarContext";
 import { ConsultationWorkspace } from "@/components/consultation/ConsultationWorkspace";
-import { BreakGlassNotice } from "./BreakGlassNotice";
+import { BreakGlassGate } from "./BreakGlassGate";
 import type { FeedEntry, Author } from "@/components/consultation/ClinicalNotesFeed";
 
 function age(d: string) {
@@ -138,15 +138,14 @@ export default async function ConsultationPage({
         }}
       />
       {access?.breakGlass ? (
-        // Opened with NO care link → a calm break-glass band sits ATOP the record
-        // (the record stays fully open below) and captures the reason just-in-time.
-        <div className="flex h-full min-h-0 flex-col">
-          <BreakGlassNotice
-            accessId={access.id}
-            patientName={`${patient.first_name} ${patient.last_name}`}
-          />
-          <div className="min-h-0 flex-1">{workspace}</div>
-        </div>
+        // Opened with NO care link → the BLOCKING break-glass gate (clinical standard):
+        // the record renders frosted behind a reason card and un-blurs once justified.
+        <BreakGlassGate
+          accessId={access.id}
+          patientName={`${patient.first_name} ${patient.last_name}`}
+        >
+          {workspace}
+        </BreakGlassGate>
       ) : (
         workspace
       )}

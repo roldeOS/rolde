@@ -10,6 +10,7 @@ export const ACCESS_PURPOSES = [
   "administrative",
   "records_request",
   "safeguarding",
+  "emergency",
   "other",
 ] as const;
 export type AccessPurpose = (typeof ACCESS_PURPOSES)[number];
@@ -20,6 +21,7 @@ export const ACCESS_PURPOSE_LABEL: Record<AccessPurpose, string> = {
   administrative: "Administrative",
   records_request: "Records request",
   safeguarding: "Safeguarding",
+  emergency: "Emergency access",
   other: "Other",
 };
 
