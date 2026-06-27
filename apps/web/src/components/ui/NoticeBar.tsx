@@ -19,7 +19,7 @@ const TONE: Record<"info" | "warning" | "neutral", { wrap: string; icon: string 
 
 export function NoticeBar({
   icon,
-  tone = "info",
+  tone = "warning",
   children,
   action,
   onDismiss,
