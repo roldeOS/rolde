@@ -46,9 +46,9 @@ export function EditMember({
   country: string;
   open: boolean;
   onClose: () => void;
-  /** The Caretaker's OWN row gets no reset/pause (no self-lockout). */
+  /** The Caretaker's OWN row gets no reset/deactivate (no self-lockout). */
   isMe?: boolean;
-  /** Membership status — drives Pause vs Restore. */
+  /** Membership status — drives Deactivate vs Activate. */
   status?: string;
 }) {
   const router = useRouter();
@@ -60,20 +60,20 @@ export function EditMember({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Secondary member-management actions (Reset Link · Pause/Restore), moved here
+  // Secondary member-management actions (Reset Link · Deactivate/Activate), moved here
   // from the old ⋯ row menu (Roland 2026-06-21 — the row is the edit target; the
   // editor is the single place to manage a person).
   const [actionBusy, setActionBusy] = useState<string | null>(null);
-  const [confirmPause, setConfirmPause] = useState(false);
+  const [confirmDeactivate, setConfirmDeactivate] = useState(false);
   const [resetSent, setResetSent] = useState(false);
-  const paused = status !== "active";
+  const deactivated = status !== "active";
 
   // Re-seed the form whenever a new member's editor opens.
   useEffect(() => {
     if (open) {
       setForm(memberFormFrom(member));
       setError(null);
-      setConfirmPause(false);
+      setConfirmDeactivate(false);
       setResetSent(false);
     }
   }, [open, member]);
@@ -117,13 +117,13 @@ export function EditMember({
 
   async function setStatus(next: string) {
     const ok = await postAction("/api/clinic/users/update", { id: member.id, status: next }, "status");
-    setConfirmPause(false);
+    setConfirmDeactivate(false);
     if (ok) {
       onClose();
       flashSaved(
         next === "active"
-          ? `RolDe restored ${member.display_name}’s access.`
-          : `RolDe paused ${member.display_name}’s access.`,
+          ? `RolDe activated ${member.display_name}’s access.`
+          : `RolDe deactivated ${member.display_name}’s access.`,
       );
       router.refresh();
     }
@@ -258,30 +258,30 @@ export function EditMember({
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-6 py-4">
-          {/* Pause / Restore on the LEFT — amber-fill, matching the discard-changes
+          {/* Deactivate / Activate on the LEFT — amber-fill, matching the discard-changes
               treatment (Roland 2026-06-21). Not on your own row (no self-lockout). */}
           <div className="flex min-h-[2rem] items-center">
             {!isMe &&
-              (paused ? (
+              (deactivated ? (
                 <button
                   onClick={() => setStatus("active")}
                   disabled={!!actionBusy}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-success/12 px-3 py-1.5 text-sm font-medium text-success transition-colors hover:bg-success/20 disabled:opacity-50"
                 >
                   {actionBusy === "status" ? <Loader2 className="size-4 animate-spin" /> : <RotateCcw className="size-4" />}
-                  Restore Access
+                  Activate
                 </button>
               ) : (
                 <button
-                  onClick={() => (confirmPause ? setStatus("paused") : setConfirmPause(true))}
+                  onClick={() => (confirmDeactivate ? setStatus("deactivated") : setConfirmDeactivate(true))}
                   disabled={!!actionBusy}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-lg bg-warning/12 px-3 py-1.5 text-sm font-medium text-warning transition-colors hover:bg-warning/20 disabled:opacity-50",
-                    confirmPause && "bg-warning/20 font-semibold",
+                    confirmDeactivate && "bg-warning/20 font-semibold",
                   )}
                 >
                   {actionBusy === "status" ? <Loader2 className="size-4 animate-spin" /> : <Ban className="size-4" />}
-                  {confirmPause ? "Tap Again to Pause" : "Pause Access"}
+                  {confirmDeactivate ? "Tap Again to Deactivate" : "Deactivate"}
                 </button>
               ))}
           </div>

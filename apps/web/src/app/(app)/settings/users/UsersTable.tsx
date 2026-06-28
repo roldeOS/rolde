@@ -142,7 +142,7 @@ export function UsersTable({
   blurb: string;
 }) {
   // Row click opens the editor (Roland 2026-06-21 — rows hover + click to edit,
-  // not a buried ⋯). The ⋯ keeps only the secondary actions (reset / pause).
+  // not a buried ⋯). The ⋯ keeps only the secondary actions (reset / deactivate).
   const [editing, setEditing] = useState<StaffMember | null>(null);
 
   // Filter options derive from the roster present (only roles in use show up).
@@ -162,9 +162,9 @@ export function UsersTable({
       label: "Status",
       options: [
         { value: "active", label: "Active", count: staff.filter((s) => s.status === "active").length },
-        { value: "paused", label: "Paused", count: staff.filter((s) => s.status !== "active").length },
+        { value: "deactivated", label: "Deactivated", count: staff.filter((s) => s.status !== "active").length },
       ],
-      get: (s) => (s.status === "active" ? "active" : "paused"),
+      get: (s) => (s.status === "active" ? "active" : "deactivated"),
     },
     { key: "joined", label: "Joined", kind: "daterange", getDate: (s) => s.created_at },
   ];
@@ -252,7 +252,7 @@ export function UsersTable({
       width: "9rem",
       cell: (s) => {
         if (s.status !== "active") {
-          return <span className="inline-block rounded-md bg-critical/12 px-2 py-0.5 text-xs font-medium text-critical">Paused</span>;
+          return <span className="inline-block rounded-md bg-critical/12 px-2 py-0.5 text-xs font-medium text-critical">Deactivated</span>;
         }
         const w = accessWindowBadge(s.access_starts_at, s.access_ends_at, nowMs);
         return <span className={cn("inline-block rounded-md px-2 py-0.5 text-xs font-medium", TONE_PILL[w.tone])}>{w.label}</span>;
@@ -278,7 +278,7 @@ export function UsersTable({
     { header: "Job Title", w: 1.6, value: (s: StaffMember) => s.job_title || ROLE_BY_KEY[s.role]?.meaning || "" },
     { header: "Email", w: 2.3, value: (s: StaffMember) => s.email ?? "" },
     { header: "Prescriber", w: 0.9, value: (s: StaffMember) => (s.prescribing_rights ? "Yes" : "No") },
-    { header: "Status", w: 0.9, value: (s: StaffMember) => (s.status === "active" ? "Active" : "Paused") },
+    { header: "Status", w: 0.9, value: (s: StaffMember) => (s.status === "active" ? "Active" : "Deactivated") },
     { header: "Access", w: 1, value: (s: StaffMember) => accessWindowBadge(s.access_starts_at, s.access_ends_at, nowMs).label },
     { header: "Licence", w: 1.3, value: (s: StaffMember) => [s.license_type, s.license_number].filter(Boolean).join(" ") },
     { header: "Joined", w: 0.95, align: "right" as const, value: (s: StaffMember) => fmtJoined(s.created_at) },
@@ -319,7 +319,7 @@ export function UsersTable({
         )}
       </TableShell>
 
-      {/* Row click → edit (the ⋯ holds only reset/pause). One editor, re-seeded
+      {/* Row click → edit (the ⋯ holds only reset/deactivate). One editor, re-seeded
           per member; keyed so its form resets cleanly between people. */}
       {editing && (
         <EditMember

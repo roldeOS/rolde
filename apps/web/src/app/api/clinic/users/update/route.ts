@@ -8,7 +8,7 @@ import { ROLES } from "@/lib/roles";
 
 /**
  * Update a member (W1.1.7 chunk 2, Caretaker-only). Handles BOTH a full edit
- * (the Edit modal) and a status flip (Revoke/Restore). The write goes through
+ * (the Edit modal) and a status flip (Deactivate/Activate). The write goes through
  * the caretaker's own session so RLS (`is_caretaker_of`) re-checks it; a target
  * outside their clinic 404s. Self-lockout guards: a Caretaker can't revoke
  * themselves or change their own role.
@@ -96,9 +96,9 @@ export async function POST(request: Request) {
   }
   if ("status" in body) {
     // The schema's membership states (CHECK tenant_users_status_valid):
-    //   active = has access · paused = soft-revoked (restorable) · archived.
+    //   active = has access · deactivated = soft-revoked (restorable) · archived.
     const status = String(body.status);
-    if (!["active", "paused", "archived"].includes(status)) return fail("bad_status");
+    if (!["active", "deactivated", "archived"].includes(status)) return fail("bad_status");
     if (isSelf && status !== "active") return fail("self_lock");
     patch.status = status;
   }
@@ -140,9 +140,9 @@ export async function POST(request: Request) {
   const roleName = (k: string) => ROLES.find((r) => r.key === k)?.label ?? k;
   const events: { action: string; summary: string }[] = [];
   if (patch.status && patch.status !== target.status) {
-    if (patch.status === "paused") events.push({ action: "member.pause", summary: `Paused ${label}'s access` });
+    if (patch.status === "deactivated") events.push({ action: "member.deactivate", summary: `Deactivated ${label}'s access` });
     else if (patch.status === "archived") events.push({ action: "member.archive", summary: `Archived ${label}` });
-    else if (patch.status === "active") events.push({ action: "member.restore", summary: `Restored ${label}'s access` });
+    else if (patch.status === "active") events.push({ action: "member.activate", summary: `Activated ${label}'s access` });
   }
   if (patch.role && patch.role !== target.role) {
     events.push({ action: "member.role_change", summary: `Changed ${label}'s role to ${roleName(patch.role as string)}` });

@@ -9,7 +9,12 @@ import { TopbarProvider } from "@/components/topbar/TopbarContext";
 import { PageActionBarProvider } from "@/components/ui/PageActionBar";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { createClient } from "@/lib/supabase/client";
+import { ROLES } from "@/lib/roles";
 import { cn } from "@/lib/utils";
+
+const ROLE_LABEL: Record<string, string> = Object.fromEntries(ROLES.map((r) => [r.key, r.label]));
+const roleLabel = (role: string) =>
+  ROLE_LABEL[role] ?? (role ? role[0].toUpperCase() + role.slice(1) : "");
 
 /**
  * The clinic app frame (Roland 2026-06-10):
@@ -159,6 +164,12 @@ export function AppFrame({
             )}
           </button>
           <div className="mt-auto px-2 py-3">
+            {/* Who you're signed in as — name + role, just above Sign Out
+                (Roland 2026-06-28). Hidden on the collapsed rail. */}
+            <div className={cn("mb-2 px-2", collapsed && "lg:hidden")}>
+              <p className="truncate text-sm font-medium text-foreground">{user}</p>
+              <p className="truncate text-xs text-muted-foreground">{roleLabel(role)}</p>
+            </div>
             <button
               onClick={signOut}
               className={cn(

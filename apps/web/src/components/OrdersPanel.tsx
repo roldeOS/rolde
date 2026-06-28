@@ -37,6 +37,24 @@ export function OrdersPanel({
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="glass sticky top-0 z-10 flex items-center gap-1 px-3 py-2.5">
+        {/* Tabs on the LEFT, same font size as "Clinical Notes" (text-sm); the
+            card's flask squircle + (i) move to the RIGHT (Roland 2026-06-28). */}
+        <div className="flex min-w-0 flex-1 gap-0.5 overflow-x-auto">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={cn(
+                "shrink-0 rounded-lg px-2 py-1 text-sm font-medium transition-colors",
+                tab === t.key
+                  ? "bg-foreground/6 text-foreground"
+                  : "text-muted-foreground hover:bg-hover hover:text-foreground",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
         <CardIcon icon={FlaskConical} tone="info" variant="badge" size="sm" />
         <SectionExplainer
           label="Investigations & Orders"
@@ -47,22 +65,6 @@ export function OrdersPanel({
             { term: "Procedures / Letters", definition: "Consents, photos, referrals and letters." },
           ]}
         />
-        <div className="flex min-w-0 flex-1 gap-0.5 overflow-x-auto">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={cn(
-                "shrink-0 rounded-lg px-2 py-1 text-xs font-medium transition-colors",
-                tab === t.key
-                  ? "bg-foreground/6 text-foreground"
-                  : "text-muted-foreground hover:bg-hover hover:text-foreground",
-              )}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
         {onToggleMaximize && (
           <button
             onClick={onToggleMaximize}
