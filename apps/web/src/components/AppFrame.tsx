@@ -139,6 +139,12 @@ export function AppFrame({
                 {clinic}
               </p>
             )}
+            {/* Who you're signed in as — name + role, right under the clinic name
+                and above the nav (Roland 2026-06-28). Hidden on the collapsed rail. */}
+            <div className={cn("mt-2", collapsed && "lg:hidden")}>
+              <p className="truncate text-sm font-medium text-foreground">{user}</p>
+              <p className="truncate text-xs text-muted-foreground">{roleLabel(role)}</p>
+            </div>
           </div>
           <SidebarNav collapsed={collapsed} role={role} prescribingRights={prescribingRights} />
 
@@ -164,12 +170,6 @@ export function AppFrame({
             )}
           </button>
           <div className="mt-auto px-2 py-3">
-            {/* Who you're signed in as — name + role, just above Sign Out
-                (Roland 2026-06-28). Hidden on the collapsed rail. */}
-            <div className={cn("mb-2 px-2", collapsed && "lg:hidden")}>
-              <p className="truncate text-sm font-medium text-foreground">{user}</p>
-              <p className="truncate text-xs text-muted-foreground">{roleLabel(role)}</p>
-            </div>
             <button
               onClick={signOut}
               className={cn(

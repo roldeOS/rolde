@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import { CardIcon } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
 
 /**
@@ -16,7 +17,7 @@ export function AiPanel() {
     <div className="flex h-full min-h-0 flex-col">
       <div className="glass sticky top-0 z-10 flex shrink-0 items-center justify-between px-4 py-2.5">
         <span className="flex items-center gap-1.5">
-          <Sparkles className="size-3.5 text-info" />
+          <CardIcon icon={Sparkles} tone="accent" variant="badge" size="sm" />
           {/* Inter here — NOT the serif wordmark (Roland 2026-06-10). */}
           <span className="text-sm font-semibold tracking-tight">RolDe</span>
           <span className="text-xs text-muted-foreground">says…</span>

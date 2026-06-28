@@ -37,8 +37,9 @@ export function OrdersPanel({
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="glass sticky top-0 z-10 flex items-center gap-1 px-3 py-2.5">
-        {/* Tabs on the LEFT, same font size as "Clinical Notes" (text-sm); the
-            card's flask squircle + (i) move to the RIGHT (Roland 2026-06-28). */}
+        {/* Flask squircle on the LEFT; tabs (text-sm, matching "Clinical Notes") in
+            the middle; the (i) on the RIGHT (Roland 2026-06-28). */}
+        <CardIcon icon={FlaskConical} tone="info" variant="badge" size="sm" />
         <div className="flex min-w-0 flex-1 gap-0.5 overflow-x-auto">
           {TABS.map((t) => (
             <button
@@ -55,7 +56,6 @@ export function OrdersPanel({
             </button>
           ))}
         </div>
-        <CardIcon icon={FlaskConical} tone="info" variant="badge" size="sm" />
         <SectionExplainer
           label="Investigations & Orders"
           description="Request investigations and treatments, and review what's come back — grouped by type in the tabs."
