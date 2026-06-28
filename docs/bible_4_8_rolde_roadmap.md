@@ -1178,7 +1178,7 @@ naming Q for Roland:** the soft-revoke state is `suspended` in the schema, so th
 "Suspend/Suspended" — if he'd rather it read "Revoke", align the DB value too.
 **Next (chunk 3):** Concierge inline add-patient + payment; add-patient for all-but-Cofferer.
 Then chunk 4: per-patient-access audit log. Legacy `gmc_number/gdc_number/nmc_pin` columns
-(superseded by `license_type/number`) await Roland's call to retire.
+✅ retired (migration `20260617130000`; superseded by `license_type/number`).
 **Seamless onboarding email (Roland 2026-06-16, write-in):** the moment a Caretaker creates a user,
 RolDe emails them — their role, the clinic, **how long they have access**, and a single-use
 **set-password link** (the `/reset` screen). One step from invite to in.
@@ -1334,7 +1334,7 @@ addenda surface.
 - **W1.1.7 Users & Roles:**
   - [ ] **"Suspend/Suspended" → "Revoke"?** Roland's naming call. If Revoke, align the DB `status`
     value too (deep, not just the label — no old word lurking).
-  - [ ] **Retire legacy** `gmc_number/gdc_number/nmc_pin` columns (superseded by `license_type/number`).
+  - [x] **Retire legacy** `gmc_number/gdc_number/nmc_pin` columns ✅ done (migration `20260617130000`; superseded by `license_type/number`).
 - **W1.1.13 Email Templates:**
   - [ ] **Wire the RolDe OS wordmark PNG URLs** into the email shell (post-deploy; serif-text
     placeholder until then).
