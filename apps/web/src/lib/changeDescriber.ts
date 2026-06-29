@@ -99,6 +99,19 @@ export function describeSave(changes: FieldChange[], subject: string): string {
     : `RolDe saved ${changes.length} changes to your ${subject} — ${joinLabels(labels)}.`;
 }
 
+/**
+ * Like describeSave, but for a NAMED item in a list (a service, a template) —
+ * "RolDe updated the Price for “Botox Consultation”." Reads better than the
+ * generic "your <subject>" phrasing when the subject is the thing's own name.
+ */
+export function describeItemSave(changes: FieldChange[], itemName: string): string {
+  if (changes.length === 0) return `RolDe saved “${itemName}”.`;
+  const labels = changes.map((c) => c.label);
+  return changes.length === 1
+    ? `RolDe updated the ${labels[0]} for “${itemName}”.`
+    : `RolDe updated ${changes.length} things for “${itemName}” — ${joinLabels(labels)}.`;
+}
+
 /** A terse, past-tense summary for the Activity Log row (no "RolDe" prefix). */
 export function summariseChanges(changes: FieldChange[], subject: string): string {
   if (changes.length === 0) return `Saved the ${subject}`;

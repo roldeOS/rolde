@@ -22,6 +22,18 @@ const pct = (v: unknown): string => {
   const bps = typeof v === "number" ? v : parseInt(String(v ?? ""), 10);
   return Number.isFinite(bps) ? `${bps / 100}%` : "0%";
 };
+/** Minutes → "30 min" (blank when not set). */
+const mins = (v: unknown): string => {
+  const n = typeof v === "number" ? v : parseInt(String(v ?? ""), 10);
+  return Number.isFinite(n) ? `${n} min` : "—";
+};
+/** A boolean → "Yes" / "No". */
+const yesNo = (v: unknown): string => (v === true || v === "true" ? "Yes" : "No");
+/** A service's active flag → "Active" / "Inactive" (default Active). */
+const activeLabel = (v: unknown): string => (v === false || v === "false" ? "Inactive" : "Active");
+/** A per-service deposit → "£25.00", or "Clinic default" when left blank. */
+const depositOrDefault = (v: unknown): string =>
+  v === null || v === undefined || v === "" ? "Clinic default" : gbp(v);
 
 export const CLINIC_PROFILE_FIELDS: FieldMap = {
   name: { label: "Clinic Name", section: "Identity" },
@@ -54,4 +66,18 @@ export const COMMERCIAL_FIELDS: FieldMap = {
   consult_credit_pence: { label: "Credit amount", section: "Consultation Credit", format: gbp },
   consult_credit_label: { label: "Credit label", section: "Consultation Credit" },
   discount_codes_enabled: { label: "Discount codes", section: "Discount Codes", format: onOff },
+};
+
+/** Services & Pricing (W1.1.8) — a per-item list; the audit subject is the service's
+ *  own name, so these fields are flat (no sections). */
+export const SERVICE_FIELDS: FieldMap = {
+  name: { label: "Name" },
+  category: { label: "Category" },
+  code: { label: "Code" },
+  price_pence: { label: "Price", format: gbp },
+  duration_minutes: { label: "Duration", format: mins },
+  description: { label: "Description" },
+  tax_exempt: { label: "Tax-exempt", format: yesNo },
+  deposit_pence: { label: "Deposit", format: depositOrDefault },
+  active: { label: "Status", format: activeLabel },
 };

@@ -8,6 +8,8 @@ import { useSavedFlash } from "@/components/ui/PageActionBar";
 import { Switch } from "@/components/ui/Switch";
 import { Field, Input } from "@/components/ui/form";
 import { DialogHeaderRow } from "@/components/ui/DialogHeaderRow";
+import { diffFields, describeItemSave } from "@/lib/changeDescriber";
+import { SERVICE_FIELDS } from "@/lib/auditFields";
 import { cn } from "@/lib/utils";
 
 export type Service = {
@@ -142,9 +144,9 @@ export function ServicesManager({
           commercial={commercial}
           categories={categories}
           onClose={() => setEditing(null)}
-          onSaved={(name) => {
+          onSaved={(message) => {
             setEditing(null);
-            flashSaved(`RolDe saved “${name}”.`);
+            flashSaved(message);
             router.refresh();
           }}
         />
@@ -252,7 +254,7 @@ function ServiceModal({
   commercial: CommercialContext;
   categories: string[];
   onClose: () => void;
-  onSaved: (name: string) => void;
+  onSaved: (message: string) => void;
 }) {
   const [name, setName] = useState(service?.name ?? "");
   const [description, setDescription] = useState(service?.description ?? "");
@@ -286,26 +288,28 @@ function ServiceModal({
     if (!Number.isFinite(pricePence) || pricePence < 0) return setError("Enter a valid price.");
 
     setBusy(true);
+    // The values exactly as the server will store them (mirrors its trimOrNull rules) —
+    // used both as the POST body and to describe precisely what changed.
+    const after = {
+      name: name.trim(),
+      description: description.trim() || null,
+      category: category.trim() || null,
+      code: code.trim() || null,
+      price_pence: pricePence,
+      duration_minutes: duration.trim() === "" ? null : Number(duration),
+      tax_exempt: commercial.tax_enabled ? !chargeTax : false,
+      deposit_pence: commercial.deposit_enabled
+        ? depositStr.trim() === ""
+          ? null
+          : Math.round((parseFloat(depositStr) || 0) * 100)
+        : null,
+      active,
+    };
     try {
       const res = await fetch("/api/clinic/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: service?.id,
-          name: name.trim(),
-          description,
-          category: category.trim() || null,
-          code: code.trim() || null,
-          price_pence: pricePence,
-          duration_minutes: duration.trim() === "" ? null : Number(duration),
-          tax_exempt: commercial.tax_enabled ? !chargeTax : false,
-          deposit_pence: commercial.deposit_enabled
-            ? depositStr.trim() === ""
-              ? null
-              : Math.round((parseFloat(depositStr) || 0) * 100)
-            : null,
-          active,
-        }),
+        body: JSON.stringify({ id: service?.id, ...after }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ok) {
@@ -317,7 +321,10 @@ function ServiceModal({
         setBusy(false);
         return;
       }
-      onSaved(name.trim());
+      const message = service
+        ? describeItemSave(diffFields(service, after, SERVICE_FIELDS), after.name)
+        : `RolDe added “${after.name}” to your services.`;
+      onSaved(message);
     } catch {
       setError("Something went wrong. Try again.");
       setBusy(false);
