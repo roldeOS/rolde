@@ -68,6 +68,21 @@ export const COMMERCIAL_FIELDS: FieldMap = {
   discount_codes_enabled: { label: "Discount codes", section: "Discount Codes", format: onOff },
 };
 
+/**
+ * Members (W1.1.7) — ONLY the plain detail fields. The security-relevant fields
+ * (role · status · prescribing · login email) are NOT here: they're recorded as
+ * their own discrete Activity-Log events with hand-written summaries, which is the
+ * better trail for them. This map enriches the detail edit with a before→after.
+ */
+export const USER_DETAIL_FIELDS: FieldMap = {
+  display_name: { label: "Name" },
+  designation: { label: "Designation" },
+  preferred_name: { label: "Preferred name" },
+  job_title: { label: "Job title" },
+  license_type: { label: "Licence type" },
+  license_number: { label: "Licence number" },
+};
+
 /** Services & Pricing (W1.1.8) — a per-item list; the audit subject is the service's
  *  own name, so these fields are flat (no sections). */
 export const SERVICE_FIELDS: FieldMap = {

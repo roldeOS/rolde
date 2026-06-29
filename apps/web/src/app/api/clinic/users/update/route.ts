@@ -3,7 +3,8 @@ import type { Database } from "@rolde/db";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSessionContext } from "@/lib/auth";
-import { logAudit } from "@/lib/audit";
+import { logAudit, logFieldChanges } from "@/lib/audit";
+import { USER_DETAIL_FIELDS } from "@/lib/auditFields";
 import { ROLES } from "@/lib/roles";
 
 /**
@@ -57,7 +58,9 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: target } = await supabase
     .from("tenant_users")
-    .select("id, user_id, role, tenant_id, display_name, status, prescribing_rights")
+    .select(
+      "id, user_id, role, tenant_id, display_name, status, prescribing_rights, designation, preferred_name, job_title, license_type, license_number",
+    )
     .eq("id", id)
     .maybeSingle();
   if (!target || target.tenant_id !== tenantId) return fail("not_found", 404);
@@ -156,13 +159,30 @@ export async function POST(request: Request) {
     });
   }
   if (didEmail) events.push({ action: "member.email_change", summary: `Changed ${label}'s login email` });
-  const DETAIL_KEYS = [
-    "display_name", "designation", "preferred_name", "job_title",
-    "license_type", "license_number", "access_starts_at", "access_ends_at",
-  ];
-  if (events.length === 0 && DETAIL_KEYS.some((k) => k in patch)) {
-    events.push({ action: "member.update", summary: `Updated ${label}'s details` });
-  }
+  // The plain detail fields (name, designation, job title, licence) get a before→after
+  // field-level audit (Change Describer) — written separately from the security events
+  // above, which keep their own discrete rows. The security values aren't in this map,
+  // so they're never double-logged. No-op when no detail field actually changed.
+  const detailBefore = {
+    display_name: target.display_name,
+    designation: target.designation,
+    preferred_name: target.preferred_name,
+    job_title: target.job_title,
+    license_type: target.license_type,
+    license_number: target.license_number,
+  };
+  const logDetailChanges = () =>
+    logFieldChanges({
+      tenantId,
+      actorUserId: ctx.user.id,
+      action: "member.update",
+      subject: `${label}'s details`,
+      before: detailBefore,
+      after: { ...detailBefore, ...patch },
+      fields: USER_DETAIL_FIELDS,
+      resourceType: "member",
+      resourceId: target.id,
+    });
   const flushAudit = () =>
     Promise.all(
       events.map((e) =>
@@ -191,6 +211,6 @@ export async function POST(request: Request) {
     console.error("[users/update]", upErr.message);
     return fail("update_failed", 500);
   }
-  await flushAudit();
+  await Promise.all([flushAudit(), logDetailChanges()]);
   return NextResponse.json({ ok: true, emailChanged: didEmail });
 }

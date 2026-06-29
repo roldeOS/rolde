@@ -11,6 +11,8 @@ import {
   windowFromForm,
   type MemberForm,
 } from "@/lib/memberForm";
+import { diffFields, describeItemSave } from "@/lib/changeDescriber";
+import { USER_DETAIL_FIELDS } from "@/lib/auditFields";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/form";
 import { MemberFields } from "./MemberFields";
@@ -172,12 +174,32 @@ export function EditMember({
         setBusy(false);
         return;
       }
+      // Name exactly what changed (Change Describer) — mirrors the server's detail map.
+      const detailBefore = {
+        display_name: member.display_name ?? "",
+        designation: member.designation ?? "",
+        preferred_name: member.preferred_name ?? "",
+        job_title: member.job_title ?? "",
+        license_type: member.license_type ?? "",
+        license_number: member.license_number ?? "",
+      };
+      const detailAfter = {
+        display_name: form.displayName.trim(),
+        designation: form.designation.trim(),
+        preferred_name: form.preferredName.trim(),
+        job_title: form.jobTitle.trim(),
+        license_type: form.licenseType.trim(),
+        license_number: form.licenseNumber.trim(),
+      };
+      const changes = diffFields(detailBefore, detailAfter, USER_DETAIL_FIELDS);
       const name = form.displayName.trim();
       onClose();
       flashSaved(
         data.emailChanged
           ? `RolDe updated ${name}’s details + email — send them a reset link to finish.`
-          : `RolDe updated ${name}’s details.`,
+          : changes.length
+            ? describeItemSave(changes, name)
+            : `RolDe updated ${name}’s details.`,
       );
       router.refresh();
     } catch {
