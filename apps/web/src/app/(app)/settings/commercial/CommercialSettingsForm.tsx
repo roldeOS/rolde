@@ -7,6 +7,8 @@ import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { Switch } from "@/components/ui/Switch";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { Field, Input } from "@/components/ui/form";
+import { describeSave, diffFields } from "@/lib/changeDescriber";
+import { COMMERCIAL_FIELDS } from "@/lib/auditFields";
 
 export type CommercialSettings = {
   tax_enabled: boolean;
@@ -93,7 +95,14 @@ export function CommercialSettingsForm({ initial }: { initial: CommercialSetting
         setError("That didn’t save — try again.");
         return;
       }
-      flashSaved("RolDe saved your commercial settings.");
+      // Mirror the dirty-check normalisation so the message names only true changes.
+      const before = {
+        ...initial,
+        tax_name: initial.tax_name || "Tax",
+        tax_registration: initial.tax_registration ?? null,
+      };
+      const changes = diffFields(before, payload, COMMERCIAL_FIELDS);
+      flashSaved(describeSave(changes, "commercial settings"));
       router.refresh();
     } catch {
       setError("Something went wrong. Try again.");

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSessionContext } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { logAudit } from "@/lib/audit";
+import { logFieldChanges } from "@/lib/audit";
+import { CLINIC_PROFILE_FIELDS } from "@/lib/auditFields";
 import { sanitizeSvg } from "@/lib/sanitizeSvg";
 
 /**
@@ -68,35 +69,49 @@ export async function PATCH(request: Request) {
     }
   }
 
-  const { error } = await createAdminClient()
+  const admin = createAdminClient();
+
+  // The CURRENT values, to diff against for the audit trail (server-authoritative —
+  // the trail is built from the real old/new, never trusting the client).
+  const { data: before } = await admin
     .from("tenants")
-    .update({
-      name,
-      legal_name: legalName,
-      contact_email: orNull(b.contact_email),
-      contact_phone: orNull(b.contact_phone),
-      address_line1: orNull(b.address_line1),
-      address_line2: orNull(b.address_line2),
-      city: orNull(b.city),
-      postcode: orNull(b.postcode),
-      ico_registration: orNull(b.ico_registration),
-      his_registration: orNull(b.his_registration),
-      cqc_registration: orNull(b.cqc_registration),
-      ...logoPatch,
-    })
-    .eq("id", tenantId);
+    .select(
+      "name, legal_name, contact_email, contact_phone, address_line1, address_line2, city, postcode, ico_registration, his_registration, cqc_registration, logo_svg, logo_svg_dark",
+    )
+    .eq("id", tenantId)
+    .maybeSingle();
+
+  const nextValues = {
+    name,
+    legal_name: legalName,
+    contact_email: orNull(b.contact_email),
+    contact_phone: orNull(b.contact_phone),
+    address_line1: orNull(b.address_line1),
+    address_line2: orNull(b.address_line2),
+    city: orNull(b.city),
+    postcode: orNull(b.postcode),
+    ico_registration: orNull(b.ico_registration),
+    his_registration: orNull(b.his_registration),
+    cqc_registration: orNull(b.cqc_registration),
+    ...logoPatch,
+  };
+
+  const { error } = await admin.from("tenants").update(nextValues).eq("id", tenantId);
 
   if (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
-  // Activity Log (Bible 4.1 §5.4) — a clinically-significant settings change.
-  await logAudit({
+  // Activity Log (Bible 4.1 §5.4) — record exactly which fields changed, before→after.
+  await logFieldChanges({
     tenantId,
     actorUserId: ctx.user.id,
-    action: "profile.update",
+    action: "clinic_profile.update",
+    subject: "clinic profile",
+    before: (before ?? {}) as Record<string, unknown>,
+    after: { ...(before ?? {}), ...nextValues } as Record<string, unknown>,
+    fields: CLINIC_PROFILE_FIELDS,
     resourceType: "clinic_profile",
     resourceId: tenantId,
-    summary: "Updated the clinic profile",
   });
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity } from "lucide-react";
+import { Activity, ArrowRight } from "lucide-react";
 import { TableShell, type SortOption } from "@/components/ui/table/TableShell";
 import { DataTable, type DataTableColumn } from "@/components/ui/table/DataTable";
 import { DENSITY_CLASSES } from "@/components/ui/table/TableDensityToggle";
@@ -50,6 +50,66 @@ function detailsText(r: ActivityRow): string {
   return Object.entries(m)
     .map(([k, v]) => `${k}: ${v && typeof v === "object" ? JSON.stringify(v) : String(v)}`)
     .join("; ");
+}
+
+/** One field's before→after, written by the RolDe Change Describer into metadata. */
+type FieldChangeRow = { key?: string; label?: string; section?: string; from?: string; to?: string };
+
+/** The structured field changes, if the action was a Change-Describer save. */
+function changesOf(r: ActivityRow): FieldChangeRow[] {
+  const c = r.metadata?.changes;
+  return Array.isArray(c) ? (c as FieldChangeRow[]) : [];
+}
+
+/**
+ * The expanded detail panel — what the auditor sees on opening a row. The forensic
+ * line (precise action code · record · unambiguous UTC time) plus, for a save, the
+ * exact before→after of every field that changed (the RolDe Change Describer trail).
+ */
+function ActivityDetail({ r }: { r: ActivityRow }) {
+  const changes = changesOf(r);
+  const resource = resourceText(r);
+  return (
+    <div className="rounded-lg border border-border bg-card px-4 py-3">
+      <dl className="grid grid-cols-[5rem_1fr] gap-x-4 gap-y-1.5 text-[0.8125rem]">
+        <dt className="text-muted-foreground">Action</dt>
+        <dd className="font-mono text-foreground">{r.action}</dd>
+        {resource ? (
+          <>
+            <dt className="text-muted-foreground">Record</dt>
+            <dd className="text-foreground">{resource}</dd>
+          </>
+        ) : null}
+        <dt className="text-muted-foreground">When</dt>
+        <dd className="tabular-nums text-foreground">{fmtUtc(r.at)}</dd>
+      </dl>
+
+      {changes.length > 0 ? (
+        <div className="mt-3 border-t border-border pt-3">
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            What changed
+          </p>
+          <ul className="space-y-1.5 text-[0.8125rem]">
+            {changes.map((c, i) => (
+              <li key={c.key ?? i} className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                <span className="min-w-[8rem] font-medium text-foreground">{c.label ?? c.key}</span>
+                <span className="text-muted-foreground line-through decoration-muted-foreground/40">
+                  {c.from?.trim() ? c.from : "(empty)"}
+                </span>
+                <ArrowRight aria-hidden="true" className="size-3 shrink-0 text-muted-foreground" />
+                <span className="text-foreground">{c.to?.trim() ? c.to : "(empty)"}</span>
+                {c.section ? <span className="text-xs text-muted-foreground">in {c.section}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : detailsText(r) ? (
+        <div className="mt-3 border-t border-border pt-3 text-[0.8125rem] text-muted-foreground">
+          {detailsText(r)}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 export function ActivityLogTable({
@@ -151,6 +211,8 @@ export function ActivityLogTable({
           freezeCount={freezeCount}
           rowNumbers
           rowNumberStart={startIndex}
+          renderExpanded={(r) => <ActivityDetail r={r} />}
+          expandHint="See exactly what changed"
           empty="No activity recorded yet — significant actions in your clinic will appear here."
         />
       )}

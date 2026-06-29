@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSessionContext } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { logFieldChanges } from "@/lib/audit";
+import { COMMERCIAL_FIELDS } from "@/lib/auditFields";
 
 /**
  * Commercial Settings (W1.1.16) — the Caretaker saves the clinic's money policy.
@@ -13,7 +15,7 @@ async function gate() {
   const role = ctx?.membership?.role;
   const tenantId = ctx?.membership?.tenant_id;
   if (!ctx || role !== "caretaker" || !tenantId) return null;
-  return tenantId;
+  return { tenantId, userId: ctx.user.id };
 }
 
 const asBool = (v: unknown) => v === true;
@@ -23,8 +25,9 @@ const intMin0 = (v: unknown) => {
 };
 
 export async function POST(request: Request) {
-  const tenantId = await gate();
-  if (!tenantId) return NextResponse.json({ ok: false, error: "not_allowed" }, { status: 403 });
+  const g = await gate();
+  if (!g) return NextResponse.json({ ok: false, error: "not_allowed" }, { status: 403 });
+  const { tenantId, userId } = g;
 
   let body: Record<string, unknown>;
   try {
@@ -60,6 +63,16 @@ export async function POST(request: Request) {
   };
 
   const supabase = await createClient();
+
+  // The CURRENT money policy, to diff against for the audit trail (server-authoritative).
+  const { data: before } = await supabase
+    .from("clinic_commercial_settings")
+    .select(
+      "tax_enabled, tax_rate_bps, tax_name, tax_registration, tax_inclusive, deposit_enabled, deposit_default_pence, consult_credit_enabled, consult_credit_pence, consult_credit_label, discount_codes_enabled",
+    )
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+
   const { error } = await supabase
     .from("clinic_commercial_settings")
     .upsert(fields, { onConflict: "tenant_id" });
@@ -68,5 +81,18 @@ export async function POST(request: Request) {
     console.error("[commercial]", error.message);
     return NextResponse.json({ ok: false, error: "save_failed" }, { status: 500 });
   }
+
+  // Activity Log — record exactly which money settings changed, before→after.
+  await logFieldChanges({
+    tenantId,
+    actorUserId: userId,
+    action: "commercial.update",
+    subject: "commercial settings",
+    before: (before ?? {}) as Record<string, unknown>,
+    after: { ...(before ?? {}), ...fields } as Record<string, unknown>,
+    fields: COMMERCIAL_FIELDS,
+    resourceType: "commercial_settings",
+    resourceId: tenantId,
+  });
   return NextResponse.json({ ok: true });
 }

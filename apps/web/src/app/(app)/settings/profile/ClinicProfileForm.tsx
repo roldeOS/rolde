@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { UploadCloud, Trash2, TriangleAlert } from "lucide-react";
 import { Field, Input } from "@/components/ui/form";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
+import { describeSave, diffFields } from "@/lib/changeDescriber";
+import { CLINIC_PROFILE_FIELDS } from "@/lib/auditFields";
 import { cn } from "@/lib/utils";
 
 export type ClinicProfile = {
@@ -148,7 +150,9 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) {
-        flashSaved("RolDe saved your clinic profile.");
+        // Precise, conversational save line — names exactly what changed.
+        const changes = diffFields(initial, form, CLINIC_PROFILE_FIELDS);
+        flashSaved(describeSave(changes, "clinic profile"));
         router.refresh();
       } else {
         setError(data.error ?? "RolDe couldn’t save your changes.");

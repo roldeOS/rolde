@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { diffFields, summariseChanges, type FieldMap } from "@/lib/changeDescriber";
 
 /**
  * Does the accessor have a LEGITIMATE RELATIONSHIP with this patient? (Bible 4.8
@@ -155,4 +156,38 @@ export async function logAudit(opts: {
   } catch {
     /* audit logging is best-effort — never block the action */
   }
+}
+
+/**
+ * Log a SAVE as a field-level audit entry (Roland 2026-06-29) — the server half of
+ * the RolDe Change Describer. Diffs before/after through the shared field map and
+ * writes ONE audit_log row whose summary names what changed and whose metadata
+ * carries the before→after of each field (the Activity Log detail reads this). The
+ * SERVER computes the diff from the real old/new values, so the trail can't be
+ * forged by the client. No-op when nothing actually changed. Best-effort.
+ */
+export async function logFieldChanges(opts: {
+  tenantId: string | null | undefined;
+  actorUserId: string | null | undefined;
+  /** dotted verb, e.g. 'clinic_profile.update'. */
+  action: string;
+  /** plain page name for the summary, e.g. 'clinic profile'. */
+  subject: string;
+  before: Record<string, unknown>;
+  after: Record<string, unknown>;
+  fields: FieldMap;
+  resourceType?: string;
+  resourceId?: string;
+}): Promise<void> {
+  const changes = diffFields(opts.before, opts.after, opts.fields);
+  if (changes.length === 0) return;
+  await logAudit({
+    tenantId: opts.tenantId,
+    actorUserId: opts.actorUserId,
+    action: opts.action,
+    resourceType: opts.resourceType,
+    resourceId: opts.resourceId,
+    summary: summariseChanges(changes, opts.subject),
+    metadata: { changes },
+  });
 }
