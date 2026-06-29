@@ -1,8 +1,10 @@
-# RolDe OS — The Clinic & Specialty Universe (Exhaustive)
+# RolDe — Bible 4.9: The Clinic & Specialty Universe
 
 > **Purpose.** The exhaustive map of *every* specialty and clinic type that could run on
-> RolDe OS — the addressable universe. Built by Jarvis from the authoritative UK registers
-> (GMC, RCS, GDC, HCPC) plus the private/wellness/complementary landscape (Roland 2026-06-29).
+> RolDe OS — the addressable universe — **and** the best-in-class software each one uses today
+> (§2), the index Roland deep-dives one by one. Built by Jarvis from the authoritative UK
+> registers (GMC, RCS, GDC, HCPC) plus the private/wellness/complementary landscape, then a
+> full software sweep of each family (Roland 2026-06-29; promoted from research note to Bible).
 >
 > **How this doc is used (Roland's research pipeline):**
 > 1. ✅ **This list** — every specialty / clinic type.
@@ -20,13 +22,20 @@
 ## How to read this
 
 RolDe OS is a **multi-tenant clinical operating system**: a tenant is a *clinic*. The question
-"who can use RolDe" = "what kinds of clinic exist." They cluster into **20 families** below.
+"who can use RolDe" = "what kinds of clinic exist." They cluster into **17 families (A–Q)** in §1.
 Each family lists the concrete clinic types within it. A single real clinic often spans several
 families (e.g. an aesthetics clinic that also runs menopause + weight-loss + IV).
+
+**§2** then maps those families onto the **~20 distinct software markets** that serve them and
+the **best-in-class product** in each — the tick-off index for the per-software deep-dives.
+
+*(This file is §1 of the universe; §1 below keeps the original family list, renumbered as §1.)*
 
 **Legend** — `◆` an existing/near-term RolDe target market · `○` a clear fit · `▷` adjacent/expansion.
 
 ---
+
+# 1. The Universe — 17 Clinic Families (A–Q)
 
 ## A. Primary & generalist care `◆`
 - Private GP / general practice
@@ -151,7 +160,47 @@ families (e.g. an aesthetics clinic that also runs menopause + weight-loss + IV)
 
 ---
 
-## What this means for RolDe's architecture
+# 2. The Software Index — best-in-class per family (the deep-dive tick list)
+
+The 17 families collapse into **~20 distinct software markets** (many families share the same
+PMS — e.g. physio, podiatry, chiro and osteo all live on the Cliniko/TM3/Jane cluster). Each row
+is **one deep-dive** for Roland's step 3.5: research the named products, pull the features worth
+having (e.g. the aesthetics *face-marker*), present Pros & Cons, choose, slot into the Waves.
+
+**Status:** `☐` pending · `◐` partly done · `✅` deep-dived & features extracted.
+*Best-in-class names are the UK-relevant market leaders as of 2026 (sources in §4).*
+
+| # | Software market (specialty cluster) | Families | Best-in-class candidates to deep-dive | Status |
+|---|---|---|---|---|
+| 1 | **Aesthetics & medical spa** | I, J | Pabau · AesthetiDocs · Consentz · Faces · AestheticsPro · Phorest · Nextech · Fresha · Zenoti | ◐ Pabau + AesthetiDocs done; rest pending |
+| 2 | **Dermatology** (medical + cosmetic) | B, I | ModMed EMA · Nextech · EZDERM · (Pabau for cosmetic) | ☐ |
+| 3 | **Private GP / consultants / general medical** | A, B | Semble (ex-Heydoc) · Cliniko · Meddbase · Medesk · Medicus | ☐ |
+| 4 | **NHS primary care** | A | EMIS Web (~55%) · SystmOne/TPP (~35%) · Vision/Cegedim (~9%) · Medicus | ☐ *(NHS = Phase 3+, deferred)* |
+| 5 | **Dentistry & orthodontics** | D | Dentally · SOE EXACT · Carestream R4+ · iSmile · Kiroku (AI notes) · Pearl | ☐ |
+| 6 | **Physiotherapy / MSK / sports / rehab** | F, L | Cliniko (~47%) · TM3 (Blue Zinc) · WriteUpp · Jane · PPS · Nookal · Physitrack (exercise Rx) | ☐ |
+| 7 | **Chiropractic & osteopathy** | M, F | Jane · ClinicMGMT · PPS · Cliniko | ☐ |
+| 8 | **Podiatry / foot health** | F, G | Cliniko · TM3 · PPS · WriteUpp | ☐ *(shares MSK cluster)* |
+| 9 | **Mental health & talking therapies** | E | SimplePractice · Power Diary (Zanda) · Halaxy · Konfidens · WriteUpp · Upheal (AI scribe) | ☐ |
+| 10 | **Optometry / opticians** | G | Acuitas 3 (Ocuco) · Optix · Raven Vision | ☐ |
+| 11 | **Audiology / hearing** | G | Auditbase (Auditdata) · Blueprint OMS · NOAH (HIMSA) · Auditdata Manage | ☐ |
+| 12 | **Fertility / IVF** | H | MedITEX · BabySentry · eIVF · IVF.software · LifeLinkr | ☐ |
+| 13 | **Women's / menopause / men's health** | H, J | Semble · Cliniko · Pabau (general) + specialist protocols | ☐ |
+| 14 | **Occupational health** | O | Cohort (Tempus) · Civica OPAS-G2 · Medgate · Orchid | ☐ |
+| 15 | **Pharmacy & independent-prescriber** | N | TITAN PMR · ProScript · Cegedim Rx · RxWeb · Nymo | ☐ |
+| 16 | **Diagnostics / imaging (RIS-PACS)** | K | Soliton Radiology+ · Sectra · Insignia · Intelerad InSight | ☐ |
+| 17 | **Veterinary** | Q | ezyVet (IDEXX) · Provet Cloud · Covetrus Pulse · RoboVet · IDEXX Neo | ☐ *(adjacent)* |
+| 18 | **Wellness / weight-loss / IV / longevity** | J | Semble · Cliniko · Pabau · Fresha (general PMS) | ☐ |
+| 19 | **Complementary & integrative** | M | Jane · Cliniko · WriteUpp (general wellness PMS) | ☐ |
+| 20 | **Surgical / private hospital / day-units** | C, P | Meddbase · Semble · Medesk (+ specialty modules) | ☐ |
+
+**How we work this table (steps 3.5–3.8):** Roland names a row → Jarvis deep-dives those products
+air-tight → returns the **features worth pulling, each with Pros & Cons** → Roland chooses → chosen
+features are added to the Bible 4.8 Waves, **with any duplicate of something already on the build
+list eliminated**. Tick the Status as each row is dived.
+
+---
+
+# 3. What this means for RolDe's architecture
 
 Because one platform must serve all of the above, the design imperative is **a common spine +
 specialty modules**, never bespoke apps:
@@ -163,4 +212,18 @@ specialty modules**, never bespoke apps:
   for injectables — each a thin module hanging off the shared spine.
 
 The pipeline doc (steps 2–5 above) decides **which specialty widgets are worth building** and in
-what order. This file is step 1 — the universe they're drawn from.
+what order. This file is steps 1–2 — the universe and the software index they're drawn from.
+
+---
+
+# 4. Sources
+
+Authoritative registers + the 2026 UK software-market sweep behind §2:
+- **Registers:** GMC approved curricula (65 specialties + 30 sub-specialties) · Royal College of
+  Surgeons (10 surgical specialties) · GDC specialist lists (13) · HCPC / NHS England (14 allied
+  health professions) · GOsC / GCC (osteopathy / chiropractic).
+- **Software sweep (best-in-class per family):** UK market comparisons for aesthetics, dermatology,
+  private GP/consultant, NHS primary care (EMIS/SystmOne/Vision), dentistry, physiotherapy/MSK,
+  chiropractic/osteopathy, podiatry, mental-health therapy, optometry, audiology, fertility/IVF,
+  occupational health, pharmacy PMR, diagnostic imaging (RIS/PACS), and veterinary — captured
+  2026-06-29. Product positioning may shift; re-verify a row at the moment of its deep-dive.
