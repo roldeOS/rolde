@@ -83,6 +83,24 @@ export const USER_DETAIL_FIELDS: FieldMap = {
   license_number: { label: "Licence number" },
 };
 
+/**
+ * Email templates (Custodian editor) — used for the precise SAVE MESSAGE only. These
+ * are PLATFORM-scope (tenant_id NULL), so there's no per-clinic Activity Log to write
+ * to; the body is redacted (named, not printed). A platform audit can reuse this map
+ * later. The keys match the editor's form shape.
+ */
+export const EMAIL_TEMPLATE_FIELDS: FieldMap = {
+  name: { label: "Template name" },
+  subject: { label: "Subject" },
+  preheader: { label: "Preheader" },
+  headline: { label: "Headline" },
+  paragraphs: { label: "Body", redact: true },
+  cta_label: { label: "Button label" },
+  cta_url: { label: "Button link" },
+  footer_note: { label: "Footer note" },
+  is_active: { label: "Active", format: onOff },
+};
+
 /** Services & Pricing (W1.1.8) — a per-item list; the audit subject is the service's
  *  own name, so these fields are flat (no sections). */
 export const SERVICE_FIELDS: FieldMap = {

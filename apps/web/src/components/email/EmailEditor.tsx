@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Field, Input, fieldFloat } from "@/components/ui/form";
 import { Switch } from "@/components/ui/Switch";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
+import { diffFields, describeItemSave } from "@/lib/changeDescriber";
+import { EMAIL_TEMPLATE_FIELDS } from "@/lib/auditFields";
 import { cn } from "@/lib/utils";
 
 type Template = {
@@ -101,7 +103,12 @@ export function EmailEditor({
         body: JSON.stringify({ ...form, paragraphs: toParagraphs() }),
       });
       if (res.ok) {
-        flashSaved(`RolDe saved the “${form.name}” email.`);
+        const changes = diffFields(initial, form, EMAIL_TEMPLATE_FIELDS);
+        flashSaved(
+          changes.length
+            ? describeItemSave(changes, form.name)
+            : `RolDe saved the “${form.name}” email.`,
+        );
         router.refresh();
       } else {
         setError("RolDe couldn’t save the template — try again.");
