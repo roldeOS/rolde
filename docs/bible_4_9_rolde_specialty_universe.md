@@ -178,9 +178,9 @@ having (e.g. the aesthetics *face-marker*), present Pros & Cons, choose, slot in
 | 4 | **NHS primary care** *(harvested for the private record; NHS integration deferred)* | A | EMIS Web · SystmOne · Vision · Ardens | ✅ **done** — NP.1–NP.7 greenlit → §15.7c (NP.8 NHS-integration deferred) |
 | 5 | **Dentistry & orthodontics** | D | Dentally · SOE EXACT · Carestream R4+ · iSmile · Pearl *(AI = RolDe's own, not Kiroku)* | ✅ **done** — DN.1–DN.7 greenlit → §15.7c |
 | 6 | **Physiotherapy / MSK / sports / rehab** | F, L | Cliniko · TM3 (Blue Zinc) · WriteUpp · Jane · PPS · Physitrack (exercise Rx) | ✅ **done** — PT.1–PT.3 greenlit → §15.7c |
-| 7 | **Chiropractic & osteopathy** | M, F | Jane · ClinicMGMT · PPS · Cliniko | ☐ |
-| 8 | **Podiatry / foot health** | F, G | Cliniko · TM3 · PPS · WriteUpp | ☐ *(shares MSK cluster)* |
-| 9 | **Mental health & talking therapies** | E | SimplePractice · Power Diary (Zanda) · Halaxy · Konfidens · WriteUpp · Upheal (AI scribe) | ☐ |
+| 7 | **Chiropractic & osteopathy** | M, F | Jane · ClinicMGMT · PPS · Cliniko | ✅ **covered by MSK Pack** (PT.1–PT.3 — same cluster; X-ray → shared DICOM) |
+| 8 | **Podiatry / foot health** | F, G | Cliniko · TM3 · PPS · WriteUpp | ✅ **covered by MSK Pack** (foot body-map; orthotics → Lab spine DN.6; diabetic-foot risk → MH.5) |
+| 9 | **Mental health & talking therapies** | E | SimplePractice · Power Diary (Zanda) · Halaxy · Konfidens · Upheal (AI) | ✅ **done** — MH.1–MH.7 greenlit → §15.7c |
 | 10 | **Optometry / opticians** | G | Acuitas 3 (Ocuco) · Optix · Raven Vision | ☐ |
 | 11 | **Audiology / hearing** | G | Auditbase (Auditdata) · Blueprint OMS · NOAH (HIMSA) · Auditdata Manage | ☐ |
 | 12 | **Fertility / IVF** | H | MedITEX · BabySentry · eIVF · IVF.software · LifeLinkr | ☐ |

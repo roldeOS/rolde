@@ -1369,6 +1369,15 @@ the clinic in front of it — never a fixed feature set forced on everyone.
     own-AI comms hub — user↔us, replacing email / chatbots / third-parties; built by iOS Jarvis);
     **review-requests = a Caretaker-set Automation delivered via RoChat.** **NO branded patient app —
     ever; patients only ever use RolDe OS (the patient portal, W6.4)** (Roland 2026-06-30).
+  - **AP.11 Psychological Suitability / BDD Screening** *(Roland 2026-06-30 — aesthetics needs a mental-
+    health check; concurred + air-tight: JCCP + GMC advise screening for Body Dysmorphic Disorder before
+    cosmetic treatment and knowing when to decline).* — *Plan:* auto-administer a validated screen
+    (**COPS / BDDQ-AS**) at intake; **score it on the MH.1 engine**; a high score **flags on the MH.5
+    risk banner** → prompt "consider declining / refer for psychological assessment" with a referral
+    route (**GP.3**). *Con→Pro:* "a whole mental-health feature inside aesthetics" → it's the **MH engine
+    (MH.1 scales + MH.5 risk) pointed at aesthetics** — near-zero new build, and it's a real **safety +
+    medico-legal** protection (JCCP/GMC) that *defines* a clinical aesthetics OS vs a booking app. *Base:
+    MH.1 + MH.5 + AP.7 intake + GP.3 referral.*
 
 - **Dermatology Pack** *(Bible 4.9 Row 2 — EZDERM · ModMed EMA · DermEngine/MetaOptima · OmniMD;
   ALL greenlit 2026-06-30).* Derm reuses the aesthetics engines (body-map · photo · recall ·
@@ -1544,6 +1553,34 @@ the clinic in front of it — never a fixed feature set forced on everyone.
     engine** (same widget as perio pocket depths). *Base: compare engine.*
   - *Covered already:* body chart/pain map → **AP.1/W1.2.5** · SOAP → templates **AP.8/NP.4** ·
     insurer/PMI → **GP.1** · telerehab → **RolDe Connect** · rehab pathways → **GP.2**.
+
+- **Mental Health & Talking Therapies Pack** *(Bible 4.9 Row 7 — Upheal · SimplePractice · Power
+  Diary/Zanda · Halaxy · Konfidens; MH.1–MH.7 greenlit 2026-06-30).* Therapy is largely spine; the
+  net-new bits (**risk + confidentiality**) **harden the whole platform**.
+  - **MH.1 Standardised Assessment Scales** — PHQ-9 · GAD-7 · PCL-5 · DASS-21 auto-sent before/between
+    sessions, scored, graphed (measurement-based care). *Con→Pro:* "many scales" → the **PT.2
+    scored-questionnaire engine** (instruments = data) + **AP.7** + the **recall engine**. *Base: PT.2 + AP.7 + W2.3.*
+  - **MH.2 AI Therapy Notes (multi-format)** — RolDe's own AI drafts SOAP/DAP/GIRP/BIRP + a treatment
+    plan from sessions. *Con→Pro:* "ten note formats" → **W5 (self-hosted ambient AI) + templates
+    (NP.4)**; formats are config; **never a third party**. *Base: W5 + NP.4.*
+  - **MH.3 Therapy Plans & Goal Tracking** — SMART goals, modality-aware (CBT/DBT/ACT). *Con→Pro:*
+    "another plan type" → **GP.2 care-plans**, pre-seeded. *Base: GP.2.*
+  - **MH.4 Between-Session Tasks / CBT Worksheets** — prescribe a worksheet/task; the client completes
+    it **in RolDe OS**, tracked. *Con→Pro:* "another prescription type" → **generalise PT.1** (exercise)
+    to a *task/worksheet* content type — same prescribe→portal→track engine. *Base: PT.1 engine + GP.4.*
+  - **MH.5 Risk Flagging & Safeguarding Alerts** *(platform-wide safety)* — a visible risk banner +
+    escalation (PHQ-9 item-9 suicide screen **auto-flags**; safeguarding routes to escalation). *Con→Pro:*
+    "risk logic + escalation" → reuses the **Concerns escalation spine (W1.6.2)** + a record flag + a
+    **scored-form rule (MH.1)**. *Base: W1.6.2 + MH.1. Hardens every specialty.*
+  - **MH.6 Sensitive-Record Controls** *(platform-wide confidentiality)* — a **sensitivity tier**
+    (mental / sexual / gender health) raising the access bar beyond standard RLS + extra audit;
+    AI-recording consent with **delete-after-transcription**. *Con→Pro:* "another permission model" → a
+    **tier on the existing RLS + break-glass** (raise the bar + audit harder), not a new model;
+    consent/auto-delete rides **Bible 4.7 ambient-AI consent**. *Base: RLS/audit/break-glass + Bible 4.7.
+    Upgrades confidentiality platform-wide (Caldicott).*
+  - **MH.7 Group & Couples Sessions** — one session, N participants, **per-participant private notes**.
+    *Con→Pro:* "group scheduling + per-person notes" → an appointment with N patients + N note instances
+    on **W2.1 scheduling** — **one feature unlocks therapy + antenatal + aesthetics classes**. *Base: W2.1.*
 
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 

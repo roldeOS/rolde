@@ -226,7 +226,8 @@ ambient AI**.
 
 **Specialty packs harvested so far** *(one "RolDe for …" page each):*
 - **RolDe for Aesthetics** — treatment mapping & mark-up · before/after photo studio · injectable
-  batch/expiry traceability · consent & aftercare library · complication protocols · nurse→prescriber loop.
+  batch/expiry traceability · consent & aftercare library · complication protocols · nurse→prescriber
+  loop · **BDD / psychological-suitability screening** (JCCP/GMC).
 - **RolDe for Dermatology** — lesion body-map · total-body photography · biopsy→pathology loop ·
   high-risk drug monitoring · teledermatology · phototherapy · dermoscopy.
 - **RolDe for Private GPs & Consultants** — insurer billing (Healthcode) · care pathways · provider
@@ -235,8 +236,11 @@ ambient AI**.
   templates & decision support · disease registers & recall · document workflow · population search.
 - **RolDe for Dentistry** — odontogram · perio charting · dental imaging · treatment plans &
   case-acceptance · RolDe-AI notes · lab-work tracking · aligner tracking.
-- **RolDe for Physiotherapy & MSK** — exercise prescription & home programs · outcome measures
-  (PROMs) · range-of-motion tracking.
+- **RolDe for Physiotherapy & MSK** *(also chiropractic, osteopathy, podiatry)* — exercise
+  prescription & home programs · outcome measures (PROMs) · range-of-motion tracking.
+- **RolDe for Mental Health & Therapy** — assessment scales (PHQ-9/GAD-7) · AI therapy notes ·
+  therapy plans & goals · between-session worksheets · risk-flagging & safeguarding · sensitive-record
+  confidentiality · group & couples sessions.
 - *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
   health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 
