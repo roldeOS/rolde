@@ -256,6 +256,8 @@ ambient AI**.
 - **RolDe for Diagnostics & Imaging** — imaging requests & modality worklist · RolDe's own DICOM viewer
   (open-source, self-hosted, themed) · structured radiology reporting · referrer portal & report delivery
   · self-hosted image archive (no vendor lock-in).
+- **RolDe for Veterinary** — owner–animal records · weight-based dosing & species formulary ·
+  hospitalisation board · vet lab & imaging · reminders, dispensing, pet portal & owner billing.
 - *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
   health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 

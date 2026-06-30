@@ -1764,13 +1764,55 @@ to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Repor
     patient + referrer within SLA. *Con→Pro:* "a new referrer surface" → referrers **are Organisations
     (OH.1)**; the portal is the **GP.4 lens**; delivery is **GP.3 (reversed) + RoChat**. *Base: OH.1 +
     GP.4 + GP.3 + RoChat.*
-  - **IM.5 Image Archive (PACS/VNA) — self-host open-source OR integrate** — *Plan (default = self-host,
-    our rule):* run **Orthanc** (lightweight DICOM server; REST + DICOMweb; Docker) or **dcm4chee**
-    (enterprise VNA) on **our** infra — the modality sends DICOM (C-STORE) **straight to us**. For a
-    clinic with an existing PACS, **connect via DICOMweb** (QIDO/WADO/STOW-RS — the standard HTTP API; a
-    gateway bridges legacy DIMSE C-MOVE/C-FIND). *Con→Pro:* "PACS is locked vendor infra" → **DICOM/DICOMweb
-    is OPEN**; open-source Orthanc/dcm4chee let us **BE the PACS, self-hosted** — no lock-in, no per-seat
-    licence (self-hosted-never-external). *Base: Orthanc/dcm4chee + DICOMweb.*
+  - **IM.5 Image Archive (PACS/VNA) — a CARETAKER TOGGLE: self-host OR integrate (Roland 2026-06-30)** —
+    *Plan:* a per-clinic switch — **(A) Self-host (default, our rule):** run **Orthanc** (lightweight; REST
+    + DICOMweb; Docker) or **dcm4chee** (enterprise VNA) on **our** infra — the modality sends DICOM
+    (C-STORE) straight to us. **(B) Integrate** the clinic's existing PACS via **DICOMweb** (QIDO/WADO/STOW-RS;
+    a gateway bridges legacy DIMSE) — so a clinic that doesn't want to keep paying its PACS vendor can flip
+    to (A), and one happy with its PACS stays on (B). *Con→Pro:* "PACS is locked vendor infra" → **DICOM is
+    OPEN**; open-source Orthanc/dcm4chee let us **BE the PACS, self-hosted** — no lock-in, no per-seat licence.
+    *Base: Orthanc/dcm4chee + DICOMweb + a Caretaker toggle.*
+    - **Storage architecture (Roland's "DICOM is massive" question, 2026-06-30) — NEVER in the database.**
+      DICOM is big (X-ray 5–15 MB · CT 100–500 MB · MRI often >1 GB; lossless JPEG2000 shaves 30–70%). So
+      we **split**: the small **index/metadata** → Postgres (Supabase or Orthanc's PostgreSQL); the heavy
+      **pixel files** → **object storage** via Orthanc's S3 plugin. Object store = **self-hosted MinIO**
+      (S3-compatible, our infra, zero egress — the our-rule default) **or** **Cloudflare R2** (S3-compatible,
+      **no egress fees**, ~£12–15/TB-mo) / S3 / Backblaze B2, with **hot/warm/cold tiering** (old studies →
+      cold ~£1–4/TB-mo). **Supabase stays for the app + records, NOT the DICOM blobs.** Cost scales linearly
+      and stays modest — a busy imaging centre (~1–2 TB/yr) is **tens of pounds/month**, not thousands; the
+      Orthanc server is a small VM. Enterprise scale = the same pattern, more MinIO nodes / a bigger bucket.
+
+- **Veterinary Pack** *(Bible 4.9 Row 17 — ezyVet/IDEXX · Provet Cloud · Covetrus Pulse · Shepherd ·
+  Digitail; VT.1–VT.5 greenlit 2026-06-30 — Roland: "RolDe is a Clinical Operating System… why not animals
+  too?").* **~85% the human spine** — only the owner-animal model + weight dosing are new. RolDe serves
+  animals too (no longer "parked expansion" — a real pack).
+  - **VT.1 Owner–Animal Data Model** *(the one real twist)* — *Plan:* client (owner) ↔ patient (animal);
+    multi-pet households; species/breed/weight. *Con→Pro:* "the patient isn't the payer" → reuses **linked
+    records (MH.7) + the OH.1 client/Organisation pattern** (owner = a client with linked animal-patients).
+    *Base: MH.7 + OH.1.*
+  - **VT.2 Weight-Based Dosing & Species Formulary** — *Plan:* auto-dose by weight + species formulary +
+    vet calculators (fluids/anaesthesia). *Con→Pro:* "species/weight dosing is vet-specific" → **prescribing
+    (AP.6) + a weight dose-calc + a pre-seeded species formulary (data)**. *Base: AP.6 + calc + data.*
+  - **VT.3 Hospitalisation / Treatment Board** — *Plan:* inpatient whiteboard, anaesthesia tracking, tasks,
+    discharge notes. *Con→Pro:* "inpatient sheets" → the **Ward Map (W1.5.3) + care pathways (GP.2)** built
+    for human wards. *Base: W1.5.3 + GP.2.*
+  - **VT.4 Vet Lab & Imaging** — *Plan:* IDEXX reference + in-house VetLab results; imaging. *Con→Pro:*
+    "IDEXX integration" → the **Lab spine (W3.2/DN.6) + a lab adapter**; imaging = **IM.1–IM.5** (DICOM
+    identical). *Base: W3.2/DN.6 + IM.*.*
+  - **VT.5 Reminders, Dispensing, Pet Portal & Owner Billing** — *Plan:* vaccination reminders + in-clinic
+    dispensing + pet insurance claims + owner portal. *Con→Pro:* all reuse — **OH.4 + W2.3 + PH.1 + GP.1
+    (pet insurance = a payor) + GP.4**. *Base: OH.4 + W2.3 + PH.1 + GP.1 + GP.4.*
+
+- **Unified Day View — Calendar + Reminders/Tasks in one surface** *(Roland 2026-06-30; NAME PENDING — a
+  C-name, provisional "RolDe Compass").* Roland: "I hate that Calendar and Reminders are separate — our day
+  is entwined." **Merge W2.1 Calendar (timed appointments) + W1.4.1 Action Queues / tasks (untimed to-dos)
+  into ONE day surface** so a user sees their whole day at a glance and plans it. *Distinct from W2.3
+  patient recalls* (those are automated patient-facing comms; this is the clinician's own day). *Plan:* a
+  day view = the timed calendar column + the day's task/reminder list alongside (a task can be dropped onto
+  a time-slot or left as a checklist; pattern proven by Sunsama/Motion/Akiflow). *Con→Pro:* "appointments
+  and tasks are different shapes" → merge the **VIEW**, keep the data distinct underneath — the calendar and
+  the task list each stay clean, the day view composes them. *Base: W2.1 + W1.4.1. Awaiting Roland's C-name
+  + greenlight before final slotting.*
 
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
