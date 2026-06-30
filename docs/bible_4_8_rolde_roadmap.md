@@ -1691,6 +1691,32 @@ to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Repor
     *Con→Pro:* "patient-side tracking" → a **portal input (GP.4)** that posts to the **gold-mine Notes
     feed**. *Base: GP.4 + feed.*
 
+- **Occupational Health Pack** *(Bible 4.9 Row 14 — Cohort · Civica OPAS-G2 · Medgate · Cority ·
+  PrognoCIS; OH.1–OH.5 greenlit 2026-06-30; SEQOHS-standard).* Introduces the **Organisation/Employer
+  entity** — RolDe's first B2B client, reused by corporate wellness + insurance medicals.
+  - **OH.1 Organisation/Employer Model + Management Referrals** *(architectural unlock)* — *Plan:*
+    company-as-client (B2B), employees grouped, employer-referral → OH assessment → **consent-bounded
+    management report** + employer portal. *Con→Pro:* "OH is B2B — a whole employer model + portal" →
+    build a **general Organisation entity once** (company = payor + group of patients + org portal) → it
+    serves **OH, corporate wellness, insurance medicals, school/sports teams**; referral-to-employer
+    reuses **GP.3 + GP.7 + the MH.6 consent boundary**. *Base: NEW Organisation entity + GP.1/GP.3/GP.7/MH.6.*
+  - **OH.2 Health Surveillance Programmes** — *Plan:* hazard-based screening (audiometry · spirometry ·
+    vision · skin · HAVS · serology) + per-hazard recall + at-risk registers. *Con→Pro:* "many
+    hazard-specific screens" → **audiometry = AU.1, vision = OP.1, registers = NP.5, recall = W2.3** —
+    only spirometry/HAVS/skin are new forms; the surveillance engine is already built. *Base: AU.1 + OP.1
+    + NP.5 + W2.3 + a few forms.*
+  - **OH.3 Fitness-for-Work & Pre-Placement** — *Plan:* pre-employment questionnaires + medicals +
+    fit-for-duty / return-to-work letters → employer report (conclusion only). *Con→Pro:* "reports must
+    not leak clinical detail" → **AP.7 intake + GP.7 reports + the MH.6 sensitivity tier**
+    (conclusion-only). *Base: AP.7 + GP.7 + MH.6.*
+  - **OH.4 Occupational Vaccinations & Immunisations** — *Plan:* flu · Covid · Hep B · TB + serology +
+    schedules + recall. *Con→Pro:* "vaccination tracking" → a **vaccination record type + recall (W2.3)**
+    — also serves **travel health (Row 18) + primary care**: one feature, several packs. *Base: NEW
+    vaccination record (multi-pack) + W2.3.*
+  - **OH.5 Drug & Alcohol Testing** — *Plan:* testing records + randomisation + chain-of-custody.
+    *Con→Pro:* "chain-of-custody + randomisation" → reuses **FR.3 witnessing/chain-of-custody** + a test
+    record + an **NP.7 population-search randomiser**. *Base: FR.3 + NP.7 + a form.*
+
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
 The net-new WBS above is only half the work; alongside it runs a stream of small changes to

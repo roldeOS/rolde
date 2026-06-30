@@ -249,6 +249,8 @@ ambient AI**.
   witnessing & chain-of-custody · cryostorage management · donor & third-party management · HFEA reporting.
 - **RolDe for Women's, Men's & Sexual Health** — hormone therapy (HRT/TRT) management · validated
   symptom scales · STI results & partner notification · contraception & LARC · cycle tracking.
+- **RolDe for Occupational Health** *(B2B / employer)* — employer model & management referrals ·
+  health surveillance · fitness-for-work & pre-placement · occupational vaccinations · drug & alcohol testing.
 - *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
   health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 
