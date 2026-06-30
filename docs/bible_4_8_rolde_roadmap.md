@@ -1326,6 +1326,12 @@ aesthetics is simply the first **specialty pack** (Roland 2026-06-30). Each pack
 **when its base wave lands** (no jumping the queue, no duplicate spine work — "common elements
 first"). De-duped against the build list above.
 
+**Design discipline — turn every CON into a PRO (Roland 2026-06-30).** A pack item's "con" is not
+a caveat we accept; it is a design problem we *solve* so the weakness becomes a strength. Each
+item below carries a **Con→Pro** line: the mitigation that flips it (usually "build the shared
+engine once, amortise the cost across every specialty," or "pre-seed it like Legal so clinics
+edit, not author," or "the hard constraint is actually the moat").
+
 - **Aesthetics Pack** *(Bible 4.9 Row 1 — Pabau · AesthetiDocs · Consentz · Faces · AestheticsPro ·
   Phorest · Nextech; ALL greenlit 2026-06-30):*
   - **AP.1 Treatment Mapping & Mark-up** — interactive face/body diagram; per injection point: product ·
@@ -1356,6 +1362,89 @@ first"). De-duped against the build list above.
     own-AI comms hub — user↔us, replacing email / chatbots / third-parties; built by iOS Jarvis);
     **review-requests = a Caretaker-set Automation delivered via RoChat.** **NO branded patient app —
     ever; patients only ever use RolDe OS (the patient portal, W6.4)** (Roland 2026-06-30).
+
+- **Dermatology Pack** *(Bible 4.9 Row 2 — EZDERM · ModMed EMA · DermEngine/MetaOptima · OmniMD;
+  ALL greenlit 2026-06-30).* Derm reuses the aesthetics engines (body-map · photo · recall ·
+  results) — **build once, skin per specialty.**
+  - **DP.1 Lesion Body-Map + Biopsy-Site Tracking** — *Plan:* extend the **AP.1 body-map engine**
+    with a `lesion` point-type `{site, morphology, size, biopsy_status, surgical_plan}`, versioned
+    per visit; swap the face SVG atlas for a full-body atlas (front/back/limbs) — same renderer.
+    EZDERM-style 3,000-point anatomical precision. *Con→Pro:* the full-body-map "build effort" is a
+    **one-time spine investment shared by aesthetics (face), derm (lesions) and MSK** — cost amortises
+    to ~zero per specialty; the hard part becomes the moat. *Base: W1.2.5.*
+  - **DP.2 Total Body Photography + Change Detection** — *Plan:* extend the **AP.2 Photo Studio**
+    with a "TBP set" (standardised pose sequence) + a compare view (side-by-side + flicker/difference
+    overlay) bound to DP.1 lesions. *Con→Pro:* "needs consistent capture" → the **fixed-angle
+    ghost-overlay already in AP.2 ENFORCES consistency automatically** — the difficulty is solved by
+    the very feature; weakness → guarantee. *Base: W1.2.5.*
+  - **DP.3 Biopsy → Pathology Results Loop (lesion-linked)** — *Plan:* a `specimens` table linking a
+    biopsy to its DP.1 lesion + an inbound result on the **W3.2 results inbox**; on arrival, attach
+    histology + a **concordance check** (flag if path Dx ≠ clinical impression). FHIR `DiagnosticReport`
+    where the lab supports it; manual entry fallback. *Con→Pro:* "needs lab integration" → we build
+    **ONE generic FHIR results-inbox** every specialty rides (bloods, imaging, histology); manual entry
+    means it works **day one** with zero integration — the integration becomes a universal asset. *Base: W3.2.*
+  - **DP.4 High-risk Drug Monitoring (isotretinoin / biologics)** — *Plan:* a `monitoring_schedule`
+    per drug (pre-seeded: isotretinoin **Pregnancy Prevention Programme** — pregnancy-test cadence +
+    LFTs/lipids; biologics — TB screen + bloods) attached at prescribe-time; overdue → the **shared
+    recall engine (W2.3)**; a "safe-to-prescribe" gate checks it. *Con→Pro:* "protocol authoring +
+    recall wiring" → protocols are **pre-seeded like Legal + AP.5** (clinics edit, not author) and the
+    recall engine is **already shared with aesthetic top-ups** — zero new wiring; the con dissolves into
+    existing spine. *Base: W3.1 + W2.3 + Bible 4.4 §8.*
+  - **DP.5 Teledermatology (store-and-forward)** — *Plan:* an async `image_consult` — standardised
+    images + history submitted → routed to a reviewing dermatologist → structured report back; a
+    distinct **async mode of RolDe Connect**, reusing DP.2 capture + the **W3.3 referral** rails.
+    *Con→Pro:* "image-quality governance" → **DP.2 fixed-angle capture guarantees quality at source**
+    and async-review gates a human before any action — quality enforced by design, not hoped for. *Base: W3.3 / RolDe Connect.*
+  - **DP.6 Phototherapy (UVB) Dosing & Tracking** — *Plan:* a `phototherapy_course` — MED-based start
+    dose + per-visit increment rules (**configurable per device/protocol**) + cumulative-dose ledger +
+    a max-dose guard. *Con→Pro:* "niche, per-device protocols" → make the protocol **configurable (the
+    Commercial-Settings pattern)** so ONE widget serves every device — niche becomes universal, on a
+    config pattern we already own. *Base: net-new derm widget (small; lower priority).*
+  - **DP.7 Dermoscopy imaging + (later) AI lesion triage** — *Plan:* NOW — attach dermoscopic
+    high-mag images to a DP.1 lesion. LATER — AI melanoma triage as a **regulated module (UKCA/CE),
+    likely partnered**. *Con→Pro:* "AI Dx is regulated" → by capturing structured dermoscopy + outcomes
+    **now** (unregulated, valuable) we build the **labelled longitudinal dataset** a future regulated/
+    partnered AI needs — the regulatory wall becomes our **data moat**; ship value now, earn the AI later.
+    *Base: W1.2.5 (image-attach) + W5 (AI, regulated/later).*
+
+- **General Practice & Private Medical Pack** *(Bible 4.9 Row 3 — Semble · Meddbase · Healthcode ·
+  Hero Health · TouchPoints; ALL greenlit 2026-06-30).* The **"insured private practice"** layer on
+  the universal spine — the market beyond aesthetics.
+  - **GP.1 Insurer Billing via Healthcode (EDI clearing)** — *Plan:* model billing around a pluggable
+    **`payor` {self-pay | insurer | membership}**; add a **Healthcode EDI adapter** (invoice submission
+    + remittance reconciliation + **membership/pre-authorisation check**) beside the W4.3 clinic
+    gateways; invoices carry **CCSD procedure codes** + insurer/membership refs. *Con→Pro:* "another
+    billing integration" → **ONE billing spine with a payor abstraction**; Healthcode is one adapter
+    beside the self-pay gateways — the rail then serves **every** insured specialty (consultants,
+    physio, derm). *Base: W4.1 + W4.3 + W4.5 (insurer billing). The market-unlock.*
+  - **GP.2 Care Pathways** — *Plan:* a `care_pathway` = an **ORDERED set of AP.8 Smart-Note-Template
+    steps** with milestones + due-dates feeding the **shared recall engine (W2.3)**; pre-seed common
+    pathways (hypertension, MSK rehab), clinic-editable. *Con→Pro:* "authoring heavy" → a pathway is a
+    **sequenced Smart-Note-Template** (same engine, ordered) **pre-seeded like Legal**. *Base: Bible 4.6 + AP.8 + W2.3.*
+  - **GP.3 Provider-to-Provider E-Referrals (closed-loop + record sharing)** — *Plan:* a `referral`
+    → target provider/service + a **consented FHIR record-section bundle** + a status spine (sent →
+    accepted → seen → reported-back). *Con→Pro:* "secure cross-provider sharing is hard" → it's our
+    **existing consent + audit + RLS spine pointed at another tenant**, and **FHIR (our results format,
+    DP.3) carries the sections**. *Base: W3.3 (letters + closed-loop referrals).*
+  - **GP.4 Rich Patient Portal** — *Plan:* a **patient ROLE/lens on RolDe OS (NOT a separate app)** —
+    permission-scoped views of the SAME pages the clinic uses: book · pay · pre-visit questionnaires
+    (AP.7) · prescriptions · referrals · results · self-care; **RoChat** is the comms channel. *Con→Pro:*
+    "a whole patient surface" → **RolDe OS with a patient lens** reusing the same records,
+    permission-scoped — a new *role* on the spine, not a new app (Roland: patients only ever use RolDe
+    OS). *Base: W6.4 patient portal.*
+  - **GP.5 Health-Screening Packages** — *Plan:* a `screening_package` = a bundle of investigations
+    (W3.2) + a **templated report (PDF Kit)** auto-assembled from results into a personalised well-person
+    / executive screen; sold via W1.1.10 packages. *Con→Pro:* "bespoke report" → **PDF Kit + packages +
+    results assembled, not invented**. *Base: W1.1.10 + W3.2 + PDF Kit (Wave C).*
+  - **GP.6 Membership / Subscription Medicine** — *Plan:* recurring-billing plans (the Commercial-
+    Settings/gateway rail) with **tracked entitlements** (e.g. N consults/yr, priority) as config on
+    W1.1.10 packages — and the `membership` payor of GP.1. *Con→Pro:* "recurring + entitlements complex"
+    → **same gateway/Commercial-Settings rail** (deposits/credit already there); entitlements = package
+    config. *Base: W1.1.10 + Commercial Settings + W4.*
+  - **GP.7 Structured Medical Reports (medico-legal / insurance medicals)** — *Plan:* report templates
+    (insurance medical · fit-to-work · medico-legal) via the **AP.8 picker** rendered through the **PDF
+    Kit**. *Con→Pro:* "another document type" → **AP.8 picker + PDF Kit**; a report is a long structured
+    note → PDF. *Base: Bible 4.6 + PDF Kit; cross-refs Occupational Health (Row 14).*
 
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
