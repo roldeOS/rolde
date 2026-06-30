@@ -175,7 +175,7 @@ having (e.g. the aesthetics *face-marker*), present Pros & Cons, choose, slot in
 | 1 | **Aesthetics & medical spa** | I, J | Pabau · AesthetiDocs · Consentz · Faces · AestheticsPro · Phorest · Nextech · Fresha · Zenoti | ✅ **done** — all 7 dived; AP.1–AP.10 greenlit → Bible 4.8 §15.7c |
 | 2 | **Dermatology** (medical + cosmetic) | B, I | ModMed EMA · Nextech · EZDERM · DermEngine · OmniMD | ✅ **done** — all dived; DP.1–DP.7 greenlit → Bible 4.8 §15.7c |
 | 3 | **Private GP / consultants / general medical** | A, B | Semble (ex-Heydoc) · Cliniko · Meddbase · Medesk · Healthcode · Hero Health | ✅ **done** — GP.1–GP.7 greenlit → Bible 4.8 §15.7c |
-| 4 | **NHS primary care** | A | EMIS Web (~55%) · SystmOne/TPP (~35%) · Vision/Cegedim (~9%) · Medicus | ☐ *(NHS = Phase 3+, deferred)* |
+| 4 | **NHS primary care** *(harvested for the private record; NHS integration deferred)* | A | EMIS Web · SystmOne · Vision · Ardens | ✅ **done** — NP.1–NP.7 greenlit → §15.7c (NP.8 NHS-integration deferred) |
 | 5 | **Dentistry & orthodontics** | D | Dentally · SOE EXACT · Carestream R4+ · iSmile · Kiroku (AI notes) · Pearl | ☐ |
 | 6 | **Physiotherapy / MSK / sports / rehab** | F, L | Cliniko (~47%) · TM3 (Blue Zinc) · WriteUpp · Jane · PPS · Nookal · Physitrack (exercise Rx) | ☐ |
 | 7 | **Chiropractic & osteopathy** | M, F | Jane · ClinicMGMT · PPS · Cliniko | ☐ |

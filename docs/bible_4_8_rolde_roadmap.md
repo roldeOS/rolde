@@ -1446,6 +1446,44 @@ edit, not author," or "the hard constraint is actually the moat").
     Kit**. *Con→Pro:* "another document type" → **AP.8 picker + PDF Kit**; a report is a long structured
     note → PDF. *Base: Bible 4.6 + PDF Kit; cross-refs Occupational Health (Row 14).*
 
+- **Primary-Care Depth Pack** *(Bible 4.9 Row 4 — EMIS Web · SystmOne · Vision · Ardens; NP.1–NP.7
+  greenlit 2026-06-30).* The **computable clinical record** harvested from the NHS GP systems for the
+  PRIVATE build. NHS *integration* (NP.8) stays **DEFERRED**.
+  - **NP.1 SNOMED CT Structured Coding** *(foundational)* — *Plan:* adopt the **SNOMED CT UK edition**
+    (published terminology + NHS terminology server / local FHIR ValueSets) — a `coded_concept` ref on
+    problems · diagnoses · procedures · observations, with a type-ahead picker. *Con→Pro:* "a huge
+    terminology to integrate" → we **adopt a published dataset + API, not build a terminology**; the
+    coded record is the foundation **NP.2/4/5/7 + DP.3 FHIR + future AI** all stand on — one investment,
+    many payoffs. *Base: W1.2.1 + cross-cutting.*
+  - **NP.2 Coded Problem List + Computable Record** — *Plan:* structured active/past problems (SNOMED +
+    onset/resolved) with **one-tap "add to problem list" from a consultation**; auto-feeds registers
+    (NP.5). *Con→Pro:* "clinicians don't maintain problem lists" → one-tap add + the list **builds the
+    registers automatically** — maintenance becomes a by-product. *Base: W1.2.1.*
+  - **NP.3 Repeat Prescribing + Medication Safety** — *Plan:* repeat / repeat-dispensing authorisation
+    + issue cycles, with interaction/allergy/duplicate checks on the **W3.1 drug-safety engine** +
+    reauthorisation reminders via **W2.3**. *Con→Pro:* "safety checking is complex" → the drug-safety
+    engine **is** W3.1 (the prescribing spine); repeats are a *mode* of it + the **AP.6 nurse→prescriber**
+    flow. *Base: W3.1 + W2.3.*
+  - **NP.4 Clinical Templates + Decision Support** — *Plan:* SNOMED-coded templates (the **AP.8/GP.2
+    engine**) with embedded safety alerts keyed off NP.1 codes; pre-seed common templates; option to
+    **license a content set (Ardens-style)** later. *Con→Pro:* "authoring + NICE/MHRA currency" → same
+    Smart-Note-Template engine, **pre-seeded like Legal**; alerts ride the SNOMED codes; license content
+    later rather than author. *Base: AP.8 + GP.2 + W3.1 safety.*
+  - **NP.5 Disease Registers + Call/Recall** — *Plan:* a register = a **saved SNOMED population-search
+    (NP.7)** materialised into a cohort + the **shared recall engine (W2.3)** for LTC reviews; pre-seed
+    common registers. *Con→Pro:* "register logic per condition" → a **saved population-search + shared
+    recall** — define once, reuse. *Base: W2.3 + NP.7 + Bible 4.4 §8.*
+  - **NP.6 Document Management & Clinical Workflow** — *Plan:* inbound documents → review · stamp ·
+    code(SNOMED) · redact · **route-in-sequence** + tasks; reuses the **document store (W1.2.4)** + the
+    **Activity-Log/task spine** + Change-Describer-style audited actions. *Con→Pro:* "a whole
+    inbox/workflow surface" → reuses the document store + task/audit spine we already have. *Base: W1.2.4 + tasks.*
+  - **NP.7 Population Search & Analytics** — *Plan:* a structured query builder over the SNOMED-coded
+    record → cohort lists feeding recall (NP.5) + audit + **W6.3 reports**. *Con→Pro:* "a query builder
+    is complex" → because the record is **SNOMED-coded (NP.1)**, searches are structured code queries —
+    nearly free. *Base: W6.3.*
+  - **NP.8 NHS Interoperability — DEFERRED, Phase 3+** *(GP Connect · Summary Care Record · GP2GP ·
+    EPS).* NOT built now (Bible 4.0 §4.5 principled NHS deferral); the plug-in point if RolDe ever goes NHS.
+
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
 The net-new WBS above is only half the work; alongside it runs a stream of small changes to
