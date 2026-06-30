@@ -243,6 +243,8 @@ ambient AI**.
   confidentiality · group & couples sessions.
 - **RolDe for Optometry & Opticians** — eye-examination record · diagnostic-device (OCT) integration ·
   optical dispensing & retail · contact-lens management & supply recall.
+- **RolDe for Audiology & Hearing** — audiogram & hearing assessment · NOAH device integration ·
+  hearing-aid & tinnitus fitting/dispensing · supply, warranty & review recall.
 - *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
   health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 

@@ -182,7 +182,7 @@ having (e.g. the aesthetics *face-marker*), present Pros & Cons, choose, slot in
 | 8 | **Podiatry / foot health** | F, G | Cliniko · TM3 · PPS · WriteUpp | ✅ **covered by MSK Pack** (foot body-map; orthotics → Lab spine DN.6; diabetic-foot risk → MH.5) |
 | 9 | **Mental health & talking therapies** | E | SimplePractice · Power Diary (Zanda) · Halaxy · Konfidens · Upheal (AI) | ✅ **done** — MH.1–MH.7 greenlit → §15.7c |
 | 10 | **Optometry / opticians** | G | Acuitas 3 (Ocuco) · Optix · Raven Vision · Compulink | ✅ **done** — OP.1–OP.4 greenlit → §15.7c |
-| 11 | **Audiology / hearing** | G | Auditbase (Auditdata) · Blueprint OMS · NOAH (HIMSA) · Auditdata Manage | ☐ |
+| 11 | **Audiology / hearing** | G | Auditbase (Auditdata) · Blueprint OMS · NOAH (HIMSA) · Sycle · NymoClinic | ✅ **done** — AU.1–AU.4 greenlit → §15.7c |
 | 12 | **Fertility / IVF** | H | MedITEX · BabySentry · eIVF · IVF.software · LifeLinkr | ☐ |
 | 13 | **Women's / menopause / men's health** | H, J | Semble · Cliniko · Pabau (general) + specialist protocols | ☐ |
 | 14 | **Occupational health** | O | Cohort (Tempus) · Civica OPAS-G2 · Medgate · Orchid | ☐ |

@@ -1603,6 +1603,25 @@ the clinic in front of it — never a fixed feature set forced on everyone.
     *Base: W2.3.*
   - **OP.5 GOS / NHS Optical Vouchers — DEFERRED, Phase 3+** (NHS plumbing, like NP.8). Listed, not built now.
 
+- **Audiology & Hearing Pack** *(Bible 4.9 Row 11 — Auditbase/Auditdata · Blueprint OMS · NOAH/Himsa ·
+  Sycle · NymoClinic; AU.1–AU.4 greenlit 2026-06-30).* **~90% reuse** — only the audiogram is new build;
+  validates the OP.3 retail + the device engines.
+  - **AU.1 Audiogram & Hearing Assessment Record** *(only genuinely new build)* — *Plan:* pure-tone +
+    speech audiometry + tympanometry, plotted as an **audiogram** and tracked over time. *Con→Pro:* "a
+    specialised chart" → the **templates engine + charting/compare engine** (a graph over frequencies).
+    *Base: templates + charting.*
+  - **AU.2 Device Integration (NOAH standard)** — *Plan:* connect audiometers/REM/fitting systems via
+    **NOAH** (100+ devices, manufacturer-agnostic). *Con→Pro:* "another integration standard" → the
+    **device-integration engine (OP.2) is standard-agnostic** — add a **NOAH adapter beside DICOM**.
+    *Base: shared device engine + NOAH adapter.*
+  - **AU.3 Hearing Aid & Tinnitus Device Fitting + Dispensing** — *Plan:* fitting record (REM) + the
+    device as a **product** (serial · warranty · adjustment history). *Con→Pro:* "fitting + dispensing +
+    warranty" → the hearing aid **is a product on the OP.3 Products & Retail layer**; the fitting is a
+    form — **OP.3 pays off again**. *Base: OP.3 + a fitting form.*
+  - **AU.4 Supply, Warranty & Review Recall** — *Plan:* battery/supply re-orders, warranty, 6–8-week
+    fitting follow-up + annual review. *Con→Pro:* "supplies/warranty/recall" → **recall engine (W2.3) +
+    Products & Retail**. *Base: W2.3 + OP.3.*
+
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
 The net-new WBS above is only half the work; alongside it runs a stream of small changes to
