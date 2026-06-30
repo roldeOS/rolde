@@ -241,6 +241,8 @@ ambient AI**.
 - **RolDe for Mental Health & Therapy** — assessment scales (PHQ-9/GAD-7) · AI therapy notes ·
   therapy plans & goals · between-session worksheets · risk-flagging & safeguarding · sensitive-record
   confidentiality · group & couples sessions.
+- **RolDe for Optometry & Opticians** — eye-examination record · diagnostic-device (OCT) integration ·
+  optical dispensing & retail · contact-lens management & supply recall.
 - *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
   health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 

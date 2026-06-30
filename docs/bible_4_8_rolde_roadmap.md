@@ -1582,6 +1582,27 @@ the clinic in front of it — never a fixed feature set forced on everyone.
     *Con→Pro:* "group scheduling + per-person notes" → an appointment with N patients + N note instances
     on **W2.1 scheduling** — **one feature unlocks therapy + antenatal + aesthetics classes**. *Base: W2.1.*
 
+- **Optometry & Optical Pack** *(Bible 4.9 Row 10 — Acuitas 3/Ocuco · Optix · Raven Vision · Compulink;
+  OP.1–OP.4 greenlit 2026-06-30).* Part clinic, part shop — introduces **two shared engines** (Products
+  & Retail; DICOM devices) that later serve several packs.
+  - **OP.1 Eye Examination Record** — *Plan:* a structured sight-test (refraction · VA · IOP · anterior/
+    posterior segment) with exam workflows by visit type. *Con→Pro:* "another exam form" → it's the
+    **templates engine (AP.8/NP.4)**, pre-seeded — an eye exam is a structured template. *Base: templates.*
+  - **OP.2 Diagnostic Device Integration (DICOM)** — *Plan:* auto-import OCT · fundus camera ·
+    autorefractor data into the chart. *Con→Pro:* "DICOM is heavy" → build **ONE diagnostic-device
+    (DICOM) engine** shared by **dental CBCT (DN.3), optometry OCT, and imaging (Row 16)** — build once,
+    every imaging specialty consumes it. *Base: shared DICOM engine + W1.2.4.*
+  - **OP.3 Optical Dispensing & Retail** *(multi-specialty unlock)* — *Plan:* dispense spectacles/CL →
+    generate the **lab order (DN.6)** + decrement **stock (W6.1)** + record the **sale (W4)** in one flow;
+    frames/lens catalogue. *Con→Pro:* "RolDe isn't a retail/POS system" → build a **general Products &
+    Retail layer once** (catalogue + stock + sale + dispense-order) → it then serves **optical, hearing
+    aids, skincare, dental products, supplements**; the con becomes a **universal capability**. *Base: NEW
+    Products/Retail layer on DN.6 + W6.1 + W4.*
+  - **OP.4 Contact Lens Management & Supply Recall** — *Plan:* CL records + re-order/supply recall +
+    benefit-year tracking. *Con→Pro:* "CL supply tracking" → the **recall engine (W2.3)** + a CL record.
+    *Base: W2.3.*
+  - **OP.5 GOS / NHS Optical Vouchers — DEFERRED, Phase 3+** (NHS plumbing, like NP.8). Listed, not built now.
+
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
 The net-new WBS above is only half the work; alongside it runs a stream of small changes to
