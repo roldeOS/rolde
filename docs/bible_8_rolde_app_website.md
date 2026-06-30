@@ -245,6 +245,8 @@ ambient AI**.
   optical dispensing & retail · contact-lens management & supply recall.
 - **RolDe for Audiology & Hearing** — audiogram & hearing assessment · NOAH device integration ·
   hearing-aid & tinnitus fitting/dispensing · supply, warranty & review recall.
+- **RolDe for Fertility & IVF** — treatment-cycle management · embryology lab tracking · electronic
+  witnessing & chain-of-custody · cryostorage management · donor & third-party management · HFEA reporting.
 - *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
   health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 

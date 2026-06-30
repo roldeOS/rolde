@@ -1339,6 +1339,23 @@ A pack is an opt-in module per tenant (Caretaker/Custodian setting), gated throu
 module/role system (`lib/access.ts` + `requireModuleAccess`). So RolDe is one OS that *becomes*
 the clinic in front of it — never a fixed feature set forced on everyone.
 
+**The Clinical Notes Card is the GOLD-MINE — a scrollable social-feed (Roland 2026-06-30).** Every
+pack output (treatment map · consent · protocol · before/after photo · result · AI note · assessment
+score · cycle event · witnessing step) **surfaces as an entry in ONE patient clinical timeline** — a
+Facebook/Instagram/Twitter-style **single-point, scrollable** clinical record. Robust data model
+underneath (built on the existing `patient_feed` / `patient_feed_entries`), **dead-simple** to read.
+Every pack feature below is, ultimately, a typed feed-entry renderer + its editor; the Notes Card is
+where the clinician lives. "So robust yet so simple."
+
+**Regulatory & Compliance is SPECIALTY-AWARE, Custodian-Control-card-driven (Roland 2026-06-30).**
+Each specialty carries its own regime (HFEA for fertility · CQC + JCCP for aesthetics · GDC for
+dentistry · GPhC for pharmacy · GOC for optics · HCPC for AHPs…). **Don't hardcode it per pack.** The
+**Custodian Control** holds regulatory regimes as **cards** (the mindate-Dashboard 4-card pattern — the
+Custodian keeps adding them); a clinic's **onboarding / pack selection** maps it to the regimes that
+apply; the **Caretaker is then shown only the legal/regulatory docs + any required reporting relevant
+to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Reporting adapters
+(FR.6 HFEA, future SART/BORN, CQC declarations) hang off this one framework.
+
 - **Aesthetics Pack** *(Bible 4.9 Row 1 — Pabau · AesthetiDocs · Consentz · Faces · AestheticsPro ·
   Phorest · Nextech; ALL greenlit 2026-06-30):*
   - **AP.1 Treatment Mapping & Mark-up** — interactive face/body diagram; per injection point: product ·
@@ -1621,6 +1638,34 @@ the clinic in front of it — never a fixed feature set forced on everyone.
   - **AU.4 Supply, Warranty & Review Recall** — *Plan:* battery/supply re-orders, warranty, 6–8-week
     fitting follow-up + annual review. *Con→Pro:* "supplies/warranty/recall" → **recall engine (W2.3) +
     Products & Retail**. *Base: W2.3 + OP.3.*
+
+- **Fertility & IVF Pack** *(Bible 4.9 Row 12 — MedITEX · IDEAS EMR · BabySentry · eIVF · Vitrify ·
+  ART Compass; FR.1–FR.6 greenlit 2026-06-30).* The most net-new pack — yet ~half rides the spine;
+  every event below posts to the **Clinical Notes feed**.
+  - **FR.1 Treatment Cycle Management** — *Plan:* stimulation protocol + day-by-day monitoring (scans ·
+    hormones · dosing) + cycle calendar + transfer. *Con→Pro:* "complex time-based protocol" → a
+    **specialised GP.2 care-pathway + W3.2 monitoring**; the cycle calendar is a pathway instance.
+    *Base: GP.2 + W3.2.*
+  - **FR.2 Embryology Lab Tracking** — *Plan:* egg retrieval → fertilization → embryo grading &
+    development (day 1–6) → selection. *Con→Pro:* "a bespoke lab module" → rides the **Lab/order spine
+    (DN.6/W3.2)** with the *embryo* as the tracked entity + grading fields. *Base: DN.6/W3.2 + embryo fields.*
+  - **FR.3 Electronic Witnessing & Chain-of-Custody** *(safety-critical)* — *Plan:* every sample move
+    witnessed (second-person or RFID/barcode); full chain-of-custody per gamete/embryo. *Con→Pro:*
+    "safety-critical + hardware" → reuses **audit + break-glass + the AP.6 countersign** (second-actor
+    confirm) + the **barcode scan (AP.3/OP.3)**; certified-device adapter optional. *Base: audit/break-glass
+    + AP.6 + scan.*
+  - **FR.4 Cryostorage Management** — *Plan:* cryo inventory (eggs/embryos/sperm) + location (tank/straw)
+    + consent & storage-expiry + renewal recall. *Con→Pro:* "specialised cryo inventory + consent expiry"
+    → **inventory (W6.1) + consent (W1.2.6) + recall (W2.3)** + location fields. *Base: W6.1 + W1.2.6 + W2.3.*
+  - **FR.5 Donor & Third-Party Management** — *Plan:* donor records + matching + regulatory limits
+    (HFEA 10-family) + donor–surrogate–parent linkages. *Con→Pro:* "donor matching + limits" → a donor
+    is a record type + a **population search (NP.7)** + a **count-guard rule** + **linked records (MH.7)**.
+    *Base: NP.7 + MH.7 + a rule.*
+  - **FR.6 HFEA Regulatory Reporting** — *Plan:* cycle registration + outcomes to HFEA — the **first
+    reporting adapter on the specialty-aware Regulatory & Compliance framework** (Custodian-Control cards
+    + onboarding-driven; see §15.7c intro). *Con→Pro:* "a regulatory integration" → a **reporting adapter
+    on the coded record (NP.1)**, like the Healthcode/FHIR adapters. *Base: Regulatory & Compliance
+    framework + NP.1. UK-mandatory (not deferred).*
 
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
