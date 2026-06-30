@@ -1301,8 +1301,11 @@ staff below Caretaker never reach a Custodian.
 2026-06-18)* — W2.1 Scheduling + clinician/room views **(the Appointment entity: who · what service ·
 when · where · status; an Appointments sidebar item + a Today's Appointments dashboard card)** · W2.2
 **Online booking widget** *(passwordless — the patient books + pays without an account; pays the
-deposit/consultation fee through the clinic's own gateway)* · W2.3 Recalls + reminders engine · W2.4
-Waitlist · W2.5 Recurring course series
+deposit/consultation fee through the clinic's own gateway)* · **W2.3 RolDe Cadence** — the recalls +
+reminders engine *(LOCKED name, Roland 2026-06-30)*: automated patient-facing outreach on a schedule
+(appointment reminders · recall-due · top-up due) — the *rhythm of ongoing care*. Sends via RoChat,
+holds the relationship with Covenant. The shared recall engine every pack reuses ("recall engine
+(W2.3)" = RolDe Cadence). · W2.4 Waitlist · W2.5 Recurring course series
 **W3 — Clinical Orders** — W3.1 Prescribing + drug-safety · W3.2 Investigations + results inbox +
 trends · W3.3 Letters + closed-loop referrals
 **W4 — Money** — W4.1 Billing/invoices/**deposits** *(deposit amount per Commercial Settings /
@@ -1823,11 +1826,33 @@ to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Repor
     *Con→Pro:* "supplement sales" → **OP.3 Products & Retail + the WL.2 action-plan** as the recommendation
     source. *Base: OP.3 + WL.2.*
 
+- **Complementary & Integrative Pack** *(Bible 4.9 Row 19 — Jane · Cliniko · SimpleClinic · Unified
+  Practice · Smart TCM; CM.1–CM.3 greenlit 2026-06-30).* The **leanest pack** — the spine + three small
+  additions.
+  - **CM.1 Modality Intake & Notes Templates** — *Plan:* TCM (tongue/pulse/pattern differentiation),
+    homeopathy (remedy/potency), naturopathy, herbalist. *Con→Pro:* "modality-specific intake" → the
+    **templates engine (AP.8)**, pre-seeded per modality. *Base: AP.8.*
+  - **CM.2 Acupuncture Point / Meridian Charting** — *Plan:* mark acupoints/meridians on an interactive
+    body diagram, tracked per session. *Con→Pro:* "acupoint charting" → the **AP.1 body-map with a meridian
+    atlas** — the *same renderer* (face → lesion → teeth → acupoints). *Base: AP.1.*
+  - **CM.3 Herbal / Remedy Prescriptions** — *Plan:* herbal formulas (auto-quantities, interaction check,
+    grams/taels) + homeopathic remedies. *Con→Pro:* "herbal formulas + units + interactions" → **AP.6
+    prescribing + W6.1 inventory** with a herbal formulary; a formula is a multi-ingredient Rx. *Base: AP.6 + W6.1.*
+  - *Spine reuse:* booking · packages (W1.1.10) · outcomes (PT.2) · payments · consent (AP.4) · supplement
+    plans (WL.5).
+  - **Governance — clinical neutrality + RolDe-AI honesty (Roland 2026-06-30).** Some modalities (e.g.
+    homeopathy) aren't evidence-based. RolDe stays **clinically neutral** — a faithful record-keeping +
+    practice-management layer that documents what the practitioner does, **never endorsing efficacy**. AND
+    **RolDe AI must be HONEST about the evidence base**: in a non-evidence-based context it documents
+    faithfully but **never manufactures clinical justification or fabricates efficacy**, may flag where a
+    modality lacks trial evidence, and **never lends false authority** (Bible 4.7 ambient AI; clinical-
+    industry-standard). Patient-safety-critical — quote the Bible, never improvise clinical wording.
+
 - **RolDe Compass — the Unified Day View (Calendar + Tasks)** *(LOCKED + greenlit, Roland 2026-06-30; a
   **Sidebar** item).* Roland: "I hate that Calendar and Reminders are separate — our day is entwined."
   **Merge W2.1 Calendar (timed appointments) + W1.4.1 Action Queues / tasks (untimed to-dos) into ONE day
   surface** so a user sees their whole day at a glance and plans it. *Distinct from the patient-recall
-  engine* (that's automated patient-facing comms — see its own named module; Compass is the *clinician's
+  engine* (that's **RolDe Cadence** — automated patient-facing comms; Compass is the *clinician's
   own day*). **Design (greenlit):** the day view = the **timed calendar column** + the **day's task list
   alongside**; a task can be **dragged onto a time-slot** or left as a checklist; tasks not for today sit
   in a **backlog** you pull from (pattern proven by Sunsama/Motion/Akiflow). *Con→Pro:* "appointments and

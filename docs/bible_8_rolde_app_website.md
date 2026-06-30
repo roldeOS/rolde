@@ -222,7 +222,8 @@ bible so we build the front-end properly"). The features themselves are specifie
 consent & documents · prescribing & drug-safety · billing (self-pay **and** insurer/Healthcode) ·
 comms (**RoChat**) · audit & the **Change Describer** · the **patient portal (RolDe OS — never a
 separate app)** · **RolDe Connect** (video) · **RolDe Covenant** (relationships) · **RolDe Compass**
-(your day — calendar + tasks in one view) · **self-hosted ambient AI**.
+(your day — calendar + tasks in one view) · **RolDe Cadence** (the recalls/reminders engine — the
+rhythm of ongoing care) · **self-hosted ambient AI**.
 
 **Specialty packs harvested so far** *(one "RolDe for …" page each):*
 - **RolDe for Aesthetics** — treatment mapping & mark-up · before/after photo studio · injectable
@@ -260,6 +261,8 @@ separate app)** · **RolDe Connect** (video) · **RolDe Covenant** (relationship
   hospitalisation board · vet lab & imaging · reminders, dispensing, pet portal & owner billing.
 - **RolDe for Wellness, Weight-Loss & Longevity** — GLP-1 weight-loss programmes · biomarker panels &
   health optimisation · IV therapy & injectables · membership & coaching · supplement plans & sales.
+- **RolDe for Complementary & Integrative** — modality intake & notes · acupuncture point/meridian
+  charting · herbal & remedy prescriptions. *(RolDe stays clinically neutral — documents, never endorses.)*
 - *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
   health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 

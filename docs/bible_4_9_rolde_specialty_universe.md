@@ -190,7 +190,7 @@ having (e.g. the aesthetics *face-marker*), present Pros & Cons, choose, slot in
 | 16 | **Diagnostics / imaging (RIS-PACS)** | K | Sectra · Soliton · Intelerad + open-source Orthanc/dcm4chee/OHIF/Cornerstone3D | ✅ **done** — IM.1–IM.5 greenlit (self-host the stack) → §15.7c |
 | 17 | **Veterinary** | Q | ezyVet (IDEXX) · Provet Cloud · Covetrus Pulse · Shepherd · Digitail | ✅ **done — a real pack** (Roland: animals too) → VT.1–VT.5 → §15.7c |
 | 18 | **Wellness / weight-loss / IV / longevity** | J | Superpower · Next Health · Aniva · Forum Health · Drip IV | ✅ **done** — WL.1–WL.5 greenlit (~100% reuse) → §15.7c |
-| 19 | **Complementary & integrative** | M | Jane · Cliniko · WriteUpp (general wellness PMS) | ☐ |
+| 19 | **Complementary & integrative** | M | Jane · Cliniko · SimpleClinic · Unified Practice · Smart TCM | ✅ **done** — CM.1–CM.3 greenlit (leanest pack) → §15.7c |
 | 20 | **Surgical / private hospital / day-units** | C, P | Meddbase · Semble · Medesk (+ specialty modules) | ☐ |
 
 **How we work this table (steps 3.5–3.8):** Roland names a row → Jarvis deep-dives those products
