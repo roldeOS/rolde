@@ -182,6 +182,9 @@ Same proven pattern as docfordrivers.com and docforskin.com — single-page with
    ↓
 6. THE MODULES — clinical docs, prescribing, scheduling, billing, patient portal, ambient AI
    ↓
+6.5 BUILT FOR YOUR SPECIALTY — one OS that becomes your clinic; selectable specialty packs
+    (aesthetics, dermatology, dentistry, physio, primary care…) → "RolDe for {specialty}" pages
+   ↓
 7. THE CLINICS USING ROLDE — Doc For Drivers, Doc For Skin (trust signal)
    ↓
 8. THE FOUNDER STORY — built by a doctor (trust signal + differentiation)
@@ -200,9 +203,42 @@ Same proven pattern as docfordrivers.com and docforskin.com — single-page with
 Header nav links (anchor to sections):
 - Product (jumps to section 4 or 6)
 - How It Works (section 5)
+- Specialties (section 6.5)
 - Pricing (section 9)
 - FAQ (section 10)
 - **[Request Demo]** (primary CTA, opens contact modal)
+
+### 4.3 Built For Your Specialty — the selectable-pack story (LIVING content source)
+
+**The marketing truth (from Bible 4.9 + 4.8 §15.7c).** RolDe is **one clinical OS that *becomes* the
+clinic in front of it**: every clinic gets the **universal spine**, then **switches on the specialty
+packs it needs** (a per-tenant setting). This sub-section is the **living source** for the site's
+"Built for your specialty" section **and a `RolDe for {specialty}` landing page per pack** — appended
+as each Bible 4.9 row is deep-dived (Roland 2026-06-30: "add every feature we create to the website
+bible so we build the front-end properly"). The features themselves are specified in **Bible 4.8
+§15.7c** (build) + **Bible 4.9 §2** (source); this mirror keeps the *website* in lock-step.
+
+**The universal spine (every clinic, always on):** patient record · scheduling & online booking ·
+consent & documents · prescribing & drug-safety · billing (self-pay **and** insurer/Healthcode) ·
+comms (**RoChat**) · audit & the **Change Describer** · the **patient portal (RolDe OS — never a
+separate app)** · **RolDe Connect** (video) · **RolDe Covenant** (relationships) · **self-hosted
+ambient AI**.
+
+**Specialty packs harvested so far** *(one "RolDe for …" page each):*
+- **RolDe for Aesthetics** — treatment mapping & mark-up · before/after photo studio · injectable
+  batch/expiry traceability · consent & aftercare library · complication protocols · nurse→prescriber loop.
+- **RolDe for Dermatology** — lesion body-map · total-body photography · biopsy→pathology loop ·
+  high-risk drug monitoring · teledermatology · phototherapy · dermoscopy.
+- **RolDe for Private GPs & Consultants** — insurer billing (Healthcode) · care pathways · provider
+  e-referrals · health-screening packages · subscription medicine · structured medical reports.
+- **RolDe for Primary Care** — SNOMED-coded record · problem list · repeat prescribing · clinical
+  templates & decision support · disease registers & recall · document workflow · population search.
+- **RolDe for Dentistry** — odontogram · perio charting · dental imaging · treatment plans &
+  case-acceptance · RolDe-AI notes · lab-work tracking · aligner tracking.
+- **RolDe for Physiotherapy & MSK** — exercise prescription & home programs · outcome measures
+  (PROMs) · range-of-motion tracking.
+- *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
+  health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 
 ---
 

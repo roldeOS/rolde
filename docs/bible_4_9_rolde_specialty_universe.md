@@ -176,8 +176,8 @@ having (e.g. the aesthetics *face-marker*), present Pros & Cons, choose, slot in
 | 2 | **Dermatology** (medical + cosmetic) | B, I | ModMed EMA · Nextech · EZDERM · DermEngine · OmniMD | ✅ **done** — all dived; DP.1–DP.7 greenlit → Bible 4.8 §15.7c |
 | 3 | **Private GP / consultants / general medical** | A, B | Semble (ex-Heydoc) · Cliniko · Meddbase · Medesk · Healthcode · Hero Health | ✅ **done** — GP.1–GP.7 greenlit → Bible 4.8 §15.7c |
 | 4 | **NHS primary care** *(harvested for the private record; NHS integration deferred)* | A | EMIS Web · SystmOne · Vision · Ardens | ✅ **done** — NP.1–NP.7 greenlit → §15.7c (NP.8 NHS-integration deferred) |
-| 5 | **Dentistry & orthodontics** | D | Dentally · SOE EXACT · Carestream R4+ · iSmile · Kiroku (AI notes) · Pearl | ☐ |
-| 6 | **Physiotherapy / MSK / sports / rehab** | F, L | Cliniko (~47%) · TM3 (Blue Zinc) · WriteUpp · Jane · PPS · Nookal · Physitrack (exercise Rx) | ☐ |
+| 5 | **Dentistry & orthodontics** | D | Dentally · SOE EXACT · Carestream R4+ · iSmile · Pearl *(AI = RolDe's own, not Kiroku)* | ✅ **done** — DN.1–DN.7 greenlit → §15.7c |
+| 6 | **Physiotherapy / MSK / sports / rehab** | F, L | Cliniko · TM3 (Blue Zinc) · WriteUpp · Jane · PPS · Physitrack (exercise Rx) | ✅ **done** — PT.1–PT.3 greenlit → §15.7c |
 | 7 | **Chiropractic & osteopathy** | M, F | Jane · ClinicMGMT · PPS · Cliniko | ☐ |
 | 8 | **Podiatry / foot health** | F, G | Cliniko · TM3 · PPS · WriteUpp | ☐ *(shares MSK cluster)* |
 | 9 | **Mental health & talking therapies** | E | SimplePractice · Power Diary (Zanda) · Halaxy · Konfidens · WriteUpp · Upheal (AI scribe) | ☐ |
@@ -210,6 +210,10 @@ specialty modules**, never bespoke apps:
 - **Specialty packs (configuration + a few specialty widgets):** the *face-marker* for aesthetics,
   *tooth-chart* for dentistry, *body-map* for derm/MSK, *cycle/fertility* tracking, *batch/expiry*
   for injectables — each a thin module hanging off the shared spine.
+- **Per-tenant selectable (Roland 2026-06-30):** the spine is always on; each clinic/hospital
+  **enables only the packs it needs** (a Caretaker/Custodian setting, gated through the existing
+  module/role system). A multi-specialty hospital turns on several at once. RolDe is one OS that
+  *becomes* the clinic in front of it — never a fixed feature set forced on everyone.
 
 The pipeline doc (steps 2–5 above) decides **which specialty widgets are worth building** and in
 what order. This file is steps 1–2 — the universe and the software index they're drawn from.

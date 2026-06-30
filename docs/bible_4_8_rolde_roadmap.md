@@ -1332,6 +1332,13 @@ item below carries a **Con→Pro** line: the mitigation that flips it (usually "
 engine once, amortise the cost across every specialty," or "pre-seed it like Legal so clinics
 edit, not author," or "the hard constraint is actually the moat").
 
+**Packs are PER-TENANT SELECTABLE (Roland 2026-06-30).** The common spine is always on; every
+clinic/hospital **chooses which specialty packs to enable** — an aesthetics clinic turns on the
+Aesthetics Pack, a dental practice the Dentistry Pack, a multi-specialty hospital several at once.
+A pack is an opt-in module per tenant (Caretaker/Custodian setting), gated through the existing
+module/role system (`lib/access.ts` + `requireModuleAccess`). So RolDe is one OS that *becomes*
+the clinic in front of it — never a fixed feature set forced on everyone.
+
 - **Aesthetics Pack** *(Bible 4.9 Row 1 — Pabau · AesthetiDocs · Consentz · Faces · AestheticsPro ·
   Phorest · Nextech; ALL greenlit 2026-06-30):*
   - **AP.1 Treatment Mapping & Mark-up** — interactive face/body diagram; per injection point: product ·
@@ -1483,6 +1490,60 @@ edit, not author," or "the hard constraint is actually the moat").
     nearly free. *Base: W6.3.*
   - **NP.8 NHS Interoperability — DEFERRED, Phase 3+** *(GP Connect · Summary Care Record · GP2GP ·
     EPS).* NOT built now (Bible 4.0 §4.5 principled NHS deferral); the plug-in point if RolDe ever goes NHS.
+
+- **Dentistry Pack** *(Bible 4.9 Row 5 — Dentally · SOE EXACT · Carestream CS R4+ · iSmile · Pearl;
+  DN.1–DN.7 greenlit 2026-06-30).* The tooth-chart pack — and the proof of the body-map engine's
+  reuse (**face → lesions → teeth**).
+  - **DN.1 Dental Charting (Odontogram)** *(signature)* — *Plan:* the **AP.1 body-map engine with a
+    *teeth* atlas** (FDI/Palmer notation); per-tooth status · surfaces · existing restorations + planned
+    treatment, versioned each visit. *Con→Pro:* "another bespoke chart" → the **third reuse of the same
+    renderer** (face/body → lesions → teeth) — near-zero marginal cost; the chart is the dental spine
+    on the spine we own. *Base: AP.1.*
+  - **DN.2 Periodontal Charting** — *Plan:* BPE/BEWE + 6-point pocket-depth/bleeding grid per tooth +
+    **side-by-side compare** over time. *Con→Pro:* "a numeric grid + longitudinal" → reuses the
+    **versioning + compare engine from AP.2/DP.2** (photo-compare) applied to numbers. *Base: compare engine.*
+  - **DN.3 Dental Imaging Integration** — *Plan:* intraoral X-ray / OPG / **CBCT (DICOM)** attach + view,
+    bound to the tooth chart. *Con→Pro:* "DICOM/CBCT is heavy" → imaging is the **Row-16 RIS/PACS work
+    we'll do anyway**; dental is a *consumer* of the same DICOM viewer; attach-and-view works day one via
+    the document store. *Base: W1.2.4 + cross-refs Row 16 imaging.*
+  - **DN.4 Treatment Plans, Phased Estimates & Case Acceptance** — *Plan:* per-tooth phased plan + costs
+    + status (proposed→accepted) + an **acceptance-rate KPI**. *Con→Pro:* "phased estimates + acceptance
+    is bespoke" → **AP.9 quotes + GP.5 packages + billing + a status**; case-acceptance is a **report
+    (NP.7/W6.3)** over that status. *Base: AP.9 + GP.5 + W4 + W6.3.*
+  - **DN.5 RolDe AI Dental Notes** — *Plan:* **RolDe's OWN self-hosted ambient AI (W5 / Bible 4.7,
+    Gemma)** → voice → templated dental notes + AI letters + e-consent. **NEVER a third party (not
+    Kiroku)** (Roland 2026-06-30). *Con→Pro:* "an AI scribe is a big build" → it's **W5 — already the
+    plan** — pointed at dental templates (NP.4/AP.8); dentistry is a consumer, not new AI. *Base: W5 +
+    NP.4; self-hosted-only.*
+  - **DN.6 Lab Work Tracking — *the Lab module*** — *Plan:* the **SAME order-tracking spine as the
+    Lab/Investigations module** (W3.2 + the DP.3 specimens loop) — a `lab_order {dental | pathology}`
+    that sends → tracks → returns → fits. *Con→Pro:* "another workflow" → **one send-and-track engine
+    serves pathology specimens AND dental lab work** (crowns/dentures/aligners) (Roland 2026-06-30:
+    ties into our own Lab module). *Base: W3.2 + DP.3.*
+  - **DN.7 Orthodontic / Clear-Aligner Tracking** — *Plan:* aligner-stage tracker as a **GP.2
+    care-pathway instance** + a 3D-render **external embed** + progress monitoring. *Con→Pro:* "niche +
+    3D render" → the stage tracker is a pathway config; the 3D render is an embed, not our build. *Base: GP.2.*
+  - *Covered already:* 6-month / hygiene **recall** → shared recall engine (**W2.3**). *Deferred:* NHS
+    **UDA/FP17** dental claims → Phase 3+.
+
+- **Physiotherapy & MSK Pack** *(Bible 4.9 Row 6 — Physitrack · Cliniko · TM3 · WriteUpp · PPS · Jane;
+  PT.1–PT.3 greenlit 2026-06-30).* A **lean pack** — physio is ~80% spine already; only three net-new
+  widgets, each reusing an engine we own.
+  - **PT.1 Exercise Prescription & Home Exercise Programs** *(signature)* — *Plan:* a prescription tool
+    (exercise + sets/reps/video) delivered through the **GP.4 patient portal (RolDe OS, no app)** with
+    adherence + pain tracking + progress; the video library is **licensed/curated content**, not filmed
+    by us. *Con→Pro:* "a 17,000-video library" → we build the **tool + adherence on the spine** (forms +
+    portal + recall) and **license** the content — hard part licensed, engineering is reuse. *Base: GP.4 +
+    forms (AP.7) + W2.3.*
+  - **PT.2 Outcome Measures / PROMs** — *Plan:* one generic **scored-questionnaire engine** (a score is a
+    formula over answers) + a data-library of instruments (Oswestry · LEFS · VAS · DASH · TUG), tracked
+    longitudinally → charts. *Con→Pro:* "many scoring algorithms" → instruments are **config/data, not
+    code**; reuses forms + charting — one engine, every instrument. *Base: forms (AP.7) + charting.*
+  - **PT.3 ROM / Goniometry Tracking** — *Plan:* range-of-motion (active/passive, per joint, vs normal)
+    over time. *Con→Pro:* "another measurement type" → reuses the **DN.2/DP.2 numeric-grid + compare
+    engine** (same widget as perio pocket depths). *Base: compare engine.*
+  - *Covered already:* body chart/pain map → **AP.1/W1.2.5** · SOAP → templates **AP.8/NP.4** ·
+    insurer/PMI → **GP.1** · telerehab → **RolDe Connect** · rehab pathways → **GP.2**.
 
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
