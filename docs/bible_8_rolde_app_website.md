@@ -253,6 +253,9 @@ ambient AI**.
   health surveillance · fitness-for-work & pre-placement · occupational vaccinations · drug & alcohol testing.
 - **RolDe for Pharmacy & Independent Prescribers** *(clinical services, not retail dispensing)* —
   independent-prescriber clinics · in-clinic medication supply · controlled-drugs register · monitored dosage systems.
+- **RolDe for Diagnostics & Imaging** — imaging requests & modality worklist · RolDe's own DICOM viewer
+  (open-source, self-hosted, themed) · structured radiology reporting · referrer portal & report delivery
+  · self-hosted image archive (no vendor lock-in).
 - *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
   health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 

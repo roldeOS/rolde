@@ -1744,6 +1744,34 @@ to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Repor
   - *Covered by spine + packs:* IP clinics + private prescribing → **AP.6** · weight-loss GLP-1 → **Row
     18** · travel/vaccination → **OH.4**.
 
+- **Diagnostics & Imaging Pack** *(Bible 4.9 Row 16 — Sectra · Soliton · Intelerad · Insignia + the
+  open-source stack Orthanc / dcm4chee / OHIF / Cornerstone3D; IM.1–IM.5 greenlit 2026-06-30).* RolDe
+  owns the imaging **workflow (RIS)** and — the key finding — can **self-host the whole imaging stack**
+  with open-source, themed as ours. **DICOM is an OPEN standard**: a Siemens/GE/Philips modality outputs
+  vendor-neutral DICOM, so there is **no lock-in at the data layer**.
+  - **IM.1 Imaging Request & Modality Worklist** — *Plan:* order a study + a DICOM Modality Worklist
+    (MWL / UPS-RS) so the scanner pulls the booked patient. *Con→Pro:* "MWL is a DICOM server" → the
+    **OP.2 DICOM engine already speaks DICOM**; the order rides **DN.6/W3.2**. *Base: DN.6/W3.2 + OP.2.*
+  - **IM.2 RolDe DICOM Viewer (open-source, OURS, themed)** — *Plan:* a zero-footprint in-chart viewer
+    built on **Cornerstone3D / OHIF** (MIT, WebGL — the engine the radiology industry already uses),
+    **skinned as RolDe**. *Con→Pro:* "build a medical-grade viewer?" → we don't build from scratch;
+    Cornerstone3D/OHIF is open-source and explicitly built to be configured/extended/themed — we embed +
+    theme it, **self-hosted, ours**. *Base: Cornerstone3D/OHIF, RolDe-themed.*
+  - **IM.3 Structured Radiology Reporting** — *Plan:* templates + **RolDe-AI** voice/draft + sign-off +
+    peer review. *Con→Pro:* "structured reporting + voice" → **GP.7 reports + AP.8 templates + W5 (our
+    own AI) + AP.6 countersign**. *Base: GP.7 + AP.8 + W5 + AP.6.*
+  - **IM.4 Referrer Portal + Report Delivery** — *Plan:* referrers refer / track / download; report to
+    patient + referrer within SLA. *Con→Pro:* "a new referrer surface" → referrers **are Organisations
+    (OH.1)**; the portal is the **GP.4 lens**; delivery is **GP.3 (reversed) + RoChat**. *Base: OH.1 +
+    GP.4 + GP.3 + RoChat.*
+  - **IM.5 Image Archive (PACS/VNA) — self-host open-source OR integrate** — *Plan (default = self-host,
+    our rule):* run **Orthanc** (lightweight DICOM server; REST + DICOMweb; Docker) or **dcm4chee**
+    (enterprise VNA) on **our** infra — the modality sends DICOM (C-STORE) **straight to us**. For a
+    clinic with an existing PACS, **connect via DICOMweb** (QIDO/WADO/STOW-RS — the standard HTTP API; a
+    gateway bridges legacy DIMSE C-MOVE/C-FIND). *Con→Pro:* "PACS is locked vendor infra" → **DICOM/DICOMweb
+    is OPEN**; open-source Orthanc/dcm4chee let us **BE the PACS, self-hosted** — no lock-in, no per-seat
+    licence (self-hosted-never-external). *Base: Orthanc/dcm4chee + DICOMweb.*
+
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
 The net-new WBS above is only half the work; alongside it runs a stream of small changes to
