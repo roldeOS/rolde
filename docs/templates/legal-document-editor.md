@@ -46,11 +46,15 @@ published_at  timestamptz
 created_at / updated_at timestamptz
 ```
 
-**Invariant — at most ONE published version per document.** Enforce in the DB, not just app
-logic:
+**Invariants — at most ONE published AND at most ONE draft per document.** Enforce BOTH in the
+DB, not just app logic. (The editor's draft save is a find-then-update upsert — `SELECT … WHERE
+status='draft' → maybeSingle() → update-or-insert`; without the draft index a concurrent
+double-save can leave two drafts, which then jams that upsert when `maybeSingle()` throws on >1
+row. The published index alone is not enough — flagged cross-product by both Jarvises 2026-06-30.)
 
 ```sql
 create unique index ..._one_published on *_doc_versions (doc_key) where status = 'published';
+create unique index ..._one_draft     on *_doc_versions (doc_key) where status = 'draft';
 ```
 
 ## 4. RLS read-tiers (the security spine)
@@ -114,7 +118,8 @@ below.**
 - **BELOW** — version history (current + superseded), newest first.
 
 Two endpoints, both owner-gated, both writing through the caller's session (RLS re-checks):
-- `POST …/draft` — upsert the single working draft (one per doc).
+- `POST …/draft` — upsert the single working draft (one per doc; the `_one_draft` partial unique
+  index makes "single" a DB guarantee, not just an app assumption).
 - `POST …/publish` — verify a draft exists, then call the atomic RPC; `router.refresh()`.
 
 ## 9. RolDe reference files (copy the shape, not the stack)
@@ -134,7 +139,8 @@ apps/web/src/app/api/custodian/legal/{draft,publish}/route.ts  -- the two endpoi
 
 ## 10. Adapting to another product / iOS
 
-- **Keep:** the table shape, the `draft/published/superseded` status, the one-published index,
+- **Keep:** the table shape, the `draft/published/superseded` status, the one-published **and
+  one-draft** indexes,
   the three RLS read-tiers, the atomic publish RPC, the catalog-in-code / content-in-DB split,
   the idempotent seed.
 - **Adapt:** the UI to your platform (native SwiftUI screens instead of React; same 3-step

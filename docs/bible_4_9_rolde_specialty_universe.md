@@ -189,7 +189,7 @@ having (e.g. the aesthetics *face-marker*), present Pros & Cons, choose, slot in
 | 15 | **Pharmacy & independent-prescriber** | N | TITAN · ProScript · Cegedim Rx · Nymo | ✅ **done** — PH.1–PH.3 greenlit (PH.4 FMD skipped, PH.5 NHS deferred) → §15.7c |
 | 16 | **Diagnostics / imaging (RIS-PACS)** | K | Sectra · Soliton · Intelerad + open-source Orthanc/dcm4chee/OHIF/Cornerstone3D | ✅ **done** — IM.1–IM.5 greenlit (self-host the stack) → §15.7c |
 | 17 | **Veterinary** | Q | ezyVet (IDEXX) · Provet Cloud · Covetrus Pulse · Shepherd · Digitail | ✅ **done — a real pack** (Roland: animals too) → VT.1–VT.5 → §15.7c |
-| 18 | **Wellness / weight-loss / IV / longevity** | J | Semble · Cliniko · Pabau · Fresha (general PMS) | ☐ |
+| 18 | **Wellness / weight-loss / IV / longevity** | J | Superpower · Next Health · Aniva · Forum Health · Drip IV | ✅ **done** — WL.1–WL.5 greenlit (~100% reuse) → §15.7c |
 | 19 | **Complementary & integrative** | M | Jane · Cliniko · WriteUpp (general wellness PMS) | ☐ |
 | 20 | **Surgical / private hospital / day-units** | C, P | Meddbase · Semble · Medesk (+ specialty modules) | ☐ |
 

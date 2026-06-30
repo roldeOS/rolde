@@ -1803,16 +1803,36 @@ to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Repor
     dispensing + pet insurance claims + owner portal. *Con→Pro:* all reuse — **OH.4 + W2.3 + PH.1 + GP.1
     (pet insurance = a payor) + GP.4**. *Base: OH.4 + W2.3 + PH.1 + GP.1 + GP.4.*
 
-- **Unified Day View — Calendar + Reminders/Tasks in one surface** *(Roland 2026-06-30; NAME PENDING — a
-  C-name, provisional "RolDe Compass").* Roland: "I hate that Calendar and Reminders are separate — our day
-  is entwined." **Merge W2.1 Calendar (timed appointments) + W1.4.1 Action Queues / tasks (untimed to-dos)
-  into ONE day surface** so a user sees their whole day at a glance and plans it. *Distinct from W2.3
-  patient recalls* (those are automated patient-facing comms; this is the clinician's own day). *Plan:* a
-  day view = the timed calendar column + the day's task/reminder list alongside (a task can be dropped onto
-  a time-slot or left as a checklist; pattern proven by Sunsama/Motion/Akiflow). *Con→Pro:* "appointments
-  and tasks are different shapes" → merge the **VIEW**, keep the data distinct underneath — the calendar and
-  the task list each stay clean, the day view composes them. *Base: W2.1 + W1.4.1. Awaiting Roland's C-name
-  + greenlight before final slotting.*
+- **Wellness, Weight-Loss, IV & Longevity Pack** *(Bible 4.9 Row 18 — Superpower · Next Health · Aniva ·
+  Forum Health · Drip IV · Pabau-wellness; WL.1–WL.5 greenlit 2026-06-30).* The purest **configuration, not
+  construction** pack — **~100% reuse**; the only spark is the AI biomarker action-plan.
+  - **WL.1 Weight-Loss / GLP-1 Programmes** — *Plan:* GLP-1 prescribing + dose titration + safety labs
+    (HbA1c · metabolic panel) + coaching. *Con→Pro:* "a new programme" → **WH.1 hormone-style monitoring
+    applied to GLP-1** → **AP.6 + DP.4 + GP.2 + PH.1**. *Base: AP.6 + DP.4 + GP.2 + PH.1.*
+  - **WL.2 Biomarker Panels & Health Optimisation** — *Plan:* 100+ biomarker panels + trends + a
+    biological-age / action-plan. *Con→Pro:* "100+ biomarkers + an action plan" → **W3.2 labs + charting +
+    GP.5 screening packages**; the bio-age/action-plan is a **RolDe-AI (W5)** output (the one faintly-new
+    spark). *Base: W3.2 + GP.5 + W5.*
+  - **WL.3 IV Therapy & Injectables** — *Plan:* a drip / vitamin-shot menu + administration record +
+    packages. *Con→Pro:* "an IV menu" → **OP.3 products/services + a procedure record + W1.1.10 packages**.
+    *Base: OP.3 + W1.1.10.*
+  - **WL.4 Membership & Coaching Programmes** — *Plan:* subscription memberships + coaching touchpoints +
+    education modules. *Con→Pro:* "subscription + coaching" → **GP.6 subscription + GP.2 coaching pathway +
+    GP.4 portal + RoChat**. *Base: GP.6 + GP.2 + GP.4 + RoChat.*
+  - **WL.5 Supplement Recommendations & Sales** — *Plan:* personalised supplement plans + retail.
+    *Con→Pro:* "supplement sales" → **OP.3 Products & Retail + the WL.2 action-plan** as the recommendation
+    source. *Base: OP.3 + WL.2.*
+
+- **RolDe Compass — the Unified Day View (Calendar + Tasks)** *(LOCKED + greenlit, Roland 2026-06-30; a
+  **Sidebar** item).* Roland: "I hate that Calendar and Reminders are separate — our day is entwined."
+  **Merge W2.1 Calendar (timed appointments) + W1.4.1 Action Queues / tasks (untimed to-dos) into ONE day
+  surface** so a user sees their whole day at a glance and plans it. *Distinct from the patient-recall
+  engine* (that's automated patient-facing comms — see its own named module; Compass is the *clinician's
+  own day*). **Design (greenlit):** the day view = the **timed calendar column** + the **day's task list
+  alongside**; a task can be **dragged onto a time-slot** or left as a checklist; tasks not for today sit
+  in a **backlog** you pull from (pattern proven by Sunsama/Motion/Akiflow). *Con→Pro:* "appointments and
+  tasks are different shapes" → merge the **VIEW**, keep the data distinct underneath — calendar and task
+  list each stay clean, Compass composes them into one day. *Base: W2.1 + W1.4.1 → RolDe Compass (sidebar).*
 
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
