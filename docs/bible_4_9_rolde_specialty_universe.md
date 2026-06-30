@@ -184,7 +184,7 @@ having (e.g. the aesthetics *face-marker*), present Pros & Cons, choose, slot in
 | 10 | **Optometry / opticians** | G | Acuitas 3 (Ocuco) · Optix · Raven Vision · Compulink | ✅ **done** — OP.1–OP.4 greenlit → §15.7c |
 | 11 | **Audiology / hearing** | G | Auditbase (Auditdata) · Blueprint OMS · NOAH (HIMSA) · Sycle · NymoClinic | ✅ **done** — AU.1–AU.4 greenlit → §15.7c |
 | 12 | **Fertility / IVF** | H | MedITEX · IDEAS EMR · BabySentry · eIVF · Vitrify · ART Compass | ✅ **done** — FR.1–FR.6 greenlit → §15.7c |
-| 13 | **Women's / menopause / men's health** | H, J | Semble · Cliniko · Pabau (general) + specialist protocols | ☐ |
+| 13 | **Women's / menopause / men's health** | H, J | Optimantra · Semble · Cliniko · Pabau + specialist protocols | ✅ **done** — WH.1–WH.5 greenlit → §15.7c |
 | 14 | **Occupational health** | O | Cohort (Tempus) · Civica OPAS-G2 · Medgate · Orchid | ☐ |
 | 15 | **Pharmacy & independent-prescriber** | N | TITAN PMR · ProScript · Cegedim Rx · RxWeb · Nymo | ☐ |
 | 16 | **Diagnostics / imaging (RIS-PACS)** | K | Soliton Radiology+ · Sectra · Insignia · Intelerad InSight | ☐ |

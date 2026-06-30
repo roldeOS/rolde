@@ -247,6 +247,8 @@ ambient AI**.
   hearing-aid & tinnitus fitting/dispensing · supply, warranty & review recall.
 - **RolDe for Fertility & IVF** — treatment-cycle management · embryology lab tracking · electronic
   witnessing & chain-of-custody · cryostorage management · donor & third-party management · HFEA reporting.
+- **RolDe for Women's, Men's & Sexual Health** — hormone therapy (HRT/TRT) management · validated
+  symptom scales · STI results & partner notification · contraception & LARC · cycle tracking.
 - *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
   health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 

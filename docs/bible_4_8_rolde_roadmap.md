@@ -1667,6 +1667,30 @@ to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Repor
     on the coded record (NP.1)**, like the Healthcode/FHIR adapters. *Base: Regulatory & Compliance
     framework + NP.1. UK-mandatory (not deferred).*
 
+- **Women's, Men's & Sexual Health Pack** *(Bible 4.9 Row 13 — Optimantra · Semble · menopause/TRT
+  EMRs + the GUM / eSexual-Health evidence base; WH.1–WH.5 greenlit 2026-06-30).* Booming market —
+  almost all reuse + pre-seeded protocols; one genuinely-new piece (partner notification).
+  - **WH.1 Hormone Therapy Management (HRT / TRT)** *(big-market standout)* — *Plan:* protocol templates
+    (oestrogen · progesterone · testosterone · thyroid · pellet) + dosage & titration + safety-lab
+    monitoring (PSA · hematocrit · hormones) + trend charts. *Con→Pro:* "protocols + titration + lab
+    monitoring is complex" → **prescribing (AP.6) + DP.4 drug-monitoring** (PSA/hematocrit = the same
+    monitoring-schedule engine) + **GP.2 protocols** + **W3.2 trend charts**; hormone protocols
+    pre-seeded. *Base: AP.6 + DP.4 + GP.2 + charts.*
+  - **WH.2 Validated Symptom Scales** — *Plan:* Greene Climacteric / Menopause Rating Scale (women),
+    ADAM / IIEF-15 (men), scored over time. *Con→Pro:* "another set of scales" → the **MH.1/PT.2
+    scored-questionnaire engine**; instruments are data. *Base: MH.1/PT.2.*
+  - **WH.3 Sexual Health: STI Results + Partner Notification** *(specialised + sensitive)* — *Plan:*
+    results delivery + **anonymised partner notification / contact tracing** (SMS/email). *Con→Pro:*
+    "anonymised partner notification is sensitive" → reuses **W3.2 results + RoChat comms + the MH.6
+    sensitivity tier**; the anonymised notice never reveals the index patient — **sensitive-by-design**.
+    *Base: W3.2 + RoChat + MH.6.*
+  - **WH.4 Contraception & LARC Management** — *Plan:* coil/implant insertion & removal records + expiry
+    recall. *Con→Pro:* "LARC procedure + expiry recall" → a **procedure record + the recall engine
+    (W2.3)** (coil/implant expiry is a recall date). *Base: W2.3.*
+  - **WH.5 Cycle / Menstrual Tracking** — *Plan:* patient-recorded cycle posted into the clinical feed.
+    *Con→Pro:* "patient-side tracking" → a **portal input (GP.4)** that posts to the **gold-mine Notes
+    feed**. *Base: GP.4 + feed.*
+
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
 The net-new WBS above is only half the work; alongside it runs a stream of small changes to
