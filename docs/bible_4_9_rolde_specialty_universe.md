@@ -172,7 +172,7 @@ having (e.g. the aesthetics *face-marker*), present Pros & Cons, choose, slot in
 
 | # | Software market (specialty cluster) | Families | Best-in-class candidates to deep-dive | Status |
 |---|---|---|---|---|
-| 1 | **Aesthetics & medical spa** | I, J | Pabau · AesthetiDocs · Consentz · Faces · AestheticsPro · Phorest · Nextech · Fresha · Zenoti | ◐ Pabau + AesthetiDocs done; rest pending |
+| 1 | **Aesthetics & medical spa** | I, J | Pabau · AesthetiDocs · Consentz · Faces · AestheticsPro · Phorest · Nextech · Fresha · Zenoti | ✅ **done** — all 7 dived; AP.1–AP.10 greenlit → Bible 4.8 §15.7c |
 | 2 | **Dermatology** (medical + cosmetic) | B, I | ModMed EMA · Nextech · EZDERM · (Pabau for cosmetic) | ☐ |
 | 3 | **Private GP / consultants / general medical** | A, B | Semble (ex-Heydoc) · Cliniko · Meddbase · Medesk · Medicus | ☐ |
 | 4 | **NHS primary care** | A | EMIS Web (~55%) · SystmOne/TPP (~35%) · Vision/Cegedim (~9%) · Medicus | ☐ *(NHS = Phase 3+, deferred)* |

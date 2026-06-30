@@ -1315,9 +1315,47 @@ Discount Codes** *(seasonal codes: percentage or fixed; total + per-customer usa
 spend; expiry; code usage shown against the patient)* · W4.4 Aged debt · W4.5 Insurer billing
 **W5 — Ambient AI** — W5.1 AI server (Gemma/M4 Max) · W5.2 Ambient suggestions · W5.3 AI drafting
 · W5.4 Correction pipeline
-**W6 — Growth & Ops** — W6.1 Inventory (batch/expiry) · W6.2 Marketing/CRM + reviews · W6.3
+**W6 — Growth & Ops** — W6.1 Inventory (batch/expiry) · W6.2 Marketing/CRM (**RolDe Covenant**) + reviews · W6.3
 Reports/analytics · W6.4 Patient portal · W6.5 Audit-log surface · W6.6 Website builder (Puck) +
 booking plugin + custom domains
+
+### 15.7c Specialty Packs — thin modules hanging off the shared spine (from Bible 4.9 deep-dives)
+
+**RolDe is *the* universal clinical OS** (every specialty in Bible 4.9), NOT an aesthetics tool —
+aesthetics is simply the first **specialty pack** (Roland 2026-06-30). Each pack item is built
+**when its base wave lands** (no jumping the queue, no duplicate spine work — "common elements
+first"). De-duped against the build list above.
+
+- **Aesthetics Pack** *(Bible 4.9 Row 1 — Pabau · AesthetiDocs · Consentz · Faces · AestheticsPro ·
+  Phorest · Nextech; ALL greenlit 2026-06-30):*
+  - **AP.1 Treatment Mapping & Mark-up** — interactive face/body diagram; per injection point: product ·
+    units/volume · depth · technique, **versioned every visit**. *Base: W1.2.5 body-map (aesthetics skin). **Net-new widget** — the signature feature.*
+  - **AP.2 Before/After Photo Studio** — fixed-angle ghost-overlay capture + side-by-side/overlay compare,
+    consent-gated, bound to AP.1. *Base: W1.2.5. Enhancement.*
+  - **AP.3 Injectable Batch/Lot & Expiry** — record lot + expiry at the point of injection (MHRA
+    recall traceability), auto-decrement stock. *Base: W6.1 inventory. Enhancement.*
+  - **AP.4 Consent & Aftercare Library** — pre-loaded, **doctor-written** per-treatment consent + aftercare,
+    auto-triggered at booking, **auto-flags missing answers / contra-indications**. Pre-seeded in Settings,
+    editable like Legal. *Base: W1.2.6 consents + Settings. Enhancement.*
+  - **AP.5 Complication / Emergency Protocol Library** — pre-seeded protocols (vascular occlusion →
+    hyaluronidase, anaphylaxis…), one-tap from the patient record, editable per clinic; framed "guidance,
+    clinician decides." Pre-seeded in Settings like Legal. ***Net-new.***
+  - **AP.6 Nurse → Prescriber → Pharmacy loop + Supervisor countersign** — non-prescriber requests →
+    remote prescriber authorises → pharmacy dispenses; trainee/nurse notes can require a supervisor
+    sign-off; fully audited. *Base: W3.1 prescribing. Enhancement.* (Roland: "build this perfectly.")
+  - **AP.7 Smart pre-appointment intake** — booking auto-sends the medical questionnaire + consent;
+    red-flags surfaced to the clinician **before** the patient arrives. *Base: W2.2 booking. Enhancement.*
+  - **AP.8 Smart Note Templates — a 2026 PICKER, never dot-codes (Roland 2026-06-30)** — a modern
+    dropdown / command-palette "Smart Insert" that drops a structured, per-treatment note block; NOT
+    1990s `.botox3` typing. *Base: documentation (Bible 4.6). **Net-new shared component** — every specialty reuses it.*
+  - **AP.9 Quotes / Estimates → booking + invoice** — build a treatment estimate, convert to a booking +
+    invoice. **DISTINCT from the payment-gateway plugin** (W1.1.11 / W4.3 = how money *moves*); a quote
+    is the pre-sale *proposal* before money moves. *Base: W4.1 billing. Thin enhancement.*
+  - **AP.10 Lead pipeline + review automation — ALREADY COVERED, no new build (de-duped).** The
+    enquiry→consult **pipeline = RolDe Covenant (W6.2)**; the conversation itself rides **RoChat** (RoDee's
+    own-AI comms hub — user↔us, replacing email / chatbots / third-parties; built by iOS Jarvis);
+    **review-requests = a Caretaker-set Automation delivered via RoChat.** **NO branded patient app —
+    ever; patients only ever use RolDe OS (the patient portal, W6.4)** (Roland 2026-06-30).
 
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
