@@ -263,6 +263,8 @@ rhythm of ongoing care) · **self-hosted ambient AI**.
   health optimisation · IV therapy & injectables · membership & coaching · supplement plans & sales.
 - **RolDe for Complementary & Integrative** — modality intake & notes · acupuncture point/meridian
   charting · herbal & remedy prescriptions. *(RolDe stays clinically neutral — documents, never endorses.)*
+- **RolDe for Surgery & Day-Units** — theatre scheduling · pre-op & WHO safety checklist · operation
+  notes, implant registry & counts · peri-operative flow · MDT meetings & care coordination.
 - *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
   health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 

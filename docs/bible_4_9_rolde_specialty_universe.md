@@ -191,7 +191,7 @@ having (e.g. the aesthetics *face-marker*), present Pros & Cons, choose, slot in
 | 17 | **Veterinary** | Q | ezyVet (IDEXX) · Provet Cloud · Covetrus Pulse · Shepherd · Digitail | ✅ **done — a real pack** (Roland: animals too) → VT.1–VT.5 → §15.7c |
 | 18 | **Wellness / weight-loss / IV / longevity** | J | Superpower · Next Health · Aniva · Forum Health · Drip IV | ✅ **done** — WL.1–WL.5 greenlit (~100% reuse) → §15.7c |
 | 19 | **Complementary & integrative** | M | Jane · Cliniko · SimpleClinic · Unified Practice · Smart TCM | ✅ **done** — CM.1–CM.3 greenlit (leanest pack) → §15.7c |
-| 20 | **Surgical / private hospital / day-units** | C, P | Meddbase · Semble · Medesk (+ specialty modules) | ☐ |
+| 20 | **Surgical / private hospital / day-units** | C, P | Meddbase · PICIS · Personify Care · Provation | ✅ **done** — SU.1–SU.5 greenlit (incl. MDT care-coordination) → §15.7c |
 
 **How we work this table (steps 3.5–3.8):** Roland names a row → Jarvis deep-dives those products
 air-tight → returns the **features worth pulling, each with Pros & Cons** → Roland chooses → chosen

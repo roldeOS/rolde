@@ -1848,6 +1848,41 @@ to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Repor
     modality lacks trial evidence, and **never lends false authority** (Bible 4.7 ambient AI; clinical-
     industry-standard). Patient-safety-critical — quote the Bible, never improvise clinical wording.
 
+- **Surgical & Day-Surgery Pack** *(Bible 4.9 Row 20 — Meddbase · PICIS · Personify Care · Provation +
+  the WHO-checklist / NHS MDT-streamlining evidence; SU.1–SU.5 greenlit 2026-06-30 — "must be done
+  perfectly").* Even the most complex setting is **~80% spine**; its safety-critical pieces reuse the
+  blocking-modal, batch-tracking and witnessing engines.
+  - **SU.1 Theatre / OR Scheduling** — *Plan:* theatre lists + surgeon/anaesthetist/resource scheduling +
+    utilisation + a live board. *Con→Pro:* "theatre/resource scheduling" → **W2.1 + rooms (W1.1.6) +
+    multi-resource (MH.7) + the Ward Map live-board (W1.5.3)**. *Base: W2.1 + W1.1.6 + W1.5.3.*
+  - **SU.2 Pre-op Assessment + WHO Surgical Safety Checklist** *(safety-critical)* — *Plan:* pre-op
+    workup (consent/VTE/obs) + the WHO **sign-in → time-out → sign-out** checklist. *Con→Pro:* "the WHO
+    checklist" → **AP.7 + AP.8 + AP.4 + a *blocking* checklist** — the time-out **is the blocking-modal
+    gate** (the break-glass pattern). *Base: AP.7 + AP.8 + AP.4 + the Blocking Modal.*
+  - **SU.3 Operation Notes + Implant Registry + Counts** — *Plan:* structured op notes + implant log
+    (lot/serial · laterality · recall) + swab/instrument counts. *Con→Pro:* "op notes + implants + counts"
+    → **AP.8 templates + AP.3 batch/lot** (an implant is a tracked device) + **FR.3 witnessing** (the count
+    is a witnessed chain-of-custody — the IVF engine). *Base: AP.8 + AP.3 + FR.3.*
+  - **SU.4 Peri-operative Flow** — *Plan:* admission → theatre → recovery (PACU) → discharge + bed +
+    anaesthetic chart. *Con→Pro:* "peri-op flow + beds" → **Ward Map (W1.5.3) + a peri-op care pathway
+    (GP.2)** + an anaesthetic form. *Base: W1.5.3 + GP.2.*
+  - **SU.5 MDT Meetings & Care Coordination** *(the "everything-requested, perfectly-sorted" engine)* —
+    *Plan:* an **MDT Case** coordination object that sits on the **order spine**. A case (e.g. "?Lymphoma")
+    aggregates the patient + lead clinician + MDT team + **every linked investigation as an order (W3.2)**
+    (CT-guided biopsy · histology · MRI head · bloods), each with a **live status** (requested → scheduled →
+    done → reported). Results flow back onto the order **and into the Clinical Notes feed**; a **readiness
+    gate** (NP.7 completeness check) flips the case to "ready for MDT" once required results are in; the
+    **MDT meeting view** lists the session's cases with images (IM viewer) + history; a **structured
+    decision** (diagnosis · stage · plan · owner) is recorded → posts to the feed and **spawns the next
+    orders / referrals / letters + RolDe Cadence follow-ups — closed-loop, nothing falls through.**
+    *Standard:* the **MDT / tumour-board + cancer-pathway** model (NHS MDT-streamlining; FHIR). *Con→Pro:*
+    "a whole coordination system" → it's the **order spine (W3.2/DN.6) + GP.2 pathway + NP.7 completeness +
+    the feed + Cadence + GP.3 referrals + IM viewer + Confer/Concerns (W1.6)** composed into a case object —
+    every piece already exists; the MDT Case is just the **conductor**. *Base: W3.2 + GP.2 + NP.7 + feed +
+    Cadence + GP.3 + IM + W1.6.*
+  - *Spine reuse:* surgical packages + insurer billing → **GP.1**; follow-up → **RolDe Cadence**; referrals
+    → **GP.3**; theatre imaging → **IM.***.
+
 - **RolDe Compass — the Unified Day View (Calendar + Tasks)** *(LOCKED + greenlit, Roland 2026-06-30; a
   **Sidebar** item).* Roland: "I hate that Calendar and Reminders are separate — our day is entwined."
   **Merge W2.1 Calendar (timed appointments) + W1.4.1 Action Queues / tasks (untimed to-dos) into ONE day
