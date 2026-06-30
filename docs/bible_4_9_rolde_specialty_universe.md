@@ -186,7 +186,7 @@ having (e.g. the aesthetics *face-marker*), present Pros & Cons, choose, slot in
 | 12 | **Fertility / IVF** | H | MedITEX · IDEAS EMR · BabySentry · eIVF · Vitrify · ART Compass | ✅ **done** — FR.1–FR.6 greenlit → §15.7c |
 | 13 | **Women's / menopause / men's health** | H, J | Optimantra · Semble · Cliniko · Pabau + specialist protocols | ✅ **done** — WH.1–WH.5 greenlit → §15.7c |
 | 14 | **Occupational health** | O | Cohort (Tempus) · Civica OPAS-G2 · Medgate · Cority · PrognoCIS | ✅ **done** — OH.1–OH.5 greenlit → §15.7c |
-| 15 | **Pharmacy & independent-prescriber** | N | TITAN PMR · ProScript · Cegedim Rx · RxWeb · Nymo | ☐ |
+| 15 | **Pharmacy & independent-prescriber** | N | TITAN · ProScript · Cegedim Rx · Nymo | ✅ **done** — PH.1–PH.3 greenlit (PH.4 FMD skipped, PH.5 NHS deferred) → §15.7c |
 | 16 | **Diagnostics / imaging (RIS-PACS)** | K | Soliton Radiology+ · Sectra · Insignia · Intelerad InSight | ☐ |
 | 17 | **Veterinary** | Q | ezyVet (IDEXX) · Provet Cloud · Covetrus Pulse · RoboVet · IDEXX Neo | ☐ *(adjacent)* |
 | 18 | **Wellness / weight-loss / IV / longevity** | J | Semble · Cliniko · Pabau · Fresha (general PMS) | ☐ |

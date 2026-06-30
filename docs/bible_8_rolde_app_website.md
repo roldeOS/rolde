@@ -251,6 +251,8 @@ ambient AI**.
   symptom scales · STI results & partner notification · contraception & LARC · cycle tracking.
 - **RolDe for Occupational Health** *(B2B / employer)* — employer model & management referrals ·
   health surveillance · fitness-for-work & pre-placement · occupational vaccinations · drug & alcohol testing.
+- **RolDe for Pharmacy & Independent Prescribers** *(clinical services, not retail dispensing)* —
+  independent-prescriber clinics · in-clinic medication supply · controlled-drugs register · monitored dosage systems.
 - *(appended per Bible 4.9 row: mental health · optometry · audiology · fertility · women's/men's
   health · occupational health · pharmacy · imaging · veterinary · wellness · complementary · surgical.)*
 

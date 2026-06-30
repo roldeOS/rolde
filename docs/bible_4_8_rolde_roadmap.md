@@ -1717,6 +1717,33 @@ to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Repor
     *Con→Pro:* "chain-of-custody + randomisation" → reuses **FR.3 witnessing/chain-of-custody** + a test
     record + an **NP.7 population-search randomiser**. *Base: FR.3 + NP.7 + a form.*
 
+- **Pharmacy & Independent-Prescriber Pack** *(Bible 4.9 Row 15 — TITAN · ProScript · Cegedim Rx · Nymo
+  + the IP-clinic / Pharmacy-First evidence; PH.1–PH.3 greenlit 2026-06-30).* **Scope discipline:** RolDe
+  serves pharmacy **clinical services** (IP clinics, private prescribing, weight-loss, travel) on the
+  spine + packs — it is **NOT a retail dispensing PMR** (we integrate with that, never rebuild it). All
+  of this bolts onto the **robust stock spine** (W6.1 inventory + AP.3 batch/lot/expiry + OP.3 products
+  & retail + DN.6 lab/order — confirmed robust, Roland 2026-06-30).
+  - **PH.1 In-Clinic Medication Supply (light dispensing)** — *Plan:* prescribe → label → supply record
+    → stock decrement; for clinics that supply directly (weight-loss/aesthetics/travel). *Con→Pro:*
+    "dispensing is a whole retail PMR" → a **light supply layer (AP.6 + OP.3 + a label)**, not a TITAN
+    competitor; full retail = integrate. *Base: AP.6 + OP.3.*
+  - **PH.2 Controlled Drugs Register** *(multi-pack legal standout)* — *Plan:* running balance · witnessed
+    entries · who/what/when, per the Misuse of Drugs regs. *Con→Pro:* "a strict legal artifact" → **stock
+    (W6.1) + audit + FR.3 witnessing**; serves **every drug-holding clinic** (aesthetics, weight-loss,
+    surgery), not just pharmacy. *Base: W6.1 + audit + FR.3.*
+  - **PH.3 Monitored Dosage Systems (MDS) / Blister Packs** — *Plan:* dosette packing schedules (care
+    homes / complex repeats). *Con→Pro:* "niche" → a packing schedule on the **repeat (NP.3) + recall
+    (W2.3)** engines. *Base: NP.3 + W2.3.*
+  - **PH.4 Medicine Verification (FMD) — SKIP (Roland 2026-06-30).** Scan each pack's barcode against a
+    central database to prove it's genuine/in-date/not-recalled, then decommission it. **Defunct in Great
+    Britain since 31 Dec 2020** (SecurMed GB switched off post-Brexit; only NI follows EU FMD), AND the
+    clinically-useful part (never supply expired/recalled stock) is **already covered by AP.3 batch/expiry
+    + recall checks**. Decision: not built; if a UK national verification scheme launches, add a barcode +
+    hub adapter then.
+  - **PH.5 NHS EPS / FP10 / Pharmacy First — DEFERRED, Phase 3+** (NHS plumbing, like NP.8).
+  - *Covered by spine + packs:* IP clinics + private prescribing → **AP.6** · weight-loss GLP-1 → **Row
+    18** · travel/vaccination → **OH.4**.
+
 ### 15.7a Addenda & Polish ledger — refinements to BUILT things (Roland 2026-06-21)
 
 The net-new WBS above is only half the work; alongside it runs a stream of small changes to
