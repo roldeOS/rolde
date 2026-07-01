@@ -199,11 +199,34 @@ fairly OPAQUE (~85% card) so header text never merges with content blurring unde
 ## 4. Consultation screen — the four-card layout
 
 4.1 (Roland 2026-06-10, matching Bible 4.2 §3.1) — patient identity lives in the topbar
-breadcrumb (+ glassy island); then FOUR symmetric cards: **top-left = Clinical Notes**,
-**bottom-left = Scribe** (the writing card — edit/amend happen here), **top-right =
-Investigations + Orders, tabbed**, **bottom-right = the RolDe panel** ("RolDe says…", Inter not
-serif). Both columns share ONE row-split so the top two cards end level and the bottom two end
-level (visually symmetric). View presets (Consult/Document/Review) live in the topbar.
+breadcrumb (+ glassy island); then FOUR cards: **top-left = Clinical Notes**,
+**bottom-left = Scribe** (the writing card — edit/amend happen here), **top-right = Workup**
+*(renamed from "Investigations + Orders" — Roland 2026-07-01; order labs/imaging/scripts/procedures
++ track them + see results; tabbed)*, **bottom-right = the RolDe panel** ("RolDe says…", Inter not
+serif).
+
+4.2 **The layout is ADAPTIVE, not fixed (Roland 2026-07-01 — supersedes the old Consult/Document/
+Review presets).** Two forces size the cards:
+- **Module-driven reflow** — a Caretaker "Clinical Modules" toggle (Settings) turns Workup (Lab ·
+  Radiology · Procedures · Prescriptions) and the RolDe panel on/off; the grid reflows to 4 / 3 /
+  2 cards accordingly (AI off → Scribe full-width; Workup off → AI full-height; both off → Notes +
+  Scribe only).
+- **Intelligent resizing** — a **priority model**: explicit user drag (persisted per user) > active
+  focus/task > content pressure (a huge chronic-patient feed pushes Notes to ~80%, Workup to a ~20%
+  peek) > a calm balanced default. Clicking Workup to order eases it back toward 50/50; on save it
+  settles. Never resize *while typing* (flag with a pulse, rebalance on pause). Cards shrink to a
+  readable **peek**, never to zero (except module-off). Maximise/restore any card. Smooth eased
+  transitions. **On iPad/mobile:** cards stack; each is a tap-to-expand accordion (the "focus" card
+  open). Must be rock-solid across desktop/tablet/mobile.
+
+4.3 **Snapshot + Body-Map + Letters (Roland 2026-07-01).** The patient name in the topbar opens
+**Snapshot** — a lean sheet: **Allergies** (always shown in full — safety), **Past Medical History**,
+**Current Meds** (scrollable lists; scales 2→20 items). The **Body-Map** is a *mode of Scribe* (a
+button expands Scribe into the anatomical picker in place → mark → Save posts to the feed; art =
+Servier Medical Art CC-BY restyled to our palette + Anatomogram tap-interaction, + photo mark-up for
+aesthetics). **Letters live in the feed** (a "Letter"-tagged entry + a Letters filter), composed in
+Scribe — NOT in Workup (Workup is request-and-result only). A **"Current admission" separator + pill**
+marks where the episode began in the feed.
 
 ## 5. Tables — port mindate's DataTable + TableShell (Roland 2026-06-11)
 

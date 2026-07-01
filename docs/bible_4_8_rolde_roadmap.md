@@ -1243,6 +1243,24 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
   W1.2.3 History (PMH/surgical/family/social) · W1.2.4 Document store · W1.2.5 Before/after +
   body-map · W1.2.6 Digital consents (e-sign) · W1.2.7 Vitals/growth charts · W1.2.8 Risk scores
   (NEWS2/QRISK) · W1.2.9 One-page printable summary
+  - **W1.2 Consultation design refinements (LOCKED + greenlit, Roland 2026-07-01; APPROVALS §4.1–4.3).**
+    Built on the existing consultation screen + Clinical Notes feed (already done); keep the doctor on
+    **one page** ([[design-invisible-instant-clarity]]). New pieces to build + add to the URDS:
+    - **Adaptive Workspace** — the four cards reflow by **Clinical Modules** (a new W1.1 Settings toggle:
+      Lab · Radiology · Procedures · Prescriptions · RolDe AI) → 4/3/2-card states, AND resize
+      intelligently (priority: user-drag persisted > focus/task > content-pressure > balanced default;
+      chronic feed → Notes ~80% / Workup ~20% peek; click Workup → eases to 50/50; never resize while
+      typing; peek-not-hide; maximise/restore). Tablet/mobile = tap-to-expand accordion. Supersedes the
+      old Consult/Document/Review presets. *Rock-solid across desktop/tablet/mobile is the bar.*
+    - **Workup** — the renamed top-right card (was "Investigations + Orders"): order + track + results.
+    - **Snapshot** — the topbar patient-name sheet (Allergies always-full · PMH · Current Meds; scrollable).
+    - **Body-Map** — a Scribe mode (expand → mark → Save→feed); art = Servier Medical Art CC-BY restyled
+      to our palette + Anatomogram tap-interaction + photo mark-up (aesthetics).
+    - **Admission Marker** — a separator line + pill in the feed for the current episode.
+    - **Letters → the feed** (a "Letter"-tagged entry + a Letters filter), composed in Scribe.
+    - **Depends on:** the record data layer (W1.2.1 problems/PMH · W1.2.2 meds · allergies) which Snapshot
+      renders. Build order: data layer → Snapshot + Admission Marker + Letters-filter (URDS-covered) →
+      Adaptive Workspace + intelligent resizing → Body-Map (after the Servier style is picked).
 - **W1.3 Patients List** — W1.3.1 Saved segments · W1.3.2 Tags · W1.3.3 Bulk actions · W1.3.4
   Merge duplicates · W1.3.5 Quick-view drawer
 - **W1.4 Dashboard Cockpit** — W1.4.1 Action queues · W1.4.2 Pulse tiles · W1.4.3 Front-of-house
