@@ -210,6 +210,23 @@ export function ClinicalNotesFeed({
     : ordered.slice(Math.max(0, ordered.length - visible));
   const moreOlder = ordered.length > visible;
 
+  // Clicking the header's "N Unseen" pill jumps to the OLDEST unread entry
+  // (start reading where you left off — Roland 2026-07-03). Widens the window
+  // first if that entry is outside it, then scrolls smoothly to the tile.
+  const jumpToUnread = useCallback(() => {
+    const chron = [...ordered].sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
+    const target = chron.find(isUnread);
+    if (!target) return;
+    const idx = ordered.findIndex((x) => x.id === target.id);
+    if (!sortDesc && idx < ordered.length - visible) setVisible(ordered.length - idx);
+    if (sortDesc && idx >= visible) setVisible(idx + 1);
+    setTimeout(() => {
+      scrollRef.current
+        ?.querySelector(`[data-eid="${target.id}"]`)
+        ?.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, 60);
+  }, [ordered, isUnread, sortDesc, visible]);
+
   useEffect(() => {
     if (!sortDesc && scrollRef.current)
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -280,11 +297,17 @@ export function ClinicalNotesFeed({
         <span className="rounded-md bg-info/10 px-1.5 text-xs font-medium text-info tabular-nums">
           {filtered.length}
         </span>
-        {/* Courier C1 — how many entries this user hasn't read; never missable. */}
+        {/* Courier C1 — how many entries this user hasn't read; never missable.
+            Same pill size as the count (Roland 2026-07-03); clicking JUMPS the
+            feed to the oldest unread entry. */}
         {entries.filter(isUnread).length > 0 && (
-          <span className="rounded-md bg-accent/15 px-1.5 text-xs font-semibold text-accent tabular-nums">
-            {entries.filter(isUnread).length} unseen
-          </span>
+          <button
+            onClick={jumpToUnread}
+            title="Jump to the first unread entry"
+            className="rounded-md bg-warning/15 px-1.5 text-xs font-medium text-warning tabular-nums transition-colors hover:bg-warning/25"
+          >
+            {entries.filter(isUnread).length} Unseen
+          </button>
         )}
         <SectionExplainer
           label="Clinical Notes"
@@ -423,9 +446,10 @@ export function ClinicalNotesFeed({
               <Fragment key={e.id}>
               {showMarker && <EpisodeMarker />}
               <article
+                data-eid={e.id}
                 className={cn(
                   "rounded-xl bg-card p-3 shadow-raised transition-shadow",
-                  unread && "ring-1 ring-accent/50",
+                  unread && "ring-1 ring-warning/50",
                   activeId === e.id && "ring-2 ring-info/50",
                 )}
               >
@@ -450,6 +474,9 @@ export function ClinicalNotesFeed({
                       plus the eye that opens the Read-by window. A div (not span):
                       the popover renders block content — valid nesting matters. */}
                   <div className="relative flex shrink-0 items-center gap-1 text-xs">
+                    {/* SOLID amber (Roland 2026-07-03): "Unseen" is an attention
+                        state — amber, never green (positive) or red (clinical
+                        danger); solid so it can't be missed at tile size. */}
                     {unread && (
                       <button
                         onClick={() => {
@@ -457,7 +484,7 @@ export function ClinicalNotesFeed({
                           void markEntrySeen(e.id);
                         }}
                         title="Mark as read (recorded)"
-                        className="rounded-full bg-accent/15 px-2 py-0.5 font-semibold text-accent transition-colors hover:bg-accent/25"
+                        className="rounded-full bg-warning px-2 py-0.5 font-semibold text-white transition-colors hover:bg-warning/85"
                       >
                         Unseen
                       </button>
@@ -484,30 +511,38 @@ export function ClinicalNotesFeed({
                     {/* The Read-by window — a small anchored popover (the same
                         component grammar the Courier SENT journey will reuse). */}
                     {seenByOpen.has(e.id) && (
-                      <div className="absolute right-0 top-[calc(100%+6px)] z-20 w-64 rounded-xl bg-card p-3 shadow-overlay">
+                      <div className="absolute right-0 top-[calc(100%+6px)] z-20 w-72 rounded-xl bg-card p-3 shadow-overlay">
                         <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Read by</p>
-                        <ul className="space-y-1">
+                        <ul className="space-y-1.5">
+                          {/* Two lines per reader (Roland 2026-07-03): the FULL
+                              name never truncates; the time sits beneath. One
+                              row per person — their FIRST read; re-reads never
+                              add rows (the receipt is unique per person). */}
                           {(readsByEntry.get(e.id) ?? []).map((r, i) => {
                             const reader = authors[r.user_id];
                             return (
-                              <li key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <span className="size-1.5 shrink-0 rounded-full bg-accent" />
-                                <span className="truncate font-medium text-foreground">
-                                  {reader?.name ?? "A team member"}
-                                </span>
-                                <span className="shrink-0">— {fmtTime(r.read_at)}</span>
-                                {i === 0 && <span className="shrink-0 text-accent">· first</span>}
+                              <li key={i} className="text-xs">
+                                <p className="flex flex-wrap items-center gap-1.5">
+                                  <span className="size-1.5 shrink-0 rounded-full bg-warning" />
+                                  <span className="font-medium text-foreground">
+                                    {reader?.name ?? "A team member"}
+                                  </span>
+                                  {i === 0 && <span className="text-warning">· first</span>}
+                                </p>
+                                <p className="pl-3 text-muted-foreground">{fmtTime(r.read_at)}</p>
                               </li>
                             );
                           })}
                           {seenNow.has(e.id) && (
-                            <li className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <span className="size-1.5 shrink-0 rounded-full bg-accent" />
-                              <span className="font-medium text-foreground">You</span>
-                              <span>— just now</span>
-                              {(readsByEntry.get(e.id)?.length ?? 0) === 0 && (
-                                <span className="text-accent">· first</span>
-                              )}
+                            <li className="text-xs">
+                              <p className="flex flex-wrap items-center gap-1.5">
+                                <span className="size-1.5 shrink-0 rounded-full bg-warning" />
+                                <span className="font-medium text-foreground">You</span>
+                                {(readsByEntry.get(e.id)?.length ?? 0) === 0 && (
+                                  <span className="text-warning">· first</span>
+                                )}
+                              </p>
+                              <p className="pl-3 text-muted-foreground">Just now</p>
                             </li>
                           )}
                         </ul>
