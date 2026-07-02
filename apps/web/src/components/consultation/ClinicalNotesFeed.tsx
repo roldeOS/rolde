@@ -23,6 +23,7 @@ import {
   HeartPulse,
   ChevronDown,
   Mail,
+  FileDown,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -340,14 +341,36 @@ export function ClinicalNotesFeed({
             const orig = e.related_entry_id ? byId.get(e.related_entry_id) : undefined;
             const origOpen = expandedOrig.has(e.id);
 
+            const isLetter = e.entry_type in LETTER_KINDS;
+
             return (
               <article
                 key={e.id}
                 className={cn(
-                  "rounded-xl bg-card p-3 shadow-raised transition-shadow",
+                  "rounded-xl bg-card shadow-raised transition-shadow",
+                  isLetter ? "overflow-hidden" : "p-3",
                   activeId === e.id && "ring-2 ring-info/50",
                 )}
               >
+                {isLetter ? (
+                  /* Official letterhead band (Roland 2026-07-01) — the PDF Kit's
+                     grammar at tile scale: parchment band, honey rule, title + date. */
+                  <div className="flex items-center justify-between gap-2 border-b border-honey/60 bg-sidebar px-3 py-2">
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      <span
+                        className={`flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium ${TONE_BADGE[kind.tone]}`}
+                      >
+                        <kind.icon className="size-3" />
+                      </span>
+                      <span className="truncate text-sm font-semibold">{kind.label}</span>
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {fmtTime(e.created_at)}
+                      {e.edited_at && <span className="ml-1 italic">· edited</span>}
+                      {struck && <span className="ml-1 font-medium text-warning">· struck</span>}
+                    </span>
+                  </div>
+                ) : (
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex min-w-0 items-center gap-1.5">
                     {/* Mobile (Roland #4): icon only; the label shows from sm up. */}
@@ -372,9 +395,11 @@ export function ClinicalNotesFeed({
                     )}
                   </span>
                 </div>
+                )}
                 <p
                   className={cn(
                     "mt-2 text-sm whitespace-pre-wrap",
+                    isLetter && "px-3",
                     struck && "text-muted-foreground line-through",
                   )}
                 >
@@ -410,19 +435,33 @@ export function ClinicalNotesFeed({
                     </span>
                   </button>
                 )}
-                <div className="mt-2 flex items-center justify-between">
+                <div className={cn("mt-2 flex items-center justify-between", isLetter && "px-3 pb-3")}>
                   <span className="text-xs text-muted-foreground">
                     {author?.name ?? "—"}
                   </span>
-                  {mine && (
-                    <button
-                      onClick={() => onEditNote(e)}
-                      title="Open in composer"
-                      className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-                    >
-                      <Pencil className="size-3.5" />
-                    </button>
-                  )}
+                  <span className="flex items-center gap-1">
+                    {isLetter && (
+                      <a
+                        href={`/api/letters/${e.id}/pdf`}
+                        target="_blank"
+                        rel="noopener"
+                        title="Open the official PDF"
+                        className="flex h-6 items-center gap-1 rounded-md px-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                      >
+                        <FileDown className="size-3.5" />
+                        PDF
+                      </a>
+                    )}
+                    {mine && (
+                      <button
+                        onClick={() => onEditNote(e)}
+                        title="Open in composer"
+                        className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                    )}
+                  </span>
                 </div>
               </article>
             );
