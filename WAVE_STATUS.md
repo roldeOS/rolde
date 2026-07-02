@@ -67,7 +67,7 @@
 | ▢ | **RolDe Covenant** | Relationships / marketing (W6.2) |
 | ▢ | **RolDe Compass** | The day view — calendar + tasks (sidebar) |
 | ▢ | **RolDe Cadence** | Recalls / reminders engine (W2.3) |
-| ◐ | **RolDe Courier** | The clinical postal system (GREENLIT 2026-07-02) — **C1 ✅ complete: audited read receipts · "Unseen"→"Read ✓" pill (top-right anchor) · "N unseen" header · the Read-by popover (who read what, when; "· first")**; C2 address book/settings · C3 outbound email + live tracking · C4 clinic↔clinic · C5 chase/kill-switch ▢ |
+| ◐ | **RolDe Courier** | The clinical postal system (GREENLIT 2026-07-02) — **C1 ✅ complete + Roland-verified on production: audited read receipts · SOLID-AMBER "Unseen"→"Read ✓" pill (top-right) · "N Unseen" header pill (click = jump to oldest unread) · the Read-by popover (full names, two-line rows, "· first")**; C2 address book/settings · C3 outbound email + live tracking · C4 clinic↔clinic · C5 chase/kill-switch ▢ |
 | ⧉ | **RoChat** | AI comms hub — built by iOS-Jarvis (external) |
 
 ## C. The 18 Specialty Packs *(mapped + slotted in Bible 4.8 §15.7c; build = configuration of the spine)*
