@@ -22,6 +22,9 @@ export type TopbarPatient = {
   addressLines: string[];
   allergies: { substance: string; reaction: string; severity: string }[];
   alerts: { title: string; priority: string }[];
+  /** Snapshot (Roland 2026-07-01): PMH + current meds in the name-drop sheet. */
+  problems: { title: string; status: string }[];
+  medications: { drug: string; dose: string | null; frequency: string | null }[];
 } | null;
 
 export type WorkspaceView = "consult" | "document" | "review";

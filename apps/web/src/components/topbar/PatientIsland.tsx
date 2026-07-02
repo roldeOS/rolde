@@ -119,6 +119,59 @@ export function PatientIsland() {
             </div>
           )}
 
+          {/* Snapshot (Roland 2026-07-01) — PMH + current meds: counted, scrollable
+              lists that hold 2 items or 20 equally well (allergies stay pinned
+              above, always in full — safety). */}
+          <div className="grid gap-3 border-t border-border/50 p-4 sm:grid-cols-2">
+            <div>
+              <p className="mb-1 flex items-center justify-between text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                <span>Past Medical History</span>
+                <span className="tabular-nums">{patient.problems.length}</span>
+              </p>
+              {patient.problems.length > 0 ? (
+                <ul className="max-h-36 space-y-1 overflow-y-auto pr-1">
+                  {patient.problems.map((p, i) => (
+                    <li
+                      key={i}
+                      className={cn(
+                        "rounded-md bg-muted/50 px-2 py-1 text-sm",
+                        p.status === "resolved" && "text-muted-foreground",
+                      )}
+                    >
+                      {p.title}
+                      {p.status === "resolved" && (
+                        <span className="ml-1 text-xs text-muted-foreground">· resolved</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">None recorded.</p>
+              )}
+            </div>
+            <div>
+              <p className="mb-1 flex items-center justify-between text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                <span>Current Medications</span>
+                <span className="tabular-nums">{patient.medications.length}</span>
+              </p>
+              {patient.medications.length > 0 ? (
+                <ul className="max-h-36 space-y-1 overflow-y-auto pr-1">
+                  {patient.medications.map((m, i) => (
+                    <li key={i} className="rounded-md bg-muted/50 px-2 py-1 text-sm">
+                      <span className="font-medium">{m.drug}</span>
+                      {m.dose && ` ${m.dose}`}
+                      {m.frequency && (
+                        <span className="text-muted-foreground"> · {m.frequency}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">None recorded.</p>
+              )}
+            </div>
+          </div>
+
           {/* Contact + address */}
           <div className="grid gap-3 border-t border-border/50 p-4 sm:grid-cols-2">
             <div>

@@ -86,6 +86,25 @@ export default async function ConsultationPage({
     .eq("status", "active")
     .order("priority", { ascending: false });
 
+  // Snapshot (Roland 2026-07-01) — the structured record behind the name-drop
+  // sheet: PMH (active + resolved both read as history) + current medications.
+  const [{ data: problems }, { data: medications }] = await Promise.all([
+    supabase
+      .from("patient_problems")
+      .select("title, status")
+      .eq("patient_id", id)
+      .in("status", ["active", "resolved"])
+      .is("deleted_at", null)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("patient_medications")
+      .select("drug, dose, frequency")
+      .eq("patient_id", id)
+      .eq("status", "active")
+      .is("deleted_at", null)
+      .order("created_at", { ascending: true }),
+  ]);
+
   const { data: members } = await supabase
     .from("tenant_users")
     .select("user_id, display_name, role");
@@ -137,6 +156,12 @@ export default async function ConsultationPage({
           alerts: (alerts ?? []).map((al) => ({
             title: al.title,
             priority: al.priority,
+          })),
+          problems: (problems ?? []).map((p) => ({ title: p.title, status: p.status })),
+          medications: (medications ?? []).map((m) => ({
+            drug: m.drug,
+            dose: m.dose,
+            frequency: m.frequency,
           })),
         }}
       />

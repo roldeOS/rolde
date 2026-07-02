@@ -703,6 +703,144 @@ export type Database = {
           },
         ]
       }
+      patient_medications: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          dose: string | null
+          drug: string
+          frequency: string | null
+          id: string
+          notes: string | null
+          patient_id: string
+          route: string | null
+          snomed_code: string | null
+          started_on: string | null
+          status: string
+          stopped_on: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          dose?: string | null
+          drug: string
+          frequency?: string | null
+          id?: string
+          notes?: string | null
+          patient_id: string
+          route?: string | null
+          snomed_code?: string | null
+          started_on?: string | null
+          status?: string
+          stopped_on?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          dose?: string | null
+          drug?: string
+          frequency?: string | null
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          route?: string | null
+          snomed_code?: string | null
+          started_on?: string | null
+          status?: string
+          stopped_on?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_medications_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_medications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_problems: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          id: string
+          notes: string | null
+          onset_date: string | null
+          patient_id: string
+          snomed_code: string | null
+          status: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          notes?: string | null
+          onset_date?: string | null
+          patient_id: string
+          snomed_code?: string | null
+          status?: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          notes?: string | null
+          onset_date?: string | null
+          patient_id?: string
+          snomed_code?: string | null
+          status?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_problems_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_problems_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patients: {
         Row: {
           address_line1: string | null
