@@ -280,10 +280,10 @@ export function ClinicalNotesFeed({
         <span className="rounded-md bg-info/10 px-1.5 text-xs font-medium text-info tabular-nums">
           {filtered.length}
         </span>
-        {/* Courier C1 — how many entries this user hasn't seen; never missable. */}
+        {/* Courier C1 — how many entries this user hasn't read; never missable. */}
         {entries.filter(isUnread).length > 0 && (
           <span className="rounded-md bg-accent/15 px-1.5 text-xs font-semibold text-accent tabular-nums">
-            {entries.filter(isUnread).length} new
+            {entries.filter(isUnread).length} unseen
           </span>
         )}
         <SectionExplainer
@@ -445,35 +445,75 @@ export function ClinicalNotesFeed({
                       </span>
                     )}
                   </span>
-                  <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-                    {/* Courier C1 — unread flips ONLY here: a deliberate click on
-                        the pill (small target, never hit in passing), which writes
-                        the audited read receipt. */}
+                  {/* TOP-RIGHT (Roland 2026-07-02) — the read-state anchor: the
+                      "Unseen" pill (click = your first read, recorded) or "Read ✓",
+                      plus the eye that opens the Read-by window. A div (not span):
+                      the popover renders block content — valid nesting matters. */}
+                  <div className="relative flex shrink-0 items-center gap-1 text-xs">
                     {unread && (
                       <button
                         onClick={() => {
                           setSeenNow((s) => new Set(s).add(e.id));
                           void markEntrySeen(e.id);
                         }}
-                        title="Mark as seen (recorded)"
+                        title="Mark as read (recorded)"
                         className="rounded-full bg-accent/15 px-2 py-0.5 font-semibold text-accent transition-colors hover:bg-accent/25"
                       >
-                        New
+                        Unseen
                       </button>
                     )}
                     {justSeen && (
-                      <span className="rounded-full px-1.5 py-0.5 text-muted-foreground">
-                        Seen ✓
-                      </span>
+                      <span className="rounded-full px-1.5 py-0.5 text-muted-foreground">Read ✓</span>
                     )}
-                    <span>
-                    {fmtTime(e.created_at)}
-                    {e.edited_at && <span className="ml-1 italic">· edited</span>}
-                    {struck && (
-                      <span className="ml-1 font-medium text-warning">· struck</span>
+                    {(readsByEntry.get(e.id)?.length || justSeen) ? (
+                      <button
+                        onClick={() =>
+                          setSeenByOpen((s) => {
+                            const n = new Set(s);
+                            if (n.has(e.id)) n.delete(e.id);
+                            else n.add(e.id);
+                            return n;
+                          })
+                        }
+                        title="Who has read this"
+                        className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                      >
+                        <Eye className="size-3.5" />
+                      </button>
+                    ) : null}
+                    {/* The Read-by window — a small anchored popover (the same
+                        component grammar the Courier SENT journey will reuse). */}
+                    {seenByOpen.has(e.id) && (
+                      <div className="absolute right-0 top-[calc(100%+6px)] z-20 w-64 rounded-xl bg-card p-3 shadow-overlay">
+                        <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Read by</p>
+                        <ul className="space-y-1">
+                          {(readsByEntry.get(e.id) ?? []).map((r, i) => {
+                            const reader = authors[r.user_id];
+                            return (
+                              <li key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <span className="size-1.5 shrink-0 rounded-full bg-accent" />
+                                <span className="truncate font-medium text-foreground">
+                                  {reader?.name ?? "A team member"}
+                                </span>
+                                <span className="shrink-0">— {fmtTime(r.read_at)}</span>
+                                {i === 0 && <span className="shrink-0 text-accent">· first</span>}
+                              </li>
+                            );
+                          })}
+                          {seenNow.has(e.id) && (
+                            <li className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <span className="size-1.5 shrink-0 rounded-full bg-accent" />
+                              <span className="font-medium text-foreground">You</span>
+                              <span>— just now</span>
+                              {(readsByEntry.get(e.id)?.length ?? 0) === 0 && (
+                                <span className="text-accent">· first</span>
+                              )}
+                            </li>
+                          )}
+                        </ul>
+                      </div>
                     )}
-                    </span>
-                  </span>
+                  </div>
                 </div>
                 <p
                   className={cn(
@@ -513,32 +553,20 @@ export function ClinicalNotesFeed({
                     </span>
                   </button>
                 )}
-                {/* Footer — the URDS Feed Tile anatomy (Roland 2026-07-02): author on
-                    the LEFT · status pill + actions on the RIGHT. */}
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
+                {/* Footer — the URDS Feed Tile anatomy (Roland 2026-07-02): author
+                    LEFT · time+date BOTTOM-CENTRE · status pill + actions RIGHT. */}
+                <div className="mt-2 flex items-center gap-2">
+                  <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
                     {author?.name ?? "—"}
                   </span>
-                  <span className="flex items-center gap-1">
-                    {/* "Seen by" — the read thread (who read this, when). Click to
-                        unfold; the same journey grammar as Courier tracking. */}
-                    {(readsByEntry.get(e.id)?.length || seenNow.has(e.id)) ? (
-                      <button
-                        onClick={() =>
-                          setSeenByOpen((s) => {
-                            const n = new Set(s);
-                            if (n.has(e.id)) n.delete(e.id);
-                            else n.add(e.id);
-                            return n;
-                          })
-                        }
-                        title="Who has seen this"
-                        className="flex h-6 items-center gap-1 rounded-md px-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-                      >
-                        <Eye className="size-3.5" />
-                        {(readsByEntry.get(e.id)?.length ?? 0) + (seenNow.has(e.id) ? 1 : 0)}
-                      </button>
-                    ) : null}
+                  <span className="shrink-0 text-center text-xs text-muted-foreground">
+                    {fmtTime(e.created_at)}
+                    {e.edited_at && <span className="ml-1 italic">· edited</span>}
+                    {struck && (
+                      <span className="ml-1 font-medium text-warning">· struck</span>
+                    )}
+                  </span>
+                  <span className="flex flex-1 items-center justify-end gap-1">
                     {status && (
                       <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
                         {status}
@@ -567,35 +595,6 @@ export function ClinicalNotesFeed({
                     )}
                   </span>
                 </div>
-
-                {/* The unfolded "Seen by" thread — every reader, point-in-time. */}
-                {seenByOpen.has(e.id) && (
-                  <div className="mt-2 rounded-lg bg-muted/50 px-3 py-2">
-                    <p className="mb-1 text-xs font-semibold text-muted-foreground">Seen by</p>
-                    <ul className="space-y-0.5">
-                      {(readsByEntry.get(e.id) ?? []).map((r, i) => {
-                        const reader = authors[r.user_id];
-                        return (
-                          <li key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <span className="size-1.5 rounded-full bg-accent" />
-                            <span className="font-medium text-foreground">
-                              {reader?.name ?? "A team member"}
-                            </span>
-                            {reader?.role && <span>· {reader.role}</span>}
-                            <span>— {fmtTime(r.read_at)}</span>
-                          </li>
-                        );
-                      })}
-                      {seenNow.has(e.id) && (
-                        <li className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <span className="size-1.5 rounded-full bg-accent" />
-                          <span className="font-medium text-foreground">You</span>
-                          <span>— just now</span>
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                )}
               </article>
               </Fragment>
             );

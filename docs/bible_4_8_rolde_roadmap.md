@@ -1245,7 +1245,16 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
   (NEWS2/QRISK) · W1.2.9 One-page printable summary
   - **W1.2 Consultation design refinements (LOCKED + greenlit, Roland 2026-07-01; APPROVALS §4.1–4.3).**
     Built on the existing consultation screen + Clinical Notes feed (already done); keep the doctor on
-    **one page** ([[design-invisible-instant-clarity]]). New pieces to build + add to the URDS:
+    **one page** ([[design-invisible-instant-clarity]]). **Status sweep 2026-07-02:** ✅ BUILT — Workup
+    rename (deep) · Letters→feed + the official LetterPdf (audited, export_log artifact) · the URDS Feed
+    Tile standard (v2: Unseen/Read anchor top-right · time bottom-centre · Read-by popover) · the record
+    data layer (patient_problems + patient_medications, SNOMED-ready) · **Snapshot** (name-drop sheet:
+    allergies pinned-full · PMH · meds, counted + scrollable) · **Episode Marker** ("Today" v1) ·
+    **Courier C1** (read receipts). **The view is named: "Consult" in chrome · "Consult Room" in prose
+    (LOCKED 2026-07-02)** — the topbar island reads "Consult · <patient>". ▢ REMAINING — Layouts (named,
+    topbar dropdown, Default 50/50) · Clinical Modules toggle (W1.1) · Profile overlay (greenlit —
+    demographics · NOK · GP & other doctors [Courier's address hooks] · full allergy/PMH/med editors
+    with "+ Add" in Snapshot) · Body-Map (Servier style TBC). New pieces to build + add to the URDS:
     - **Adaptive Workspace** — the four cards reflow by **Clinical Modules** (a new W1.1 Settings toggle:
       Lab · Radiology · Procedures · Prescriptions · RolDe AI) → 4/3/2-card states, AND are sized by
       **user-controlled LAYOUTS — no auto-resize (Roland 2026-07-01, FINAL; supersedes both the old
@@ -1917,11 +1926,16 @@ to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Repor
     Resend delivery rails (sent → delivered → opened webhooks).
   - **Track** — the tile's status pill is live (*Not Sent → Sent to GP → Delivered → Opened*); clicking it
     drops the **journey timeline** (parcel-tracking: each step + timestamp + reference).
-  - **Receive + unread** — inbound items land in the Clinical Notes feed as typed tiles; the header count
-    gains **"N new"**; each unread tile wears a **"New" pill — clicking THE PILL (deliberate, never
-    in-passing) flips it to "Seen ✓"** and writes an audited per-user **read receipt** (who read what,
-    when — `feed_entry_reads`, append-only). NO bulk mark-read (safety). Critical results later get an
-    explicit acknowledge on the same rail (W3.2).
+  - **Receive + unread — ✅ C1 BUILT 2026-07-02 (wording + anatomy final, Roland same day)** — inbound
+    items land in the Clinical Notes feed as typed tiles; the header count gains **"N unseen"**; each
+    unread tile wears an **"Unseen" pill anchored TOP-RIGHT — clicking THE PILL (deliberate, never
+    in-passing, never on scroll) flips it to "Read ✓"** and writes an audited per-user **read receipt**
+    (`feed_entry_reads`, append-only). The **eye** beside it (no count) opens the **Read-by window** — a
+    small anchored popover listing every reader (name · exact time, earliest tagged *first*); the SAME
+    popover grammar carries the Sent journey in C3. Wording law: **"read", never "seen"**. Time+date sit
+    at the tile's **bottom-centre** (URDS Feed Tile v2). NO bulk mark-read (safety). Critical results
+    later get an explicit acknowledge on the same rail (W3.2). *Verified live with DB receipts (two real
+    readers) + the negative case (an author sees no pill on their own notes).*
   - **Urgency colours (Roland 2026-07-02)** — a result tile's squircle carries the semantic tone from the
     result's OWN flags (green in-range · amber borderline · red critical) — triage at a glance; RolDe
     displays urgency, never invents it.
