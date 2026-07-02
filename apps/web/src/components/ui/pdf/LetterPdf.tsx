@@ -63,7 +63,10 @@ const styles = StyleSheet.create({
   idRow: { flexDirection: "row", flexWrap: "wrap" },
   idItem: { fontSize: 9.5, color: C.ink, marginRight: 18 },
   idLabel: { color: C.muted },
-  para: { marginBottom: 10, textAlign: "justify" },
+  // Left-aligned, never justified — justified PDF text hyphen-breaks words
+  // ("ex-amination"), which is not how a clinical letter reads (Roland 2026-07-02).
+  salutation: { marginBottom: 10 },
+  para: { marginBottom: 10, textAlign: "left" },
   signoff: { marginTop: 26 },
   signName: { fontSize: 10.5, fontFamily: "Helvetica-Bold", color: C.ink },
   signRole: { fontSize: 9, color: C.muted, marginTop: 2 },
@@ -77,7 +80,18 @@ const styles = StyleSheet.create({
 
 export function LetterPdf(data: LetterPdfData) {
   const { title, bodyText, letterDate, patient, author, brand, reference, fingerprint, generatedAt } = data;
-  const paragraphs = bodyText.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  let paragraphs = bodyText.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+
+  // Proper letter format (Roland 2026-07-02): a "Dear …" opener renders as the
+  // salutation on its own line, and sets the correct UK sign-off — a NAMED
+  // recipient closes "Yours sincerely"; "Dear Sir/Madam" closes "Yours faithfully".
+  let salutation: string | undefined;
+  if (/^dear\b/i.test(paragraphs[0] ?? "")) {
+    salutation = paragraphs[0];
+    paragraphs = paragraphs.slice(1);
+  }
+  const signOff =
+    salutation && !/sir|madam|colleague/i.test(salutation) ? "Yours sincerely," : "Yours faithfully,";
   const stamp = `Generated ${generatedAt}`;
 
   return (
@@ -134,6 +148,8 @@ export function LetterPdf(data: LetterPdfData) {
           ) : null}
         </View>
 
+        {salutation ? <Text style={styles.salutation}>{salutation}</Text> : null}
+
         {paragraphs.map((p, i) => (
           <Text key={i} style={styles.para}>
             {p}
@@ -142,7 +158,7 @@ export function LetterPdf(data: LetterPdfData) {
 
         {/* Sign-off — who wrote it, in what role, at which clinic. */}
         <View style={styles.signoff} wrap={false}>
-          <Text>Yours faithfully,</Text>
+          <Text>{signOff}</Text>
           {author?.name ? <Text style={[styles.signName, { marginTop: 14 }]}>{author.name}</Text> : null}
           {author?.role ? <Text style={styles.signRole}>{author.role}</Text> : null}
           {brand.clinic ? <Text style={styles.signClinic}>{brand.clinic}</Text> : null}

@@ -342,35 +342,20 @@ export function ClinicalNotesFeed({
             const origOpen = expandedOrig.has(e.id);
 
             const isLetter = e.entry_type in LETTER_KINDS;
+            /* The tile STATUS (URDS Feed Tile anatomy, Roland 2026-07-02) — a calm
+               pill in the footer-right, next to the actions. Letters: the send
+               state ("Not Sent" until the send rails land, then "Sent to GP" etc.,
+               carried in payload.status). Other entry types reuse the same slot. */
+            const status = (e.payload as { status?: string } | null)?.status ?? (isLetter ? "Not Sent" : undefined);
 
             return (
               <article
                 key={e.id}
                 className={cn(
-                  "rounded-xl bg-card shadow-raised transition-shadow",
-                  isLetter ? "overflow-hidden" : "p-3",
+                  "rounded-xl bg-card p-3 shadow-raised transition-shadow",
                   activeId === e.id && "ring-2 ring-info/50",
                 )}
               >
-                {isLetter ? (
-                  /* Official letterhead band (Roland 2026-07-01) — the PDF Kit's
-                     grammar at tile scale: parchment band, honey rule, title + date. */
-                  <div className="flex items-center justify-between gap-2 border-b border-honey/60 bg-sidebar px-3 py-2">
-                    <span className="flex min-w-0 items-center gap-1.5">
-                      <span
-                        className={`flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium ${TONE_BADGE[kind.tone]}`}
-                      >
-                        <kind.icon className="size-3" />
-                      </span>
-                      <span className="truncate text-sm font-semibold">{kind.label}</span>
-                    </span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {fmtTime(e.created_at)}
-                      {e.edited_at && <span className="ml-1 italic">· edited</span>}
-                      {struck && <span className="ml-1 font-medium text-warning">· struck</span>}
-                    </span>
-                  </div>
-                ) : (
                 <div className="flex items-center justify-between gap-2">
                   <span className="flex min-w-0 items-center gap-1.5">
                     {/* Mobile (Roland #4): icon only; the label shows from sm up. */}
@@ -395,11 +380,9 @@ export function ClinicalNotesFeed({
                     )}
                   </span>
                 </div>
-                )}
                 <p
                   className={cn(
                     "mt-2 text-sm whitespace-pre-wrap",
-                    isLetter && "px-3",
                     struck && "text-muted-foreground line-through",
                   )}
                 >
@@ -435,11 +418,18 @@ export function ClinicalNotesFeed({
                     </span>
                   </button>
                 )}
-                <div className={cn("mt-2 flex items-center justify-between", isLetter && "px-3 pb-3")}>
+                {/* Footer — the URDS Feed Tile anatomy (Roland 2026-07-02): author on
+                    the LEFT · status pill + actions on the RIGHT. */}
+                <div className="mt-2 flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">
                     {author?.name ?? "—"}
                   </span>
                   <span className="flex items-center gap-1">
+                    {status && (
+                      <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+                        {status}
+                      </span>
+                    )}
                     {isLetter && (
                       <a
                         href={`/api/letters/${e.id}/pdf`}
