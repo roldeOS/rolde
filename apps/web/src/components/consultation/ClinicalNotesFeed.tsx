@@ -29,6 +29,7 @@ import {
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
 import { useClickAway } from "@/lib/useClickAway";
+import { markEntrySeen } from "@/app/(app)/patients/actions";
 import { cn } from "@/lib/utils";
 
 export type FeedEntry = {
@@ -122,6 +123,7 @@ export function ClinicalNotesFeed({
   entries,
   authors,
   currentUserId,
+  readIds,
   maximized,
   onToggleMaximize,
   onEditNote,
@@ -130,12 +132,24 @@ export function ClinicalNotesFeed({
   entries: FeedEntry[];
   authors: Record<string, Author>;
   currentUserId: string;
+  /** Courier C1 — entry ids this user has already seen (their read receipts). */
+  readIds: string[];
   maximized: boolean;
   onToggleMaximize: () => void;
   onEditNote: (e: FeedEntry) => void;
   activeId: string | null;
 }) {
   const [sortDesc, setSortDesc] = useState(false);
+  // Courier C1 — unread flips ONLY on a deliberate click of the "New" pill (never
+  // scroll). seenNow = flips this session (optimistic, shows "Seen ✓" feedback);
+  // readSet = receipts already on record.
+  const readSet = useMemo(() => new Set(readIds), [readIds]);
+  const [seenNow, setSeenNow] = useState<Set<string>>(new Set());
+  const isUnread = useCallback(
+    (e: FeedEntry) =>
+      e.created_by !== currentUserId && !readSet.has(e.id) && !seenNow.has(e.id),
+    [currentUserId, readSet, seenNow],
+  );
   const [typeF, setTypeF] = useState<Set<string>>(new Set());
   const [authF, setAuthF] = useState<Set<string>>(new Set());
   const [visible, setVisible] = useState(PAGE);
@@ -251,6 +265,12 @@ export function ClinicalNotesFeed({
         <span className="rounded-md bg-info/10 px-1.5 text-xs font-medium text-info tabular-nums">
           {filtered.length}
         </span>
+        {/* Courier C1 — how many entries this user hasn't seen; never missable. */}
+        {entries.filter(isUnread).length > 0 && (
+          <span className="rounded-md bg-accent/15 px-1.5 text-xs font-semibold text-accent tabular-nums">
+            {entries.filter(isUnread).length} new
+          </span>
+        )}
         <SectionExplainer
           label="Clinical Notes"
           description="The patient's record — every note, verbatim, newest at the bottom. Scroll up to load older entries."
@@ -381,12 +401,16 @@ export function ClinicalNotesFeed({
                carried in payload.status). Other entry types reuse the same slot. */
             const status = (e.payload as { status?: string } | null)?.status ?? (isLetter ? "Not Sent" : undefined);
 
+            const unread = isUnread(e);
+            const justSeen = seenNow.has(e.id);
+
             return (
               <Fragment key={e.id}>
               {showMarker && <EpisodeMarker />}
               <article
                 className={cn(
                   "rounded-xl bg-card p-3 shadow-raised transition-shadow",
+                  unread && "ring-1 ring-accent/50",
                   activeId === e.id && "ring-2 ring-info/50",
                 )}
               >
@@ -406,12 +430,34 @@ export function ClinicalNotesFeed({
                       </span>
                     )}
                   </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
+                  <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+                    {/* Courier C1 — unread flips ONLY here: a deliberate click on
+                        the pill (small target, never hit in passing), which writes
+                        the audited read receipt. */}
+                    {unread && (
+                      <button
+                        onClick={() => {
+                          setSeenNow((s) => new Set(s).add(e.id));
+                          void markEntrySeen(e.id);
+                        }}
+                        title="Mark as seen (recorded)"
+                        className="rounded-full bg-accent/15 px-2 py-0.5 font-semibold text-accent transition-colors hover:bg-accent/25"
+                      >
+                        New
+                      </button>
+                    )}
+                    {justSeen && (
+                      <span className="rounded-full px-1.5 py-0.5 text-muted-foreground">
+                        Seen ✓
+                      </span>
+                    )}
+                    <span>
                     {fmtTime(e.created_at)}
                     {e.edited_at && <span className="ml-1 italic">· edited</span>}
                     {struck && (
                       <span className="ml-1 font-medium text-warning">· struck</span>
                     )}
+                    </span>
                   </span>
                 </div>
                 <p

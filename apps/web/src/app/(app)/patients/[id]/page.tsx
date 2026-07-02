@@ -105,6 +105,13 @@ export default async function ConsultationPage({
       .order("created_at", { ascending: true }),
   ]);
 
+  // Courier C1 — which entries has THIS user already seen (their read receipts).
+  const { data: myReads } = await supabase
+    .from("feed_entry_reads")
+    .select("entry_id")
+    .eq("user_id", currentUserId);
+  const readIds = (myReads ?? []).map((r) => r.entry_id);
+
   const { data: members } = await supabase
     .from("tenant_users")
     .select("user_id, display_name, role");
@@ -131,6 +138,7 @@ export default async function ConsultationPage({
       workupEntries={workupEntries}
       authors={authors}
       currentUserId={currentUserId}
+      readIds={readIds}
     />
   );
 

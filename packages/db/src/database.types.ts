@@ -233,6 +233,45 @@ export type Database = {
           },
         ]
       }
+      feed_entry_reads: {
+        Row: {
+          entry_id: string
+          id: string
+          read_at: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          entry_id: string
+          id?: string
+          read_at?: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          entry_id?: string
+          id?: string
+          read_at?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_entry_reads_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "patient_feed_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feed_entry_reads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legal_doc_versions: {
         Row: {
           created_at: string

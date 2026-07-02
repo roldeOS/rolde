@@ -1908,6 +1908,37 @@ to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Repor
   - *Spine reuse:* surgical packages + insurer billing → **GP.1**; follow-up → **RolDe Cadence**; referrals
     → **GP.3**; theatre imaging → **IM.***.
 
+- **RolDe Courier — the clinical postal system** *(LOCKED + GREENLIT, Roland 2026-07-02; absorbs W3.3's
+  delivery half + gives GP.3 its rails — named, unified, nothing double-built).* Everything RolDe creates
+  can be **sent, tracked, received, and provably SEEN**:
+  - **Send** — a letter goes to the patient's **GP** (email on the patient profile), the **patient**, an
+    internal **department**, **another RolDe clinic** (direct feed-to-feed handover, no email), or any
+    **external doctor** (address book). Attaches the audited LetterPdf artifact; rides the existing
+    Resend delivery rails (sent → delivered → opened webhooks).
+  - **Track** — the tile's status pill is live (*Not Sent → Sent to GP → Delivered → Opened*); clicking it
+    drops the **journey timeline** (parcel-tracking: each step + timestamp + reference).
+  - **Receive + unread** — inbound items land in the Clinical Notes feed as typed tiles; the header count
+    gains **"N new"**; each unread tile wears a **"New" pill — clicking THE PILL (deliberate, never
+    in-passing) flips it to "Seen ✓"** and writes an audited per-user **read receipt** (who read what,
+    when — `feed_entry_reads`, append-only). NO bulk mark-read (safety). Critical results later get an
+    explicit acknowledge on the same rail (W3.2).
+  - **Urgency colours (Roland 2026-07-02)** — a result tile's squircle carries the semantic tone from the
+    result's OWN flags (green in-range · amber borderline · red critical) — triage at a glance; RolDe
+    displays urgency, never invents it.
+  - **Transport, encrypted end-to-end** — TLS in transit · AES-256 at rest · patient-bound mail defaults
+    to a **secure link** (RolDe-auth'd, expirable, revocable, access-logged, optional DOB identity check)
+    over attachment · SHA-256 artifact fingerprints · SPF/DKIM/DMARC · a **kill-switch** revoking all
+    outstanding links for a letter (the wrong-address safety valve).
+  - **Settings (Caretaker card)** — delivery-method default (secure link | attachment) · patient-consent
+    gate · Address Book (GP practices, labs, private consultants) · sending identity · chase rule (nudge
+    unopened referrals after N days, via Cadence) · **countersign gate** (trainee letters need a senior's
+    sign-off) · **delegated sending** (secretary on behalf of clinician, both audited) · **typo guard**
+    (suspicious/first-time addresses confirm-step) · link lifetime + retention · quiet hours (patient
+    sends hold overnight) · per-recipient-type defaults · test-send. All Change-Describer audited.
+  - *Build order:* C1 read-receipts + New→Seen + "N new" header (no email needed) → C2 GP/contacts fields
+    + Address Book + Settings card → C3 outbound email (secure link + attachment, webhooks → live status
+    pill + journey) → C4 RolDe↔RolDe handover + departments → C5 chase/kill-switch/countersign polish.
+
 - **RolDe Compass — the Unified Day View (Calendar + Tasks)** *(LOCKED + greenlit, Roland 2026-06-30; a
   **Sidebar** item).* Roland: "I hate that Calendar and Reminders are separate — our day is entwined."
   **Merge W2.1 Calendar (timed appointments) + W1.4.1 Action Queues / tasks (untimed to-dos) into ONE day

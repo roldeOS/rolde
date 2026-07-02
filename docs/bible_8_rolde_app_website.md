@@ -223,7 +223,10 @@ consent & documents · prescribing & drug-safety · billing (self-pay **and** in
 comms (**RoChat**) · audit & the **Change Describer** · the **patient portal (RolDe OS — never a
 separate app)** · **RolDe Connect** (video) · **RolDe Covenant** (relationships) · **RolDe Compass**
 (your day — calendar + tasks in one view) · **RolDe Cadence** (the recalls/reminders engine — the
-rhythm of ongoing care) · **self-hosted ambient AI**.
+rhythm of ongoing care) · **RolDe Courier** (the clinical postal system — send letters to GP /
+patient / another clinic with live parcel-style tracking, encrypted secure-link delivery, and
+audited who-read-what receipts; nothing sent silently fails, nothing received goes unseen) ·
+**self-hosted ambient AI**.
 
 **Specialty packs harvested so far** *(one "RolDe for …" page each):*
 - **RolDe for Aesthetics** — treatment mapping & mark-up · before/after photo studio · injectable

@@ -52,12 +52,15 @@ export function ConsultationWorkspace({
   workupEntries,
   authors,
   currentUserId,
+  readIds,
 }: {
   patient: { id: string; firstName: string };
   feedEntries: FeedEntry[];
   workupEntries: WorkupEntry[];
   authors: Record<string, Author>;
   currentUserId: string;
+  /** Courier C1 — entry ids THIS user has already seen (their read receipts). */
+  readIds: string[];
 }) {
   const { view } = useTopbar();
   const [leftMode, setLeftMode] = useState<Mode>("split");
@@ -187,6 +190,7 @@ export function ConsultationWorkspace({
                 entries={feedEntries}
                 authors={authors}
                 currentUserId={currentUserId}
+                readIds={readIds}
                 maximized={leftMode === "top"}
                 onToggleMaximize={() =>
                   setLeftMode((m) => (m === "top" ? "split" : "top"))

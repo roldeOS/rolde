@@ -230,3 +230,28 @@ export async function amendNote(formData: FormData) {
 
   revalidatePath(`/patients/${patientId}`);
 }
+
+/**
+ * RolDe Courier C1 (Roland 2026-07-02) — record that the CALLER has seen a feed
+ * entry. Fired only by a deliberate click on the tile's "New" pill (never by
+ * scrolling). Writes through the caller's own session, so RLS guarantees the
+ * receipt is theirs, in their clinic; the unique (entry_id, user_id) makes it
+ * idempotent. Append-only — an audited fact, never editable.
+ */
+export async function markEntrySeen(entryId: string) {
+  const ctx = await getSessionContext();
+  const tenantId = ctx?.membership?.tenant_id;
+  if (!ctx || !tenantId || !entryId) return;
+
+  const supabase = await createClient();
+  // Plain insert, no read-back (write-path stays role-blind; idempotent via the
+  // unique index — a duplicate click is a no-op conflict we ignore).
+  const { error } = await supabase.from("feed_entry_reads").insert({
+    tenant_id: tenantId,
+    entry_id: entryId,
+    user_id: ctx.user.id,
+  });
+  if (error && error.code !== "23505") {
+    console.error("[courier seen]", error.message);
+  }
+}
