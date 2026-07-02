@@ -1260,7 +1260,9 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     - **Snapshot** — the topbar patient-name sheet (Allergies always-full · PMH · Current Meds; scrollable).
     - **Body-Map** — a Scribe mode (expand → mark → Save→feed); art = Servier Medical Art CC-BY restyled
       to our palette + Anatomogram tap-interaction + photo mark-up (aesthetics).
-    - **Admission Marker** — a separator line + pill in the feed for the current episode.
+    - **Admission Marker** — a separator line + pill in the feed for the current episode. *(Built
+      2026-07-02 as the truthful v1: anchors to **Today** — this visit's entries vs older; upgrades
+      to the real admission/appointment episode when the W2 scheduling model lands. Both sort orders.)*
     - **Letters → the feed** (a "Letter"-tagged entry + a Letters filter), composed in Scribe.
     - **Depends on:** the record data layer (W1.2.1 problems/PMH · W1.2.2 meds · allergies) which Snapshot
       renders. Build order: Workup rename + Letters→feed → data layer → Snapshot + Admission Marker

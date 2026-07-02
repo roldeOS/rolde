@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Fragment,
   useState,
   useRef,
   useEffect,
@@ -87,6 +88,25 @@ function fmtTime(ts: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/**
+ * The episode separator (Roland 2026-07-01 — "the user knows when the current
+ * admission started"). V1 anchors to TODAY (this visit's entries vs everything
+ * older); it upgrades to the true admission/appointment episode when the W2
+ * scheduling model lands. Rendered at the boundary in either sort order.
+ */
+function EpisodeMarker() {
+  const label = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  return (
+    <div className="flex items-center gap-3 py-1" aria-label="Start of today's entries">
+      <div className="h-px flex-1 bg-accent/40" />
+      <span className="rounded-full bg-accent/15 px-3 py-0.5 text-xs font-medium text-accent">
+        Today · {label}
+      </span>
+      <div className="h-px flex-1 bg-accent/40" />
+    </div>
+  );
 }
 
 const PAGE = 25;
@@ -325,9 +345,22 @@ export function ClinicalNotesFeed({
               : "No notes yet. The next one you save appears here."}
           </p>
         ) : (
-          windowed.map((e) => {
+          windowed.map((e, idx) => {
             const text = e.payload?.text ?? "";
             const author = e.created_by ? authors[e.created_by] : undefined;
+
+            // The episode boundary — where "today" meets "older" in the current
+            // sort order (asc: before the first today-entry; desc: before the
+            // first older-entry that follows a today-entry). Rendered once.
+            const todayStr = new Date().toDateString();
+            const entryToday = new Date(e.created_at).toDateString() === todayStr;
+            const prev = idx > 0 ? windowed[idx - 1] : undefined;
+            const prevToday = prev
+              ? new Date(prev.created_at).toDateString() === todayStr
+              : undefined;
+            const showMarker = !sortDesc
+              ? entryToday && (idx === 0 || prevToday === false)
+              : !entryToday && prevToday === true;
             const kind =
               e.entry_type === "clinical_note" || e.entry_type in LETTER_KINDS
                 ? noteKind(author?.role, e.entry_type)
@@ -349,8 +382,9 @@ export function ClinicalNotesFeed({
             const status = (e.payload as { status?: string } | null)?.status ?? (isLetter ? "Not Sent" : undefined);
 
             return (
+              <Fragment key={e.id}>
+              {showMarker && <EpisodeMarker />}
               <article
-                key={e.id}
                 className={cn(
                   "rounded-xl bg-card p-3 shadow-raised transition-shadow",
                   activeId === e.id && "ring-2 ring-info/50",
@@ -454,6 +488,7 @@ export function ClinicalNotesFeed({
                   </span>
                 </div>
               </article>
+              </Fragment>
             );
           })
         )}
