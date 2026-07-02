@@ -5,7 +5,7 @@ import { PenLine, Maximize2, Minimize2, Strikethrough } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
-import { OrdersPanel } from "@/components/OrdersPanel";
+import { WorkupPanel } from "@/components/WorkupPanel";
 import { AiPanel } from "@/components/AiPanel";
 import {
   ClinicalNotesFeed,
@@ -22,7 +22,7 @@ import {
 } from "@/app/(app)/patients/actions";
 import { cn } from "@/lib/utils";
 
-type OrderEntry = { id: string; entry_type: string };
+type WorkupEntry = { id: string; entry_type: string };
 
 /**
  * The consultation workspace (Roland 2026-06-10). The view preset (Consult /
@@ -49,13 +49,13 @@ type EditTarget = { id: string; original: string; locked: boolean } | null;
 export function ConsultationWorkspace({
   patient,
   feedEntries,
-  orderEntries,
+  workupEntries,
   authors,
   currentUserId,
 }: {
   patient: { id: string; firstName: string };
   feedEntries: FeedEntry[];
-  orderEntries: OrderEntry[];
+  workupEntries: WorkupEntry[];
   authors: Record<string, Author>;
   currentUserId: string;
 }) {
@@ -294,8 +294,8 @@ export function ConsultationWorkspace({
                 dur,
               )}
             >
-              <OrdersPanel
-                entries={orderEntries}
+              <WorkupPanel
+                entries={workupEntries}
                 maximized={rightMode === "top"}
                 onToggleMaximize={() =>
                   setRightMode((m) => (m === "top" ? "split" : "top"))

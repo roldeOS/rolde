@@ -211,13 +211,17 @@ Review presets).** Two forces size the cards:
   Radiology · Procedures · Prescriptions) and the RolDe panel on/off; the grid reflows to 4 / 3 /
   2 cards accordingly (AI off → Scribe full-width; Workup off → AI full-height; both off → Notes +
   Scribe only).
-- **Intelligent resizing** — a **priority model**: explicit user drag (persisted per user) > active
-  focus/task > content pressure (a huge chronic-patient feed pushes Notes to ~80%, Workup to a ~20%
-  peek) > a calm balanced default. Clicking Workup to order eases it back toward 50/50; on save it
-  settles. Never resize *while typing* (flag with a pulse, rebalance on pause). Cards shrink to a
-  readable **peek**, never to zero (except module-off). Maximise/restore any card. Smooth eased
-  transitions. **On iPad/mobile:** cards stack; each is a tap-to-expand accordion (the "focus" card
-  open). Must be rock-solid across desktop/tablet/mobile.
+- **User-controlled layouts — NO auto-resize (Roland 2026-07-01, final).** The layout is **stable +
+  user-owned** — it changes ONLY when the user changes it (predictability > cleverness; muscle-memory
+  safe). Content-pressure and focus-grow auto-sizing are **explicitly dropped**. Mechanisms:
+  **drag-to-resize** dividers · a **card layout menu** (Expand · Maximise · Reset) · **user-named saved
+  layouts**. The named layouts live in the **topbar "Layouts" dropdown** — this **REPLACES
+  Consult/Document/Review**: click *Layouts* → the list of the user's named layouts drops down → click
+  one → the workspace below switches; includes a **"Default"** entry. **"Default" = the locked balanced
+  50/50** four-card (§4.1). Double-click a divider = reset to Default. The ONLY automatic move is
+  opening the Body-Map (Scribe expands — user-initiated, expected). Persisted per user. **On
+  iPad/mobile:** cards stack; each is a tap-to-expand accordion. Must be rock-solid across
+  desktop/tablet/mobile.
 
 4.3 **Snapshot + Body-Map + Letters (Roland 2026-07-01).** The patient name in the topbar opens
 **Snapshot** — a lean sheet: **Allergies** (always shown in full — safety), **Past Medical History**,

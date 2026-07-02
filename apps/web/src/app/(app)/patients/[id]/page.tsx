@@ -16,11 +16,14 @@ function age(d: string) {
   return a;
 }
 
-/** Entry families shown in the left Clinical Notes feed vs the right Orders pane. */
-const ORDER_TYPES = new Set([
+/**
+ * Entry families shown in the right Workup pane (order + track + results);
+ * everything else — INCLUDING letters (Roland 2026-07-01) — lives in the left
+ * Clinical Notes feed, the one-stop timeline, found via its type filter.
+ */
+const WORKUP_TYPES = new Set([
   "lab_order", "lab_result", "radiology_order", "radiology_result",
-  "prescription", "photo_set", "consent_signed", "referral_letter",
-  "discharge_summary", "sick_note", "gp_letter",
+  "prescription", "photo_set", "consent_signed",
 ]);
 
 /**
@@ -91,9 +94,9 @@ export default async function ConsultationPage({
     authors[m.user_id] = { name: m.display_name, role: m.role };
 
   const all = (entries ?? []) as FeedEntry[];
-  const feedEntries = all.filter((e) => !ORDER_TYPES.has(e.entry_type));
-  const orderEntries = (entries ?? [])
-    .filter((e) => ORDER_TYPES.has(e.entry_type))
+  const feedEntries = all.filter((e) => !WORKUP_TYPES.has(e.entry_type));
+  const workupEntries = (entries ?? [])
+    .filter((e) => WORKUP_TYPES.has(e.entry_type))
     .map((e) => ({ id: e.id, entry_type: e.entry_type }));
 
   const addressLines = [
@@ -106,7 +109,7 @@ export default async function ConsultationPage({
     <ConsultationWorkspace
       patient={{ id: patient.id, firstName: patient.first_name }}
       feedEntries={feedEntries}
-      orderEntries={orderEntries}
+      workupEntries={workupEntries}
       authors={authors}
       currentUserId={currentUserId}
     />

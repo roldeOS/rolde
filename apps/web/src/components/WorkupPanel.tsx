@@ -9,19 +9,20 @@ import { cn } from "@/lib/utils";
 type Entry = { id: string; entry_type: string };
 
 /**
- * Investigations + Orders pane (Bible 4.2 §3.6) — top-right quadrant. Glassy
- * sticky tab header (content blurs under). Tabs: Labs / Radiology / Prescribing
- * / Procedures / Letters; ordering arrives with Bible 4.5.
+ * Workup pane (Bible 4.2 §3.6; renamed from "Investigations + Orders", Roland
+ * 2026-07-01) — top-right quadrant: order things + track them + see results.
+ * Glassy sticky tab header (content blurs under). Tabs: Labs / Radiology /
+ * Prescribing / Procedures; ordering arrives with Bible 4.5. Letters are NOT
+ * here — they live in the Clinical Notes feed (composed in Scribe).
  */
 const TABS: { key: string; label: string; types: string[]; coming: string }[] = [
   { key: "labs", label: "Labs", types: ["lab_order", "lab_result"], coming: "Lab ordering arrives with Bible 4.5." },
   { key: "radiology", label: "Radiology", types: ["radiology_order", "radiology_result"], coming: "Radiology ordering arrives with Bible 4.5." },
   { key: "prescribing", label: "Prescribing", types: ["prescription"], coming: "Prescribing (with drug-safety checks) arrives with Bible 4.5." },
   { key: "procedures", label: "Procedures", types: ["photo_set", "consent_signed"], coming: "Procedures and consents arrive with Bibles 4.5–4.6." },
-  { key: "letters", label: "Letters", types: ["referral_letter", "discharge_summary", "sick_note", "gp_letter"], coming: "Letters and the closed-loop referral pipeline arrive with Bible 4.4 §5–6." },
 ];
 
-export function OrdersPanel({
+export function WorkupPanel({
   entries,
   maximized,
   onToggleMaximize,
@@ -37,9 +38,10 @@ export function OrdersPanel({
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="glass sticky top-0 z-10 flex items-center gap-1 px-3 py-2.5">
-        {/* Flask squircle on the LEFT; tabs (text-sm, matching "Clinical Notes") in
-            the middle; the (i) on the RIGHT (Roland 2026-06-28). */}
+        {/* Flask squircle + the card's NAME on the LEFT (matching "Clinical Notes");
+            tabs in the middle; the (i) on the RIGHT (Roland 2026-06-28 + 2026-07-01). */}
         <CardIcon icon={FlaskConical} tone="info" variant="badge" size="sm" />
+        <span className="mr-1 text-sm font-semibold">Workup</span>
         <div className="flex min-w-0 flex-1 gap-0.5 overflow-x-auto">
           {TABS.map((t) => (
             <button
@@ -57,12 +59,12 @@ export function OrdersPanel({
           ))}
         </div>
         <SectionExplainer
-          label="Investigations & Orders"
-          description="Request investigations and treatments, and review what's come back — grouped by type in the tabs."
+          label="Workup"
+          description="Order investigations and treatments, and review what's come back — grouped by type in the tabs. (Letters live in the Clinical Notes feed.)"
           terms={[
             { term: "Labs / Radiology", definition: "Order tests and read results as they return." },
             { term: "Prescribing", definition: "Prescribe medicines with built-in drug-safety checks." },
-            { term: "Procedures / Letters", definition: "Consents, photos, referrals and letters." },
+            { term: "Procedures", definition: "Consents and photos for procedures." },
           ]}
         />
         {onToggleMaximize && (

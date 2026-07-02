@@ -22,6 +22,7 @@ import {
   FlaskConical,
   HeartPulse,
   ChevronDown,
+  Mail,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -41,9 +42,20 @@ export type FeedEntry = {
 export type Author = { name: string; role: string };
 
 type Icon = React.ComponentType<{ className?: string }>;
+/** Letters live in the FEED, not Workup (Roland 2026-07-01) — labelled by their
+ *  entry type so the type filter finds them; notes stay labelled by author role. */
+const LETTER_KINDS: Record<string, string> = {
+  referral_letter: "Referral Letter",
+  discharge_summary: "Discharge Summary",
+  sick_note: "Sick Note",
+  gp_letter: "GP Letter",
+};
 function noteKind(
   role: string | undefined,
+  entryType?: string,
 ): { label: string; tone: CardIconTone; icon: Icon } {
+  const letter = entryType ? LETTER_KINDS[entryType] : undefined;
+  if (letter) return { label: letter, tone: "accent", icon: Mail };
   if (role === "nurse") return { label: "Nurse Note", tone: "success", icon: HeartPulse };
   if (role === "chemist") return { label: "Pharmacy Note", tone: "warning", icon: Pill };
   if (role === "cunnere") return { label: "Lab Note", tone: "info", icon: FlaskConical };
@@ -316,8 +328,8 @@ export function ClinicalNotesFeed({
             const text = e.payload?.text ?? "";
             const author = e.created_by ? authors[e.created_by] : undefined;
             const kind =
-              e.entry_type === "clinical_note"
-                ? noteKind(author?.role)
+              e.entry_type === "clinical_note" || e.entry_type in LETTER_KINDS
+                ? noteKind(author?.role, e.entry_type)
                 : {
                     label: e.entry_type.replace(/_/g, " "),
                     tone: "neutral" as CardIconTone,
