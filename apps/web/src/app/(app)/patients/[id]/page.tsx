@@ -105,12 +105,16 @@ export default async function ConsultationPage({
       .order("created_at", { ascending: true }),
   ]);
 
-  // Courier C1 — which entries has THIS user already seen (their read receipts).
-  const { data: myReads } = await supabase
-    .from("feed_entry_reads")
-    .select("entry_id")
-    .eq("user_id", currentUserId);
-  const readIds = (myReads ?? []).map((r) => r.entry_id);
+  // Courier C1 — ALL read receipts on this patient's entries: they drive both
+  // the caller's own unread state AND the "Seen by" thread on each tile
+  // (who read what, when — Roland 2026-07-02).
+  const entryIds = (entries ?? []).map((e) => e.id);
+  const { data: reads } = entryIds.length
+    ? await supabase
+        .from("feed_entry_reads")
+        .select("entry_id, user_id, read_at")
+        .in("entry_id", entryIds)
+    : { data: [] };
 
   const { data: members } = await supabase
     .from("tenant_users")
@@ -138,7 +142,7 @@ export default async function ConsultationPage({
       workupEntries={workupEntries}
       authors={authors}
       currentUserId={currentUserId}
-      readIds={readIds}
+      reads={reads ?? []}
     />
   );
 

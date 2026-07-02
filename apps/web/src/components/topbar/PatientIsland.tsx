@@ -45,6 +45,9 @@ export function PatientIsland() {
           hasAllergy ? "hover:bg-critical/10" : "hover:bg-hover",
         )}
       >
+        {/* The view's name in chrome — "Consult" (prose: the Consult Room;
+            LOCKED Roland 2026-07-02) — sits just before the patient's name. */}
+        <span className="hidden shrink-0 text-muted-foreground sm:inline">Consult ·</span>
         <span className="truncate font-medium">
           {patient.firstName} {patient.lastName}
         </span>

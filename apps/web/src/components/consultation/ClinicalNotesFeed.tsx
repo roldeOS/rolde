@@ -25,6 +25,7 @@ import {
   ChevronDown,
   Mail,
   FileDown,
+  Eye,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -123,7 +124,7 @@ export function ClinicalNotesFeed({
   entries,
   authors,
   currentUserId,
-  readIds,
+  reads,
   maximized,
   onToggleMaximize,
   onEditNote,
@@ -132,8 +133,8 @@ export function ClinicalNotesFeed({
   entries: FeedEntry[];
   authors: Record<string, Author>;
   currentUserId: string;
-  /** Courier C1 — entry ids this user has already seen (their read receipts). */
-  readIds: string[];
+  /** Courier C1 — every read receipt on this patient's entries. */
+  reads: { entry_id: string; user_id: string; read_at: string }[];
   maximized: boolean;
   onToggleMaximize: () => void;
   onEditNote: (e: FeedEntry) => void;
@@ -142,9 +143,23 @@ export function ClinicalNotesFeed({
   const [sortDesc, setSortDesc] = useState(false);
   // Courier C1 — unread flips ONLY on a deliberate click of the "New" pill (never
   // scroll). seenNow = flips this session (optimistic, shows "Seen ✓" feedback);
-  // readSet = receipts already on record.
-  const readSet = useMemo(() => new Set(readIds), [readIds]);
+  // readSet = MY receipts on record; readsByEntry = everyone's, for the
+  // "Seen by" thread (who read what, when — Roland 2026-07-02).
+  const readSet = useMemo(
+    () => new Set(reads.filter((r) => r.user_id === currentUserId).map((r) => r.entry_id)),
+    [reads, currentUserId],
+  );
+  const readsByEntry = useMemo(() => {
+    const m = new Map<string, { user_id: string; read_at: string }[]>();
+    for (const r of reads) {
+      const list = m.get(r.entry_id) ?? [];
+      list.push({ user_id: r.user_id, read_at: r.read_at });
+      m.set(r.entry_id, list);
+    }
+    return m;
+  }, [reads]);
   const [seenNow, setSeenNow] = useState<Set<string>>(new Set());
+  const [seenByOpen, setSeenByOpen] = useState<Set<string>>(new Set());
   const isUnread = useCallback(
     (e: FeedEntry) =>
       e.created_by !== currentUserId && !readSet.has(e.id) && !seenNow.has(e.id),
@@ -505,6 +520,25 @@ export function ClinicalNotesFeed({
                     {author?.name ?? "—"}
                   </span>
                   <span className="flex items-center gap-1">
+                    {/* "Seen by" — the read thread (who read this, when). Click to
+                        unfold; the same journey grammar as Courier tracking. */}
+                    {(readsByEntry.get(e.id)?.length || seenNow.has(e.id)) ? (
+                      <button
+                        onClick={() =>
+                          setSeenByOpen((s) => {
+                            const n = new Set(s);
+                            if (n.has(e.id)) n.delete(e.id);
+                            else n.add(e.id);
+                            return n;
+                          })
+                        }
+                        title="Who has seen this"
+                        className="flex h-6 items-center gap-1 rounded-md px-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                      >
+                        <Eye className="size-3.5" />
+                        {(readsByEntry.get(e.id)?.length ?? 0) + (seenNow.has(e.id) ? 1 : 0)}
+                      </button>
+                    ) : null}
                     {status && (
                       <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
                         {status}
@@ -533,6 +567,35 @@ export function ClinicalNotesFeed({
                     )}
                   </span>
                 </div>
+
+                {/* The unfolded "Seen by" thread — every reader, point-in-time. */}
+                {seenByOpen.has(e.id) && (
+                  <div className="mt-2 rounded-lg bg-muted/50 px-3 py-2">
+                    <p className="mb-1 text-xs font-semibold text-muted-foreground">Seen by</p>
+                    <ul className="space-y-0.5">
+                      {(readsByEntry.get(e.id) ?? []).map((r, i) => {
+                        const reader = authors[r.user_id];
+                        return (
+                          <li key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <span className="size-1.5 rounded-full bg-accent" />
+                            <span className="font-medium text-foreground">
+                              {reader?.name ?? "A team member"}
+                            </span>
+                            {reader?.role && <span>· {reader.role}</span>}
+                            <span>— {fmtTime(r.read_at)}</span>
+                          </li>
+                        );
+                      })}
+                      {seenNow.has(e.id) && (
+                        <li className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span className="size-1.5 rounded-full bg-accent" />
+                          <span className="font-medium text-foreground">You</span>
+                          <span>— just now</span>
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                )}
               </article>
               </Fragment>
             );
