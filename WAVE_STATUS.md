@@ -45,10 +45,13 @@
 ### W1.2 Patient Record — item breakdown
 | Status | Item |
 |:---:|---|
-| ✅ | Consultation screen (4-card workspace: Feed · Orders · AI · Scribe) + break-glass + access log |
+| ✅ | Consultation screen (4-card workspace: Feed · Workup · AI · Scribe) + break-glass + access log |
 | ✅ | Clinical Notes feed (scrollable, filter/sort, edit/strike/amend, threading) + `patient_feed_entries` (~19 entry types) |
+| ✅ | **Workup rename** (deep: component · props · types · visible card title) — 2026-07-01 |
+| ✅ | **Letters → the feed** (type-labelled entries + auto filter; Workup = Labs/Rad/Rx/Procedures) — 2026-07-01 |
+| ▢ | Consultation redesign remainder: record data layer (allergies · PMH · meds) → **Snapshot** → Admission Marker → **Layouts** (drag-resize + named + topbar dropdown; Default 50/50) → Clinical Modules toggle (W1.1) → **Body-Map** (Servier style TBC) |
 | ▢ | W1.2.1 Problem List (SNOMED-coded) · W1.2.2 Medication List + reconciliation · W1.2.3 History (PMH/surgical/family/social) |
-| ▢ | W1.2.4 Document Store · W1.2.5 **Before/After + Body-Map** · W1.2.6 Digital Consents (e-sign) |
+| ▢ | W1.2.4 Document Store · W1.2.6 Digital Consents (e-sign) |
 | ▢ | W1.2.7 Vitals/Growth charts · W1.2.8 Risk Scores (NEWS2/QRISK) · W1.2.9 Printable Summary |
 
 ## B. Named cross-cutting modules
