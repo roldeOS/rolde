@@ -53,6 +53,7 @@
 | ✅ | **Feed Tile standardised (URDS §8)** — one anatomy: type pill + time / body / author + status-pill + actions; letter band reverted; proper letter format (salutation · left-aligned · UK sign-off) — 2026-07-02 |
 | ✅ | **Record data layer** — patient_problems + patient_medications (RLS · soft-delete · SNOMED-ready) + seed; allergies/alerts already existed — 2026-07-02 |
 | ✅ | **Snapshot sheet** — PMH (counted, resolved muted) + Current Meds in the name-drop island, allergies pinned; verified live — 2026-07-02 |
+| ✅ | **Episode Marker** — "Today" separator pill in the feed (v1; upgrades to the admission/appointment anchor at W2) — 2026-07-02 |
 | ▢ | Consultation redesign remainder: record data layer (allergies · PMH · meds) → **Snapshot** → Admission Marker → **Layouts** (drag-resize + named + topbar dropdown; Default 50/50) → Clinical Modules toggle (W1.1) → **Body-Map** (Servier style TBC) |
 | ▢ | W1.2.1 Problem List (SNOMED-coded) · W1.2.2 Medication List + reconciliation · W1.2.3 History (PMH/surgical/family/social) |
 | ▢ | W1.2.4 Document Store · W1.2.6 Digital Consents (e-sign) |
