@@ -17,6 +17,16 @@ const eslintConfig = defineConfig([
       "react-hooks/refs": "off",
     },
   },
+  {
+    // The URDS PDF Kit renders with @react-pdf/renderer, whose <Image> is a
+    // PDF primitive, not a DOM <img> — eslint-config-next maps the name for
+    // next/image, so jsx-a11y/alt-text false-positives here. PDFs carry no
+    // DOM accessibility tree; the rule stays ON everywhere else.
+    files: ["src/components/ui/pdf/**"],
+    rules: {
+      "jsx-a11y/alt-text": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

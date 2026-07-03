@@ -211,11 +211,22 @@ export function TableShell<T>({
     (f) => f.kind === "daterange" && applied[f.key]?.[0] && applied[f.key][0] !== "all",
   );
 
+  // The date-window "now" is CAPTURED state, never read during render (hooks
+  // purity): stamped once on mount, re-stamped whenever the data or the
+  // applied filters change — so a "last 7 days" window stays honest without an
+  // impure Date.now() inside the memo.
+  const [nowMs, setNowMs] = useState(0);
+  useEffect(() => {
+    setNowMs(Date.now());
+  }, [items, applied]);
+
   const filtered = useMemo(() => {
     if (!filters || (activeFilterCount === 0 && !hasDateActive)) return items;
-    const nowMs = Date.now();
+    // First paint (nowMs still 0): show the rows unfiltered for that frame
+    // rather than filtering against epoch — the stamp lands immediately after.
+    if (nowMs === 0) return items;
     return items.filter((row) => rowPassesFilters(row, applied, filters, nowMs));
-  }, [items, filters, applied, activeFilterCount, hasDateActive]);
+  }, [items, filters, applied, activeFilterCount, hasDateActive, nowMs]);
 
   const sorted = useMemo(() => {
     if (!activeSort) return filtered;

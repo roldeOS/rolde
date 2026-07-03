@@ -195,7 +195,6 @@ export function TableExport({
   // Tidy the preview blob URL when the modal closes or we switch back to CSV.
   useEffect(() => {
     if (!open || format !== "pdf") setPreview(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, format]);
   useEffect(() => () => setPreview(null), []);
 
