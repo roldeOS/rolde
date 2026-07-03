@@ -141,14 +141,12 @@ export function ClinicalNotesFeed({
   activeId: string | null;
 }) {
   const [sortDesc, setSortDesc] = useState(false);
-  // Courier C1 — unread flips ONLY on a deliberate click of the "New" pill (never
-  // scroll). seenNow = flips this session (optimistic, shows "Seen ✓" feedback);
-  // readSet = MY receipts on record; readsByEntry = everyone's, for the
-  // "Seen by" thread (who read what, when — Roland 2026-07-02).
-  const readSet = useMemo(
-    () => new Set(reads.filter((r) => r.user_id === currentUserId).map((r) => r.entry_id)),
-    [reads, currentUserId],
-  );
+  // Courier C1 — TEAM-level unseen (Roland 2026-07-03): a tile is "Unseen" until
+  // ANY team member other than its author opens it once — then it's reviewed for
+  // the whole clinic (a physio isn't nagged about a referral the GP-liaison
+  // already read). The author's own click never counts as the review (writing a
+  // note isn't a colleague reviewing it). Flips ONLY on a deliberate click of
+  // the pill, never on scroll; every first-read is an audited receipt.
   const readsByEntry = useMemo(() => {
     const m = new Map<string, { user_id: string; read_at: string }[]>();
     for (const r of reads) {
@@ -162,8 +160,10 @@ export function ClinicalNotesFeed({
   const [seenByOpen, setSeenByOpen] = useState<Set<string>>(new Set());
   const isUnread = useCallback(
     (e: FeedEntry) =>
-      e.created_by !== currentUserId && !readSet.has(e.id) && !seenNow.has(e.id),
-    [currentUserId, readSet, seenNow],
+      e.created_by !== currentUserId &&
+      !(readsByEntry.get(e.id) ?? []).some((r) => r.user_id !== e.created_by) &&
+      !seenNow.has(e.id),
+    [currentUserId, readsByEntry, seenNow],
   );
   const [typeF, setTypeF] = useState<Set<string>>(new Set());
   const [authF, setAuthF] = useState<Set<string>>(new Set());
@@ -449,7 +449,7 @@ export function ClinicalNotesFeed({
                 data-eid={e.id}
                 className={cn(
                   "rounded-xl bg-card p-3 shadow-raised transition-shadow",
-                  unread && "ring-1 ring-warning/50",
+                  unread && "ring-1 ring-warning/40",
                   activeId === e.id && "ring-2 ring-info/50",
                 )}
               >
@@ -474,9 +474,10 @@ export function ClinicalNotesFeed({
                       plus the eye that opens the Read-by window. A div (not span):
                       the popover renders block content — valid nesting matters. */}
                   <div className="relative flex shrink-0 items-center gap-1 text-xs">
-                    {/* SOLID amber (Roland 2026-07-03): "Unseen" is an attention
+                    {/* PASTEL amber (Roland 2026-07-03): "Unseen" is an attention
                         state — amber, never green (positive) or red (clinical
-                        danger); solid so it can't be missed at tile size. */}
+                        danger) — worn the RolDe way: an Earth & Bloom tint at /15
+                        opacity, never a solid shout. */}
                     {unread && (
                       <button
                         onClick={() => {
@@ -484,7 +485,7 @@ export function ClinicalNotesFeed({
                           void markEntrySeen(e.id);
                         }}
                         title="Mark as read (recorded)"
-                        className="rounded-full bg-warning px-2 py-0.5 font-semibold text-white transition-colors hover:bg-warning/85"
+                        className="rounded-full bg-warning/15 px-2 py-0.5 font-semibold text-warning transition-colors hover:bg-warning/25"
                       >
                         Unseen
                       </button>

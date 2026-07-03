@@ -1926,16 +1926,22 @@ to them** (extends the W0.2 Legal & Safety surface to be specialty-aware). Repor
     Resend delivery rails (sent → delivered → opened webhooks).
   - **Track** — the tile's status pill is live (*Not Sent → Sent to GP → Delivered → Opened*); clicking it
     drops the **journey timeline** (parcel-tracking: each step + timestamp + reference).
-  - **Receive + unread — ✅ C1 BUILT 2026-07-02 (wording + anatomy final, Roland same day)** — inbound
-    items land in the Clinical Notes feed as typed tiles; the header count gains **"N unseen"**; each
-    unread tile wears an **"Unseen" pill anchored TOP-RIGHT — clicking THE PILL (deliberate, never
-    in-passing, never on scroll) flips it to "Read ✓"** and writes an audited per-user **read receipt**
-    (`feed_entry_reads`, append-only). The **eye** beside it (no count) opens the **Read-by window** — a
-    small anchored popover listing every reader (name · exact time, earliest tagged *first*); the SAME
-    popover grammar carries the Sent journey in C3. Wording law: **"read", never "seen"**. Time+date sit
-    at the tile's **bottom-centre** (URDS Feed Tile v2). NO bulk mark-read (safety). Critical results
-    later get an explicit acknowledge on the same rail (W3.2). *Verified live with DB receipts (two real
-    readers) + the negative case (an author sees no pill on their own notes).*
+  - **Receive + unread — ✅ C1 BUILT 2026-07-02; semantics + skin FINAL 2026-07-03 (Roland)** — inbound
+    items land in the Clinical Notes feed as typed tiles. **Unseen is TEAM-LEVEL, not per-user (Roland
+    2026-07-03):** a tile is "Unseen" until **anyone other than its author** opens it once — then it's
+    reviewed for the whole clinic (a physio isn't nagged about a referral the GP-liaison already read).
+    The author's own click never counts as the review. The pill is **PASTEL amber (warning/15 wash +
+    amber text — Earth & Bloom, never a solid shout)**, anchored TOP-RIGHT; **clicking THE PILL
+    (deliberate, never in-passing, never on scroll) flips it to "Read ✓"** and writes the audited
+    per-user **read receipt** (`feed_entry_reads`, append-only; one per person — their FIRST read,
+    re-reads are no-ops). The **eye** opens the **Read-by window** — an anchored popover, two lines per
+    reader (full name · time beneath, earliest tagged *first* — the reviewer of record); the SAME
+    popover grammar carries the Sent journey in C3. The header pill "N Unseen" matches the count pill's
+    size, and **clicking it JUMPS to the oldest unread entry**. Wording law: **"read", never "seen"**.
+    Time+date sit at the tile's **bottom-centre** (URDS Feed Tile v2). NO bulk mark-read (safety).
+    Critical results later get an explicit acknowledge on the same rail (W3.2). *Verified live: team
+    semantics proven (an entry read by one member shows no pill to another) + real DB receipts from
+    both dev users; Roland verified the flip + Read-by on production himself.*
   - **Urgency colours (Roland 2026-07-02)** — a result tile's squircle carries the semantic tone from the
     result's OWN flags (green in-range · amber borderline · red critical) — triage at a glance; RolDe
     displays urgency, never invents it.
