@@ -76,55 +76,94 @@ export function ClinicalModulesForm({ initial }: { initial: ClinicalModules }) {
 
   usePageActionBar({ dirty, saving, onSave: save, error, saveLabel: "Save Changes" });
 
-  return (
-    <div className="space-y-4">
-      <ToggleCard
-        icon={FlaskConical}
-        tone="info"
-        title="Lab"
-        blurb="Blood tests and pathology — ordering, tracking and results in the Workup card."
-        checked={lab}
-        onChange={setLab}
-      />
-      <ToggleCard
-        icon={Scan}
-        tone="sky"
-        title="Radiology"
-        blurb="Imaging — X-ray, ultrasound, CT and MRI requests and reports in the Workup card."
-        checked={radiology}
-        onChange={setRadiology}
-      />
-      <ToggleCard
-        icon={Syringe}
-        tone="teal"
-        title="Procedures"
-        blurb="In-clinic procedures — photos, consents and procedure records in the Workup card."
-        checked={procedures}
-        onChange={setProcedures}
-      />
-      <ToggleCard
-        icon={Pill}
-        tone="warning"
-        title="Prescribing"
-        blurb="Prescriptions with drug-safety checks — in the Workup card and the Prescribing section."
-        checked={prescribing}
-        onChange={setPrescribing}
-      />
-      <ToggleCard
-        icon={Sparkles}
-        tone="periwinkle"
-        title="RolDe AI"
-        blurb="The RolDe panel in the Consult Room — drafting and suggestions, always under clinician authorisation."
-        checked={roldeAi}
-        onChange={setRoldeAi}
-      />
+  // Each module card carries its coming sub-settings in the ToggleCard's
+  // detail slot (visible while ON) — the same grammar as Commercial Settings,
+  // where the tax card holds the rate/registration fields. As each module's
+  // engine lands (Bibles 4.4–4.7), its real configuration replaces the line.
+  const detail = (text: string) => (
+    <p className="text-xs text-muted-foreground">{text}</p>
+  );
 
-      {workupOff && (
-        <p className="rounded-lg bg-warning/15 px-3 py-2 text-xs font-medium text-warning">
-          With all four order modules off, the Workup card leaves the Consult Room — your team
-          sees Clinical Notes, Scribe{roldeAi ? " and the RolDe panel" : ""} only.
-        </p>
-      )}
+  return (
+    <div className="space-y-6">
+      {/* Grouped like the Settings hub: the four ORDER modules feed the Workup
+          card; RolDe AI drives the RolDe panel (Roland 2026-07-03). */}
+      <section className="space-y-3">
+        <h2 className="px-1 text-sm font-semibold text-muted-foreground">
+          The Workup Card — Order & Result Modules
+        </h2>
+        <ToggleCard
+          icon={FlaskConical}
+          tone="info"
+          title="Lab"
+          blurb="Blood tests and pathology — ordering, tracking and results in the Workup card."
+          checked={lab}
+          onChange={setLab}
+        >
+          {detail(
+            "Will hold this module's settings as it grows: your test catalogue, lab partners and result routing (arrives with Bible 4.5).",
+          )}
+        </ToggleCard>
+        <ToggleCard
+          icon={Scan}
+          tone="sky"
+          title="Radiology"
+          blurb="Imaging — X-ray, ultrasound, CT and MRI requests and reports in the Workup card."
+          checked={radiology}
+          onChange={setRadiology}
+        >
+          {detail(
+            "Will hold this module's settings as it grows: modalities you offer, imaging partners and report routing (arrives with Bible 4.5).",
+          )}
+        </ToggleCard>
+        <ToggleCard
+          icon={Syringe}
+          tone="teal"
+          title="Procedures"
+          blurb="In-clinic procedures — photos, consents and procedure records in the Workup card."
+          checked={procedures}
+          onChange={setProcedures}
+        >
+          {detail(
+            "Will hold this module's settings as it grows: your procedure library, consent templates and photo policy (arrives with Bibles 4.5–4.6).",
+          )}
+        </ToggleCard>
+        <ToggleCard
+          icon={Pill}
+          tone="warning"
+          title="Prescribing"
+          blurb="Prescriptions with drug-safety checks — in the Workup card and the Prescribing section."
+          checked={prescribing}
+          onChange={setPrescribing}
+        >
+          {detail(
+            "Will hold this module's settings as it grows: formulary, drug-safety checks and pharmacy routing (arrives with Bible 4.5 — patient-safety-critical).",
+          )}
+        </ToggleCard>
+
+        {workupOff && (
+          <p className="rounded-lg bg-warning/15 px-3 py-2 text-xs font-medium text-warning">
+            With all four order modules off, the Workup card leaves the Consult Room — your team
+            sees Clinical Notes, Scribe{roldeAi ? " and the RolDe panel" : ""} only.
+          </p>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="px-1 text-sm font-semibold text-muted-foreground">The RolDe Panel</h2>
+        <ToggleCard
+          icon={Sparkles}
+          tone="periwinkle"
+          title="RolDe AI"
+          blurb="The RolDe panel in the Consult Room — drafting and suggestions, always under clinician authorisation."
+          checked={roldeAi}
+          onChange={setRoldeAi}
+        >
+          {detail(
+            "Will hold this module's settings as it grows: ambient listening, drafting style and suggestion scope (arrives with Bible 4.7 — nothing sends without a clinician).",
+          )}
+        </ToggleCard>
+      </section>
 
       {error && (
         <p className="rounded-lg bg-critical/10 px-3 py-2 text-xs font-medium text-critical">

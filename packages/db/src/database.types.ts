@@ -695,6 +695,153 @@ export type Database = {
           },
         ]
       }
+      patient_care_providers: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          email: string | null
+          id: string
+          is_gp: boolean
+          name: string
+          notes: string | null
+          organisation: string | null
+          patient_id: string
+          phone: string | null
+          postcode: string | null
+          role: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          id?: string
+          is_gp?: boolean
+          name: string
+          notes?: string | null
+          organisation?: string | null
+          patient_id: string
+          phone?: string | null
+          postcode?: string | null
+          role?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          id?: string
+          is_gp?: boolean
+          name?: string
+          notes?: string | null
+          organisation?: string | null
+          patient_id?: string
+          phone?: string | null
+          postcode?: string | null
+          role?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_care_providers_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_care_providers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_contacts: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          patient_id: string
+          phone: string | null
+          relationship: string
+          role: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          patient_id: string
+          phone?: string | null
+          relationship: string
+          role?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          patient_id?: string
+          phone?: string | null
+          relationship?: string
+          role?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_contacts_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_contacts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_feed_entries: {
         Row: {
           appointment_id: string | null
@@ -1319,6 +1466,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_patient_gp: {
+        Args: { p_patient: string; p_row: string }
+        Returns: undefined
+      }
       current_user_tenant_ids: { Args: never; Returns: string[] }
       email_exists: { Args: { p_email: string }; Returns: boolean }
       is_caretaker_of: { Args: { p_tenant_id: string }; Returns: boolean }
@@ -1351,6 +1502,8 @@ export type Database = {
         | "appointment_record"
         | "allergy_recorded"
         | "alert_recorded"
+        | "problem_recorded"
+        | "medication_recorded"
       user_role:
         | "custodian"
         | "caretaker"
@@ -1514,6 +1667,8 @@ export const Constants = {
         "appointment_record",
         "allergy_recorded",
         "alert_recorded",
+        "problem_recorded",
+        "medication_recorded",
       ],
       user_role: [
         "custodian",

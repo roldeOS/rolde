@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ShieldHalf, Zap } from "lucide-react";
 import { BREAK_GLASS_OPTIONS, type AccessPurpose } from "@/lib/patientAccess";
+import { useTopbar } from "@/components/topbar/TopbarContext";
 import { cn } from "@/lib/utils";
 import { recordBreakGlassReason } from "./break-glass-action";
 
@@ -27,6 +28,9 @@ export function BreakGlassGate({
   const [view, setView] = useState<"choose" | "other">("choose");
   const [otherText, setOtherText] = useState("");
   const [saving, setSaving] = useState(false);
+  // The topbar island is gated with the workspace (recordLocked) — justifying
+  // here unlocks BOTH in the same act (W1.2, review finding 2026-07-03).
+  const { setRecordLocked } = useTopbar();
 
   async function choose(purpose: AccessPurpose, reason?: string) {
     setSaving(true);
@@ -34,6 +38,7 @@ export function BreakGlassGate({
     // a just-in-time fill). Never trap a clinician behind a failed write.
     await recordBreakGlassReason({ accessId, purpose, reason });
     setOpen(false);
+    setRecordLocked(false);
   }
 
   return (

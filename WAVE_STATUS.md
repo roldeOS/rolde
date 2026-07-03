@@ -58,7 +58,9 @@
 | ✅ | **Layouts** — the topbar "Layouts" menu (Default + user-named layouts, save-as/remove) · 3 drag dividers (shared symmetric split) · double-click = Default · per-user persistence · presets fully retired · no auto-resize ever — 2026-07-03. **Refined same day:** Default = cols 50/50 · rows 80/20 · window-listener drag (every divider drags) · prominent grab-handles · **per-card ON/OFF toggles** (Clinical Notes/Workup/RolDe; save with named layouts) |
 | ✅ | **Courier trail palette** — Not Sent amber · Sent info · Delivered/Opened success · Failed critical (pastel) — 2026-07-03 |
 | ✅ | **Clinical Modules toggle (W1.1)** — Caretaker card switches Lab · Radiology · Procedures · Prescribing · RolDe AI per clinic; Consult Room reflows 4/3/2, Workup drops tabs, sidebar/⌘K hide, honest "switched off" on direct visits, audited flips; clinic layer OVER the user's Layouts toggles; clinician-403 negative case verified — 2026-07-03 |
-| ▢ | Consultation redesign remainder: **Profile overlay** + "+ Add" editors → **Body-Map** (Servier style TBC) |
+| ✅ | **Profile overlay** — full record in a sheet over the Consult Room (island "Full Profile" + Snapshot "+ Add"): Details (field-audited) · Next Of Kin · Care Team (Courier address hooks, one-GP rule) · Clinical Record editors (allergies/PMH/meds — add/edit/resolve/stop, feed-noted) — 2026-07-03 |
+| ✅ | **Read-by "· first" fix** — reads sorted by read_at (DB row order had crowned the wrong first reviewer) — 2026-07-03 |
+| ▢ | Consultation redesign remainder: **Body-Map** (Servier style TBC) |
 | ▢ | W1.2.1 Problem List (SNOMED-coded) · W1.2.2 Medication List + reconciliation · W1.2.3 History (PMH/surgical/family/social) |
 | ▢ | W1.2.4 Document Store · W1.2.6 Digital Consents (e-sign) |
 | ▢ | W1.2.7 Vitals/Growth charts · W1.2.8 Risk Scores (NEWS2/QRISK) · W1.2.9 Printable Summary |
@@ -90,4 +92,4 @@
 
 ---
 
-*Last updated: 2026-07-03 (Layouts refined + Clinical Modules toggle live; next: Profile overlay → Body-Map → Courier C2/C3).*
+*Last updated: 2026-07-03 (Layouts refined · Clinical Modules · Profile overlay all live; next: Body-Map → Courier C2/C3).*

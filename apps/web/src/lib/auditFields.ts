@@ -68,6 +68,45 @@ export const COMMERCIAL_FIELDS: FieldMap = {
   discount_codes_enabled: { label: "Discount codes", section: "Discount Codes", format: onOff },
 };
 
+/** Patient details (the Profile overlay, W1.2) — demographics + contact +
+ *  address on the patients row. Identity fields are audit-critical: every edit
+ *  writes the exact before→after to the Activity Log. */
+export const PATIENT_DETAILS_FIELDS: FieldMap = {
+  first_name: { label: "First name", section: "Identity" },
+  last_name: { label: "Last name", section: "Identity" },
+  date_of_birth: { label: "Date of birth", section: "Identity" },
+  sex_at_birth: { label: "Sex at birth", section: "Identity" },
+  nhs_number: { label: "NHS number", section: "Identity" },
+  phone_mobile: { label: "Mobile phone", section: "Contact" },
+  email: { label: "Email", section: "Contact" },
+  address_line1: { label: "Address line 1", section: "Address" },
+  address_line2: { label: "Address line 2", section: "Address" },
+  city: { label: "City / Town", section: "Address" },
+  postcode: { label: "Postcode", section: "Address" },
+};
+
+/** The clinical record editors (the Profile overlay, W1.2) — allergy, problem
+ *  and medication edits are safety-relevant, so every edit writes the exact
+ *  field-level before→after (adds/status changes are typed FEED entries too). */
+export const ALLERGY_FIELDS: FieldMap = {
+  substance: { label: "Substance", section: "Allergy" },
+  reaction: { label: "Reaction", section: "Allergy" },
+  severity: { label: "Severity", section: "Allergy" },
+  notes: { label: "Notes", section: "Allergy" },
+};
+export const PROBLEM_FIELDS: FieldMap = {
+  title: { label: "Problem", section: "Past Medical History" },
+  onset_date: { label: "Onset date", section: "Past Medical History" },
+  notes: { label: "Notes", section: "Past Medical History" },
+};
+export const MEDICATION_FIELDS: FieldMap = {
+  drug: { label: "Drug", section: "Medication" },
+  dose: { label: "Dose", section: "Medication" },
+  frequency: { label: "Frequency", section: "Medication" },
+  route: { label: "Route", section: "Medication" },
+  notes: { label: "Notes", section: "Medication" },
+};
+
 /** Clinical Modules (W1.1) — the clinic's on/off switches for its clinical
  *  tools. Pure toggles, so every value renders "On"/"Off" in the save line and
  *  the Activity Log trail. */

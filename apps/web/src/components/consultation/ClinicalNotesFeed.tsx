@@ -26,6 +26,9 @@ import {
   Mail,
   FileDown,
   Eye,
+  TriangleAlert,
+  OctagonAlert,
+  ClipboardList,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -54,10 +57,20 @@ const LETTER_KINDS: Record<string, string> = {
   sick_note: "Sick Note",
   gp_letter: "GP Letter",
 };
+/** Record changes in the timeline (the gold-mine law) — an allergy, problem or
+ *  medication recorded via the Profile overlay lands here as a typed entry. */
+const RECORD_KINDS: Record<string, { label: string; tone: CardIconTone; icon: Icon }> = {
+  allergy_recorded: { label: "Allergy", tone: "critical", icon: TriangleAlert },
+  alert_recorded: { label: "Alert", tone: "warning", icon: OctagonAlert },
+  problem_recorded: { label: "Problem", tone: "peach", icon: ClipboardList },
+  medication_recorded: { label: "Medication", tone: "warning", icon: Pill },
+};
 function noteKind(
   role: string | undefined,
   entryType?: string,
 ): { label: string; tone: CardIconTone; icon: Icon } {
+  const record = entryType ? RECORD_KINDS[entryType] : undefined;
+  if (record) return record;
   const letter = entryType ? LETTER_KINDS[entryType] : undefined;
   if (letter) return { label: letter, tone: "accent", icon: Mail };
   if (role === "nurse") return { label: "Nurse Note", tone: "success", icon: HeartPulse };
@@ -154,6 +167,10 @@ export function ClinicalNotesFeed({
       list.push({ user_id: r.user_id, read_at: r.read_at });
       m.set(r.entry_id, list);
     }
+    // Earliest read FIRST — index 0 is the reviewer of record (the "· first"
+    // tag hangs off it), so the order must be read_at, never DB row order.
+    for (const list of m.values())
+      list.sort((a, b) => (a.read_at < b.read_at ? -1 : 1));
     return m;
   }, [reads]);
   const [seenNow, setSeenNow] = useState<Set<string>>(new Set());
@@ -420,7 +437,9 @@ export function ClinicalNotesFeed({
               ? entryToday && (idx === 0 || prevToday === false)
               : !entryToday && prevToday === true;
             const kind =
-              e.entry_type === "clinical_note" || e.entry_type in LETTER_KINDS
+              e.entry_type === "clinical_note" ||
+              e.entry_type in LETTER_KINDS ||
+              e.entry_type in RECORD_KINDS
                 ? noteKind(author?.role, e.entry_type)
                 : {
                     label: e.entry_type.replace(/_/g, " "),

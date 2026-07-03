@@ -280,7 +280,7 @@ function LayoutsMenu({ modules }: { modules: ClinicalModules }) {
               className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
             >
               <Plus className="size-3.5" />
-              Save Current As…
+              Save Current Layout As…
             </button>
           )}
         </div>

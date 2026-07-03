@@ -126,11 +126,17 @@ export function CommandMenu({
         e.preventDefault();
         setOpen((o) => !o);
       }
-      if (e.key === "Escape") close();
+      // ONLY an open palette handles (and claims) its Escape — so layers
+      // beneath (the Profile overlay) keep theirs when the palette is shut.
+      if (e.key === "Escape" && open) {
+        e.preventDefault();
+        e.stopPropagation();
+        close();
+      }
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [close]);
+  }, [close, open]);
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 10);

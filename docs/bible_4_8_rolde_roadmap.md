@@ -1274,9 +1274,33 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     Investigations/Prescribing, direct URL visits get an honest "switched off — a Caretaker can turn
     it on" card, and the Layouts menu hides the card toggles for clinic-disabled cards (the clinic
     layer sits OVER the user layer: users hide what the clinic has on, never show what it has off).
-    Negative case verified: a clinician POST to the save endpoint gets 403. ▢ REMAINING — Profile overlay (greenlit —
-    demographics · NOK · GP & other doctors [Courier's address hooks] · full allergy/PMH/med editors
-    with "+ Add" in Snapshot) · Body-Map (Servier style TBC). New pieces to build + add to the URDS:
+    Negative case verified: a clinician POST to the save endpoint gets 403. **✅ PROFILE OVERLAY BUILT 2026-07-03:**
+    the patient's full structured record in a right-hand SHEET (portaled over the Consult Room — the
+    doctor never navigates away), opened from the island's **Full Profile** button or a Snapshot
+    **"+ Add"** (Allergies band · PMH · Meds headers jump straight to the editors). Four sections on a
+    Segmented: **Details** (demographics/contact/address — audited FIELD-BY-FIELD via the Change
+    Describer, PATIENT_DETAILS_FIELDS) · **Next Of Kin** (patient_contacts: NOK/emergency/carer rows,
+    soft-delete) · **Care Team** (patient_care_providers — the **Courier's per-patient address hooks**:
+    structured postal address per doctor, ONE registered GP per patient enforced by a partial unique
+    index + flag-handoff, C3's default "send to GP" target) · **Clinical Record** (full allergy/PMH/
+    medication editors: add · edit · mark-inactive/resolve/stop, two-step remove). **Record changes are
+    FEED entries** (gold-mine law): adds + clinically significant status changes post typed
+    allergy_recorded / problem_recorded / medication_recorded entries (enum extended) that wear their
+    own tile pills (Allergy = critical · Problem = peach · Medication = warning). Every action:
+    session-tenant + RLS re-check + content-free Activity-Log summary. Also 2026-07-03: the Read-by
+    popover's "· first" tag fixed (reads now sorted by read_at — DB row order had crowned the wrong
+    reviewer). **Hardened same day via a 24-agent adversarial review before shipping** — all confirmed
+    findings fixed: expected server-action failures now RETURN { error } (Next masks thrown messages in
+    production); every by-id mutation is bound id+patient_id with a read-back (no silent no-ops, no
+    wrong-patient feed/audit rows); inserts verify the patient is in the caller's clinic; the GP-flag
+    handoff is atomic (assign_patient_gp RPC — a failed save can never strand a patient GP-less); an
+    open Select/⌘K claims its own Escape (a half-typed allergy never dies to a dropdown dismiss); the
+    overlay closes + re-keys on patient switch (no stale-form wrong-patient write); the island +
+    overlay are gated with break-glass (recordLocked — identity + allergies only until justified);
+    feed-note failures degrade LOUDLY into the Activity Log; allergy edits are timeline-noted +
+    field-audited (problems/meds field-audited); DELETE revoked across the patient record family
+    (soft-delete-only); a med's stop date is the clinician's local calendar date. ▢ REMAINING —
+    Body-Map (Servier style TBC). New pieces to build + add to the URDS:
     - **Adaptive Workspace** — the four cards reflow by **Clinical Modules** (a new W1.1 Settings toggle:
       Lab · Radiology · Procedures · Prescriptions · RolDe AI) → 4/3/2-card states, AND are sized by
       **user-controlled LAYOUTS — no auto-resize (Roland 2026-07-01, FINAL; supersedes both the old

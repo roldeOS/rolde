@@ -82,7 +82,14 @@ export function Select({
       if (popRef.current?.contains(t) || btnRef.current?.contains(t)) return;
       setOpen(false);
     };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      // The open listbox CLAIMS its Escape (preventDefault) so outer layers —
+      // the Profile overlay's close-on-Escape — don't also fire (2026-07-03).
+      e.preventDefault();
+      e.stopPropagation();
+      setOpen(false);
+    };
     const close = () => setOpen(false);
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);

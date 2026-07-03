@@ -74,7 +74,7 @@ export default async function ConsultationPage({
 
   const { data: allergies } = await supabase
     .from("patient_allergies")
-    .select("substance, reaction, severity")
+    .select("id, substance, reaction, severity, notes")
     .eq("patient_id", id)
     .eq("status", "active")
     .is("deleted_at", null)
@@ -91,17 +91,23 @@ export default async function ConsultationPage({
   // sheet: PMH (active + resolved both read as history) + current medications.
   // + Clinical Modules (W1.1) — the clinic-level switches the workspace
   // reflows from (server-authoritative; no row = the full spine, all on).
-  const [{ data: problems }, { data: medications }, { data: moduleRow }] = await Promise.all([
+  const [
+    { data: problems },
+    { data: medications },
+    { data: moduleRow },
+    { data: contacts },
+    { data: careTeam },
+  ] = await Promise.all([
     supabase
       .from("patient_problems")
-      .select("title, status")
+      .select("id, title, status, onset_date, notes")
       .eq("patient_id", id)
       .in("status", ["active", "resolved"])
       .is("deleted_at", null)
       .order("created_at", { ascending: true }),
     supabase
       .from("patient_medications")
-      .select("drug, dose, frequency")
+      .select("id, drug, dose, frequency, route, notes")
       .eq("patient_id", id)
       .eq("status", "active")
       .is("deleted_at", null)
@@ -113,6 +119,23 @@ export default async function ConsultationPage({
           .eq("tenant_id", ctx.membership.tenant_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    // The Profile overlay (W1.2): NOK/personal contacts + the care team (the
+    // Courier's per-patient address hooks — the GP row is C3's default target).
+    supabase
+      .from("patient_contacts")
+      .select("id, name, relationship, role, phone, email, notes")
+      .eq("patient_id", id)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("patient_care_providers")
+      .select(
+        "id, name, role, organisation, phone, email, address_line1, address_line2, city, postcode, is_gp, notes",
+      )
+      .eq("patient_id", id)
+      .is("deleted_at", null)
+      .order("is_gp", { ascending: false })
+      .order("created_at", { ascending: true }),
   ]);
   const modules = moduleRow ?? ALL_MODULES_ON;
 
@@ -125,6 +148,7 @@ export default async function ConsultationPage({
         .from("feed_entry_reads")
         .select("entry_id, user_id, read_at")
         .in("entry_id", entryIds)
+        .order("read_at", { ascending: true })
     : { data: [] };
 
   const { data: members } = await supabase
@@ -161,6 +185,7 @@ export default async function ConsultationPage({
   return (
     <>
       <TopbarPatientSync
+        locked={!!access?.breakGlass}
         patient={{
           id: patient.id,
           firstName: patient.first_name,
@@ -172,20 +197,60 @@ export default async function ConsultationPage({
           phone: patient.phone_mobile,
           email: patient.email,
           addressLines,
+          address: {
+            line1: patient.address_line1,
+            line2: patient.address_line2,
+            city: patient.city,
+            postcode: patient.postcode,
+          },
           allergies: (allergies ?? []).map((a) => ({
+            id: a.id,
             substance: a.substance,
             reaction: a.reaction,
             severity: a.severity,
+            notes: a.notes,
           })),
           alerts: (alerts ?? []).map((al) => ({
             title: al.title,
             priority: al.priority,
           })),
-          problems: (problems ?? []).map((p) => ({ title: p.title, status: p.status })),
+          problems: (problems ?? []).map((p) => ({
+            id: p.id,
+            title: p.title,
+            status: p.status,
+            onsetDate: p.onset_date,
+            notes: p.notes,
+          })),
           medications: (medications ?? []).map((m) => ({
+            id: m.id,
             drug: m.drug,
             dose: m.dose,
             frequency: m.frequency,
+            route: m.route,
+            notes: m.notes,
+          })),
+          contacts: (contacts ?? []).map((c) => ({
+            id: c.id,
+            name: c.name,
+            relationship: c.relationship,
+            role: c.role,
+            phone: c.phone,
+            email: c.email,
+            notes: c.notes,
+          })),
+          careTeam: (careTeam ?? []).map((d) => ({
+            id: d.id,
+            name: d.name,
+            role: d.role,
+            organisation: d.organisation,
+            phone: d.phone,
+            email: d.email,
+            addressLine1: d.address_line1,
+            addressLine2: d.address_line2,
+            city: d.city,
+            postcode: d.postcode,
+            isGp: d.is_gp,
+            notes: d.notes,
           })),
         }}
       />

@@ -10,6 +10,32 @@ import {
 } from "react";
 import { pushRecent } from "@/lib/recents";
 
+/** A next-of-kin / personal contact row (the Profile overlay, W1.2). */
+export type PatientContact = {
+  id: string;
+  name: string;
+  relationship: string;
+  role: string;
+  phone: string | null;
+  email: string | null;
+  notes: string | null;
+};
+/** A care-team doctor (GP & others — the Courier's per-patient address hooks). */
+export type PatientCareProvider = {
+  id: string;
+  name: string;
+  role: string | null;
+  organisation: string | null;
+  phone: string | null;
+  email: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  postcode: string | null;
+  isGp: boolean;
+  notes: string | null;
+};
+
 export type TopbarPatient = {
   id: string;
   firstName: string;
@@ -21,11 +47,41 @@ export type TopbarPatient = {
   phone: string | null;
   email: string | null;
   addressLines: string[];
-  allergies: { substance: string; reaction: string; severity: string }[];
+  /** Raw address parts — the Profile overlay's Details form edits these. */
+  address: {
+    line1: string | null;
+    line2: string | null;
+    city: string | null;
+    postcode: string | null;
+  };
+  /** Rows carry ids so the Profile overlay's editors can act on them. */
+  allergies: {
+    id: string;
+    substance: string;
+    reaction: string;
+    severity: string;
+    notes: string | null;
+  }[];
   alerts: { title: string; priority: string }[];
   /** Snapshot (Roland 2026-07-01): PMH + current meds in the name-drop sheet. */
-  problems: { title: string; status: string }[];
-  medications: { drug: string; dose: string | null; frequency: string | null }[];
+  problems: {
+    id: string;
+    title: string;
+    status: string;
+    onsetDate: string | null;
+    notes: string | null;
+  }[];
+  medications: {
+    id: string;
+    drug: string;
+    dose: string | null;
+    frequency: string | null;
+    route: string | null;
+    notes: string | null;
+  }[];
+  /** The Profile overlay (W1.2): NOK/personal contacts + the care team. */
+  contacts: PatientContact[];
+  careTeam: PatientCareProvider[];
 } | null;
 
 /**
@@ -53,6 +109,11 @@ const sane = (l: Partial<WorkspaceLayout>): WorkspaceLayout => ({
 const Ctx = createContext<{
   patient: TopbarPatient;
   setPatient: (p: TopbarPatient) => void;
+  /** Break-glass (W1.2): the record is gated pending justification — the
+   *  island shows identity + allergies ONLY, and the Profile overlay stays
+   *  shut, until the gate clears this. */
+  recordLocked: boolean;
+  setRecordLocked: (locked: boolean) => void;
   layout: WorkspaceLayout;
   setLayout: (l: WorkspaceLayout) => void;
   layouts: SavedLayout[];
@@ -61,6 +122,8 @@ const Ctx = createContext<{
 }>({
   patient: null,
   setPatient: () => {},
+  recordLocked: false,
+  setRecordLocked: () => {},
   layout: DEFAULT_LAYOUT,
   setLayout: () => {},
   layouts: [],
@@ -70,6 +133,7 @@ const Ctx = createContext<{
 
 export function TopbarProvider({ children }: { children: React.ReactNode }) {
   const [patient, setPatient] = useState<TopbarPatient>(null);
+  const [recordLocked, setRecordLocked] = useState(false);
   // The live layout + the user's NAMED layouts — persisted per user on this
   // device (the same rail the old view preset used). The layout only ever
   // changes on a deliberate act: drag, pick from the Layouts menu, or reset.
@@ -119,8 +183,18 @@ export function TopbarProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ patient, setPatient, layout, setLayout, layouts, saveLayout, removeLayout }),
-    [patient, layout, setLayout, layouts, saveLayout, removeLayout],
+    () => ({
+      patient,
+      setPatient,
+      recordLocked,
+      setRecordLocked,
+      layout,
+      setLayout,
+      layouts,
+      saveLayout,
+      removeLayout,
+    }),
+    [patient, recordLocked, layout, setLayout, layouts, saveLayout, removeLayout],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -132,11 +206,20 @@ export const useTopbar = () => useContext(Ctx);
  * patient into the global topbar — identity chip, allergy zone, address island.
  * Also records the visit in "recents". Clears on unmount.
  */
-export function TopbarPatientSync({ patient }: { patient: TopbarPatient }) {
-  const { setPatient } = useTopbar();
+export function TopbarPatientSync({
+  patient,
+  locked = false,
+}: {
+  patient: TopbarPatient;
+  /** true while the break-glass gate awaits justification (W1.2) — the island
+   *  restricts itself to identity + allergies until the gate clears it. */
+  locked?: boolean;
+}) {
+  const { setPatient, setRecordLocked } = useTopbar();
   const key = patient ? JSON.stringify(patient) : "";
   useEffect(() => {
     setPatient(patient);
+    setRecordLocked(locked);
     if (patient) {
       pushRecent({
         id: patient.id,
@@ -144,8 +227,11 @@ export function TopbarPatientSync({ patient }: { patient: TopbarPatient }) {
         meta: `${patient.age}y · ${patient.sex}`,
       });
     }
-    return () => setPatient(null);
+    return () => {
+      setPatient(null);
+      setRecordLocked(false);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
+  }, [key, locked]);
   return null;
 }
