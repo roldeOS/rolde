@@ -5,6 +5,7 @@ import { FlaskConical, Maximize2, Minimize2 } from "lucide-react";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
 import { cn } from "@/lib/utils";
+import { ALL_MODULES_ON, type ClinicalModules } from "@/lib/clinicalModules";
 
 type Entry = { id: string; entry_type: string };
 
@@ -15,24 +16,37 @@ type Entry = { id: string; entry_type: string };
  * Prescribing / Procedures; ordering arrives with Bible 4.5. Letters are NOT
  * here — they live in the Clinical Notes feed (composed in Scribe).
  */
-const TABS: { key: string; label: string; types: string[]; coming: string }[] = [
-  { key: "labs", label: "Labs", types: ["lab_order", "lab_result"], coming: "Lab ordering arrives with Bible 4.5." },
-  { key: "radiology", label: "Radiology", types: ["radiology_order", "radiology_result"], coming: "Radiology ordering arrives with Bible 4.5." },
-  { key: "prescribing", label: "Prescribing", types: ["prescription"], coming: "Prescribing (with drug-safety checks) arrives with Bible 4.5." },
-  { key: "procedures", label: "Procedures", types: ["photo_set", "consent_signed"], coming: "Procedures and consents arrive with Bibles 4.5–4.6." },
+const TABS: {
+  key: string;
+  label: string;
+  types: string[];
+  coming: string;
+  /** The Clinical Modules switch (W1.1) that keeps this tab on. */
+  module: keyof ClinicalModules;
+}[] = [
+  { key: "labs", label: "Labs", types: ["lab_order", "lab_result"], coming: "Lab ordering arrives with Bible 4.5.", module: "lab_enabled" },
+  { key: "radiology", label: "Radiology", types: ["radiology_order", "radiology_result"], coming: "Radiology ordering arrives with Bible 4.5.", module: "radiology_enabled" },
+  { key: "prescribing", label: "Prescribing", types: ["prescription"], coming: "Prescribing (with drug-safety checks) arrives with Bible 4.5.", module: "prescribing_enabled" },
+  { key: "procedures", label: "Procedures", types: ["photo_set", "consent_signed"], coming: "Procedures and consents arrive with Bibles 4.5–4.6.", module: "procedures_enabled" },
 ];
 
 export function WorkupPanel({
   entries,
+  modules = ALL_MODULES_ON,
   maximized,
   onToggleMaximize,
 }: {
   entries: Entry[];
+  /** Clinical Modules (W1.1) — a switched-off module drops its tab here. */
+  modules?: ClinicalModules;
   maximized?: boolean;
   onToggleMaximize?: () => void;
 }) {
-  const [tab, setTab] = useState("labs");
-  const active = TABS.find((t) => t.key === tab)!;
+  // Only the tabs whose clinic module is ON exist (the whole card leaves the
+  // workspace when all four are off — ConsultationWorkspace handles that).
+  const tabs = TABS.filter((t) => modules[t.module]);
+  const [tab, setTab] = useState(tabs[0]?.key ?? "labs");
+  const active = tabs.find((t) => t.key === tab) ?? tabs[0] ?? TABS[0];
   const rows = entries.filter((e) => active.types.includes(e.entry_type));
 
   return (
@@ -43,13 +57,13 @@ export function WorkupPanel({
         <CardIcon icon={FlaskConical} tone="info" variant="badge" size="sm" />
         <span className="mr-1 text-sm font-semibold">Workup</span>
         <div className="flex min-w-0 flex-1 gap-0.5 overflow-x-auto">
-          {TABS.map((t) => (
+          {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
               className={cn(
                 "shrink-0 rounded-lg px-2 py-1 text-sm font-medium transition-colors",
-                tab === t.key
+                active.key === t.key
                   ? "bg-foreground/6 text-foreground"
                   : "text-muted-foreground hover:bg-hover hover:text-foreground",
               )}

@@ -4,6 +4,7 @@ import { getSessionContext } from "@/lib/auth";
 import { logPatientAccess } from "@/lib/audit";
 import { TopbarPatientSync } from "@/components/topbar/TopbarContext";
 import { ConsultationWorkspace } from "@/components/consultation/ConsultationWorkspace";
+import { ALL_MODULES_ON, MODULE_COLUMNS } from "@/lib/clinicalModules";
 import { BreakGlassGate } from "./BreakGlassGate";
 import type { FeedEntry, Author } from "@/components/consultation/ClinicalNotesFeed";
 
@@ -88,7 +89,9 @@ export default async function ConsultationPage({
 
   // Snapshot (Roland 2026-07-01) — the structured record behind the name-drop
   // sheet: PMH (active + resolved both read as history) + current medications.
-  const [{ data: problems }, { data: medications }] = await Promise.all([
+  // + Clinical Modules (W1.1) — the clinic-level switches the workspace
+  // reflows from (server-authoritative; no row = the full spine, all on).
+  const [{ data: problems }, { data: medications }, { data: moduleRow }] = await Promise.all([
     supabase
       .from("patient_problems")
       .select("title, status")
@@ -103,7 +106,15 @@ export default async function ConsultationPage({
       .eq("status", "active")
       .is("deleted_at", null)
       .order("created_at", { ascending: true }),
+    ctx?.membership?.tenant_id
+      ? supabase
+          .from("clinic_clinical_modules")
+          .select(MODULE_COLUMNS)
+          .eq("tenant_id", ctx.membership.tenant_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
+  const modules = moduleRow ?? ALL_MODULES_ON;
 
   // Courier C1 — ALL read receipts on this patient's entries: they drive both
   // the caller's own unread state AND the "Seen by" thread on each tile
@@ -143,6 +154,7 @@ export default async function ConsultationPage({
       authors={authors}
       currentUserId={currentUserId}
       reads={reads ?? []}
+      modules={modules}
     />
   );
 

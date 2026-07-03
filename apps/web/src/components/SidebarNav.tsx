@@ -18,6 +18,7 @@ import {
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { CONTROL_NAV } from "@/app/(app)/custodian/sections";
 import { roleCanAccess, canPrescribe } from "@/lib/access";
+import { ALL_MODULES_ON, type ClinicalModules } from "@/lib/clinicalModules";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -55,10 +56,14 @@ export function SidebarNav({
   collapsed,
   role,
   prescribingRights,
+  modules = ALL_MODULES_ON,
 }: {
   collapsed: boolean;
   role?: string;
   prescribingRights?: boolean;
+  /** Clinical Modules (W1.1) — a module the clinic switched OFF drops its
+   *  nav item for everyone (out of sight platform-wide, APPROVALS §4.2). */
+  modules?: ClinicalModules;
 }) {
   const pathname = usePathname();
   const renderItem = (item: NavItem) => {
@@ -108,13 +113,24 @@ export function SidebarNav({
     );
   }
 
+  // Clinic-level module gate first (a switched-off module is out of sight for
+  // every role), then the per-role access matrix.
+  const moduleOn = (item: NavItem) =>
+    item.module === "prescribing"
+      ? modules.prescribing_enabled
+      : item.module === "investigations"
+        ? modules.lab_enabled || modules.radiology_enabled
+        : true;
+
   return (
     <nav className="flex flex-col gap-0.5 px-2">
-      {NAV.filter((item) =>
-        item.module === "prescribing"
-          ? canPrescribe(role, prescribingRights)
-          : roleCanAccess(role, item.module),
-      ).map(renderItem)}
+      {NAV.filter(moduleOn)
+        .filter((item) =>
+          item.module === "prescribing"
+            ? canPrescribe(role, prescribingRights)
+            : roleCanAccess(role, item.module),
+        )
+        .map(renderItem)}
     </nav>
   );
 }

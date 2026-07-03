@@ -68,6 +68,17 @@ export const COMMERCIAL_FIELDS: FieldMap = {
   discount_codes_enabled: { label: "Discount codes", section: "Discount Codes", format: onOff },
 };
 
+/** Clinical Modules (W1.1) — the clinic's on/off switches for its clinical
+ *  tools. Pure toggles, so every value renders "On"/"Off" in the save line and
+ *  the Activity Log trail. */
+export const CLINICAL_MODULES_FIELDS: FieldMap = {
+  lab_enabled: { label: "Lab", section: "Clinical Modules", format: onOff },
+  radiology_enabled: { label: "Radiology", section: "Clinical Modules", format: onOff },
+  procedures_enabled: { label: "Procedures", section: "Clinical Modules", format: onOff },
+  prescribing_enabled: { label: "Prescribing", section: "Clinical Modules", format: onOff },
+  rolde_ai_enabled: { label: "RolDe AI", section: "Clinical Modules", format: onOff },
+};
+
 /**
  * Members (W1.1.7) — ONLY the plain detail fields. The security-relevant fields
  * (role · status · prescribing · login email) are NOT here: they're recorded as

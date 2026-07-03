@@ -9,6 +9,7 @@ import { TopbarProvider } from "@/components/topbar/TopbarContext";
 import { PageActionBarProvider } from "@/components/ui/PageActionBar";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { createClient } from "@/lib/supabase/client";
+import { ALL_MODULES_ON, type ClinicalModules } from "@/lib/clinicalModules";
 import { ROLES } from "@/lib/roles";
 import { cn } from "@/lib/utils";
 
@@ -29,12 +30,15 @@ export function AppFrame({
   user,
   role,
   prescribingRights,
+  modules = ALL_MODULES_ON,
   children,
 }: {
   clinic: string;
   user: string;
   role: string;
   prescribingRights?: boolean;
+  /** Clinical Modules (W1.1) — clinic-level switches the shell reflows from. */
+  modules?: ClinicalModules;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -146,7 +150,12 @@ export function AppFrame({
               <p className="truncate text-xs text-muted-foreground">{roleLabel(role)}</p>
             </div>
           </div>
-          <SidebarNav collapsed={collapsed} role={role} prescribingRights={prescribingRights} />
+          <SidebarNav
+            collapsed={collapsed}
+            role={role}
+            prescribingRights={prescribingRights}
+            modules={modules}
+          />
 
           {/* Collapse toggle — a separate nav-style row BELOW the nav (Roland
               2026-06-11: keep it off the header so it never squeezes the logo).
@@ -214,6 +223,7 @@ export function AppFrame({
                 clinic={clinic}
                 user={user}
                 role={role}
+                modules={modules}
                 onToggleSidebar={toggle}
               />
               <div className="min-h-0 flex-1">

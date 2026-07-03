@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { ALL_MODULES_ON, type ClinicalModules } from "@/lib/clinicalModules";
 
 type Patient = {
   id: string;
@@ -84,7 +85,13 @@ function Highlighted({ text, q }: { text: string; q: string }) {
  * footer. RLS-scoped, so a clinic only ever finds its own patients. The natural-
  * language / ambient-AI layer (Bible 4.7) plugs in here as Phase B/C.
  */
-export function CommandMenu() {
+export function CommandMenu({
+  modules = ALL_MODULES_ON,
+}: {
+  /** Clinical Modules (W1.1) — a module the clinic switched OFF drops its
+   *  jump-to page here too (out of sight platform-wide, APPROVALS §4.2). */
+  modules?: ClinicalModules;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -165,7 +172,13 @@ export function CommandMenu() {
       label: `${p.last_name}, ${p.first_name}`,
       sub: fmtDob(p.date_of_birth),
     }));
-    const pageRows: Row[] = PAGES.filter(
+    const moduleOn = (href: string) =>
+      href === "/prescribing"
+        ? modules.prescribing_enabled
+        : href === "/investigations"
+          ? modules.lab_enabled || modules.radiology_enabled
+          : true;
+    const pageRows: Row[] = PAGES.filter((p) => moduleOn(p.href)).filter(
       (p) => !term || p.label.toLowerCase().includes(term),
     ).map((p) => ({
       kind: "page",
@@ -175,7 +188,7 @@ export function CommandMenu() {
       icon: p.icon,
     }));
     return [...patientRows, ...pageRows];
-  }, [patients, q]);
+  }, [patients, q, modules]);
 
   const patientRows = rows.filter((r) => r.kind === "patient");
   const pageRows = rows.filter((r) => r.kind === "page");

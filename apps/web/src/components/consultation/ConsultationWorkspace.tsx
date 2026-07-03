@@ -13,6 +13,11 @@ import {
   type Author,
 } from "@/components/consultation/ClinicalNotesFeed";
 import { useTopbar, DEFAULT_LAYOUT } from "@/components/topbar/TopbarContext";
+import {
+  ALL_MODULES_ON,
+  workupEnabled,
+  type ClinicalModules,
+} from "@/lib/clinicalModules";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import {
   saveNote,
@@ -46,6 +51,7 @@ export function ConsultationWorkspace({
   authors,
   currentUserId,
   reads,
+  modules = ALL_MODULES_ON,
 }: {
   patient: { id: string; firstName: string };
   feedEntries: FeedEntry[];
@@ -55,6 +61,9 @@ export function ConsultationWorkspace({
   /** Courier C1 — every read receipt on this patient's entries (unread state +
    *  the per-tile "Seen by" thread). */
   reads: { entry_id: string; user_id: string; read_at: string }[];
+  /** Clinical Modules (W1.1, APPROVALS §4.2) — the CLINIC's switches; the grid
+   *  reflows 4/3/2. Sits OVER the user's Layouts card toggles. */
+  modules?: ClinicalModules;
 }) {
   const { layout, setLayout } = useTopbar();
   const [leftMode, setLeftMode] = useState<Mode>("split");
@@ -125,13 +134,15 @@ export function ConsultationWorkspace({
   }
   const resetLayout = () => setLayout(DEFAULT_LAYOUT);
 
-  // Card visibility (Roland 2026-07-03) — toggled in the Layouts menu, saved
-  // with named layouts. Scribe is always on. A hidden card hands its space to
-  // its column-mate; both right cards hidden → the right column goes entirely.
+  // Card visibility — TWO layers (APPROVALS §4.2). The CLINIC's Clinical
+  // Modules (W1.1) decide which cards exist at all; the user's Layouts card
+  // toggles (Roland 2026-07-03) hide within that. Scribe is always on. A
+  // hidden card hands its space to its column-mate; both right cards gone →
+  // the right column goes entirely.
   const hidden = new Set(layout.hidden);
   const showNotes = !hidden.has("notes");
-  const showWorkup = !hidden.has("workup");
-  const showAi = !hidden.has("ai");
+  const showWorkup = workupEnabled(modules) && !hidden.has("workup");
+  const showAi = modules.rolde_ai_enabled && !hidden.has("ai");
   const showRight = showWorkup || showAi;
 
   const mode: "new" | "edit" | "amend" = !editTarget
@@ -368,6 +379,7 @@ export function ConsultationWorkspace({
             >
               <WorkupPanel
                 entries={workupEntries}
+                modules={modules}
                 maximized={rightMode === "top"}
                 onToggleMaximize={() =>
                   setRightMode((m) => (m === "top" ? "split" : "top"))

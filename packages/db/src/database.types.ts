@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      clinic_clinical_modules: {
+        Row: {
+          created_at: string
+          lab_enabled: boolean
+          prescribing_enabled: boolean
+          procedures_enabled: boolean
+          radiology_enabled: boolean
+          rolde_ai_enabled: boolean
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          lab_enabled?: boolean
+          prescribing_enabled?: boolean
+          procedures_enabled?: boolean
+          radiology_enabled?: boolean
+          rolde_ai_enabled?: boolean
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          lab_enabled?: boolean
+          prescribing_enabled?: boolean
+          procedures_enabled?: boolean
+          radiology_enabled?: boolean
+          rolde_ai_enabled?: boolean
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_clinical_modules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_commercial_settings: {
         Row: {
           consult_credit_enabled: boolean

@@ -38,6 +38,7 @@
 | ✅ | W1.1.7 Users & Roles | | ▢ | W1.1.11 Payment Gateways |
 | ✅ | W1.1.8 Services & Pricing | | ▢ | W1.1.12 Website & Domain |
 | ✅ | W1.1.13 Email Templates | | | |
+| ✅ | **Clinical Modules toggle** *(2026-07-03)* | | | |
 | ✅ | W1.1.14 Profiles & Avatars | | | |
 | ✅ | W1.1.15 Who's Who glossary | | | |
 | ✅ | W1.1.16 Commercial Settings + Tax | | | |
@@ -54,9 +55,10 @@
 | ✅ | **Record data layer** — patient_problems + patient_medications (RLS · soft-delete · SNOMED-ready) + seed; allergies/alerts already existed — 2026-07-02 |
 | ✅ | **Snapshot sheet** — PMH (counted, resolved muted) + Current Meds in the name-drop island, allergies pinned; verified live — 2026-07-02 |
 | ✅ | **Episode Marker** — "Today" separator pill in the feed (v1; upgrades to the admission/appointment anchor at W2) — 2026-07-02 |
-| ✅ | **Layouts** — the topbar "Layouts" menu (Default 50/50 + user-named layouts, save-as/remove) · 3 drag dividers (shared symmetric split) · double-click = Default · per-user persistence · presets fully retired · no auto-resize ever — 2026-07-03 |
+| ✅ | **Layouts** — the topbar "Layouts" menu (Default + user-named layouts, save-as/remove) · 3 drag dividers (shared symmetric split) · double-click = Default · per-user persistence · presets fully retired · no auto-resize ever — 2026-07-03. **Refined same day:** Default = cols 50/50 · rows 80/20 · window-listener drag (every divider drags) · prominent grab-handles · **per-card ON/OFF toggles** (Clinical Notes/Workup/RolDe; save with named layouts) |
 | ✅ | **Courier trail palette** — Not Sent amber · Sent info · Delivered/Opened success · Failed critical (pastel) — 2026-07-03 |
-| ▢ | Consultation redesign remainder: Clinical Modules toggle (W1.1) → **Profile overlay** + "+ Add" editors → **Body-Map** (Servier style TBC) |
+| ✅ | **Clinical Modules toggle (W1.1)** — Caretaker card switches Lab · Radiology · Procedures · Prescribing · RolDe AI per clinic; Consult Room reflows 4/3/2, Workup drops tabs, sidebar/⌘K hide, honest "switched off" on direct visits, audited flips; clinic layer OVER the user's Layouts toggles; clinician-403 negative case verified — 2026-07-03 |
+| ▢ | Consultation redesign remainder: **Profile overlay** + "+ Add" editors → **Body-Map** (Servier style TBC) |
 | ▢ | W1.2.1 Problem List (SNOMED-coded) · W1.2.2 Medication List + reconciliation · W1.2.3 History (PMH/surgical/family/social) |
 | ▢ | W1.2.4 Document Store · W1.2.6 Digital Consents (e-sign) |
 | ▢ | W1.2.7 Vitals/Growth charts · W1.2.8 Risk Scores (NEWS2/QRISK) · W1.2.9 Printable Summary |
@@ -88,4 +90,4 @@
 
 ---
 
-*Last updated: 2026-07-01 (universe mapped; building the spine in dependency order, starting with W1.2 Patient Record).*
+*Last updated: 2026-07-03 (Layouts refined + Clinical Modules toggle live; next: Profile overlay → Body-Map → Courier C2/C3).*

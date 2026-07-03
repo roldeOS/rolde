@@ -1264,7 +1264,17 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     card hands its space to its column-mate, both right cards off drops the right column, and the
     toggles **save with named layouts** (a layout = geometry + which cards show). Also 2026-07-03: the **Courier dispatch-trail palette** —
     Not Sent = amber wash · Sent = info · Delivered/Opened = success · Failed/Bounced = critical (pastel
-    tints, Earth & Bloom). ▢ REMAINING — Clinical Modules toggle (W1.1) · Profile overlay (greenlit —
+    tints, Earth & Bloom). **✅ CLINICAL MODULES BUILT 2026-07-03 (W1.1):**
+    the Caretaker Settings card (Settings → Clinical Modules; toggle-first ToggleCards, now a shared
+    URDS component) switches **Lab · Radiology · Procedures · Prescribing · RolDe AI** per clinic
+    (`clinic_clinical_modules`, one row per tenant, everything default ON; team-read / Caretaker-write
+    RLS; every flip lands in the Activity Log before→after via the Change Describer). OFF = out of
+    sight platform-wide: the Consult Room reflows 4/3/2 (Workup leaves when all four order modules are
+    off; the RolDe panel with rolde_ai), Workup drops the disabled tabs, the sidebar + ⌘K hide
+    Investigations/Prescribing, direct URL visits get an honest "switched off — a Caretaker can turn
+    it on" card, and the Layouts menu hides the card toggles for clinic-disabled cards (the clinic
+    layer sits OVER the user layer: users hide what the clinic has on, never show what it has off).
+    Negative case verified: a clinician POST to the save endpoint gets 403. ▢ REMAINING — Profile overlay (greenlit —
     demographics · NOK · GP & other doctors [Courier's address hooks] · full allergy/PMH/med editors
     with "+ Add" in Snapshot) · Body-Map (Servier style TBC). New pieces to build + add to the URDS:
     - **Adaptive Workspace** — the four cards reflow by **Clinical Modules** (a new W1.1 Settings toggle:

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Receipt, PiggyBank, WalletCards, TicketPercent } from "lucide-react";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { Switch } from "@/components/ui/Switch";
-import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
+import { ToggleCard } from "@/components/ui/ToggleCard";
 import { Field, Input } from "@/components/ui/form";
 import { describeSave, diffFields } from "@/lib/changeDescriber";
 import { COMMERCIAL_FIELDS } from "@/lib/auditFields";
@@ -244,40 +244,6 @@ export function CommercialSettingsForm({ initial }: { initial: CommercialSetting
           {error}
         </p>
       )}
-    </div>
-  );
-}
-
-function ToggleCard({
-  icon,
-  tone,
-  title,
-  blurb,
-  checked,
-  onChange,
-  children,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  tone: CardIconTone;
-  title: string;
-  blurb: string;
-  checked: boolean;
-  onChange: (next: boolean) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-xl bg-card p-5 shadow-float">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <CardIcon icon={icon} tone={tone} variant="badge" size="md" />
-          <div>
-            <h2 className="font-heading text-base font-semibold tracking-tight">{title}</h2>
-            <p className="mt-0.5 max-w-prose text-sm text-muted-foreground">{blurb}</p>
-          </div>
-        </div>
-        <Switch checked={checked} onChange={onChange} label={title} />
-      </div>
-      {checked && <div className="mt-4 border-t border-border/60 pt-4">{children}</div>}
     </div>
   );
 }

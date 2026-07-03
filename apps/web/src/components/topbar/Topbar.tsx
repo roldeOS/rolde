@@ -42,6 +42,11 @@ import { CONTROL_NAV, CONTROL_HUB, getControlSection } from "@/app/(app)/custodi
 import { CUSTODIAN_LOG_SECTIONS, getCustodianLogSection } from "@/app/(app)/custodian/logs/sections";
 import { CARD_ICON_TEXT } from "@/lib/cardTones";
 import type { CardIconTone } from "@/components/ui/CardIcon";
+import {
+  ALL_MODULES_ON,
+  workupEnabled,
+  type ClinicalModules,
+} from "@/lib/clinicalModules";
 import { cn } from "@/lib/utils";
 
 /**
@@ -133,7 +138,7 @@ const toneForKind = (kind: string): CardIconTone =>
  * Consult/Document/Review presets. Lists Default (the locked 50/50) + the
  * user's NAMED layouts; "Save Current As…" names the live arrangement.
  */
-function LayoutsMenu() {
+function LayoutsMenu({ modules }: { modules: ClinicalModules }) {
   const { layout, setLayout, layouts, saveLayout, removeLayout } = useTopbar();
   const [open, setOpen] = useState(false);
   const [naming, setNaming] = useState(false);
@@ -209,7 +214,9 @@ function LayoutsMenu() {
             </div>
           ))}
           {/* Card visibility (Roland 2026-07-03) — which cards this layout
-              shows; Scribe is always on. Saved with named layouts. */}
+              shows; Scribe is always on. Saved with named layouts. A card whose
+              clinical module the CLINIC switched off (W1.1) has no row here —
+              a user can hide what the clinic has on, never show what it has off. */}
           <div className="my-1 border-t border-border/60" />
           <p className="px-2.5 pb-0.5 pt-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
             Cards
@@ -220,7 +227,13 @@ function LayoutsMenu() {
               { key: "workup", label: "Workup" },
               { key: "ai", label: "RolDe" },
             ] as const
-          ).map((c) => {
+          )
+            .filter(
+              (c) =>
+                (c.key !== "workup" || workupEnabled(modules)) &&
+                (c.key !== "ai" || modules.rolde_ai_enabled),
+            )
+            .map((c) => {
             const on = !layout.hidden.includes(c.key);
             return (
               <label
@@ -280,11 +293,15 @@ export function Topbar({
   clinic,
   user,
   role,
+  modules = ALL_MODULES_ON,
   onToggleSidebar,
 }: {
   clinic: string;
   user: string;
   role: string;
+  /** Clinical Modules (W1.1) — clinic-level switches; gate the Layouts card
+   *  rows + the ⌘K jump-to pages. */
+  modules?: ClinicalModules;
   onToggleSidebar: () => void;
 }) {
   const pathname = usePathname();
@@ -453,8 +470,8 @@ export function Topbar({
             Search lives in this cluster, not on the left (the left belongs to the
             JOURNEY breadcrumb); the clock sits AFTER the search (Roland 2026-06-16). */}
         <div className="flex shrink-0 items-center gap-1.5">
-          {onConsult && <LayoutsMenu />}
-          <CommandMenu />
+          {onConsult && <LayoutsMenu modules={modules} />}
+          <CommandMenu modules={modules} />
           {/* Live date + time to the second — sits just AFTER the search bar
               (Roland 2026-06-16). timeZone defaults to the viewer's local clock;
               the Caretaker clinic-timezone setting will feed it later (W1.1.x). */}

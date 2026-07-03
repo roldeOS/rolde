@@ -1,4 +1,5 @@
 import {
+  Blocks,
   Building2,
   Palette,
   Hash,
@@ -114,6 +115,17 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     group: "Spaces & People",
   },
   // — Clinical & Services —
+  {
+    key: "clinical-modules",
+    title: "Clinical Modules",
+    blurb:
+      "Which clinical tools your clinic uses — Lab, Radiology, Procedures, Prescribing and RolDe AI. Switch off what you don't do and it stays out of sight for your whole team.",
+    icon: Blocks,
+    tone: "sky",
+    source: "Bible 4.8 §W1.1 / APPROVALS §4.2",
+    status: "ready",
+    group: "Clinical & Services",
+  },
   {
     key: "services",
     title: "Services & Pricing",
