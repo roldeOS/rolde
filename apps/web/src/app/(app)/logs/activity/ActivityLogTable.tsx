@@ -86,7 +86,7 @@ function ActivityDetail({ r }: { r: ActivityRow }) {
 
       {changes.length > 0 ? (
         <div className="mt-3 border-t border-border pt-3">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             What changed
           </p>
           <ul className="space-y-1.5 text-[0.8125rem]">

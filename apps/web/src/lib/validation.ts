@@ -86,8 +86,10 @@ export const postcodeLabel = (c: CountryCode): string => POSTCODE[c].label;
 export const postcodeHint = (c: CountryCode): string => POSTCODE[c].hint;
 export const postcodeOk = (v: string, c: CountryCode): boolean => POSTCODE[c].ok(v.trim());
 
-// ── NHS number (GB) ───────────────────────────────────────────────────────────
-/** The real thing: 10 digits + the Modulus-11 check digit (NHS standard). */
+// ── National health identifiers ───────────────────────────────────────────────
+/** NHS number (England/Wales) · CHI (Scotland) · H&C (Northern Ireland) all
+ *  share the SAME shape: 10 digits + a Modulus-11 check digit — one validator
+ *  covers the whole UK (Roland 2026-07-03). */
 export const nhsNumberOk = (v: string): boolean => {
   const d = v.replace(/\s/g, "");
   if (!/^\d{10}$/.test(d)) return false;
@@ -99,6 +101,51 @@ export const nhsNumberOk = (v: string): boolean => {
   if (check === 11) check = 0;
   return check !== 10 && check === Number(d[9]);
 };
+
+/** The clinic country's national health ID — label, hint and rule. Stored in
+ *  the one nhs_number column today (rename to a generic column is Roland's
+ *  call); every country gets its own name + shape. */
+const NATIONAL_ID: Record<
+  CountryCode,
+  { label: string; hint: string; ok: (v: string) => boolean }
+> = {
+  GB: {
+    label: "NHS / CHI Number",
+    hint: "10 digits — checked against its check digit",
+    ok: nhsNumberOk,
+  },
+  IE: {
+    label: "IHI / PPS Number",
+    hint: "e.g. 1234567AB",
+    ok: (v) => /^\d{7}[A-Z]{1,2}$/i.test(v.replace(/\s/g, "")),
+  },
+  IN: {
+    label: "ABHA Number",
+    hint: "14 digits",
+    ok: (v) => /^\d{14}$/.test(v.replace(/[\s-]/g, "")),
+  },
+  US: { label: "Health ID", hint: "(optional)", ok: () => true },
+  CA: { label: "Health Card Number", hint: "(optional)", ok: () => true },
+  AU: {
+    label: "IHI Number",
+    hint: "16 digits",
+    ok: (v) => /^\d{16}$/.test(v.replace(/\s/g, "")),
+  },
+  NZ: {
+    label: "NHI Number",
+    hint: "e.g. ABC1234",
+    ok: (v) => /^[A-Z]{3}\d{2}[\dA-Z]{2}$/i.test(v.replace(/\s/g, "")),
+  },
+  AE: {
+    label: "Emirates ID",
+    hint: "15 digits, starts 784",
+    ok: (v) => /^784\d{12}$/.test(v.replace(/[\s-]/g, "")),
+  },
+};
+export const nationalIdLabel = (c: CountryCode): string => NATIONAL_ID[c].label;
+export const nationalIdHint = (c: CountryCode): string => NATIONAL_ID[c].hint;
+export const nationalIdOk = (v: string, c: CountryCode): boolean =>
+  NATIONAL_ID[c].ok(v.trim());
 
 // ── Date of birth ─────────────────────────────────────────────────────────────
 export const dobOk = (v: string): boolean => {

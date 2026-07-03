@@ -25,7 +25,6 @@ import {
   ChevronDown,
   Mail,
   FileDown,
-  Eye,
   TriangleAlert,
   OctagonAlert,
   ClipboardList,
@@ -174,7 +173,6 @@ export function ClinicalNotesFeed({
     return m;
   }, [reads]);
   const [seenNow, setSeenNow] = useState<Set<string>>(new Set());
-  const [seenByOpen, setSeenByOpen] = useState<Set<string>>(new Set());
   const isUnread = useCallback(
     (e: FeedEntry) =>
       e.created_by !== currentUserId &&
@@ -182,8 +180,21 @@ export function ClinicalNotesFeed({
       !seenNow.has(e.id),
     [currentUserId, readsByEntry, seenNow],
   );
+  // The STATUS TRAIL popover (v3) — replaces the eye/Read-by window.
+  const [trailOpen, setTrailOpen] = useState<Set<string>>(new Set());
+  const toggleTrail = useCallback((id: string) => {
+    setTrailOpen((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+  }, []);
+
   const [typeF, setTypeF] = useState<Set<string>>(new Set());
   const [authF, setAuthF] = useState<Set<string>>(new Set());
+  // Status filter (Roland 2026-07-03) — triage the feed by the Status Dot.
+  const [statusF, setStatusF] = useState<Set<string>>(new Set());
   const [visible, setVisible] = useState(PAGE);
   const [filterOpen, setFilterOpen] = useState(false);
   const [expandedOrig, setExpandedOrig] = useState<Set<string>>(new Set());
@@ -208,14 +219,34 @@ export function ClinicalNotesFeed({
     [entries],
   );
 
+  /** The Status Dot's key for a tile: needs_attention · in_flight · settled —
+   *  drives both the pill and the Status filter (Roland 2026-07-03). */
+  const statusKey = useCallback(
+    (e: FeedEntry) => {
+      const sendState =
+        (e.payload as { status?: string } | null)?.status ??
+        (e.entry_type in LETTER_KINDS ? "Not Sent" : undefined);
+      if (isUnread(e)) return "needs_attention";
+      if (sendState) {
+        if (/not sent|draft|fail|bounce|due|overdue|review/i.test(sendState))
+          return "needs_attention";
+        if (/deliver|opened|read|acknowledg|done/i.test(sendState)) return "settled";
+        if (/sent/i.test(sendState)) return "in_flight";
+      }
+      return "settled";
+    },
+    [isUnread],
+  );
+
   const filtered = useMemo(
     () =>
       entries.filter(
         (e) =>
           (typeF.size === 0 || typeF.has(e.entry_type)) &&
-          (authF.size === 0 || authF.has(e.created_by ?? "")),
+          (authF.size === 0 || authF.has(e.created_by ?? "")) &&
+          (statusF.size === 0 || statusF.has(statusKey(e))),
       ),
-    [entries, typeF, authF],
+    [entries, typeF, authF, statusF, statusKey],
   );
   const ordered = useMemo(() => {
     const a = [...filtered].sort((x, y) => (x.created_at < y.created_at ? -1 : 1));
@@ -297,7 +328,7 @@ export function ClinicalNotesFeed({
     else next.add(key);
     fn(next);
   }
-  const filterCount = typeF.size + authF.size;
+  const filterCount = typeF.size + authF.size + statusF.size;
 
   const sentinel = moreOlder ? (
     <div ref={sentinelRef} className="py-2 text-center text-xs text-muted-foreground">
@@ -360,7 +391,27 @@ export function ClinicalNotesFeed({
             </button>
             {filterOpen && (
               <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-56 rounded-xl bg-card p-2 shadow-overlay">
-                <p className="px-1 pb-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                <p className="px-1 pb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                  Status
+                </p>
+                {(
+                  [
+                    { key: "needs_attention", label: "Needs Attention" },
+                    { key: "in_flight", label: "In Flight" },
+                    { key: "settled", label: "Settled" },
+                  ] as const
+                ).map((st) => (
+                  <button
+                    key={st.key}
+                    onClick={() => toggle(statusF, st.key, setStatusF)}
+                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-hover"
+                  >
+                    {st.label}
+                    {statusF.has(st.key) && <Check className="size-3.5 text-info" />}
+                  </button>
+                ))}
+                <div className="my-1.5 h-px bg-border" />
+                <p className="px-1 pb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                   Type
                 </p>
                 {presentTypes.map((t) => (
@@ -374,7 +425,7 @@ export function ClinicalNotesFeed({
                   </button>
                 ))}
                 <div className="my-1.5 h-px bg-border" />
-                <p className="px-1 pb-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                <p className="px-1 pb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                   Author
                 </p>
                 {presentAuthors.map((a) => (
@@ -452,29 +503,93 @@ export function ClinicalNotesFeed({
             const origOpen = expandedOrig.has(e.id);
 
             const isLetter = e.entry_type in LETTER_KINDS;
-            /* The tile STATUS (URDS Feed Tile anatomy, Roland 2026-07-02) — a calm
-               pill in the footer-right, next to the actions. Letters: the send
-               state ("Not Sent" until the send rails land, then "Sent to GP" etc.,
-               carried in payload.status). Other entry types reuse the same slot. */
-            const status = (e.payload as { status?: string } | null)?.status ?? (isLetter ? "Not Sent" : undefined);
-            /* The Courier dispatch-trail palette (Roland 2026-07-03 — "the trail
-               needs colour"): Not Sent = amber (action still owed) · Sent = info
-               (in flight) · Delivered/Opened = success (landed) · Failed/Bounced =
-               critical. Pastel tints, per Earth & Bloom. */
-            const statusTone = !status
-              ? ""
-              : /not sent|draft/i.test(status)
-                ? "bg-warning/15 text-warning"
-                : /fail|bounce|revok/i.test(status)
-                  ? "bg-critical/10 text-critical"
-                  : /deliver|opened|read/i.test(status)
-                    ? "bg-success/10 text-success"
-                    : /sent/i.test(status)
-                      ? "bg-info/10 text-info"
-                      : "bg-muted text-muted-foreground";
-
             const unread = isUnread(e);
             const justSeen = seenNow.has(e.id);
+
+            /* The STATUS DOT (Roland 2026-07-03, Feed Tile v3) — ONE contextual
+               slot, top-right. Precedence: Unread (amber — attention owed) →
+               the send/action state carried in payload.status (Courier trail
+               palette: Not Sent amber · Failed critical · Sent info; "due/
+               review" reads amber) → Read ✓ just after the flip → handled =
+               dot only. RED is reserved for immediate clinical action. */
+            const sendState =
+              (e.payload as { status?: string } | null)?.status ??
+              (isLetter ? "Not Sent" : undefined);
+            const settledSend =
+              !sendState || /deliver|opened|read|acknowledg|done/i.test(sendState);
+            const tileStatus = unread
+              ? {
+                  text: "Unread",
+                  pillCls: "bg-warning/15 text-warning hover:bg-warning/25",
+                  dotCls: "bg-warning",
+                }
+              : sendState && !settledSend
+                ? /fail|bounce|revok/i.test(sendState)
+                  ? {
+                      text: sendState,
+                      pillCls: "bg-critical/10 text-critical hover:bg-critical/15",
+                      dotCls: "bg-critical",
+                    }
+                  : /not sent|draft|due|overdue|review/i.test(sendState)
+                    ? {
+                        text: sendState,
+                        pillCls: "bg-warning/15 text-warning hover:bg-warning/25",
+                        dotCls: "bg-warning",
+                      }
+                    : {
+                        text: sendState,
+                        pillCls: "bg-info/10 text-info hover:bg-info/15",
+                        dotCls: "bg-info",
+                      }
+                : justSeen
+                  ? {
+                      text: "Read ✓",
+                      pillCls: "bg-success/10 text-success hover:bg-success/15",
+                      dotCls: "bg-success",
+                    }
+                  : { text: "", pillCls: "", dotCls: "" };
+
+            /** The tile's status history, oldest first — Written · Read (the
+             *  recorder) · edits/strikes · the send state. C3 appends real
+             *  Sent/Delivered/Opened events to this same list. */
+            const trailFor = (entry: FeedEntry) => {
+              const rows: { label: string; who?: string; when?: string; dot: string }[] = [
+                {
+                  label: "Written",
+                  who: authors[entry.created_by ?? ""]?.name ?? "—",
+                  when: fmtTime(entry.created_at),
+                  dot: "bg-foreground/30",
+                },
+              ];
+              if (entry.edited_at)
+                rows.push({ label: "Edited", when: fmtTime(entry.edited_at), dot: "bg-foreground/30" });
+              if (entry.struck_at)
+                rows.push({ label: "Struck Through", when: fmtTime(entry.struck_at), dot: "bg-warning" });
+              const firstRead = (readsByEntry.get(entry.id) ?? []).find(
+                (r) => r.user_id !== entry.created_by,
+              );
+              if (firstRead)
+                rows.push({
+                  label: "Read",
+                  who: authors[firstRead.user_id]?.name ?? "A team member",
+                  when: fmtTime(firstRead.read_at),
+                  dot: "bg-success",
+                });
+              else if (seenNow.has(entry.id))
+                rows.push({ label: "Read", who: "You", when: "Just now", dot: "bg-success" });
+              if (sendState)
+                rows.push({
+                  label: sendState,
+                  dot: settledSend
+                    ? "bg-success"
+                    : /fail|bounce/i.test(sendState)
+                      ? "bg-critical"
+                      : /sent/i.test(sendState)
+                        ? "bg-info"
+                        : "bg-warning",
+                });
+              return rows;
+            };
 
             return (
               <Fragment key={e.id}>
@@ -491,7 +606,7 @@ export function ClinicalNotesFeed({
                   <span className="flex min-w-0 items-center gap-1.5">
                     {/* Mobile (Roland #4): icon only; the label shows from sm up. */}
                     <span
-                      className={`flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium ${TONE_BADGE[kind.tone]}`}
+                      className={`flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold ${TONE_BADGE[kind.tone]}`}
                     >
                       <kind.icon className="size-3" />
                       <span className="hidden capitalize sm:inline">{kind.label}</span>
@@ -503,83 +618,63 @@ export function ClinicalNotesFeed({
                       </span>
                     )}
                   </span>
-                  {/* TOP-RIGHT (Roland 2026-07-02) — the read-state anchor: the
-                      "Unseen" pill (click = your first read, recorded) or "Read ✓",
-                      plus the eye that opens the Read-by window. A div (not span):
-                      the popover renders block content — valid nesting matters. */}
+                  {/* TOP-RIGHT — the STATUS DOT (Roland's design, 2026-07-03,
+                      Feed Tile v3): ONE contextual status slot — a pill naming
+                      the open status, ending in a traffic-light dot. Unread =
+                      amber (attention); red is RESERVED for immediate clinical
+                      action; handled = the words leave, a calm muted dot stays.
+                      Clicking Unread records the reader (once, audited); any
+                      other click opens the STATUS TRAIL. */}
                   <div className="relative flex shrink-0 items-center gap-1 text-xs">
-                    {/* PASTEL amber (Roland 2026-07-03): "Unseen" is an attention
-                        state — amber, never green (positive) or red (clinical
-                        danger) — worn the RolDe way: an Earth & Bloom tint at /15
-                        opacity, never a solid shout. */}
-                    {unread && (
+                    {tileStatus.text ? (
                       <button
                         onClick={() => {
-                          setSeenNow((s) => new Set(s).add(e.id));
-                          void markEntrySeen(e.id);
+                          if (unread) {
+                            setSeenNow((sn) => new Set(sn).add(e.id));
+                            void markEntrySeen(e.id);
+                          } else {
+                            toggleTrail(e.id);
+                          }
                         }}
-                        title="Mark as read (recorded)"
-                        className="rounded-full bg-warning/15 px-2 py-0.5 font-semibold text-warning transition-colors hover:bg-warning/25"
+                        title={unread ? "Mark as read (recorded)" : "The status trail"}
+                        className={cn(
+                          "flex items-center gap-1.5 rounded-full px-2 py-0.5 font-semibold transition-colors",
+                          tileStatus.pillCls,
+                        )}
                       >
-                        Unseen
+                        {tileStatus.text}
+                        <span className={cn("size-[7px] rounded-full", tileStatus.dotCls)} />
                       </button>
-                    )}
-                    {justSeen && (
-                      <span className="rounded-full px-1.5 py-0.5 text-muted-foreground">Read ✓</span>
-                    )}
-                    {(readsByEntry.get(e.id)?.length || justSeen) ? (
+                    ) : (
                       <button
-                        onClick={() =>
-                          setSeenByOpen((s) => {
-                            const n = new Set(s);
-                            if (n.has(e.id)) n.delete(e.id);
-                            else n.add(e.id);
-                            return n;
-                          })
-                        }
-                        title="Who has read this"
-                        className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                        onClick={() => toggleTrail(e.id)}
+                        title="Handled — click for the status trail"
+                        className="flex size-6 items-center justify-center rounded-md transition-colors hover:bg-hover"
                       >
-                        <Eye className="size-3.5" />
+                        <span className="size-2 rounded-full bg-success/55" />
                       </button>
-                    ) : null}
-                    {/* The Read-by window — a small anchored popover (the same
-                        component grammar the Courier SENT journey will reuse). */}
-                    {seenByOpen.has(e.id) && (
+                    )}
+                    {/* The STATUS TRAIL — every status this tile has worn, in
+                        order (the popover grammar Courier C3's live journey
+                        will extend with Sent/Delivered/Opened events). */}
+                    {trailOpen.has(e.id) && (
                       <div className="absolute right-0 top-[calc(100%+6px)] z-20 w-72 rounded-xl bg-card p-3 shadow-overlay">
-                        <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Read by</p>
+                        <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Status Trail</p>
                         <ul className="space-y-1.5">
-                          {/* Two lines per reader (Roland 2026-07-03): the FULL
-                              name never truncates; the time sits beneath. One
-                              row per person — their FIRST read; re-reads never
-                              add rows (the receipt is unique per person). */}
-                          {(readsByEntry.get(e.id) ?? []).map((r, i) => {
-                            const reader = authors[r.user_id];
-                            return (
-                              <li key={i} className="text-xs">
-                                <p className="flex flex-wrap items-center gap-1.5">
-                                  <span className="size-1.5 shrink-0 rounded-full bg-warning" />
-                                  <span className="font-medium text-foreground">
-                                    {reader?.name ?? "A team member"}
-                                  </span>
-                                  {i === 0 && <span className="text-warning">· first</span>}
-                                </p>
-                                <p className="pl-3 text-muted-foreground">{fmtTime(r.read_at)}</p>
-                              </li>
-                            );
-                          })}
-                          {seenNow.has(e.id) && (
-                            <li className="text-xs">
+                          {trailFor(e).map((t, i) => (
+                            <li key={i} className="text-xs">
                               <p className="flex flex-wrap items-center gap-1.5">
-                                <span className="size-1.5 shrink-0 rounded-full bg-warning" />
-                                <span className="font-medium text-foreground">You</span>
-                                {(readsByEntry.get(e.id)?.length ?? 0) === 0 && (
-                                  <span className="text-warning">· first</span>
+                                <span className={cn("size-1.5 shrink-0 rounded-full", t.dot)} />
+                                <span className="font-medium text-foreground">{t.label}</span>
+                                {t.who && (
+                                  <span className="text-muted-foreground">— {t.who}</span>
                                 )}
                               </p>
-                              <p className="pl-3 text-muted-foreground">Just now</p>
+                              {t.when && (
+                                <p className="pl-3 text-muted-foreground">{t.when}</p>
+                              )}
                             </li>
-                          )}
+                          ))}
                         </ul>
                       </div>
                     )}
@@ -637,11 +732,6 @@ export function ClinicalNotesFeed({
                     )}
                   </span>
                   <span className="flex flex-1 items-center justify-end gap-1">
-                    {status && (
-                      <span className={cn("rounded-md px-1.5 py-0.5 text-xs font-medium", statusTone)}>
-                        {status}
-                      </span>
-                    )}
                     {isLetter && (
                       <a
                         href={`/api/letters/${e.id}/pdf`}

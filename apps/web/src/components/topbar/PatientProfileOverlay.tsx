@@ -54,9 +54,16 @@ import {
   postcodeLabel,
   postcodeHint,
   postcodeOk,
-  nhsNumberOk,
+  nationalIdLabel,
+  nationalIdHint,
+  nationalIdOk,
   dobOk,
 } from "@/lib/validation";
+import {
+  severityLabel,
+  alertCategoryLabel,
+  alertPriorityLabel,
+} from "@/lib/recordLabels";
 import { cn } from "@/lib/utils";
 
 /**
@@ -242,7 +249,7 @@ const ETHNICITIES = [
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="pt-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+    <p className="pt-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
       {children}
     </p>
   );
@@ -289,7 +296,7 @@ function DetailsForm() {
   const okEmail = v.email === "" || emailOk(v.email);
   const okPhone = v.phone_mobile === "" || phoneOk(v.phone_mobile, country);
   const okPost = v.postcode.trim() === "" || postcodeOk(v.postcode, country);
-  const okNhs = v.nhs_number.trim() === "" || nhsNumberOk(v.nhs_number);
+  const okNhs = v.nhs_number.trim() === "" || nationalIdOk(v.nhs_number, country);
   const okDob = v.date_of_birth === "" || dobOk(v.date_of_birth);
   const required =
     v.first_name.trim() && v.last_name.trim() && v.date_of_birth &&
@@ -359,7 +366,7 @@ function DetailsForm() {
             ))}
           </Select>
         </Field>
-        <Field label="NHS Number" htmlFor="pf-nhs" hint="10 digits — checked against its check digit">
+        <Field label={nationalIdLabel(country)} htmlFor="pf-nhs" hint={nationalIdHint(country)}>
           <Input id="pf-nhs" value={v.nhs_number} error={!okNhs} onChange={(e) => set("nhs_number")(e.target.value)} />
         </Field>
       </div>
@@ -1135,7 +1142,7 @@ function RecordSection() {
                   <p className="text-sm font-medium text-critical">
                     {a.substance}
                     <span className="ml-2 text-xs font-normal text-critical/80">
-                      {a.severity.replace(/_/g, " ")}
+                      {severityLabel(a.severity)}
                     </span>
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">{a.reaction}</p>
@@ -1210,8 +1217,8 @@ function RecordSection() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium">
                     {al.title}
-                    <span className="ml-2 rounded-md bg-foreground/6 px-1.5 py-0.5 text-xs font-normal text-muted-foreground capitalize">
-                      {al.category} · {al.priority}
+                    <span className="ml-2 rounded-md bg-foreground/6 px-1.5 py-0.5 text-xs font-normal text-muted-foreground">
+                      {alertCategoryLabel(al.category)} · {alertPriorityLabel(al.priority)}
                     </span>
                   </p>
                   {al.description && (
@@ -1291,7 +1298,7 @@ function RecordSection() {
                     {p.title}
                     {p.status === "resolved" && (
                       <span className="ml-1.5 text-xs font-normal text-muted-foreground">
-                        · resolved
+                        · Resolved
                       </span>
                     )}
                   </p>

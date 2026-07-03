@@ -13,7 +13,9 @@ import {
   phoneHint,
   phoneMaxLen,
   sanitisePhone,
-  nhsNumberOk,
+  nationalIdOk,
+  nationalIdLabel,
+  nationalIdHint,
 } from "@/lib/validation";
 
 
@@ -46,7 +48,7 @@ export function NewPatientForm({ country: countryProp = "GB" }: { country?: stri
     sex_at_birth: !!v.sex_at_birth,
     phone_mobile: phoneOk(v.phone_mobile, country),
     email: emailOk(v.email),
-    nhs_number: v.nhs_number === "" || nhsNumberOk(v.nhs_number),
+    nhs_number: v.nhs_number === "" || nationalIdOk(v.nhs_number, country),
   };
 
   return (
@@ -132,7 +134,7 @@ export function NewPatientForm({ country: countryProp = "GB" }: { country?: stri
         />
       </Field>
 
-      <Field label="NHS Number" htmlFor="nhs_number" hint="(optional — checked against its check digit)">
+      <Field label={nationalIdLabel(country)} htmlFor="nhs_number" hint={`(optional) ${nationalIdHint(country)}`}>
         <Input
           id="nhs_number"
           name="nhs_number"

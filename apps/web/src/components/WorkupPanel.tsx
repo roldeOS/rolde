@@ -62,7 +62,7 @@ export function WorkupPanel({
               key={t.key}
               onClick={() => setTab(t.key)}
               className={cn(
-                "shrink-0 rounded-lg px-2 py-1 text-sm font-medium transition-colors",
+                "shrink-0 rounded-lg px-2 py-1 text-sm font-semibold transition-colors",
                 active.key === t.key
                   ? "bg-foreground/6 text-foreground"
                   : "text-muted-foreground hover:bg-hover hover:text-foreground",

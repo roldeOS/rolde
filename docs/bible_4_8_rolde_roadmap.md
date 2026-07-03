@@ -1320,11 +1320,22 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     - **Alerts editor** (Clinical Record tab): Needle Phobia and kin — title · category (safety/
       clinical/infection/social) · priority (info/warning/critical) · description; add/edit/resolve,
       each posting an alert_recorded feed entry; the island's alert pills stay the display.
-    ▢ REMAINING —
-    Body-Map (Servier style TBC) · the Feed Tile STATUS DOT redesign (Roland's concept 2026-07-03:
-    one contextual status pill ending in a traffic-light dot; handled = dot only; click = the status
-    trail; supersedes the eye/Read-by anchor — awaiting Roland's verdict on the mock before build +
-    URDS blessing). New pieces to build + add to the URDS:
+    **✅ STATUS DOT BUILT 2026-07-03 (Roland's design — Feed Tile v3, URDS §8):** ONE
+    contextual status slot top-right (pill naming the open status + traffic-light dot; Unread =
+    amber; red RESERVED for immediate clinical action; letters' send states ride the same slot —
+    the footer status pill is gone); handled = a small muted green dot; click = the **Status Trail**
+    (Written · Edited · Struck · Read+who · send state — C3 appends live Sent/Delivered/Opened);
+    the feed Filter gains a **Status section** (Needs Attention · In Flight · Settled) so clinicians
+    triage by the dot; type-pill labels semibold. **The Status Dot feeds RolDe Ambient AI at W5**
+    (Roland 2026-07-03): the dot's state machine is the signal rail the AI reads (what's unread,
+    owed, overdue) and writes (its suggestions arrive as amber statuses, clinician-authorised).
+    Same pass: micro-typography laws (uppercase micro-headers + segment/tab labels semibold) +
+    the label-map law (recordLabels.ts — no raw stored values in chrome) + country-aware national
+    health IDs (GB NHS/CHI Mod-11 · IE IHI/PPS · IN ABHA · AU IHI · NZ NHI · AE Emirates ID; the
+    nhs_number COLUMN rename to a generic name awaits Roland's call). ▢ REMAINING —
+    Body-Map (Servier candidates with Roland) · the Status-Dot COLOUR TAXONOMY approval (the list
+    is with Roland: red = immediate-response states; amber = attention owed; info = in flight;
+    green = settled; grey = historic). New pieces to build + add to the URDS:
     - **Adaptive Workspace** — the four cards reflow by **Clinical Modules** (a new W1.1 Settings toggle:
       Lab · Radiology · Procedures · Prescriptions · RolDe AI) → 4/3/2-card states, AND are sized by
       **user-controlled LAYOUTS — no auto-resize (Roland 2026-07-01, FINAL; supersedes both the old

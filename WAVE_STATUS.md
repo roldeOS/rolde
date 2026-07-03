@@ -61,7 +61,9 @@
 | ✅ | **Profile overlay** — full record in a sheet over the Consult Room (island "Full Profile" + Snapshot "+ Add"): Details (field-audited) · Next Of Kin · Care Team (Courier address hooks, one-GP rule) · Clinical Record editors (allergies/PMH/meds — add/edit/resolve/stop, feed-noted) — 2026-07-03 |
 | ✅ | **Read-by "· first" fix** — reads sorted by read_at (DB row order had crowned the wrong first reviewer) — 2026-07-03 |
 | ✅ | **Full Profile completeness pass** — clinic Country setting (Clinic Profile) · country-aware validation lib (phone/postcode/email/DOB + NHS check digit; client per-country, server floor) · full registration dataset in Details (PDS/GP-Connect + Accessible Information Standard fields, field-audited) · **Alerts editor** (needle phobia etc.; add/edit/resolve, feed-noted) — 2026-07-03 |
-| ▢ | **Feed Tile Status Dot redesign** — Roland's concept (contextual pill + traffic-light dot · handled = dot only · click = status trail); mock delivered, awaiting his verdict → then build + URDS blessing |
+| ✅ | **Feed Tile v3 — the STATUS DOT (Roland's design)** — one contextual pill + traffic-light dot (Unread amber · red reserved for immediate) · settle-to-muted-dot · Status Trail popover · Status filter (Needs Attention / In Flight / Settled) · footer status pill retired · in the URDS §8 — 2026-07-03 |
+| ✅ | **Micro-typography + label laws** — uppercase micro-headers & segment/tab labels semibold (audited platform-wide) · recordLabels.ts label maps (no raw stored values — "Safety · Warning") · country-aware national health IDs (NHS/CHI · ABHA · IHI · NHI · Emirates ID) — 2026-07-03 |
+| ▢ | **Status-Dot colour taxonomy** — the red/amber/info/green/grey state list awaits Roland's eyeball → approved states then light up as they ship (results ack at W3, reviews at W2/W3) |
 | ▢ | Consultation redesign remainder: **Body-Map** (Servier style TBC) |
 | ▢ | W1.2.1 Problem List (SNOMED-coded) · W1.2.2 Medication List + reconciliation · W1.2.3 History (PMH/surgical/family/social) |
 | ▢ | W1.2.4 Document Store · W1.2.6 Digital Consents (e-sign) |
@@ -94,4 +96,4 @@
 
 ---
 
-*Last updated: 2026-07-03 late (Profile completeness + validation live; next: Status-Dot verdict → Body-Map → Courier C2/C3).*
+*Last updated: 2026-07-03 late (Status Dot v3 + typography/label laws + national IDs live; next: colour-taxonomy approval → Body-Map style pick → Courier C2/C3).*

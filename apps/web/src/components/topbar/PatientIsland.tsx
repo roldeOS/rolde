@@ -12,6 +12,7 @@ import {
   Plus,
 } from "lucide-react";
 import { useClickAway } from "@/lib/useClickAway";
+import { severityLabel, sexLabel } from "@/lib/recordLabels";
 import { useTopbar } from "./TopbarContext";
 import {
   PatientProfileOverlay,
@@ -96,7 +97,7 @@ export function PatientIsland() {
               </p>
               <p className="mt-0.5 text-sm text-muted-foreground">
                 {fmtDob(patient.dob)} · {patient.age}y ·{" "}
-                <span className="capitalize">{patient.sex}</span>
+                <span>{sexLabel(patient.sex)}</span>
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -137,7 +138,7 @@ export function PatientIsland() {
                   <li key={a.substance} className="text-sm text-critical/90">
                     <span className="font-medium">{a.substance}</span> — {a.reaction}{" "}
                     <span className="text-critical/70">
-                      ({a.severity.replace(/_/g, " ")})
+                      ({severityLabel(a.severity)})
                     </span>
                   </li>
                 ))}
@@ -181,7 +182,7 @@ export function PatientIsland() {
           {!recordLocked && (
           <div className="grid gap-3 border-t border-border/50 p-4 sm:grid-cols-2">
             <div>
-              <p className="mb-1 flex items-center justify-between text-xs font-medium tracking-wider text-muted-foreground uppercase">
+              <p className="mb-1 flex items-center justify-between text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 <span>Past Medical History</span>
                 <span className="flex items-center gap-1.5">
                   <span className="tabular-nums">{patient.problems.length}</span>
@@ -205,7 +206,7 @@ export function PatientIsland() {
                     >
                       {p.title}
                       {p.status === "resolved" && (
-                        <span className="ml-1 text-xs text-muted-foreground">· resolved</span>
+                        <span className="ml-1 text-xs text-muted-foreground">· Resolved</span>
                       )}
                     </li>
                   ))}
@@ -215,7 +216,7 @@ export function PatientIsland() {
               )}
             </div>
             <div>
-              <p className="mb-1 flex items-center justify-between text-xs font-medium tracking-wider text-muted-foreground uppercase">
+              <p className="mb-1 flex items-center justify-between text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 <span>Current Medications</span>
                 <span className="flex items-center gap-1.5">
                   <span className="tabular-nums">{patient.medications.length}</span>
@@ -251,7 +252,7 @@ export function PatientIsland() {
           {!recordLocked && (
           <div className="grid gap-3 border-t border-border/50 p-4 sm:grid-cols-2">
             <div>
-              <p className="mb-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+              <p className="mb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Address
               </p>
               <div className="flex items-start gap-1.5 text-sm">
@@ -266,7 +267,7 @@ export function PatientIsland() {
               </div>
             </div>
             <div>
-              <p className="mb-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+              <p className="mb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                 Contact
               </p>
               <div className="space-y-1 text-sm">

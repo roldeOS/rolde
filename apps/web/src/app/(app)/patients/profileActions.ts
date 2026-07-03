@@ -11,7 +11,7 @@ import {
   MEDICATION_FIELDS,
   ALERT_FIELDS,
 } from "@/lib/auditFields";
-import { emailOk, phonePlausible, dobOk, nhsNumberOk } from "@/lib/validation";
+import { emailOk, phonePlausible, dobOk, nationalIdOk, asCountry } from "@/lib/validation";
 
 /**
  * The Profile overlay's server actions (W1.2, Roland 2026-07-03) — demographics,
@@ -139,8 +139,17 @@ export async function updatePatientDetails(formData: FormData): Promise<ActionRe
     return fail("That phone number doesn’t look right.");
   if (!dobOk(fields.date_of_birth))
     return fail("That date of birth doesn’t look right.");
-  if (fields.nhs_number && !nhsNumberOk(fields.nhs_number))
-    return fail("That NHS number fails its check digit — please re-check it.");
+  if (fields.nhs_number) {
+    // Validate the national health ID against the CLINIC's country (NHS/CHI
+    // Modulus-11 for GB · ABHA for IN · IHI for AU · …).
+    const { data: tenant } = await c.supabase
+      .from("tenants")
+      .select("country")
+      .eq("id", c.tenantId)
+      .maybeSingle();
+    if (!nationalIdOk(fields.nhs_number, asCountry(tenant?.country)))
+      return fail("That health ID doesn’t look right — please re-check it.");
+  }
 
   // The CURRENT row, to diff for the audit trail (server-authoritative).
   const { data: before } = await c.supabase

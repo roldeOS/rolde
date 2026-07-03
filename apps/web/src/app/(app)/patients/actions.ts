@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionContext } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
-import { emailOk, phonePlausible, dobOk, nhsNumberOk } from "@/lib/validation";
+import { emailOk, phonePlausible, dobOk, nationalIdOk, asCountry } from "@/lib/validation";
 
 /**
  * Create a patient in the caller's clinic. The clinic (tenant) comes from the
@@ -38,8 +38,16 @@ export async function createPatient(formData: FormData) {
   if (!emailOk(email)) throw new Error("That email doesn't look right.");
   if (!phonePlausible(phone_mobile)) throw new Error("That phone number doesn't look right.");
   if (!dobOk(date_of_birth)) throw new Error("That date of birth doesn't look right.");
-  if (nhs_number && !nhsNumberOk(nhs_number))
-    throw new Error("That NHS number fails its check digit.");
+  if (nhs_number) {
+    const supa = await createClient();
+    const { data: tenant } = await supa
+      .from("tenants")
+      .select("country")
+      .eq("id", tenantId)
+      .maybeSingle();
+    if (!nationalIdOk(nhs_number, asCountry(tenant?.country)))
+      throw new Error("That health ID doesn't look right.");
+  }
 
   const supabase = await createClient();
   const { data: created, error } = await supabase
