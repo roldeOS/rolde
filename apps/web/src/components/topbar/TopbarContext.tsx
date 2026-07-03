@@ -29,18 +29,26 @@ export type TopbarPatient = {
 } | null;
 
 /**
- * The consultation workspace LAYOUT (Roland 2026-07-01, APPROVALS §4.2 — user-
- * controlled, NO auto-resize; supersedes the Consult/Document/Review presets).
- * `col` = the left column's share of the width; `split` = the top cards' share
- * of the height (ONE split applied to both columns — visually symmetric).
+ * The consultation workspace LAYOUT (Roland 2026-07-01/03, APPROVALS §4.2 —
+ * user-controlled, NO auto-resize; supersedes the Consult/Document/Review
+ * presets). `col` = the left column's share of the width; `split` = the top
+ * cards' share of the height (ONE split for both columns — symmetric);
+ * `hidden` = the cards this user has toggled OFF in the Layouts menu (Roland
+ * 2026-07-03 — a layout also remembers WHICH cards it shows; Scribe is always on).
  */
-export type WorkspaceLayout = { col: number; split: number };
+export type WorkspaceCard = "notes" | "workup" | "ai";
+export type WorkspaceLayout = { col: number; split: number; hidden: WorkspaceCard[] };
 export type SavedLayout = WorkspaceLayout & { name: string };
-/** "Default" = the locked balanced 50/50 (Roland 2026-07-01). */
-export const DEFAULT_LAYOUT: WorkspaceLayout = { col: 0.5, split: 0.5 };
+/** "Default" (Roland 2026-07-03): columns 50/50 · rows 80/20 · all cards on. */
+export const DEFAULT_LAYOUT: WorkspaceLayout = { col: 0.5, split: 0.8, hidden: [] };
 
-const clamp = (n: number) => Math.min(0.8, Math.max(0.2, n));
-const sane = (l: WorkspaceLayout): WorkspaceLayout => ({ col: clamp(l.col), split: clamp(l.split) });
+const clamp = (n: number) => Math.min(0.85, Math.max(0.15, n));
+const CARDS: WorkspaceCard[] = ["notes", "workup", "ai"];
+const sane = (l: Partial<WorkspaceLayout>): WorkspaceLayout => ({
+  col: clamp(typeof l.col === "number" ? l.col : DEFAULT_LAYOUT.col),
+  split: clamp(typeof l.split === "number" ? l.split : DEFAULT_LAYOUT.split),
+  hidden: Array.isArray(l.hidden) ? l.hidden.filter((c): c is WorkspaceCard => CARDS.includes(c as WorkspaceCard)) : [],
+});
 
 const Ctx = createContext<{
   patient: TopbarPatient;

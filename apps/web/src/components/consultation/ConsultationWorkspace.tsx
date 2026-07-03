@@ -90,32 +90,49 @@ export function ConsultationWorkspace({
   const dur = ready && !dragging ? "duration-300" : "duration-0";
   const grow = (n: number) => ({ flexGrow: n * 100, flexBasis: 0 });
 
-  // ── Divider drag (pointer events; lg+ only — stacked layouts have no dividers).
-  // Vertical divider re-balances the columns; each column's horizontal divider
-  // drives the ONE shared split. Double-click resets to the Default 50/50.
+  // ── Divider drag (lg+ only — stacked layouts have no dividers). WINDOW-level
+  // move/up listeners from pointerdown to release (Roland 2026-07-03 — the
+  // capture-based version could go dead on some dividers/browsers; window
+  // listeners track everywhere, robustly). The vertical divider re-balances the
+  // columns; each column's horizontal divider drives the ONE shared split.
+  // Double-click resets to Default.
+  const layoutRef = useRef(layout);
+  layoutRef.current = layout;
   function startDrag(kind: "col" | "split", e: React.PointerEvent) {
     e.preventDefault();
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
     setDragging(kind);
-  }
-  function moveDrag(kind: "col" | "split", e: React.PointerEvent) {
-    if (!dragging || dragging !== kind) return;
-    if (kind === "col") {
-      const rect = rowRef.current?.getBoundingClientRect();
-      if (!rect || rect.width === 0) return;
-      setLayout({ ...layout, col: (e.clientX - rect.left) / rect.width });
-    } else {
-      const col = (e.target as HTMLElement).closest("[data-col]");
-      const rect = col?.getBoundingClientRect();
-      if (!rect || rect.height === 0) return;
-      setLayout({ ...layout, split: (e.clientY - rect.top) / rect.height });
-    }
-  }
-  function endDrag(e: React.PointerEvent) {
-    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-    setDragging(null);
+    const colEl = (e.currentTarget as HTMLElement).closest("[data-col]");
+    const onMove = (ev: PointerEvent) => {
+      if (kind === "col") {
+        const rect = rowRef.current?.getBoundingClientRect();
+        if (!rect || rect.width === 0) return;
+        setLayout({ ...layoutRef.current, col: (ev.clientX - rect.left) / rect.width });
+      } else {
+        const rect = colEl?.getBoundingClientRect();
+        if (!rect || rect.height === 0) return;
+        setLayout({ ...layoutRef.current, split: (ev.clientY - rect.top) / rect.height });
+      }
+    };
+    const onUp = () => {
+      setDragging(null);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
   }
   const resetLayout = () => setLayout(DEFAULT_LAYOUT);
+
+  // Card visibility (Roland 2026-07-03) — toggled in the Layouts menu, saved
+  // with named layouts. Scribe is always on. A hidden card hands its space to
+  // its column-mate; both right cards hidden → the right column goes entirely.
+  const hidden = new Set(layout.hidden);
+  const showNotes = !hidden.has("notes");
+  const showWorkup = !hidden.has("workup");
+  const showAi = !hidden.has("ai");
+  const showRight = showWorkup || showAi;
 
   const mode: "new" | "edit" | "amend" = !editTarget
     ? "new"
@@ -198,8 +215,9 @@ export function ConsultationWorkspace({
       <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden">
         <div ref={rowRef} className="flex flex-col gap-3 lg:h-full lg:flex-row lg:gap-0">
           {/* Left column */}
-          <div data-col className="flex flex-col gap-3 lg:min-h-0 lg:gap-0" style={grow(layout.col)}>
+          <div data-col className="flex flex-col gap-3 lg:min-h-0 lg:gap-0" style={grow(showRight ? layout.col : 1)}>
             {/* Clinical Notes */}
+            {showNotes && (
             <section
               style={grow(leftTop)}
               className={cn(
@@ -220,23 +238,24 @@ export function ConsultationWorkspace({
                 activeId={editTarget?.id ?? null}
               />
             </section>
+            )}
 
             {/* The shared row divider (left column) — drag to resize BOTH
                 columns' split; double-click = Default (APPROVALS §4.2). */}
+            {showNotes && (
             <div
               onPointerDown={(e) => startDrag("split", e)}
-              onPointerMove={(e) => moveDrag("split", e)}
-              onPointerUp={endDrag}
               onDoubleClick={resetLayout}
               title="Drag to resize · double-click for Default"
-              className="group hidden shrink-0 cursor-row-resize touch-none items-center justify-center lg:flex lg:h-3"
+              className="group hidden shrink-0 cursor-row-resize touch-none items-center justify-center lg:flex lg:h-4"
             >
-              <div className="h-1 w-10 rounded-full bg-border transition-colors group-hover:bg-foreground/25" />
+              <div className="h-1.5 w-16 rounded-full bg-foreground/15 transition-colors group-hover:bg-foreground/35" />
             </div>
+            )}
 
             {/* Composer — borderless, the whole white space; Save + Discard */}
             <section
-              style={grow(1 - leftTop)}
+              style={grow(showNotes ? 1 - leftTop : 1)}
               className={cn(
                 "flex min-h-[220px] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[92px]",
                 dur,
@@ -325,21 +344,23 @@ export function ConsultationWorkspace({
 
           {/* The column divider — drag to re-balance left/right; double-click
               = Default. */}
+          {showRight && (
           <div
             onPointerDown={(e) => startDrag("col", e)}
-            onPointerMove={(e) => moveDrag("col", e)}
-            onPointerUp={endDrag}
             onDoubleClick={resetLayout}
             title="Drag to resize · double-click for Default"
-            className="group hidden shrink-0 cursor-col-resize touch-none items-center justify-center lg:flex lg:w-3"
+            className="group hidden shrink-0 cursor-col-resize touch-none items-center justify-center lg:flex lg:w-4"
           >
-            <div className="h-10 w-1 rounded-full bg-border transition-colors group-hover:bg-foreground/25" />
+            <div className="h-16 w-1.5 rounded-full bg-foreground/15 transition-colors group-hover:bg-foreground/35" />
           </div>
+          )}
 
           {/* Right column */}
+          {showRight && (
           <div data-col className="flex flex-col gap-3 lg:min-h-0 lg:gap-0" style={grow(1 - layout.col)}>
+            {showWorkup && (
             <section
-              style={grow(rightTop)}
+              style={grow(showAi ? rightTop : 1)}
               className={cn(
                 "flex min-h-[40vh] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[140px]",
                 dur,
@@ -353,21 +374,23 @@ export function ConsultationWorkspace({
                 }
               />
             </section>
+            )}
 
             {/* The shared row divider (right column) — the same ONE split. */}
+            {showWorkup && showAi && (
             <div
               onPointerDown={(e) => startDrag("split", e)}
-              onPointerMove={(e) => moveDrag("split", e)}
-              onPointerUp={endDrag}
               onDoubleClick={resetLayout}
               title="Drag to resize · double-click for Default"
-              className="group hidden shrink-0 cursor-row-resize touch-none items-center justify-center lg:flex lg:h-3"
+              className="group hidden shrink-0 cursor-row-resize touch-none items-center justify-center lg:flex lg:h-4"
             >
-              <div className="h-1 w-10 rounded-full bg-border transition-colors group-hover:bg-foreground/25" />
+              <div className="h-1.5 w-16 rounded-full bg-foreground/15 transition-colors group-hover:bg-foreground/35" />
             </div>
+            )}
 
+            {showAi && (
             <section
-              style={grow(1 - rightTop)}
+              style={grow(showWorkup ? 1 - rightTop : 1)}
               className={cn(
                 "flex min-h-[200px] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[92px]",
                 dur,
@@ -375,7 +398,9 @@ export function ConsultationWorkspace({
             >
               <AiPanel />
             </section>
+            )}
           </div>
+          )}
         </div>
       </div>
     </div>

@@ -1253,11 +1253,16 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     **Courier C1** (read receipts). **The view is named: "Consult" in chrome · "Consult Room" in prose
     (LOCKED 2026-07-02)** — the topbar island reads "Consult · <patient>". **✅ LAYOUTS BUILT 2026-07-03:**
     the topbar **"Layouts" menu** (replacing Consult/Document/Review, which is fully retired — code +
-    localStorage key) lists **Default (the locked 50/50)** + the user's **named layouts** (save-as ·
-    remove); **three drag dividers** (one column + the ONE shared row split, visually symmetric);
-    **double-click a divider = Default**; persisted per user (`rolde:layout`/`rolde:layouts`); the
-    composer's focus-grow removed — **the layout never moves on its own** (APPROVALS §4.2); dividers are
-    lg+ only (tablet/mobile stays stacked). Also 2026-07-03: the **Courier dispatch-trail palette** —
+    localStorage key) lists **Default** + the user's **named layouts** (save-as · remove); **three drag
+    dividers** (one column + the ONE shared row split, visually symmetric); **double-click a divider =
+    Default**; persisted per user (`rolde:layout`/`rolde:layouts`); the composer's focus-grow removed —
+    **the layout never moves on its own** (APPROVALS §4.2); dividers are lg+ only (tablet/mobile stays
+    stacked). **Refined 2026-07-03 (Roland-driven):** **Default = columns 50/50 · rows 80/20** (top
+    cards dominant, Scribe + RolDe 20%); drag rewritten on **window-level pointer listeners** (every
+    divider drags, everywhere); dividers made **prominent** (fatter, darker grab-handles); the menu
+    gains **per-card ON/OFF toggles** (Clinical Notes · Workup · RolDe — Scribe always on): a hidden
+    card hands its space to its column-mate, both right cards off drops the right column, and the
+    toggles **save with named layouts** (a layout = geometry + which cards show). Also 2026-07-03: the **Courier dispatch-trail palette** —
     Not Sent = amber wash · Sent = info · Delivered/Opened = success · Failed/Bounced = critical (pastel
     tints, Earth & Bloom). ▢ REMAINING — Clinical Modules toggle (W1.1) · Profile overlay (greenlit —
     demographics · NOK · GP & other doctors [Courier's address hooks] · full allergy/PMH/med editors

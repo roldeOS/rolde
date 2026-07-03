@@ -217,8 +217,12 @@ Review presets).** Two forces size the cards:
   **drag-to-resize** dividers · a **card layout menu** (Expand · Maximise · Reset) · **user-named saved
   layouts**. The named layouts live in the **topbar "Layouts" dropdown** — this **REPLACES
   Consult/Document/Review**: click *Layouts* → the list of the user's named layouts drops down → click
-  one → the workspace below switches; includes a **"Default"** entry. **"Default" = the locked balanced
-  50/50** four-card (§4.1). Double-click a divider = reset to Default. The ONLY automatic move is
+  one → the workspace below switches; includes a **"Default"** entry. **"Default" (Roland 2026-07-03)
+  = columns 50/50 · rows 80/20** (top cards 80%, Scribe + RolDe 20%) · all cards on. The Layouts menu
+  also carries **per-card ON/OFF toggles** (Clinical Notes · Workup · RolDe — Scribe is always on): a
+  hidden card hands its space to its column-mate (both right cards off → the right column goes
+  entirely), and the toggles SAVE with named layouts — a layout = geometry + which cards show.
+  Double-click a divider = reset to Default. The ONLY automatic move is
   opening the Body-Map (Scribe expands — user-initiated, expected). Persisted per user. **On
   iPad/mobile:** cards stack; each is a tap-to-expand accordion. Must be rock-solid across
   desktop/tablet/mobile.

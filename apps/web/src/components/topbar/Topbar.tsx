@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useTopbar, DEFAULT_LAYOUT } from "./TopbarContext";
 import { useClickAway } from "@/lib/useClickAway";
+import { Switch } from "@/components/ui/Switch";
 import { PatientIsland } from "./PatientIsland";
 import { CommandMenu } from "./CommandMenu";
 import { Clock } from "./Clock";
@@ -144,8 +145,10 @@ function LayoutsMenu() {
     }, []),
   );
   const near = (a: number, b: number) => Math.abs(a - b) < 0.015;
-  const matches = (l: { col: number; split: number }) =>
-    near(l.col, layout.col) && near(l.split, layout.split);
+  const matches = (l: { col: number; split: number; hidden?: string[] }) =>
+    near(l.col, layout.col) &&
+    near(l.split, layout.split) &&
+    [...(l.hidden ?? [])].sort().join() === [...layout.hidden].sort().join();
 
   const commitName = () => {
     if (!name.trim()) return;
@@ -185,7 +188,7 @@ function LayoutsMenu() {
             >
               <button
                 onClick={() => {
-                  setLayout({ col: l.col, split: l.split });
+                  setLayout({ col: l.col, split: l.split, hidden: l.hidden ?? [] });
                   setOpen(false);
                 }}
                 className={cn(
@@ -205,6 +208,41 @@ function LayoutsMenu() {
               </button>
             </div>
           ))}
+          {/* Card visibility (Roland 2026-07-03) — which cards this layout
+              shows; Scribe is always on. Saved with named layouts. */}
+          <div className="my-1 border-t border-border/60" />
+          <p className="px-2.5 pb-0.5 pt-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+            Cards
+          </p>
+          {(
+            [
+              { key: "notes", label: "Clinical Notes" },
+              { key: "workup", label: "Workup" },
+              { key: "ai", label: "RolDe" },
+            ] as const
+          ).map((c) => {
+            const on = !layout.hidden.includes(c.key);
+            return (
+              <label
+                key={c.key}
+                className="flex w-full cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-hover"
+              >
+                {c.label}
+                <Switch
+                  checked={on}
+                  onChange={(next) =>
+                    setLayout({
+                      ...layout,
+                      hidden: next
+                        ? layout.hidden.filter((h) => h !== c.key)
+                        : [...layout.hidden, c.key],
+                    })
+                  }
+                  label={c.label}
+                />
+              </label>
+            );
+          })}
           <div className="my-1 border-t border-border/60" />
           {naming ? (
             <div className="flex items-center gap-1 px-1.5 py-1">
