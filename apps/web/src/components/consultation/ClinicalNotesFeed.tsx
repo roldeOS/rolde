@@ -362,7 +362,12 @@ export function ClinicalNotesFeed({
           description="The patient's record — every note, verbatim, newest at the bottom. Scroll up to load older entries."
           terms={[
             { term: "Sort", definition: "Flip between oldest-first and newest-first." },
-            { term: "Filter", definition: "Narrow by note type or author." },
+            { term: "Filter", definition: "Narrow by status, note type or author." },
+            { term: "Status Dot", definition: "Every tile's one status home, top-right: a pill naming the open status ending in a coloured dot. Handled tiles keep just a calm green dot — click it for the full status trail." },
+            { term: "Red dot", definition: "Immediate response owed — an unacknowledged abnormal result, a failed urgent letter, an unactioned critical alert. Reserved for the truly serious." },
+            { term: "Amber dot", definition: "Attention owed, not an emergency — Unread, a letter Not Sent, a review due." },
+            { term: "Blue dot", definition: "In flight — sent and travelling; nothing owed by you." },
+            { term: "Green dot", definition: "Settled — read, delivered or acknowledged. The information is taken care of." },
             { term: "Edit (pencil)", definition: "Opens your own note in Scribe — editable for 1 hour, then amend-only." },
             { term: "Expand", definition: "Give the record more room; the latest note stays in view." },
           ]}

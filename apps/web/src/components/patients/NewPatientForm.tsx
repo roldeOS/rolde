@@ -34,7 +34,7 @@ export function NewPatientForm({ country: countryProp = "GB" }: { country?: stri
     sex_at_birth: "",
     phone_mobile: "",
     email: "",
-    nhs_number: "",
+    national_health_id: "",
   });
   const set = (k: keyof typeof v) => (e: { target: { value: string } }) =>
     setV((s) => ({ ...s, [k]: e.target.value }));
@@ -48,7 +48,7 @@ export function NewPatientForm({ country: countryProp = "GB" }: { country?: stri
     sex_at_birth: !!v.sex_at_birth,
     phone_mobile: phoneOk(v.phone_mobile, country),
     email: emailOk(v.email),
-    nhs_number: v.nhs_number === "" || nationalIdOk(v.nhs_number, country),
+    national_health_id: v.national_health_id === "" || nationalIdOk(v.national_health_id, country),
   };
 
   return (
@@ -134,14 +134,14 @@ export function NewPatientForm({ country: countryProp = "GB" }: { country?: stri
         />
       </Field>
 
-      <Field label={nationalIdLabel(country)} htmlFor="nhs_number" hint={`(optional) ${nationalIdHint(country)}`}>
+      <Field label={nationalIdLabel(country)} htmlFor="national_health_id" hint={`(optional) ${nationalIdHint(country)}`}>
         <Input
-          id="nhs_number"
-          name="nhs_number"
+          id="national_health_id"
+          name="national_health_id"
           inputMode="numeric"
-          value={v.nhs_number}
-          onChange={set("nhs_number")}
-          valid={v.nhs_number !== "" && ok.nhs_number}
+          value={v.national_health_id}
+          onChange={set("national_health_id")}
+          valid={v.national_health_id !== "" && ok.national_health_id}
           placeholder="000 000 0000"
         />
       </Field>

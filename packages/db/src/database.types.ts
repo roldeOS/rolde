@@ -1099,7 +1099,7 @@ export type Database = {
           has_active_alerts: boolean
           id: string
           last_name: string
-          nhs_number: string | null
+          national_health_id: string | null
           occupation: string | null
           patient_number: string | null
           phone_landline: string | null
@@ -1108,11 +1108,7 @@ export type Database = {
           portal_invited_at: string | null
           postcode: string | null
           preferred_contact: string
-          preferred_name: string | null
           pronouns: string | null
-          registered_gp_address: string | null
-          registered_gp_name: string | null
-          registered_gp_practice: string | null
           sex_at_birth: string
           status: string
           tenant_id: string
@@ -1150,7 +1146,7 @@ export type Database = {
           has_active_alerts?: boolean
           id?: string
           last_name: string
-          nhs_number?: string | null
+          national_health_id?: string | null
           occupation?: string | null
           patient_number?: string | null
           phone_landline?: string | null
@@ -1159,11 +1155,7 @@ export type Database = {
           portal_invited_at?: string | null
           postcode?: string | null
           preferred_contact?: string
-          preferred_name?: string | null
           pronouns?: string | null
-          registered_gp_address?: string | null
-          registered_gp_name?: string | null
-          registered_gp_practice?: string | null
           sex_at_birth: string
           status?: string
           tenant_id: string
@@ -1201,7 +1193,7 @@ export type Database = {
           has_active_alerts?: boolean
           id?: string
           last_name?: string
-          nhs_number?: string | null
+          national_health_id?: string | null
           occupation?: string | null
           patient_number?: string | null
           phone_landline?: string | null
@@ -1210,11 +1202,7 @@ export type Database = {
           portal_invited_at?: string | null
           postcode?: string | null
           preferred_contact?: string
-          preferred_name?: string | null
           pronouns?: string | null
-          registered_gp_address?: string | null
-          registered_gp_name?: string | null
-          registered_gp_practice?: string | null
           sex_at_birth?: string
           status?: string
           tenant_id?: string

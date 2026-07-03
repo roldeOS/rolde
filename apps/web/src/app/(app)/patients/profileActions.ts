@@ -110,7 +110,7 @@ export async function updatePatientDetails(formData: FormData): Promise<ActionRe
     sex_at_birth: str(formData, "sex_at_birth"),
     gender_identity: orNull(str(formData, "gender_identity")),
     pronouns: orNull(str(formData, "pronouns")),
-    nhs_number: orNull(str(formData, "nhs_number")),
+    national_health_id: orNull(str(formData, "national_health_id")),
     ethnicity: orNull(str(formData, "ethnicity")),
     preferred_language: orNull(str(formData, "preferred_language")),
     interpreter_needed: str(formData, "interpreter_needed") === "true",
@@ -139,7 +139,7 @@ export async function updatePatientDetails(formData: FormData): Promise<ActionRe
     return fail("That phone number doesn’t look right.");
   if (!dobOk(fields.date_of_birth))
     return fail("That date of birth doesn’t look right.");
-  if (fields.nhs_number) {
+  if (fields.national_health_id) {
     // Validate the national health ID against the CLINIC's country (NHS/CHI
     // Modulus-11 for GB · ABHA for IN · IHI for AU · …).
     const { data: tenant } = await c.supabase
@@ -147,7 +147,7 @@ export async function updatePatientDetails(formData: FormData): Promise<ActionRe
       .select("country")
       .eq("id", c.tenantId)
       .maybeSingle();
-    if (!nationalIdOk(fields.nhs_number, asCountry(tenant?.country)))
+    if (!nationalIdOk(fields.national_health_id, asCountry(tenant?.country)))
       return fail("That health ID doesn’t look right — please re-check it.");
   }
 
@@ -155,7 +155,7 @@ export async function updatePatientDetails(formData: FormData): Promise<ActionRe
   const { data: before } = await c.supabase
     .from("patients")
     .select(
-      "title, first_name, middle_names, last_name, known_as, date_of_birth, sex_at_birth, gender_identity, pronouns, nhs_number, ethnicity, preferred_language, interpreter_needed, communication_needs, contact_preference, occupation, nominated_pharmacy, phone_mobile, email, address_line1, address_line2, city, postcode",
+      "title, first_name, middle_names, last_name, known_as, date_of_birth, sex_at_birth, gender_identity, pronouns, national_health_id, ethnicity, preferred_language, interpreter_needed, communication_needs, contact_preference, occupation, nominated_pharmacy, phone_mobile, email, address_line1, address_line2, city, postcode",
     )
     .eq("id", patientId)
     .maybeSingle();

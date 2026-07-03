@@ -271,7 +271,7 @@ function DetailsForm() {
     sex_at_birth: patient?.sex ?? "",
     gender_identity: d?.genderIdentity ?? "",
     pronouns: d?.pronouns ?? "",
-    nhs_number: patient?.nhs ?? "",
+    national_health_id: patient?.healthId ?? "",
     phone_mobile: patient?.phone ?? "",
     email: patient?.email ?? "",
     contact_preference: d?.contactPreference ?? "",
@@ -296,7 +296,7 @@ function DetailsForm() {
   const okEmail = v.email === "" || emailOk(v.email);
   const okPhone = v.phone_mobile === "" || phoneOk(v.phone_mobile, country);
   const okPost = v.postcode.trim() === "" || postcodeOk(v.postcode, country);
-  const okNhs = v.nhs_number.trim() === "" || nationalIdOk(v.nhs_number, country);
+  const okNhs = v.national_health_id.trim() === "" || nationalIdOk(v.national_health_id, country);
   const okDob = v.date_of_birth === "" || dobOk(v.date_of_birth);
   const required =
     v.first_name.trim() && v.last_name.trim() && v.date_of_birth &&
@@ -367,7 +367,7 @@ function DetailsForm() {
           </Select>
         </Field>
         <Field label={nationalIdLabel(country)} htmlFor="pf-nhs" hint={nationalIdHint(country)}>
-          <Input id="pf-nhs" value={v.nhs_number} error={!okNhs} onChange={(e) => set("nhs_number")(e.target.value)} />
+          <Input id="pf-nhs" value={v.national_health_id} error={!okNhs} onChange={(e) => set("national_health_id")(e.target.value)} />
         </Field>
       </div>
 

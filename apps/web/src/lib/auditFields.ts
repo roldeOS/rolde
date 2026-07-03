@@ -82,7 +82,7 @@ export const PATIENT_DETAILS_FIELDS: FieldMap = {
   sex_at_birth: { label: "Sex at birth", section: "Identity" },
   gender_identity: { label: "Gender identity", section: "Identity" },
   pronouns: { label: "Pronouns", section: "Identity" },
-  nhs_number: { label: "NHS number", section: "Identity" },
+  national_health_id: { label: "National health ID", section: "Identity" },
   ethnicity: { label: "Ethnicity", section: "Background & Needs" },
   preferred_language: { label: "Preferred language", section: "Background & Needs" },
   interpreter_needed: { label: "Interpreter needed", section: "Background & Needs", format: onOff },

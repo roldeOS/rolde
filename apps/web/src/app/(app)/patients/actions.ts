@@ -23,7 +23,7 @@ export async function createPatient(formData: FormData) {
   const sex_at_birth = String(formData.get("sex_at_birth") ?? "");
   const email = String(formData.get("email") ?? "").trim();
   const phone_mobile = String(formData.get("phone_mobile") ?? "").trim();
-  const nhs_number = String(formData.get("nhs_number") ?? "").trim() || null;
+  const national_health_id = String(formData.get("national_health_id") ?? "").trim() || null;
 
   // Registration minimum (Roland 2026-06-11; GMC/CQC/NHS PDS): name, DOB, sex,
   // mobile and email are ALL required. The RolDe patient number auto-assigns.
@@ -38,14 +38,14 @@ export async function createPatient(formData: FormData) {
   if (!emailOk(email)) throw new Error("That email doesn't look right.");
   if (!phonePlausible(phone_mobile)) throw new Error("That phone number doesn't look right.");
   if (!dobOk(date_of_birth)) throw new Error("That date of birth doesn't look right.");
-  if (nhs_number) {
+  if (national_health_id) {
     const supa = await createClient();
     const { data: tenant } = await supa
       .from("tenants")
       .select("country")
       .eq("id", tenantId)
       .maybeSingle();
-    if (!nationalIdOk(nhs_number, asCountry(tenant?.country)))
+    if (!nationalIdOk(national_health_id, asCountry(tenant?.country)))
       throw new Error("That health ID doesn't look right.");
   }
 
@@ -60,7 +60,7 @@ export async function createPatient(formData: FormData) {
       sex_at_birth,
       email,
       phone_mobile,
-      nhs_number,
+      national_health_id,
       created_by: ctx?.user.id ?? null,
     })
     .select("id, patient_number")

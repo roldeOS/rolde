@@ -150,9 +150,15 @@ function LayoutsMenu({ modules }: { modules: ClinicalModules }) {
     }, []),
   );
   const near = (a: number, b: number) => Math.abs(a - b) < 0.015;
-  const matches = (l: { col: number; split: number; hidden?: string[] }) =>
+  const matches = (l: {
+    col: number;
+    splitLeft: number;
+    splitRight: number;
+    hidden?: string[];
+  }) =>
     near(l.col, layout.col) &&
-    near(l.split, layout.split) &&
+    near(l.splitLeft, layout.splitLeft) &&
+    near(l.splitRight, layout.splitRight) &&
     [...(l.hidden ?? [])].sort().join() === [...layout.hidden].sort().join();
 
   const commitName = () => {
@@ -193,7 +199,12 @@ function LayoutsMenu({ modules }: { modules: ClinicalModules }) {
             >
               <button
                 onClick={() => {
-                  setLayout({ col: l.col, split: l.split, hidden: l.hidden ?? [] });
+                  setLayout({
+                    col: l.col,
+                    splitLeft: l.splitLeft,
+                    splitRight: l.splitRight,
+                    hidden: l.hidden ?? [],
+                  });
                   setOpen(false);
                 }}
                 className={cn(

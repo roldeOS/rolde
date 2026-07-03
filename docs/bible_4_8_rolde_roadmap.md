@@ -1332,10 +1332,31 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     Same pass: micro-typography laws (uppercase micro-headers + segment/tab labels semibold) +
     the label-map law (recordLabels.ts — no raw stored values in chrome) + country-aware national
     health IDs (GB NHS/CHI Mod-11 · IE IHI/PPS · IN ABHA · AU IHI · NZ NHI · AE Emirates ID; the
-    nhs_number COLUMN rename to a generic name awaits Roland's call). ▢ REMAINING —
-    Body-Map (Servier candidates with Roland) · the Status-Dot COLOUR TAXONOMY approval (the list
-    is with Roland: red = immediate-response states; amber = attention owed; info = in flight;
-    green = settled; grey = historic). New pieces to build + add to the URDS:
+    nhs_number COLUMN rename to a generic name awaits Roland's call). **The Status-Dot COLOUR TAXONOMY — APPROVED (Roland 2026-07-04, LOCKED; also in
+    the Clinical Notes card's (i) glossary):**
+    - **RED — immediate response owed:** unacknowledged abnormal result · failed/bounced letter
+      about urgent care · critical safety alert unactioned · safeguarding flag unactioned ·
+      allergy conflict on a prescription. Red is NEVER a mere unread.
+    - **AMBER — attention owed, not an emergency:** Unread · letter Not Sent · medication review
+      due · routine result awaiting review · anything overdue.
+    - **BLUE — in flight, nothing owed by us:** letter Sent · lab order in progress · awaiting an
+      external reply.
+    - **GREEN — settled:** read · delivered/opened · result acknowledged (collapses to the muted dot).
+    - **GREY — historic:** struck-through · superseded.
+    Refinements 2026-07-04: independent per-column row splits (dragging Scribe's divider never
+    moves RolDe's — supersedes the one-shared-split symmetry); the Segmented control's selected
+    tab lifts onto a TRUE white card + shadow (was a wash that blended in); the feed Filter's
+    Status options wear their dot colours; patients.nhs_number **deep-renamed to
+    national_health_id** and the five unused scaffold columns dropped (preferred_name ·
+    preferred_contact · registered_gp_name/practice/address).
+    **COMMITTED for Courier C3 (Roland 2026-07-04 — "create/wire all this up"):** at send time the
+    Courier READS the Accessible Information Standard fields — a large-print patient gets a
+    large-print LetterPdf variant automatically; contact_preference steers letter-vs-email;
+    interpreter/communication needs travel on the appointment card at W2 check-in. The island
+    already flags the needs (info chips beside the alerts).
+    ▢ REMAINING — Body-Map (top-notch approach being researched after the candidate round —
+    professional vector body/face charting, per-specialty templates) · Scribe Templates (Roland's
+    concept 2026-07-04 — under design). New pieces to build + add to the URDS:
     - **Adaptive Workspace** — the four cards reflow by **Clinical Modules** (a new W1.1 Settings toggle:
       Lab · Radiology · Procedures · Prescriptions · RolDe AI) → 4/3/2-card states, AND are sized by
       **user-controlled LAYOUTS — no auto-resize (Roland 2026-07-01, FINAL; supersedes both the old
@@ -1423,6 +1444,19 @@ holds the relationship with Covenant. The shared recall engine every pack reuses
 (W2.3)" = RolDe Cadence). · W2.4 Waitlist · W2.5 Recurring course series
 **W3 — Clinical Orders** — W3.1 Prescribing + drug-safety · W3.2 Investigations + results inbox +
 trends · W3.3 Letters + closed-loop referrals
+
+> **The NHS prescription rails, documented for the NHS-expansion future (researched 2026-07-03/04,
+> Roland: "document this in the bible").** NHS **nomination** is a central mechanism — the patient's
+> chosen pharmacy (its **ODS code**) is stored on the **NHS Spine**; an NHS prescriber signing
+> through the **Electronic Prescription Service (EPS)** has the Spine route the script automatically
+> to the nominated pharmacy, which pulls it in its next batch download. The modern integration is
+> the **EPS FHIR API** (NHS England Digital) — full onboarding required: DCB0129-grade
+> clinical-safety assurance, smartcard/**CIS2** prescriber authentication, **dm+d** drug coding,
+> assured-supplier status. **Private prescriptions are explicitly OUT of EPS's scope** — so RolDe's
+> private rails come first: **CloudRx** (REST JSON API — submit/repeat/deliver/track; the
+> first-class integration), **Church Pharmacy DigitRx / Fox** (portal-based; served by RolDe's
+> universal fallback — the signed prescription PDF dispatched via Courier to any pharmacy address
+> hook), and EPS as the deliberate compliance track when NHS-adjacent clinics arrive.
 **W4 — Money** — W4.1 Billing/invoices/**deposits** *(deposit amount per Commercial Settings /
 per-service; taken at booking, netted off the final bill)* · W4.2 Packages & memberships · W4.3
 **Clinic-owned gateways (Scenario 1)** *(Stripe/PayPal/Klarna/Clearpay; clinic's own keys, live/

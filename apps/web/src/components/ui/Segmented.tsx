@@ -20,7 +20,7 @@ export function Segmented<T extends string>({
   className?: string;
 }) {
   return (
-    <div className={cn("flex gap-1 rounded-lg bg-muted/60 p-1", className)}>
+    <div className={cn("flex gap-1 rounded-lg bg-muted/70 p-1", className)}>
       {options.map((o) => (
         <button
           key={o.value}
@@ -30,8 +30,11 @@ export function Segmented<T extends string>({
           className={cn(
             "flex-1 rounded-md px-2 py-1.5 text-xs font-semibold transition-all outline-none",
             "focus-visible:ring-2 focus-visible:ring-foreground/20",
+            // The TRUE iOS lift (Roland 2026-07-04 — "needs more oomph"): the
+            // selected segment rises onto a WHITE card with a real shadow +
+            // hairline, never a wash that blends into the track.
             value === o.value
-              ? "bg-selected text-foreground shadow-sm"
+              ? "bg-card text-foreground shadow ring-1 ring-black/[0.06]"
               : "text-muted-foreground hover:text-foreground",
           )}
         >

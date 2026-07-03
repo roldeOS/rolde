@@ -63,7 +63,11 @@
 | ✅ | **Full Profile completeness pass** — clinic Country setting (Clinic Profile) · country-aware validation lib (phone/postcode/email/DOB + NHS check digit; client per-country, server floor) · full registration dataset in Details (PDS/GP-Connect + Accessible Information Standard fields, field-audited) · **Alerts editor** (needle phobia etc.; add/edit/resolve, feed-noted) — 2026-07-03 |
 | ✅ | **Feed Tile v3 — the STATUS DOT (Roland's design)** — one contextual pill + traffic-light dot (Unread amber · red reserved for immediate) · settle-to-muted-dot · Status Trail popover · Status filter (Needs Attention / In Flight / Settled) · footer status pill retired · in the URDS §8 — 2026-07-03 |
 | ✅ | **Micro-typography + label laws** — uppercase micro-headers & segment/tab labels semibold (audited platform-wide) · recordLabels.ts label maps (no raw stored values — "Safety · Warning") · country-aware national health IDs (NHS/CHI · ABHA · IHI · NHI · Emirates ID) — 2026-07-03 |
-| ▢ | **Status-Dot colour taxonomy** — the red/amber/info/green/grey state list awaits Roland's eyeball → approved states then light up as they ship (results ack at W3, reviews at W2/W3) |
+| ✅ | **Status-Dot colour taxonomy APPROVED + locked** (bible + the Clinical Notes (i) glossary); Filter's Status options now wear their dot colours; Segmented tabs lift onto a true white card — 2026-07-04 |
+| ✅ | **Independent row splits** — Scribe's divider moves Scribe alone (per-column splitLeft/splitRight; old saved layouts migrate) — 2026-07-04 |
+| ✅ | **Deep clean** — nhs_number → national_health_id (all the way down) · five unused scaffold columns dropped · AIS chip in the island (interpreter/communication needs flagged at a glance) — 2026-07-04 |
+| ▢ | **Body-Map v2 approach** — research done (Jane = image-annotation canvas + pins/draw; Pabau = injection plotting + batch numbers + photo markup); professional licensed vector set + annotation engine proposed — awaiting Roland's approval |
+| ▢ | **Scribe Templates** — Roland's concept (per-user + clinic-level templates, form parts incl. Body Chart, intake/consent reuse); architecture proposed — awaiting greenlight |
 | ▢ | Consultation redesign remainder: **Body-Map** (Servier style TBC) |
 | ▢ | W1.2.1 Problem List (SNOMED-coded) · W1.2.2 Medication List + reconciliation · W1.2.3 History (PMH/surgical/family/social) |
 | ▢ | W1.2.4 Document Store · W1.2.6 Digital Consents (e-sign) |
@@ -96,4 +100,4 @@
 
 ---
 
-*Last updated: 2026-07-03 late (Status Dot v3 + typography/label laws + national IDs live; next: colour-taxonomy approval → Body-Map style pick → Courier C2/C3).*
+*Last updated: 2026-07-04 (taxonomy locked · independent splits · deep renames; next: Scribe Templates + Body-Map v2 greenlights → Courier C2/C3 · competitor sweep in phases).*

@@ -43,7 +43,8 @@ export type TopbarPatient = {
   dob: string;
   age: number;
   sex: string;
-  nhs: string | null;
+  /** The clinic country's national health identifier (NHS/CHI · ABHA · …). */
+  healthId: string | null;
   phone: string | null;
   email: string | null;
   addressLines: string[];
@@ -117,16 +118,43 @@ export type TopbarPatient = {
  * 2026-07-03 — a layout also remembers WHICH cards it shows; Scribe is always on).
  */
 export type WorkspaceCard = "notes" | "workup" | "ai";
-export type WorkspaceLayout = { col: number; split: number; hidden: WorkspaceCard[] };
+/** splitLeft/splitRight are INDEPENDENT (Roland 2026-07-04 — "scroll the
+ *  Scribe alone": dragging one column's divider must never move the other;
+ *  supersedes the original one-shared-split symmetry). */
+export type WorkspaceLayout = {
+  col: number;
+  splitLeft: number;
+  splitRight: number;
+  hidden: WorkspaceCard[];
+};
 export type SavedLayout = WorkspaceLayout & { name: string };
 /** "Default" (Roland 2026-07-03): columns 50/50 · rows 80/20 · all cards on. */
-export const DEFAULT_LAYOUT: WorkspaceLayout = { col: 0.5, split: 0.8, hidden: [] };
+export const DEFAULT_LAYOUT: WorkspaceLayout = {
+  col: 0.5,
+  splitLeft: 0.8,
+  splitRight: 0.8,
+  hidden: [],
+};
 
 const clamp = (n: number) => Math.min(0.85, Math.max(0.15, n));
 const CARDS: WorkspaceCard[] = ["notes", "workup", "ai"];
-const sane = (l: Partial<WorkspaceLayout>): WorkspaceLayout => ({
+const sane = (l: Partial<WorkspaceLayout> & { split?: number }): WorkspaceLayout => ({
   col: clamp(typeof l.col === "number" ? l.col : DEFAULT_LAYOUT.col),
-  split: clamp(typeof l.split === "number" ? l.split : DEFAULT_LAYOUT.split),
+  // Older saved layouts carried ONE `split` — it seeds both sides.
+  splitLeft: clamp(
+    typeof l.splitLeft === "number"
+      ? l.splitLeft
+      : typeof l.split === "number"
+        ? l.split
+        : DEFAULT_LAYOUT.splitLeft,
+  ),
+  splitRight: clamp(
+    typeof l.splitRight === "number"
+      ? l.splitRight
+      : typeof l.split === "number"
+        ? l.split
+        : DEFAULT_LAYOUT.splitRight,
+  ),
   hidden: Array.isArray(l.hidden) ? l.hidden.filter((c): c is WorkspaceCard => CARDS.includes(c as WorkspaceCard)) : [],
 });
 

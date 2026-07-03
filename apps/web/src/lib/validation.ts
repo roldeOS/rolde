@@ -102,9 +102,9 @@ export const nhsNumberOk = (v: string): boolean => {
   return check !== 10 && check === Number(d[9]);
 };
 
-/** The clinic country's national health ID — label, hint and rule. Stored in
- *  the one nhs_number column today (rename to a generic column is Roland's
- *  call); every country gets its own name + shape. */
+/** The clinic country's national health ID — label, hint and rule. Stored in the
+ *  patients.national_health_id column (renamed from nhs_number, Roland
+ *  2026-07-04); every country gets its own name + shape. */
 const NATIONAL_ID: Record<
   CountryCode,
   { label: string; hint: string; ok: (v: string) => boolean }
@@ -143,6 +143,14 @@ const NATIONAL_ID: Record<
   },
 };
 export const nationalIdLabel = (c: CountryCode): string => NATIONAL_ID[c].label;
+/** The compact chip prefix — "NHS 943 476 5919", "ABHA 12…". */
+export const nationalIdShort = (c: CountryCode): string =>
+  (
+    { GB: "NHS", IE: "PPS", IN: "ABHA", US: "ID", CA: "ID", AU: "IHI", NZ: "NHI", AE: "EID" } as Record<
+      CountryCode,
+      string
+    >
+  )[c];
 export const nationalIdHint = (c: CountryCode): string => NATIONAL_ID[c].hint;
 export const nationalIdOk = (v: string, c: CountryCode): boolean =>
   NATIONAL_ID[c].ok(v.trim());

@@ -10,9 +10,11 @@ import {
   IdCard,
   SquareUserRound,
   Plus,
+  Languages,
 } from "lucide-react";
 import { useClickAway } from "@/lib/useClickAway";
 import { severityLabel, sexLabel } from "@/lib/recordLabels";
+import { asCountry, nationalIdShort } from "@/lib/validation";
 import { useTopbar } from "./TopbarContext";
 import {
   PatientProfileOverlay,
@@ -101,9 +103,10 @@ export function PatientIsland() {
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              {patient.nhs && (
+              {patient.healthId && (
                 <span className="flex items-center gap-1.5 rounded-lg bg-card/70 px-2.5 py-1 font-mono text-xs text-muted-foreground">
-                  <IdCard className="size-3.5" /> NHS {patient.nhs}
+                  <IdCard className="size-3.5" />{" "}
+                  {nationalIdShort(asCountry(patient.clinicCountry))} {patient.healthId}
                 </span>
               )}
               {!recordLocked && (
@@ -164,6 +167,28 @@ export function PatientIsland() {
                   {al.title}
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* Accessible Information Standard (Roland 2026-07-04, point-5 plan
+              part a): the patient's communication needs are FLAGGED at every
+              glance — the legal duty is identify → record → flag → meet. */}
+          {(patient.demographics.interpreterNeeded ||
+            patient.demographics.communicationNeeds) && (
+            <div className="mx-4 mb-3 flex flex-wrap gap-1.5">
+              {patient.demographics.interpreterNeeded && (
+                <span className="flex items-center gap-1 rounded-md bg-info/10 px-2.5 py-0.5 text-xs font-medium text-info">
+                  <Languages className="size-3.5" />
+                  Interpreter Needed
+                  {patient.demographics.preferredLanguage &&
+                    ` · ${patient.demographics.preferredLanguage}`}
+                </span>
+              )}
+              {patient.demographics.communicationNeeds && (
+                <span className="rounded-md bg-info/10 px-2.5 py-0.5 text-xs font-medium text-info">
+                  {patient.demographics.communicationNeeds}
+                </span>
+              )}
             </div>
           )}
 

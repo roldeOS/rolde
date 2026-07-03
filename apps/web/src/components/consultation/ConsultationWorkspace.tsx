@@ -34,7 +34,8 @@ type WorkupEntry = { id: string; entry_type: string };
  * geometry is USER-CONTROLLED (APPROVALS §4.2 — no auto-resize, ever): the
  * topbar "Layouts" menu applies Default (50/50) or a named layout; the two
  * DIVIDERS drag-resize (double-click = Default); everything persists per user.
- * ONE row-split serves BOTH columns — visually symmetric (Roland 2026-06-10).
+ * Each column has its OWN row-split (Roland 2026-07-04 — dragging Scribe's
+ * divider must never move RolDe's; supersedes the one-shared-split symmetry).
  * Four glassy, borderless, floating cards — responsive (2×2 on desktop,
  * stacked on mobile/tablet). The composer is the single place for new/edit/amend.
  */
@@ -71,7 +72,7 @@ export function ConsultationWorkspace({
   const [ready, setReady] = useState(false);
   // Which divider is mid-drag ("col" | "split" | null) — transitions pause so
   // the cards track the pointer 1:1.
-  const [dragging, setDragging] = useState<"col" | "split" | null>(null);
+  const [dragging, setDragging] = useState<"col" | "splitLeft" | "splitRight" | null>(null);
   const rowRef = useRef<HTMLDivElement>(null);
 
   const [editTarget, setEditTarget] = useState<EditTarget>(null);
@@ -93,9 +94,9 @@ export function ConsultationWorkspace({
   // The layout is the USER'S — it never moves on its own (APPROVALS §4.2).
   // Manual maximise is the only per-card override, and it's deliberate too.
   const leftTop =
-    leftMode === "top" ? 0.85 : leftMode === "bottom" ? 0.22 : layout.split;
+    leftMode === "top" ? 0.85 : leftMode === "bottom" ? 0.22 : layout.splitLeft;
   const rightTop =
-    rightMode === "top" ? 0.85 : rightMode === "bottom" ? 0.25 : layout.split;
+    rightMode === "top" ? 0.85 : rightMode === "bottom" ? 0.25 : layout.splitRight;
   const dur = ready && !dragging ? "duration-300" : "duration-0";
   const grow = (n: number) => ({ flexGrow: n * 100, flexBasis: 0 });
 
@@ -103,11 +104,11 @@ export function ConsultationWorkspace({
   // move/up listeners from pointerdown to release (Roland 2026-07-03 — the
   // capture-based version could go dead on some dividers/browsers; window
   // listeners track everywhere, robustly). The vertical divider re-balances the
-  // columns; each column's horizontal divider drives the ONE shared split.
-  // Double-click resets to Default.
+  // columns; each column's horizontal divider drives ITS OWN split (Roland
+  // 2026-07-04). Double-click resets to Default.
   const layoutRef = useRef(layout);
   layoutRef.current = layout;
-  function startDrag(kind: "col" | "split", e: React.PointerEvent) {
+  function startDrag(kind: "col" | "splitLeft" | "splitRight", e: React.PointerEvent) {
     e.preventDefault();
     setDragging(kind);
     const colEl = (e.currentTarget as HTMLElement).closest("[data-col]");
@@ -117,9 +118,11 @@ export function ConsultationWorkspace({
         if (!rect || rect.width === 0) return;
         setLayout({ ...layoutRef.current, col: (ev.clientX - rect.left) / rect.width });
       } else {
+        // INDEPENDENT splits (Roland 2026-07-04): each column's divider moves
+        // ONLY its own column — Scribe scrolls up without dragging RolDe along.
         const rect = colEl?.getBoundingClientRect();
         if (!rect || rect.height === 0) return;
-        setLayout({ ...layoutRef.current, split: (ev.clientY - rect.top) / rect.height });
+        setLayout({ ...layoutRef.current, [kind]: (ev.clientY - rect.top) / rect.height });
       }
     };
     const onUp = () => {
@@ -251,11 +254,11 @@ export function ConsultationWorkspace({
             </section>
             )}
 
-            {/* The shared row divider (left column) — drag to resize BOTH
-                columns' split; double-click = Default (APPROVALS §4.2). */}
+            {/* The left column's OWN divider — moves Notes/Scribe only;
+                double-click = Default (APPROVALS §4.2). */}
             {showNotes && (
             <div
-              onPointerDown={(e) => startDrag("split", e)}
+              onPointerDown={(e) => startDrag("splitLeft", e)}
               onDoubleClick={resetLayout}
               title="Drag to resize · double-click for Default"
               className="group hidden shrink-0 cursor-row-resize touch-none items-center justify-center lg:flex lg:h-4"
@@ -388,10 +391,10 @@ export function ConsultationWorkspace({
             </section>
             )}
 
-            {/* The shared row divider (right column) — the same ONE split. */}
+            {/* The right column's OWN divider (independent of the left). */}
             {showWorkup && showAi && (
             <div
-              onPointerDown={(e) => startDrag("split", e)}
+              onPointerDown={(e) => startDrag("splitRight", e)}
               onDoubleClick={resetLayout}
               title="Drag to resize · double-click for Default"
               className="group hidden shrink-0 cursor-row-resize touch-none items-center justify-center lg:flex lg:h-4"
