@@ -3,6 +3,7 @@ import { getSessionContext } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logFieldChanges } from "@/lib/audit";
 import { CLINIC_PROFILE_FIELDS } from "@/lib/auditFields";
+import { asCountry } from "@/lib/validation";
 import { sanitizeSvg } from "@/lib/sanitizeSvg";
 
 /**
@@ -76,7 +77,7 @@ export async function PATCH(request: Request) {
   const { data: before } = await admin
     .from("tenants")
     .select(
-      "name, legal_name, contact_email, contact_phone, address_line1, address_line2, city, postcode, ico_registration, his_registration, cqc_registration, logo_svg, logo_svg_dark",
+      "name, legal_name, country, contact_email, contact_phone, address_line1, address_line2, city, postcode, ico_registration, his_registration, cqc_registration, logo_svg, logo_svg_dark",
     )
     .eq("id", tenantId)
     .maybeSingle();
@@ -84,6 +85,7 @@ export async function PATCH(request: Request) {
   const nextValues = {
     name,
     legal_name: legalName,
+    country: asCountry(str(b.country)),
     contact_email: orNull(b.contact_email),
     contact_phone: orNull(b.contact_phone),
     address_line1: orNull(b.address_line1),

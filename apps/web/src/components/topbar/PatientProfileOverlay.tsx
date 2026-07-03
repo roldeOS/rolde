@@ -7,6 +7,7 @@ import {
   Users,
   Stethoscope,
   TriangleAlert,
+  OctagonAlert,
   ClipboardList,
   Pill,
   Plus,
@@ -26,6 +27,9 @@ import {
 import {
   type ActionResult,
   updatePatientDetails,
+  addAlert,
+  updateAlert,
+  resolveAlert,
   addAllergy,
   updateAllergy,
   deactivateAllergy,
@@ -40,6 +44,19 @@ import {
   saveCareProvider,
   removeCareProvider,
 } from "@/app/(app)/patients/profileActions";
+import {
+  asCountry,
+  emailOk,
+  phoneOk,
+  phoneHint,
+  phoneMaxLen,
+  sanitisePhone,
+  postcodeLabel,
+  postcodeHint,
+  postcodeOk,
+  nhsNumberOk,
+  dobOk,
+} from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
 /**
@@ -210,50 +227,113 @@ function RemoveButton({ onConfirm, pending }: { onConfirm: () => void; pending: 
 
 // ── Details (demographics + contact + address — audited field-by-field) ──────
 
+const TITLES = ["Mr", "Mrs", "Ms", "Miss", "Mx", "Dr", "Prof", "Rev"];
+const GENDER_IDENTITIES = ["Female", "Male", "Non-Binary", "Prefer Not To Say", "Other"];
+const PRONOUNS = ["She / Her", "He / Him", "They / Them", "Ask Me"];
+const CONTACT_PREFS = ["No Preference", "Phone", "Text Message", "Email", "Letter"];
+/** NHS 2021-census ethnicity groups — the categories UK clinical datasets expect. */
+const ETHNICITIES = [
+  "White — British", "White — Irish", "White — Gypsy or Irish Traveller", "White — Roma",
+  "White — Any Other", "Mixed — White & Black Caribbean", "Mixed — White & Black African",
+  "Mixed — White & Asian", "Mixed — Any Other", "Asian — Indian", "Asian — Pakistani",
+  "Asian — Bangladeshi", "Asian — Chinese", "Asian — Any Other", "Black — African",
+  "Black — Caribbean", "Black — Any Other", "Arab", "Any Other Group", "Prefer Not To Say",
+];
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="pt-1 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+      {children}
+    </p>
+  );
+}
+
 function DetailsForm() {
   const { patient } = useTopbar();
   const { pending, error, run } = useAction();
   const [saved, setSaved] = useState(false);
+  const country = asCountry(patient?.clinicCountry);
+  const d = patient?.demographics;
   const [v, setV] = useState(() => ({
+    title: d?.title ?? "",
     first_name: patient?.firstName ?? "",
+    middle_names: d?.middleNames ?? "",
     last_name: patient?.lastName ?? "",
+    known_as: d?.knownAs ?? "",
     date_of_birth: patient?.dob ?? "",
     sex_at_birth: patient?.sex ?? "",
+    gender_identity: d?.genderIdentity ?? "",
+    pronouns: d?.pronouns ?? "",
     nhs_number: patient?.nhs ?? "",
     phone_mobile: patient?.phone ?? "",
     email: patient?.email ?? "",
+    contact_preference: d?.contactPreference ?? "",
     address_line1: patient?.address.line1 ?? "",
     address_line2: patient?.address.line2 ?? "",
     city: patient?.address.city ?? "",
     postcode: patient?.address.postcode ?? "",
+    ethnicity: d?.ethnicity ?? "",
+    preferred_language: d?.preferredLanguage ?? "",
+    interpreter_needed: d?.interpreterNeeded ?? false,
+    communication_needs: d?.communicationNeeds ?? "",
+    occupation: d?.occupation ?? "",
+    nominated_pharmacy: d?.nominatedPharmacy ?? "",
   }));
   if (!patient) return null;
 
-  const set = (k: keyof typeof v) => (val: string) => {
+  const set = (k: keyof typeof v) => (val: string | boolean) => {
     setSaved(false);
     setV((s) => ({ ...s, [k]: val }));
   };
+  // Country-aware validity (the clinic's country, Settings → Clinic Profile).
+  const okEmail = v.email === "" || emailOk(v.email);
+  const okPhone = v.phone_mobile === "" || phoneOk(v.phone_mobile, country);
+  const okPost = v.postcode.trim() === "" || postcodeOk(v.postcode, country);
+  const okNhs = v.nhs_number.trim() === "" || nhsNumberOk(v.nhs_number);
+  const okDob = v.date_of_birth === "" || dobOk(v.date_of_birth);
+  const required =
+    v.first_name.trim() && v.last_name.trim() && v.date_of_birth &&
+    v.sex_at_birth && v.phone_mobile.trim() && v.email.trim();
+  const canSave = !!required && okEmail && okPhone && okPost && okNhs && okDob;
+
   const submit = () => {
     const fd = new FormData();
     fd.set("patient_id", patient.id);
-    for (const [k, val] of Object.entries(v)) fd.set(k, val);
+    for (const [k, val] of Object.entries(v)) fd.set(k, String(val));
     void run(updatePatientDetails, fd, () => setSaved(true));
   };
 
   return (
     <div className="space-y-4">
       <p className="text-xs text-muted-foreground">
-        Identity edits are recorded field-by-field in the Activity Log.
+        Identity edits are recorded field-by-field in the Activity Log. Formats
+        follow your clinic&apos;s country ({country}).
       </p>
+
+      <SectionLabel>Identity</SectionLabel>
       <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Title" htmlFor="pf-title">
+          <Select id="pf-title" value={v.title} onChange={set("title")}>
+            <option value="">—</option>
+            {TITLES.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </Select>
+        </Field>
         <Field label="First Name" htmlFor="pf-first" required>
           <Input id="pf-first" value={v.first_name} onChange={(e) => set("first_name")(e.target.value)} />
+        </Field>
+        <Field label="Middle Names" htmlFor="pf-mid">
+          <Input id="pf-mid" value={v.middle_names} onChange={(e) => set("middle_names")(e.target.value)} />
         </Field>
         <Field label="Last Name" htmlFor="pf-last" required>
           <Input id="pf-last" value={v.last_name} onChange={(e) => set("last_name")(e.target.value)} />
         </Field>
+        <Field label="Known As" htmlFor="pf-known" hint="What they like to be called">
+          <Input id="pf-known" value={v.known_as} onChange={(e) => set("known_as")(e.target.value)} />
+        </Field>
         <Field label="Date Of Birth" htmlFor="pf-dob" required>
-          <Input id="pf-dob" type="date" value={v.date_of_birth} onChange={(e) => set("date_of_birth")(e.target.value)} />
+          <Input id="pf-dob" type="date" value={v.date_of_birth} error={!okDob} onChange={(e) => set("date_of_birth")(e.target.value)} />
         </Field>
         <Field label="Sex At Birth" htmlFor="pf-sex" required>
           <Select id="pf-sex" value={v.sex_at_birth} onChange={set("sex_at_birth")}>
@@ -263,15 +343,53 @@ function DetailsForm() {
             <option value="unknown">Unknown</option>
           </Select>
         </Field>
-        <Field label="NHS Number" htmlFor="pf-nhs">
-          <Input id="pf-nhs" value={v.nhs_number} onChange={(e) => set("nhs_number")(e.target.value)} />
+        <Field label="Gender Identity" htmlFor="pf-gender">
+          <Select id="pf-gender" value={v.gender_identity} onChange={set("gender_identity")}>
+            <option value="">—</option>
+            {GENDER_IDENTITIES.map((g) => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+          </Select>
         </Field>
-        <Field label="Mobile Phone" htmlFor="pf-phone" required>
-          <Input id="pf-phone" value={v.phone_mobile} onChange={(e) => set("phone_mobile")(e.target.value)} />
+        <Field label="Pronouns" htmlFor="pf-pronouns">
+          <Select id="pf-pronouns" value={v.pronouns} onChange={set("pronouns")}>
+            <option value="">—</option>
+            {PRONOUNS.map((pr) => (
+              <option key={pr} value={pr}>{pr}</option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="NHS Number" htmlFor="pf-nhs" hint="10 digits — checked against its check digit">
+          <Input id="pf-nhs" value={v.nhs_number} error={!okNhs} onChange={(e) => set("nhs_number")(e.target.value)} />
+        </Field>
+      </div>
+
+      <SectionLabel>Contact</SectionLabel>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Mobile Phone" htmlFor="pf-phone" required hint={phoneHint(country)}>
+          <Input
+            id="pf-phone"
+            value={v.phone_mobile}
+            error={!okPhone}
+            maxLength={phoneMaxLen(country)}
+            onChange={(e) => set("phone_mobile")(sanitisePhone(e.target.value))}
+          />
         </Field>
         <Field label="Email" htmlFor="pf-email" required>
-          <Input id="pf-email" type="email" value={v.email} onChange={(e) => set("email")(e.target.value)} />
+          <Input id="pf-email" type="email" value={v.email} error={!okEmail} onChange={(e) => set("email")(e.target.value)} />
         </Field>
+        <Field label="Contact Preference" htmlFor="pf-pref" hint="How they like to be reached">
+          <Select id="pf-pref" value={v.contact_preference} onChange={set("contact_preference")}>
+            <option value="">—</option>
+            {CONTACT_PREFS.map((cp) => (
+              <option key={cp} value={cp}>{cp}</option>
+            ))}
+          </Select>
+        </Field>
+      </div>
+
+      <SectionLabel>Address</SectionLabel>
+      <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Address Line 1" htmlFor="pf-a1">
           <Input id="pf-a1" value={v.address_line1} onChange={(e) => set("address_line1")(e.target.value)} />
         </Field>
@@ -281,14 +399,48 @@ function DetailsForm() {
         <Field label="City / Town" htmlFor="pf-city">
           <Input id="pf-city" value={v.city} onChange={(e) => set("city")(e.target.value)} />
         </Field>
-        <Field label="Postcode" htmlFor="pf-post">
-          <Input id="pf-post" value={v.postcode} onChange={(e) => set("postcode")(e.target.value)} />
+        <Field label={postcodeLabel(country)} htmlFor="pf-post" hint={postcodeHint(country)}>
+          <Input id="pf-post" value={v.postcode} error={!okPost} onChange={(e) => set("postcode")(e.target.value)} />
         </Field>
       </div>
+
+      <SectionLabel>Background &amp; Needs</SectionLabel>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Ethnicity" htmlFor="pf-eth">
+          <Select id="pf-eth" value={v.ethnicity} onChange={set("ethnicity")}>
+            <option value="">—</option>
+            {ETHNICITIES.map((e2) => (
+              <option key={e2} value={e2}>{e2}</option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Preferred Language" htmlFor="pf-lang">
+          <Input id="pf-lang" value={v.preferred_language} onChange={(e) => set("preferred_language")(e.target.value)} />
+        </Field>
+        <Field label="Communication Needs" htmlFor="pf-comm" hint="Large print, BSL, easy read…">
+          <Input id="pf-comm" value={v.communication_needs} onChange={(e) => set("communication_needs")(e.target.value)} />
+        </Field>
+        <Field label="Occupation" htmlFor="pf-occ">
+          <Input id="pf-occ" value={v.occupation} onChange={(e) => set("occupation")(e.target.value)} />
+        </Field>
+        <Field label="Nominated Pharmacy" htmlFor="pf-pharm" hint="Where prescriptions go">
+          <Input id="pf-pharm" value={v.nominated_pharmacy} onChange={(e) => set("nominated_pharmacy")(e.target.value)} />
+        </Field>
+      </div>
+      <label className="flex items-center justify-between rounded-lg bg-card px-3 py-2 text-sm shadow-sm">
+        <span>
+          Interpreter Needed
+          <span className="block text-xs font-normal text-muted-foreground">
+            Accessible Information Standard — flagged to the whole team.
+          </span>
+        </span>
+        <Switch checked={v.interpreter_needed} onChange={(next) => set("interpreter_needed")(next)} label="Interpreter Needed" />
+      </label>
+
       <ErrorLine error={error} />
       <div className="flex items-center justify-end gap-2">
         {saved && <span className="text-xs text-success">Saved ✓</span>}
-        <Button size="sm" onClick={submit} disabled={pending}>
+        <Button size="sm" onClick={submit} disabled={pending || !canSave}>
           {pending ? "Saving…" : "Save Details"}
         </Button>
       </div>
@@ -316,6 +468,8 @@ function ContactForm({
   existing?: PatientContact;
   onDone: () => void;
 }) {
+  const { patient } = useTopbar();
+  const country = asCountry(patient?.clinicCountry);
   const { pending, error, run } = useAction();
   const [v, setV] = useState({
     name: existing?.name ?? "",
@@ -350,11 +504,23 @@ function ContactForm({
             ))}
           </Select>
         </Field>
-        <Field label="Phone" htmlFor="ct-phone">
-          <Input id="ct-phone" value={v.phone} onChange={(e) => setV((s) => ({ ...s, phone: e.target.value }))} />
+        <Field label="Phone" htmlFor="ct-phone" hint={phoneHint(country)}>
+          <Input
+            id="ct-phone"
+            value={v.phone}
+            error={v.phone !== "" && !phoneOk(v.phone, country)}
+            maxLength={phoneMaxLen(country)}
+            onChange={(e) => setV((s) => ({ ...s, phone: sanitisePhone(e.target.value) }))}
+          />
         </Field>
         <Field label="Email" htmlFor="ct-email">
-          <Input id="ct-email" type="email" value={v.email} onChange={(e) => setV((s) => ({ ...s, email: e.target.value }))} />
+          <Input
+            id="ct-email"
+            type="email"
+            value={v.email}
+            error={v.email !== "" && !emailOk(v.email)}
+            onChange={(e) => setV((s) => ({ ...s, email: e.target.value }))}
+          />
         </Field>
         <Field label="Notes" htmlFor="ct-notes">
           <Input id="ct-notes" value={v.notes} onChange={(e) => setV((s) => ({ ...s, notes: e.target.value }))} />
@@ -468,6 +634,8 @@ function CareProviderForm({
   existing?: PatientCareProvider;
   onDone: () => void;
 }) {
+  const { patient } = useTopbar();
+  const country = asCountry(patient?.clinicCountry);
   const { pending, error, run } = useAction();
   const [v, setV] = useState({
     name: existing?.name ?? "",
@@ -502,11 +670,23 @@ function CareProviderForm({
         <Field label="Practice / Organisation" htmlFor="cp-org">
           <Input id="cp-org" value={v.organisation} onChange={(e) => setV((s) => ({ ...s, organisation: e.target.value }))} />
         </Field>
-        <Field label="Phone" htmlFor="cp-phone">
-          <Input id="cp-phone" value={v.phone} onChange={(e) => setV((s) => ({ ...s, phone: e.target.value }))} />
+        <Field label="Phone" htmlFor="cp-phone" hint={phoneHint(country)}>
+          <Input
+            id="cp-phone"
+            value={v.phone}
+            error={v.phone !== "" && !phoneOk(v.phone, country)}
+            maxLength={phoneMaxLen(country)}
+            onChange={(e) => setV((s) => ({ ...s, phone: sanitisePhone(e.target.value) }))}
+          />
         </Field>
         <Field label="Email" htmlFor="cp-email">
-          <Input id="cp-email" type="email" value={v.email} onChange={(e) => setV((s) => ({ ...s, email: e.target.value }))} />
+          <Input
+            id="cp-email"
+            type="email"
+            value={v.email}
+            error={v.email !== "" && !emailOk(v.email)}
+            onChange={(e) => setV((s) => ({ ...s, email: e.target.value }))}
+          />
         </Field>
         <Field label="Address Line 1" htmlFor="cp-a1">
           <Input id="cp-a1" value={v.address_line1} onChange={(e) => setV((s) => ({ ...s, address_line1: e.target.value }))} />
@@ -517,8 +697,13 @@ function CareProviderForm({
         <Field label="City / Town" htmlFor="cp-city">
           <Input id="cp-city" value={v.city} onChange={(e) => setV((s) => ({ ...s, city: e.target.value }))} />
         </Field>
-        <Field label="Postcode" htmlFor="cp-post">
-          <Input id="cp-post" value={v.postcode} onChange={(e) => setV((s) => ({ ...s, postcode: e.target.value }))} />
+        <Field label={postcodeLabel(country)} htmlFor="cp-post" hint={postcodeHint(country)}>
+          <Input
+            id="cp-post"
+            value={v.postcode}
+            error={v.postcode.trim() !== "" && !postcodeOk(v.postcode, country)}
+            onChange={(e) => setV((s) => ({ ...s, postcode: e.target.value }))}
+          />
         </Field>
         <Field label="Notes" htmlFor="cp-notes">
           <Input id="cp-notes" value={v.notes} onChange={(e) => setV((s) => ({ ...s, notes: e.target.value }))} />
@@ -814,6 +999,79 @@ function MedicationForm({
   );
 }
 
+const ALERT_CATEGORY_OPTIONS = [
+  { value: "safety", label: "Safety" },
+  { value: "clinical", label: "Clinical" },
+  { value: "infection", label: "Infection" },
+  { value: "social", label: "Social" },
+  { value: "other", label: "Other" },
+];
+const ALERT_PRIORITY_OPTIONS = [
+  { value: "info", label: "Info" },
+  { value: "warning", label: "Warning" },
+  { value: "critical", label: "Critical" },
+];
+
+function AlertForm({
+  patientId,
+  existing,
+  onDone,
+}: {
+  patientId: string;
+  existing?: { id: string; title: string; category: string; priority: string; description: string | null };
+  onDone: () => void;
+}) {
+  const { pending, error, run } = useAction();
+  const [v, setV] = useState({
+    title: existing?.title ?? "",
+    category: existing?.category ?? "safety",
+    priority: existing?.priority ?? "warning",
+    description: existing?.description ?? "",
+  });
+  const submit = () => {
+    const fd = new FormData();
+    fd.set("patient_id", patientId);
+    if (existing) fd.set("id", existing.id);
+    for (const [k, val] of Object.entries(v)) fd.set(k, val);
+    void run(existing ? updateAlert : addAlert, fd, onDone);
+  };
+  return (
+    <div className="space-y-3 rounded-xl bg-warning/8 p-3">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Field label="Alert" htmlFor="at-title" required hint="Needle phobia, MRSA…">
+          <Input id="at-title" value={v.title} onChange={(e) => setV((s) => ({ ...s, title: e.target.value }))} />
+        </Field>
+        <Field label="Category" htmlFor="at-cat">
+          <Select id="at-cat" value={v.category} onChange={(val) => setV((s) => ({ ...s, category: val }))}>
+            {ALERT_CATEGORY_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Priority" htmlFor="at-pri">
+          <Select id="at-pri" value={v.priority} onChange={(val) => setV((s) => ({ ...s, priority: val }))}>
+            {ALERT_PRIORITY_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </Select>
+        </Field>
+      </div>
+      <Field label="Description" htmlFor="at-desc">
+        <Input id="at-desc" value={v.description} onChange={(e) => setV((s) => ({ ...s, description: e.target.value }))} />
+      </Field>
+      <ErrorLine error={error} />
+      <div className="flex justify-end gap-2">
+        <Button variant="ghost" size="sm" onClick={onDone}>
+          Cancel
+        </Button>
+        <Button size="sm" onClick={submit} disabled={pending}>
+          {pending ? "Saving…" : existing ? "Save Alert" : "Add Alert"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function RecordSection() {
   const { patient } = useTopbar();
   const [addingAllergy, setAddingAllergy] = useState(false);
@@ -822,6 +1080,8 @@ function RecordSection() {
   const [editProblemId, setEditProblemId] = useState<string | null>(null);
   const [addingMed, setAddingMed] = useState(false);
   const [editMedId, setEditMedId] = useState<string | null>(null);
+  const [addingAlert, setAddingAlert] = useState(false);
+  const [editAlertId, setEditAlertId] = useState<string | null>(null);
   const rowAction = useAction();
   if (!patient) return null;
 
@@ -899,6 +1159,84 @@ function RecordSection() {
                     title="Marks it inactive and notes it in the record — never deleted"
                   >
                     Mark Inactive
+                  </Button>
+                </div>
+              </li>
+            ),
+          )}
+        </ul>
+      </section>
+
+      {/* Alerts — needle phobia, infection risk, safeguarding… shown as pills
+          in the island banner; resolving keeps them in the record. */}
+      <section className="space-y-2">
+        <GroupHeader
+          icon={OctagonAlert}
+          tone="warning"
+          title="Alerts"
+          count={patient.alerts.length}
+          onAdd={() => {
+            setAddingAlert(true);
+            setEditAlertId(null);
+          }}
+          addLabel="Add Alert"
+        />
+        {addingAlert && (
+          <AlertForm patientId={patient.id} onDone={() => setAddingAlert(false)} />
+        )}
+        {patient.alerts.length === 0 && !addingAlert && (
+          <p className="rounded-xl bg-muted/40 p-4 text-sm text-muted-foreground">
+            No active alerts.
+          </p>
+        )}
+        <ul className="space-y-2">
+          {patient.alerts.map((al) =>
+            editAlertId === al.id ? (
+              <li key={al.id}>
+                <AlertForm
+                  patientId={patient.id}
+                  existing={al}
+                  onDone={() => setEditAlertId(null)}
+                />
+              </li>
+            ) : (
+              <li
+                key={al.id}
+                className={cn(
+                  "flex flex-wrap items-center justify-between gap-2 rounded-xl p-3",
+                  al.priority === "critical" ? "bg-critical/5" : "bg-warning/8",
+                )}
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">
+                    {al.title}
+                    <span className="ml-2 rounded-md bg-foreground/6 px-1.5 py-0.5 text-xs font-normal text-muted-foreground capitalize">
+                      {al.category} · {al.priority}
+                    </span>
+                  </p>
+                  {al.description && (
+                    <p className="mt-0.5 text-xs text-muted-foreground">{al.description}</p>
+                  )}
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setEditAlertId(al.id);
+                      setAddingAlert(false);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={rowAction.pending}
+                    onClick={() => void rowAction.run(resolveAlert, rowFd(al.id))}
+                    title="Resolves the alert — it stays in the record"
+                  >
+                    Resolve
                   </Button>
                 </div>
               </li>

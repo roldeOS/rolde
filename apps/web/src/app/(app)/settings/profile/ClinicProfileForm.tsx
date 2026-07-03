@@ -7,11 +7,14 @@ import { Field, Input } from "@/components/ui/form";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { describeSave, diffFields } from "@/lib/changeDescriber";
 import { CLINIC_PROFILE_FIELDS } from "@/lib/auditFields";
+import { Select } from "@/components/ui/Select";
+import { COUNTRIES, asCountry } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
 export type ClinicProfile = {
   name: string;
   legal_name: string;
+  country: string | null;
   contact_email: string | null;
   contact_phone: string | null;
   address_line1: string | null;
@@ -64,6 +67,7 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
   const initial = {
     name: profile.name,
     legal_name: profile.legal_name,
+    country: asCountry(profile.country),
     contact_email: profile.contact_email ?? "",
     contact_phone: profile.contact_phone ?? "",
     address_line1: profile.address_line1 ?? "",
@@ -199,6 +203,26 @@ export function ClinicProfileForm({ profile }: { profile: ClinicProfile }) {
                 onChange={(e) => set("legal_name", e.target.value)}
                 error={form.legal_name.trim() === ""}
               />
+            </Field>
+            {/* Country (Roland 2026-07-03) — drives address/phone/postcode
+                validation platform-wide + the tax-name suggestion; the W1.5
+                onboarding wizard will pre-fill it from what the client enters. */}
+            <Field
+              label="Country"
+              htmlFor="country"
+              hint="Sets address & phone formats across RolDe OS"
+            >
+              <Select
+                id="country"
+                value={form.country}
+                onChange={(v) => set("country", v)}
+              >
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.label}
+                  </option>
+                ))}
+              </Select>
             </Field>
           </div>
         </section>

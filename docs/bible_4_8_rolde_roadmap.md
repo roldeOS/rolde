@@ -1299,8 +1299,32 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     overlay are gated with break-glass (recordLocked — identity + allergies only until justified);
     feed-note failures degrade LOUDLY into the Activity Log; allergy edits are timeline-noted +
     field-audited (problems/meds field-audited); DELETE revoked across the patient record family
-    (soft-delete-only); a med's stop date is the clinician's local calendar date. ▢ REMAINING —
-    Body-Map (Servier style TBC). New pieces to build + add to the URDS:
+    (soft-delete-only); a med's stop date is the clinician's local calendar date. **Completed 2026-07-03 (later, Roland-driven):** the Full Profile grew to the COMPLETE
+    registration dataset + a validation layer + the Alerts editor:
+    - **Clinic country is a Caretaker setting** (Settings → Clinic Profile → Country; tenants.country,
+      audited) — it drives address/phone/postcode formats platform-wide; the W1.5 onboarding wizard
+      will pre-fill it from what the client enters when signing up.
+    - **Country-aware validation everywhere** (`lib/validation.ts`, shared client+server): phone rules
+      per country (GB 07…/+44 · IN 10-digit/+91 · US/CA/AU/NZ/IE/AE) with sanitise-as-you-type +
+      max-length; postcode label + rule per country (Postcode/PIN Code/ZIP/Eircode); real email checks;
+      DOB sanity; **NHS number Modulus-11 check digit**. Client formats per-country; the SERVER always
+      enforces the universal floor. Wired into the Profile overlay (Details · NOK · Care Team), New
+      Patient registration, and the server actions.
+    - **Details = the full dataset** (dug against NHS PDS / GP Connect banner + the Accessible
+      Information Standard DCB1605): Title · Middle Names · Known As · Gender Identity (distinct from
+      sex at birth) · Pronouns · NHS ethnicity categories · Preferred Language · Interpreter Needed ·
+      Communication Needs · Contact Preference · Occupation · Nominated Pharmacy — all audited
+      field-by-field. (The original patients scaffold already carried the columns; the app now uses
+      them. Unused scaffold siblings — preferred_name · preferred_contact · registered_gp_* — flagged
+      to Roland as deep-clean candidates.)
+    - **Alerts editor** (Clinical Record tab): Needle Phobia and kin — title · category (safety/
+      clinical/infection/social) · priority (info/warning/critical) · description; add/edit/resolve,
+      each posting an alert_recorded feed entry; the island's alert pills stay the display.
+    ▢ REMAINING —
+    Body-Map (Servier style TBC) · the Feed Tile STATUS DOT redesign (Roland's concept 2026-07-03:
+    one contextual status pill ending in a traffic-light dot; handled = dot only; click = the status
+    trail; supersedes the eye/Read-by anchor — awaiting Roland's verdict on the mock before build +
+    URDS blessing). New pieces to build + add to the URDS:
     - **Adaptive Workspace** — the four cards reflow by **Clinical Modules** (a new W1.1 Settings toggle:
       Lab · Radiology · Procedures · Prescriptions · RolDe AI) → 4/3/2-card states, AND are sized by
       **user-controlled LAYOUTS — no auto-resize (Roland 2026-07-01, FINAL; supersedes both the old

@@ -45,7 +45,7 @@ export default async function ConsultationPage({
   const { data: patient } = await supabase
     .from("patients")
     .select(
-      "id, first_name, last_name, date_of_birth, sex_at_birth, nhs_number, phone_mobile, email, address_line1, address_line2, city, postcode",
+      "id, first_name, last_name, date_of_birth, sex_at_birth, nhs_number, phone_mobile, email, address_line1, address_line2, city, postcode, title, middle_names, known_as, gender_identity, pronouns, ethnicity, preferred_language, interpreter_needed, communication_needs, contact_preference, occupation, nominated_pharmacy",
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -82,7 +82,7 @@ export default async function ConsultationPage({
 
   const { data: alerts } = await supabase
     .from("patient_alerts")
-    .select("title, priority")
+    .select("id, title, priority, category, description")
     .eq("patient_id", id)
     .eq("status", "active")
     .order("priority", { ascending: false });
@@ -95,6 +95,7 @@ export default async function ConsultationPage({
     { data: problems },
     { data: medications },
     { data: moduleRow },
+    { data: tenantRow },
     { data: contacts },
     { data: careTeam },
   ] = await Promise.all([
@@ -117,6 +118,14 @@ export default async function ConsultationPage({
           .from("clinic_clinical_modules")
           .select(MODULE_COLUMNS)
           .eq("tenant_id", ctx.membership.tenant_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    // The clinic's country — drives phone/postcode validation in the overlay.
+    ctx?.membership?.tenant_id
+      ? supabase
+          .from("tenants")
+          .select("country")
+          .eq("id", ctx.membership.tenant_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
     // The Profile overlay (W1.2): NOK/personal contacts + the care team (the
@@ -197,6 +206,21 @@ export default async function ConsultationPage({
           phone: patient.phone_mobile,
           email: patient.email,
           addressLines,
+          clinicCountry: tenantRow?.country ?? "GB",
+          demographics: {
+            title: patient.title,
+            middleNames: patient.middle_names,
+            knownAs: patient.known_as,
+            genderIdentity: patient.gender_identity,
+            pronouns: patient.pronouns,
+            ethnicity: patient.ethnicity,
+            preferredLanguage: patient.preferred_language,
+            interpreterNeeded: patient.interpreter_needed,
+            communicationNeeds: patient.communication_needs,
+            contactPreference: patient.contact_preference,
+            occupation: patient.occupation,
+            nominatedPharmacy: patient.nominated_pharmacy,
+          },
           address: {
             line1: patient.address_line1,
             line2: patient.address_line2,
@@ -211,8 +235,11 @@ export default async function ConsultationPage({
             notes: a.notes,
           })),
           alerts: (alerts ?? []).map((al) => ({
+            id: al.id,
             title: al.title,
             priority: al.priority,
+            category: al.category,
+            description: al.description,
           })),
           problems: (problems ?? []).map((p) => ({
             id: p.id,

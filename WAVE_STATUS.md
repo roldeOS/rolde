@@ -60,6 +60,8 @@
 | ✅ | **Clinical Modules toggle (W1.1)** — Caretaker card switches Lab · Radiology · Procedures · Prescribing · RolDe AI per clinic; Consult Room reflows 4/3/2, Workup drops tabs, sidebar/⌘K hide, honest "switched off" on direct visits, audited flips; clinic layer OVER the user's Layouts toggles; clinician-403 negative case verified — 2026-07-03 |
 | ✅ | **Profile overlay** — full record in a sheet over the Consult Room (island "Full Profile" + Snapshot "+ Add"): Details (field-audited) · Next Of Kin · Care Team (Courier address hooks, one-GP rule) · Clinical Record editors (allergies/PMH/meds — add/edit/resolve/stop, feed-noted) — 2026-07-03 |
 | ✅ | **Read-by "· first" fix** — reads sorted by read_at (DB row order had crowned the wrong first reviewer) — 2026-07-03 |
+| ✅ | **Full Profile completeness pass** — clinic Country setting (Clinic Profile) · country-aware validation lib (phone/postcode/email/DOB + NHS check digit; client per-country, server floor) · full registration dataset in Details (PDS/GP-Connect + Accessible Information Standard fields, field-audited) · **Alerts editor** (needle phobia etc.; add/edit/resolve, feed-noted) — 2026-07-03 |
+| ▢ | **Feed Tile Status Dot redesign** — Roland's concept (contextual pill + traffic-light dot · handled = dot only · click = status trail); mock delivered, awaiting his verdict → then build + URDS blessing |
 | ▢ | Consultation redesign remainder: **Body-Map** (Servier style TBC) |
 | ▢ | W1.2.1 Problem List (SNOMED-coded) · W1.2.2 Medication List + reconciliation · W1.2.3 History (PMH/surgical/family/social) |
 | ▢ | W1.2.4 Document Store · W1.2.6 Digital Consents (e-sign) |
@@ -92,4 +94,4 @@
 
 ---
 
-*Last updated: 2026-07-03 (Layouts refined · Clinical Modules · Profile overlay all live; next: Body-Map → Courier C2/C3).*
+*Last updated: 2026-07-03 late (Profile completeness + validation live; next: Status-Dot verdict → Body-Map → Courier C2/C3).*

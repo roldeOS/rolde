@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionContext } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import { emailOk, phonePlausible, dobOk, nhsNumberOk } from "@/lib/validation";
 
 /**
  * Create a patient in the caller's clinic. The clinic (tenant) comes from the
@@ -32,6 +33,13 @@ export async function createPatient(formData: FormData) {
   ) {
     throw new Error("All fields are required to register a patient.");
   }
+  // The server's own validation floor (client formats per-country on top;
+  // shared rules in lib/validation — 2026-07-03).
+  if (!emailOk(email)) throw new Error("That email doesn't look right.");
+  if (!phonePlausible(phone_mobile)) throw new Error("That phone number doesn't look right.");
+  if (!dobOk(date_of_birth)) throw new Error("That date of birth doesn't look right.");
+  if (nhs_number && !nhsNumberOk(nhs_number))
+    throw new Error("That NHS number fails its check digit.");
 
   const supabase = await createClient();
   const { data: created, error } = await supabase

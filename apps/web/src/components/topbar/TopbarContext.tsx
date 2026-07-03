@@ -47,6 +47,23 @@ export type TopbarPatient = {
   phone: string | null;
   email: string | null;
   addressLines: string[];
+  /** The clinic's country (tenants.country) — drives phone/postcode rules. */
+  clinicCountry: string;
+  /** The full registration dataset (2026-07-03) — edited in the Details tab. */
+  demographics: {
+    title: string | null;
+    middleNames: string | null;
+    knownAs: string | null;
+    genderIdentity: string | null;
+    pronouns: string | null;
+    ethnicity: string | null;
+    preferredLanguage: string | null;
+    interpreterNeeded: boolean;
+    communicationNeeds: string | null;
+    contactPreference: string | null;
+    occupation: string | null;
+    nominatedPharmacy: string | null;
+  };
   /** Raw address parts — the Profile overlay's Details form edits these. */
   address: {
     line1: string | null;
@@ -62,7 +79,14 @@ export type TopbarPatient = {
     severity: string;
     notes: string | null;
   }[];
-  alerts: { title: string; priority: string }[];
+  /** Alert rows carry ids so the overlay's editor can act on them. */
+  alerts: {
+    id: string;
+    title: string;
+    priority: string;
+    category: string;
+    description: string | null;
+  }[];
   /** Snapshot (Roland 2026-07-01): PMH + current meds in the name-drop sheet. */
   problems: {
     id: string;

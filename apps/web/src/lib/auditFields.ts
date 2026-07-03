@@ -38,6 +38,7 @@ const depositOrDefault = (v: unknown): string =>
 export const CLINIC_PROFILE_FIELDS: FieldMap = {
   name: { label: "Clinic Name", section: "Identity" },
   legal_name: { label: "Legal Name", section: "Identity" },
+  country: { label: "Country", section: "Identity" },
   contact_email: { label: "Email", section: "Contact" },
   contact_phone: { label: "Phone", section: "Contact" },
   address_line1: { label: "Address Line 1", section: "Contact" },
@@ -72,17 +73,38 @@ export const COMMERCIAL_FIELDS: FieldMap = {
  *  address on the patients row. Identity fields are audit-critical: every edit
  *  writes the exact before→after to the Activity Log. */
 export const PATIENT_DETAILS_FIELDS: FieldMap = {
+  title: { label: "Title", section: "Identity" },
   first_name: { label: "First name", section: "Identity" },
+  middle_names: { label: "Middle names", section: "Identity" },
   last_name: { label: "Last name", section: "Identity" },
+  known_as: { label: "Known as", section: "Identity" },
   date_of_birth: { label: "Date of birth", section: "Identity" },
   sex_at_birth: { label: "Sex at birth", section: "Identity" },
+  gender_identity: { label: "Gender identity", section: "Identity" },
+  pronouns: { label: "Pronouns", section: "Identity" },
   nhs_number: { label: "NHS number", section: "Identity" },
+  ethnicity: { label: "Ethnicity", section: "Background & Needs" },
+  preferred_language: { label: "Preferred language", section: "Background & Needs" },
+  interpreter_needed: { label: "Interpreter needed", section: "Background & Needs", format: onOff },
+  communication_needs: { label: "Communication needs", section: "Background & Needs" },
+  occupation: { label: "Occupation", section: "Background & Needs" },
+  nominated_pharmacy: { label: "Nominated pharmacy", section: "Background & Needs" },
   phone_mobile: { label: "Mobile phone", section: "Contact" },
   email: { label: "Email", section: "Contact" },
+  contact_preference: { label: "Contact preference", section: "Contact" },
   address_line1: { label: "Address line 1", section: "Address" },
   address_line2: { label: "Address line 2", section: "Address" },
   city: { label: "City / Town", section: "Address" },
   postcode: { label: "Postcode", section: "Address" },
+};
+
+/** Patient alerts (the Profile overlay, W1.2) — needle phobia, infection risk,
+ *  safeguarding… field-level before→after on edits. */
+export const ALERT_FIELDS: FieldMap = {
+  title: { label: "Alert", section: "Alert" },
+  category: { label: "Category", section: "Alert" },
+  priority: { label: "Priority", section: "Alert" },
+  description: { label: "Description", section: "Alert" },
 };
 
 /** The clinical record editors (the Profile overlay, W1.2) — allergy, problem

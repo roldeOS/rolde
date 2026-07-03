@@ -5,15 +5,26 @@ import { Hash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/form";
 import { createPatient } from "@/app/(app)/patients/actions";
+import {
+  asCountry,
+  dobOk,
+  emailOk,
+  phoneOk,
+  phoneHint,
+  phoneMaxLen,
+  sanitisePhone,
+  nhsNumberOk,
+} from "@/lib/validation";
 
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 
 /**
  * New-patient form (Roland 2026-06-11): controlled, with LIVE validation — each
  * field shows its green-tick squircle the moment it's valid. Submits through the
  * createPatient server action; the RolDe number auto-assigns on the server.
  */
-export function NewPatientForm() {
+export function NewPatientForm({ country: countryProp = "GB" }: { country?: string }) {
+  const country = asCountry(countryProp);
   const [v, setV] = useState({
     first_name: "",
     last_name: "",
@@ -26,14 +37,16 @@ export function NewPatientForm() {
   const set = (k: keyof typeof v) => (e: { target: { value: string } }) =>
     setV((s) => ({ ...s, [k]: e.target.value }));
 
+  // Country-aware (the clinic's country, Settings → Clinic Profile) — the
+  // same shared rules the Profile overlay uses (2026-07-03).
   const ok = {
     first_name: v.first_name.trim().length >= 1,
     last_name: v.last_name.trim().length >= 1,
-    date_of_birth: !!v.date_of_birth && new Date(v.date_of_birth) < new Date(),
+    date_of_birth: dobOk(v.date_of_birth),
     sex_at_birth: !!v.sex_at_birth,
-    phone_mobile: v.phone_mobile.replace(/\D/g, "").length >= 7,
-    email: EMAIL.test(v.email),
-    nhs_number: v.nhs_number === "" || v.nhs_number.replace(/\D/g, "").length === 10,
+    phone_mobile: phoneOk(v.phone_mobile, country),
+    email: emailOk(v.email),
+    nhs_number: v.nhs_number === "" || nhsNumberOk(v.nhs_number),
   };
 
   return (
@@ -98,9 +111,12 @@ export function NewPatientForm() {
           type="tel"
           inputMode="tel"
           value={v.phone_mobile}
-          onChange={set("phone_mobile")}
+          maxLength={phoneMaxLen(country)}
+          onChange={(e) =>
+            setV((s) => ({ ...s, phone_mobile: sanitisePhone(e.target.value) }))
+          }
           valid={ok.phone_mobile}
-          placeholder="07700 900000"
+          placeholder={phoneHint(country)}
         />
       </Field>
 
@@ -116,7 +132,7 @@ export function NewPatientForm() {
         />
       </Field>
 
-      <Field label="NHS Number" htmlFor="nhs_number" hint="(optional)">
+      <Field label="NHS Number" htmlFor="nhs_number" hint="(optional — checked against its check digit)">
         <Input
           id="nhs_number"
           name="nhs_number"

@@ -1087,6 +1087,14 @@ export type Database = {
           emergency_relationship: string | null
           ethnicity: string | null
           first_name: string
+          communication_needs: string | null
+          contact_preference: string | null
+          interpreter_needed: boolean
+          known_as: string | null
+          middle_names: string | null
+          nominated_pharmacy: string | null
+          preferred_language: string | null
+          title: string | null
           gender_identity: string | null
           has_active_alerts: boolean
           id: string
@@ -1130,6 +1138,14 @@ export type Database = {
           emergency_relationship?: string | null
           ethnicity?: string | null
           first_name: string
+          communication_needs?: string | null
+          contact_preference?: string | null
+          interpreter_needed?: boolean
+          known_as?: string | null
+          middle_names?: string | null
+          nominated_pharmacy?: string | null
+          preferred_language?: string | null
+          title?: string | null
           gender_identity?: string | null
           has_active_alerts?: boolean
           id?: string
@@ -1173,6 +1189,14 @@ export type Database = {
           emergency_relationship?: string | null
           ethnicity?: string | null
           first_name?: string
+          communication_needs?: string | null
+          contact_preference?: string | null
+          interpreter_needed?: boolean
+          known_as?: string | null
+          middle_names?: string | null
+          nominated_pharmacy?: string | null
+          preferred_language?: string | null
+          title?: string | null
           gender_identity?: string | null
           has_active_alerts?: boolean
           id?: string

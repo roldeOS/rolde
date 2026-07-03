@@ -9,7 +9,9 @@ import {
   ALLERGY_FIELDS,
   PROBLEM_FIELDS,
   MEDICATION_FIELDS,
+  ALERT_FIELDS,
 } from "@/lib/auditFields";
+import { emailOk, phonePlausible, dobOk, nhsNumberOk } from "@/lib/validation";
 
 /**
  * The Profile overlay's server actions (W1.2, Roland 2026-07-03) — demographics,
@@ -99,11 +101,23 @@ export async function updatePatientDetails(formData: FormData): Promise<ActionRe
   if (!(await patientInClinic(c, patientId))) return fail("Patient not found.");
 
   const fields = {
+    title: orNull(str(formData, "title")),
     first_name: str(formData, "first_name"),
+    middle_names: orNull(str(formData, "middle_names")),
     last_name: str(formData, "last_name"),
+    known_as: orNull(str(formData, "known_as")),
     date_of_birth: str(formData, "date_of_birth"),
     sex_at_birth: str(formData, "sex_at_birth"),
+    gender_identity: orNull(str(formData, "gender_identity")),
+    pronouns: orNull(str(formData, "pronouns")),
     nhs_number: orNull(str(formData, "nhs_number")),
+    ethnicity: orNull(str(formData, "ethnicity")),
+    preferred_language: orNull(str(formData, "preferred_language")),
+    interpreter_needed: str(formData, "interpreter_needed") === "true",
+    communication_needs: orNull(str(formData, "communication_needs")),
+    contact_preference: orNull(str(formData, "contact_preference")),
+    occupation: orNull(str(formData, "occupation")),
+    nominated_pharmacy: orNull(str(formData, "nominated_pharmacy")),
     phone_mobile: str(formData, "phone_mobile"),
     email: str(formData, "email"),
     address_line1: orNull(str(formData, "address_line1")),
@@ -119,12 +133,20 @@ export async function updatePatientDetails(formData: FormData): Promise<ActionRe
   ) {
     return fail("Name, date of birth, sex, mobile and email are required.");
   }
+  // The server's own validation floor (the client formats per-country on top).
+  if (!emailOk(fields.email)) return fail("That email doesn’t look right.");
+  if (!phonePlausible(fields.phone_mobile))
+    return fail("That phone number doesn’t look right.");
+  if (!dobOk(fields.date_of_birth))
+    return fail("That date of birth doesn’t look right.");
+  if (fields.nhs_number && !nhsNumberOk(fields.nhs_number))
+    return fail("That NHS number fails its check digit — please re-check it.");
 
   // The CURRENT row, to diff for the audit trail (server-authoritative).
   const { data: before } = await c.supabase
     .from("patients")
     .select(
-      "first_name, last_name, date_of_birth, sex_at_birth, nhs_number, phone_mobile, email, address_line1, address_line2, city, postcode",
+      "title, first_name, middle_names, last_name, known_as, date_of_birth, sex_at_birth, gender_identity, pronouns, nhs_number, ethnicity, preferred_language, interpreter_needed, communication_needs, contact_preference, occupation, nominated_pharmacy, phone_mobile, email, address_line1, address_line2, city, postcode",
     )
     .eq("id", patientId)
     .maybeSingle();
@@ -598,6 +620,10 @@ export async function saveContact(formData: FormData): Promise<ActionResult> {
     email: orNull(str(formData, "email")),
     notes: orNull(str(formData, "notes")),
   };
+  if (fields.email && !emailOk(fields.email))
+    return fail("That email doesn’t look right.");
+  if (fields.phone && !phonePlausible(fields.phone))
+    return fail("That phone number doesn’t look right.");
   if (id) {
     const { data: updated, error } = await c.supabase
       .from("patient_contacts")
@@ -693,6 +719,10 @@ export async function saveCareProvider(formData: FormData): Promise<ActionResult
     postcode: orNull(str(formData, "postcode")),
     notes: orNull(str(formData, "notes")),
   };
+  if (fields.email && !emailOk(fields.email))
+    return fail("That email doesn’t look right.");
+  if (fields.phone && !phonePlausible(fields.phone))
+    return fail("That phone number doesn’t look right.");
 
   // Save the ROW first (never touching the GP flag here), then hand the flag
   // over ATOMICALLY via assign_patient_gp — one transaction, so a failure can
@@ -799,6 +829,157 @@ export async function removeCareProvider(formData: FormData): Promise<ActionResu
     resourceType: "patient",
     resourceId: patientId,
     summary: "Removed a care-team doctor",
+  });
+  revalidatePath(`/patients/${patientId}`);
+  return { ok: true };
+}
+
+
+// ── Patient alerts (needle phobia · infection risk · safeguarding…) ──────────
+
+const ALERT_CATEGORIES = ["safety", "clinical", "infection", "social", "other"] as const;
+const asAlertCategory = (v: string) =>
+  (ALERT_CATEGORIES as readonly string[]).includes(v) ? v : "other";
+const ALERT_PRIORITIES = ["info", "warning", "critical"] as const;
+type AlertPriority = (typeof ALERT_PRIORITIES)[number];
+const asAlertPriority = (v: string): AlertPriority =>
+  (ALERT_PRIORITIES as readonly string[]).includes(v) ? (v as AlertPriority) : "warning";
+
+export async function addAlert(formData: FormData): Promise<ActionResult> {
+  const patientId = str(formData, "patient_id");
+  const title = str(formData, "title");
+  if (!patientId || !title) return fail("The alert needs a name.");
+  const c = await requireClinic();
+  if (!c) return fail("No clinic context for this user.");
+  if (!(await patientInClinic(c, patientId))) return fail("Patient not found.");
+
+  const priority = asAlertPriority(str(formData, "priority"));
+  const { error } = await c.supabase.from("patient_alerts").insert({
+    tenant_id: c.tenantId,
+    patient_id: patientId,
+    title,
+    category: asAlertCategory(str(formData, "category")),
+    description: orNull(str(formData, "description")),
+    priority,
+    created_by: c.userId,
+  });
+  if (error) {
+    console.error("[alert add]", error.message);
+    return fail(SAVE_FAILED);
+  }
+
+  // alert_recorded is a first-class feed type (gold-mine law).
+  const { error: feedErr } = await c.supabase.from("patient_feed_entries").insert({
+    tenant_id: c.tenantId,
+    patient_id: patientId,
+    entry_type: "alert_recorded",
+    payload: { text: `Alert recorded: ${title} (${priority}).` },
+    created_by: c.userId,
+  });
+  if (feedErr) console.error("[alert feed]", feedErr.message);
+
+  await logAudit({
+    tenantId: c.tenantId,
+    actorUserId: c.userId,
+    action: "alert.add",
+    resourceType: "patient",
+    resourceId: patientId,
+    summary: "Recorded a patient alert",
+  });
+  revalidatePath(`/patients/${patientId}`);
+  return { ok: true };
+}
+
+export async function updateAlert(formData: FormData): Promise<ActionResult> {
+  const id = str(formData, "id");
+  const patientId = str(formData, "patient_id");
+  const title = str(formData, "title");
+  if (!id || !patientId || !title) return fail("The alert needs a name.");
+  const c = await requireClinic();
+  if (!c) return fail("No clinic context for this user.");
+
+  const { data: before } = await c.supabase
+    .from("patient_alerts")
+    .select("title, category, priority, description")
+    .eq("id", id)
+    .eq("patient_id", patientId)
+    .maybeSingle();
+  if (!before) return fail("That alert wasn’t found.");
+
+  const after = {
+    title,
+    category: asAlertCategory(str(formData, "category")),
+    priority: asAlertPriority(str(formData, "priority")),
+    description: orNull(str(formData, "description")),
+  };
+  const { data: updated, error } = await c.supabase
+    .from("patient_alerts")
+    .update(after)
+    .eq("id", id)
+    .eq("patient_id", patientId)
+    .select("id")
+    .maybeSingle();
+  if (error || !updated) {
+    if (error) console.error("[alert edit]", error.message);
+    return fail(SAVE_FAILED);
+  }
+
+  await logFieldChanges({
+    tenantId: c.tenantId,
+    actorUserId: c.userId,
+    action: "alert.edit",
+    subject: "a patient alert",
+    before: before as Record<string, unknown>,
+    after: after as Record<string, unknown>,
+    fields: ALERT_FIELDS,
+    resourceType: "patient",
+    resourceId: patientId,
+  });
+  revalidatePath(`/patients/${patientId}`);
+  return { ok: true };
+}
+
+/** Resolve an alert — it leaves the banner but stays in the record. */
+export async function resolveAlert(formData: FormData): Promise<ActionResult> {
+  const id = str(formData, "id");
+  const patientId = str(formData, "patient_id");
+  if (!id || !patientId) return fail("Missing alert.");
+  const c = await requireClinic();
+  if (!c) return fail("No clinic context for this user.");
+
+  const { data: row, error } = await c.supabase
+    .from("patient_alerts")
+    .update({
+      status: "resolved",
+      resolved_by: c.userId,
+      resolved_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("patient_id", patientId)
+    .eq("status", "active")
+    .select("title")
+    .maybeSingle();
+  if (error || !row) {
+    if (error) console.error("[alert resolve]", error.message);
+    return fail(error ? SAVE_FAILED : "That alert was already resolved.");
+  }
+
+  const { error: feedErr } = await c.supabase.from("patient_feed_entries").insert({
+    tenant_id: c.tenantId,
+    patient_id: patientId,
+    entry_type: "alert_recorded",
+    payload: { text: `Alert resolved: ${row.title}.` },
+    created_by: c.userId,
+  });
+  if (feedErr) console.error("[alert feed]", feedErr.message);
+
+  await logAudit({
+    tenantId: c.tenantId,
+    actorUserId: c.userId,
+    action: "alert.resolve",
+    resourceType: "patient",
+    resourceId: patientId,
+    summary: "Resolved a patient alert",
   });
   revalidatePath(`/patients/${patientId}`);
   return { ok: true };
