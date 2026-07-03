@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PenLine, Maximize2, Minimize2, Strikethrough } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
@@ -12,7 +12,7 @@ import {
   type FeedEntry,
   type Author,
 } from "@/components/consultation/ClinicalNotesFeed";
-import { useTopbar } from "@/components/topbar/TopbarContext";
+import { useTopbar, DEFAULT_LAYOUT } from "@/components/topbar/TopbarContext";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import {
   saveNote,
@@ -25,22 +25,15 @@ import { cn } from "@/lib/utils";
 type WorkupEntry = { id: string; entry_type: string };
 
 /**
- * The consultation workspace (Roland 2026-06-10). The view preset (Consult /
- * Document / Review) is driven from the TOPBAR; here we apply it as flex-grow
- * ratios + contextual growth (composer expands while writing). Four glassy,
- * borderless, floating cards — responsive (2×2 on desktop, stacked on
- * mobile/tablet). The composer is the single place for new / edit / amend.
+ * The consultation workspace (Roland 2026-06-10; Layouts 2026-07-03). The
+ * geometry is USER-CONTROLLED (APPROVALS §4.2 — no auto-resize, ever): the
+ * topbar "Layouts" menu applies Default (50/50) or a named layout; the two
+ * DIVIDERS drag-resize (double-click = Default); everything persists per user.
+ * ONE row-split serves BOTH columns — visually symmetric (Roland 2026-06-10).
+ * Four glassy, borderless, floating cards — responsive (2×2 on desktop,
+ * stacked on mobile/tablet). The composer is the single place for new/edit/amend.
  */
-// ONE row-split per preset is applied to BOTH columns, so the top two cards end
-// at the same level and the bottom two do too — visually symmetric (Roland
-// 2026-06-10). Only deliberate actions (writing, manual maximise) break it.
-const PRESETS = {
-  consult: { split: 0.68, col: 0.5 },
-  document: { split: 0.45, col: 0.55 },
-  review: { split: 0.82, col: 0.5 },
-} as const;
 type Mode = "split" | "top" | "bottom";
-const COMPOSE_LEFT = 0.42;
 const EDIT_WINDOW_MS = 60 * 60 * 1000;
 const COMPOSER_NAME = "Scribe"; // the writing card (Roland 2026-06-10)
 
@@ -63,11 +56,14 @@ export function ConsultationWorkspace({
    *  the per-tile "Seen by" thread). */
   reads: { entry_id: string; user_id: string; read_at: string }[];
 }) {
-  const { view } = useTopbar();
+  const { layout, setLayout } = useTopbar();
   const [leftMode, setLeftMode] = useState<Mode>("split");
   const [rightMode, setRightMode] = useState<Mode>("split");
-  const [composing, setComposing] = useState(false);
   const [ready, setReady] = useState(false);
+  // Which divider is mid-drag ("col" | "split" | null) — transitions pause so
+  // the cards track the pointer 1:1.
+  const [dragging, setDragging] = useState<"col" | "split" | null>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
 
   const [editTarget, setEditTarget] = useState<EditTarget>(null);
   const [draft, setDraft] = useState("");
@@ -79,23 +75,47 @@ export function ConsultationWorkspace({
   const who = patient.firstName;
 
   useEffect(() => setReady(true), []);
-  useEffect(() => setLeftMode("split"), [view]);
+  // Applying a layout from the menu restores any maximised card to the split.
+  useEffect(() => {
+    setLeftMode("split");
+    setRightMode("split");
+  }, [layout]);
 
-  const p = PRESETS[view];
-  const active = composing || !!editTarget;
-  // At rest both columns use the SAME split → symmetric. Writing grows the
-  // composer (left only); manual maximise affects one column. Both deliberate.
-  const leftTop = active
-    ? COMPOSE_LEFT
-    : leftMode === "top"
-      ? 0.85
-      : leftMode === "bottom"
-        ? 0.22
-        : p.split;
+  // The layout is the USER'S — it never moves on its own (APPROVALS §4.2).
+  // Manual maximise is the only per-card override, and it's deliberate too.
+  const leftTop =
+    leftMode === "top" ? 0.85 : leftMode === "bottom" ? 0.22 : layout.split;
   const rightTop =
-    rightMode === "top" ? 0.85 : rightMode === "bottom" ? 0.25 : p.split;
-  const dur = ready ? "duration-300" : "duration-0";
+    rightMode === "top" ? 0.85 : rightMode === "bottom" ? 0.25 : layout.split;
+  const dur = ready && !dragging ? "duration-300" : "duration-0";
   const grow = (n: number) => ({ flexGrow: n * 100, flexBasis: 0 });
+
+  // ── Divider drag (pointer events; lg+ only — stacked layouts have no dividers).
+  // Vertical divider re-balances the columns; each column's horizontal divider
+  // drives the ONE shared split. Double-click resets to the Default 50/50.
+  function startDrag(kind: "col" | "split", e: React.PointerEvent) {
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    setDragging(kind);
+  }
+  function moveDrag(kind: "col" | "split", e: React.PointerEvent) {
+    if (!dragging || dragging !== kind) return;
+    if (kind === "col") {
+      const rect = rowRef.current?.getBoundingClientRect();
+      if (!rect || rect.width === 0) return;
+      setLayout({ ...layout, col: (e.clientX - rect.left) / rect.width });
+    } else {
+      const col = (e.target as HTMLElement).closest("[data-col]");
+      const rect = col?.getBoundingClientRect();
+      if (!rect || rect.height === 0) return;
+      setLayout({ ...layout, split: (e.clientY - rect.top) / rect.height });
+    }
+  }
+  function endDrag(e: React.PointerEvent) {
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    setDragging(null);
+  }
+  const resetLayout = () => setLayout(DEFAULT_LAYOUT);
 
   const mode: "new" | "edit" | "amend" = !editTarget
     ? "new"
@@ -176,9 +196,9 @@ export function ConsultationWorkspace({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="min-h-0 flex-1 overflow-y-auto p-3 sm:p-4 lg:overflow-hidden">
-        <div className="flex flex-col gap-3 lg:h-full lg:flex-row">
+        <div ref={rowRef} className="flex flex-col gap-3 lg:h-full lg:flex-row lg:gap-0">
           {/* Left column */}
-          <div className="flex flex-col gap-3 lg:min-h-0" style={grow(p.col)}>
+          <div data-col className="flex flex-col gap-3 lg:min-h-0 lg:gap-0" style={grow(layout.col)}>
             {/* Clinical Notes */}
             <section
               style={grow(leftTop)}
@@ -200,6 +220,19 @@ export function ConsultationWorkspace({
                 activeId={editTarget?.id ?? null}
               />
             </section>
+
+            {/* The shared row divider (left column) — drag to resize BOTH
+                columns' split; double-click = Default (APPROVALS §4.2). */}
+            <div
+              onPointerDown={(e) => startDrag("split", e)}
+              onPointerMove={(e) => moveDrag("split", e)}
+              onPointerUp={endDrag}
+              onDoubleClick={resetLayout}
+              title="Drag to resize · double-click for Default"
+              className="group hidden shrink-0 cursor-row-resize touch-none items-center justify-center lg:flex lg:h-3"
+            >
+              <div className="h-1 w-10 rounded-full bg-border transition-colors group-hover:bg-foreground/25" />
+            </div>
 
             {/* Composer — borderless, the whole white space; Save + Discard */}
             <section
@@ -264,11 +297,11 @@ export function ConsultationWorkspace({
                     </p>
                   </div>
                 )}
+                {/* No focus-grow: the layout NEVER moves on its own — typing
+                    included (APPROVALS §4.2, Roland 2026-07-01). */}
                 <textarea
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
-                  onFocus={() => setComposing(true)}
-                  onBlur={() => setComposing(false)}
                   placeholder={
                     mode === "amend"
                       ? "Amendment…"
@@ -290,8 +323,21 @@ export function ConsultationWorkspace({
             </section>
           </div>
 
+          {/* The column divider — drag to re-balance left/right; double-click
+              = Default. */}
+          <div
+            onPointerDown={(e) => startDrag("col", e)}
+            onPointerMove={(e) => moveDrag("col", e)}
+            onPointerUp={endDrag}
+            onDoubleClick={resetLayout}
+            title="Drag to resize · double-click for Default"
+            className="group hidden shrink-0 cursor-col-resize touch-none items-center justify-center lg:flex lg:w-3"
+          >
+            <div className="h-10 w-1 rounded-full bg-border transition-colors group-hover:bg-foreground/25" />
+          </div>
+
           {/* Right column */}
-          <div className="flex flex-col gap-3 lg:min-h-0" style={grow(1 - p.col)}>
+          <div data-col className="flex flex-col gap-3 lg:min-h-0 lg:gap-0" style={grow(1 - layout.col)}>
             <section
               style={grow(rightTop)}
               className={cn(
@@ -307,6 +353,19 @@ export function ConsultationWorkspace({
                 }
               />
             </section>
+
+            {/* The shared row divider (right column) — the same ONE split. */}
+            <div
+              onPointerDown={(e) => startDrag("split", e)}
+              onPointerMove={(e) => moveDrag("split", e)}
+              onPointerUp={endDrag}
+              onDoubleClick={resetLayout}
+              title="Drag to resize · double-click for Default"
+              className="group hidden shrink-0 cursor-row-resize touch-none items-center justify-center lg:flex lg:h-3"
+            >
+              <div className="h-1 w-10 rounded-full bg-border transition-colors group-hover:bg-foreground/25" />
+            </div>
+
             <section
               style={grow(1 - rightTop)}
               className={cn(

@@ -438,6 +438,21 @@ export function ClinicalNotesFeed({
                state ("Not Sent" until the send rails land, then "Sent to GP" etc.,
                carried in payload.status). Other entry types reuse the same slot. */
             const status = (e.payload as { status?: string } | null)?.status ?? (isLetter ? "Not Sent" : undefined);
+            /* The Courier dispatch-trail palette (Roland 2026-07-03 — "the trail
+               needs colour"): Not Sent = amber (action still owed) · Sent = info
+               (in flight) · Delivered/Opened = success (landed) · Failed/Bounced =
+               critical. Pastel tints, per Earth & Bloom. */
+            const statusTone = !status
+              ? ""
+              : /not sent|draft/i.test(status)
+                ? "bg-warning/15 text-warning"
+                : /fail|bounce|revok/i.test(status)
+                  ? "bg-critical/10 text-critical"
+                  : /deliver|opened|read/i.test(status)
+                    ? "bg-success/10 text-success"
+                    : /sent/i.test(status)
+                      ? "bg-info/10 text-info"
+                      : "bg-muted text-muted-foreground";
 
             const unread = isUnread(e);
             const justSeen = seenNow.has(e.id);
@@ -604,7 +619,7 @@ export function ClinicalNotesFeed({
                   </span>
                   <span className="flex flex-1 items-center justify-end gap-1">
                     {status && (
-                      <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
+                      <span className={cn("rounded-md px-1.5 py-0.5 text-xs font-medium", statusTone)}>
                         {status}
                       </span>
                     )}

@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Fragment } from "react";
+import { Fragment, useCallback, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   PanelLeft,
   ChevronRight,
+  ChevronDown,
+  Check,
+  X,
+  Plus,
   LayoutDashboard,
   Users,
   User,
@@ -21,7 +25,8 @@ import {
   Scale,
   type LucideIcon,
 } from "lucide-react";
-import { useTopbar, type WorkspaceView } from "./TopbarContext";
+import { useTopbar, DEFAULT_LAYOUT } from "./TopbarContext";
+import { useClickAway } from "@/lib/useClickAway";
 import { PatientIsland } from "./PatientIsland";
 import { CommandMenu } from "./CommandMenu";
 import { Clock } from "./Clock";
@@ -122,11 +127,116 @@ const SECTION_TONE: Record<string, CardIconTone> = Object.fromEntries(
 const toneForKind = (kind: string): CardIconTone =>
   KIND_TONE[kind] ?? SECTION_TONE[kind] ?? "brand";
 
-const VIEWS: { key: WorkspaceView; label: string }[] = [
-  { key: "consult", label: "Consult" },
-  { key: "document", label: "Document" },
-  { key: "review", label: "Review" },
-];
+/**
+ * The Layouts menu (Roland 2026-07-01/03, APPROVALS §4.2) — replaces the old
+ * Consult/Document/Review presets. Lists Default (the locked 50/50) + the
+ * user's NAMED layouts; "Save Current As…" names the live arrangement.
+ */
+function LayoutsMenu() {
+  const { layout, setLayout, layouts, saveLayout, removeLayout } = useTopbar();
+  const [open, setOpen] = useState(false);
+  const [naming, setNaming] = useState(false);
+  const [name, setName] = useState("");
+  const ref = useClickAway<HTMLDivElement>(
+    useCallback(() => {
+      setOpen(false);
+      setNaming(false);
+    }, []),
+  );
+  const near = (a: number, b: number) => Math.abs(a - b) < 0.015;
+  const matches = (l: { col: number; split: number }) =>
+    near(l.col, layout.col) && near(l.split, layout.split);
+
+  const commitName = () => {
+    if (!name.trim()) return;
+    saveLayout(name);
+    setName("");
+    setNaming(false);
+  };
+
+  return (
+    <div ref={ref} className="relative hidden lg:block">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1 rounded-lg bg-card/70 px-2.5 py-1.5 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-colors hover:text-foreground"
+      >
+        Layouts
+        <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-60 rounded-xl bg-card p-1.5 shadow-overlay">
+          <button
+            onClick={() => {
+              setLayout(DEFAULT_LAYOUT);
+              setOpen(false);
+            }}
+            className={cn(
+              "flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-hover",
+              matches(DEFAULT_LAYOUT) ? "font-medium text-foreground" : "text-muted-foreground",
+            )}
+          >
+            Default
+            {matches(DEFAULT_LAYOUT) && <Check className="size-3.5 text-foreground" />}
+          </button>
+          {layouts.map((l) => (
+            <div
+              key={l.name}
+              className="group flex w-full items-center rounded-lg transition-colors hover:bg-hover"
+            >
+              <button
+                onClick={() => {
+                  setLayout({ col: l.col, split: l.split });
+                  setOpen(false);
+                }}
+                className={cn(
+                  "flex min-w-0 flex-1 items-center justify-between px-2.5 py-1.5 text-left text-sm",
+                  matches(l) ? "font-medium text-foreground" : "text-muted-foreground",
+                )}
+              >
+                <span className="truncate">{l.name}</span>
+                {matches(l) && <Check className="size-3.5 shrink-0 text-foreground" />}
+              </button>
+              <button
+                onClick={() => removeLayout(l.name)}
+                title={`Remove “${l.name}”`}
+                className="mr-1 hidden size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-critical group-hover:flex"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          ))}
+          <div className="my-1 border-t border-border/60" />
+          {naming ? (
+            <div className="flex items-center gap-1 px-1.5 py-1">
+              <input
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && commitName()}
+                placeholder="Name this layout…"
+                className="h-7 min-w-0 flex-1 rounded-md bg-muted/60 px-2 text-sm outline-none placeholder:text-muted-foreground"
+              />
+              <button
+                onClick={commitName}
+                className="rounded-md bg-foreground px-2 py-1 text-xs font-medium text-background transition-colors hover:bg-foreground/90"
+              >
+                Save
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setNaming(true)}
+              className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+            >
+              <Plus className="size-3.5" />
+              Save Current As…
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Topbar({
   clinic,
@@ -140,7 +250,7 @@ export function Topbar({
   onToggleSidebar: () => void;
 }) {
   const pathname = usePathname();
-  const { patient, view, setView } = useTopbar();
+  const { patient } = useTopbar();
   const onConsult = !!patient;
 
   // ── Build the CURRENT page entry + cold-load parents for the journey trail ──
@@ -305,24 +415,7 @@ export function Topbar({
             Search lives in this cluster, not on the left (the left belongs to the
             JOURNEY breadcrumb); the clock sits AFTER the search (Roland 2026-06-16). */}
         <div className="flex shrink-0 items-center gap-1.5">
-          {onConsult && (
-            <div className="hidden items-center gap-0.5 rounded-lg bg-card/70 p-0.5 shadow-sm ring-1 ring-black/[0.05] lg:flex">
-              {VIEWS.map((v) => (
-                <button
-                  key={v.key}
-                  onClick={() => setView(v.key)}
-                  className={cn(
-                    "rounded-md px-2 py-1 text-xs font-medium transition-colors",
-                    view === v.key
-                      ? "bg-foreground/8 text-foreground"
-                      : "text-muted-foreground hover:bg-hover hover:text-foreground",
-                  )}
-                >
-                  {v.label}
-                </button>
-              ))}
-            </div>
-          )}
+          {onConsult && <LayoutsMenu />}
           <CommandMenu />
           {/* Live date + time to the second — sits just AFTER the search bar
               (Roland 2026-06-16). timeZone defaults to the viewer's local clock;
