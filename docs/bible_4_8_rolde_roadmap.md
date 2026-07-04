@@ -1354,9 +1354,23 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     large-print LetterPdf variant automatically; contact_preference steers letter-vs-email;
     interpreter/communication needs travel on the appointment card at W2 check-in. The island
     already flags the needs (info chips beside the alerts).
-    ▢ REMAINING — Body-Map (top-notch approach being researched after the candidate round —
-    professional vector body/face charting, per-specialty templates) · Scribe Templates (Roland's
-    concept 2026-07-04 — under design). New pieces to build + add to the URDS:
+    **✅ ROLDE SCRIBE TEMPLATES T1 BUILT 2026-07-04 (Roland's concept, GREENLIT same day):**
+    a template = an ordered list of typed PARTS (heading · instruction · text · textarea ·
+    checkboxes · dropdown · range — `lib/scribeTemplates.ts`); the **picker lives in Scribe's
+    header** (never a separate page): pick from the **curated RolDe library** → Scribe MORPHS into
+    the structured form in place → Save renders the answers into a clean readable note through the
+    normal saveNote path (verbatim text stays the record of truth; structured answers join the
+    payload at T2). Library v1 (curation beats volume — Jane's 50,000 user-dump expressly
+    rejected): SOAP Note · GP Consultation · Lesion Review (ABCDE + urgent-pathway plan) · Toxin
+    Treatment Record (batch/expiry/units/areas) · Therapy Session Note (mood scale + risk review) ·
+    Physio Initial Assessment. ▢ T2 the builder + personal templates (per-user, DB) → T3 Caretaker
+    clinic templates (Settings → Templates card) → T4 patient-facing intake/consent + payment hook
+    (W2/W4) → the Body Chart part joins from Body-Map v2.
+    **BODY-MAP v2 GREENLIT (2026-07-04):** annotation ENGINE (zoomable multi-view canvas · numbered
+    pins → structured sub-notes with batch/lot for injectables · freehand layer · PHOTO UNDERLAY) on
+    professionally licensed medical artwork; per-specialty view sets (derm mole-map · aesthetics
+    face · MSK). Next deliverable = a working prototype on real artwork, not sketches.
+    ▢ REMAINING — Body-Map v2 prototype · Scribe Templates T2–T4. New pieces to build + add to the URDS:
     - **Adaptive Workspace** — the four cards reflow by **Clinical Modules** (a new W1.1 Settings toggle:
       Lab · Radiology · Procedures · Prescriptions · RolDe AI) → 4/3/2-card states, AND are sized by
       **user-controlled LAYOUTS — no auto-resize (Roland 2026-07-01, FINAL; supersedes both the old

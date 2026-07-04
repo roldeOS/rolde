@@ -66,8 +66,9 @@
 | ✅ | **Status-Dot colour taxonomy APPROVED + locked** (bible + the Clinical Notes (i) glossary); Filter's Status options now wear their dot colours; Segmented tabs lift onto a true white card — 2026-07-04 |
 | ✅ | **Independent row splits** — Scribe's divider moves Scribe alone (per-column splitLeft/splitRight; old saved layouts migrate) — 2026-07-04 |
 | ✅ | **Deep clean** — nhs_number → national_health_id (all the way down) · five unused scaffold columns dropped · AIS chip in the island (interpreter/communication needs flagged at a glance) — 2026-07-04 |
-| ▢ | **Body-Map v2 approach** — research done (Jane = image-annotation canvas + pins/draw; Pabau = injection plotting + batch numbers + photo markup); professional licensed vector set + annotation engine proposed — awaiting Roland's approval |
-| ▢ | **Scribe Templates** — Roland's concept (per-user + clinic-level templates, form parts incl. Body Chart, intake/consent reuse); architecture proposed — awaiting greenlight |
+| ✅ | **RolDe Scribe Templates T1** (GREENLIT + built 2026-07-04) — typed parts engine · picker in Scribe's header · Scribe morphs into the form in place · curated library ×6 (SOAP · GP Consult · Lesion Review · Toxin Record · Therapy Session · Physio Initial) → renders a clean note through saveNote |
+| ▢ | **Scribe Templates T2–T4** — T2 builder + personal templates (DB) → T3 Caretaker clinic templates (Settings) → T4 patient-facing intake/consent + payment hook |
+| ▢ | **Body-Map v2 prototype** (GREENLIT 2026-07-04) — annotation engine (pins + structured sub-notes + freehand + photo underlay) on licensed professional artwork; becomes the Body Chart template part |
 | ▢ | Consultation redesign remainder: **Body-Map** (Servier style TBC) |
 | ▢ | W1.2.1 Problem List (SNOMED-coded) · W1.2.2 Medication List + reconciliation · W1.2.3 History (PMH/surgical/family/social) |
 | ▢ | W1.2.4 Document Store · W1.2.6 Digital Consents (e-sign) |
@@ -100,4 +101,4 @@
 
 ---
 
-*Last updated: 2026-07-04 (taxonomy locked · independent splits · deep renames; next: Scribe Templates + Body-Map v2 greenlights → Courier C2/C3 · competitor sweep in phases).*
+*Last updated: 2026-07-04 (Scribe Templates T1 live · Body-Map v2 greenlit · sweep Phase 1 delivered; next: Body-Map prototype → T2 → Courier C2/C3 · sweep Phase 2).*

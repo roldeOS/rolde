@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { PenLine, Maximize2, Minimize2, Strikethrough } from "lucide-react";
+import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -25,6 +25,15 @@ import {
   strikeNote,
   amendNote,
 } from "@/app/(app)/patients/actions";
+import { ScribeTemplateForm } from "@/components/consultation/ScribeTemplateForm";
+import {
+  ROLDE_TEMPLATE_LIBRARY,
+  renderTemplate,
+  templateHasAnswers,
+  type ScribeTemplate,
+  type TemplateAnswers,
+} from "@/lib/scribeTemplates";
+import { useClickAway } from "@/lib/useClickAway";
 import { cn } from "@/lib/utils";
 
 type WorkupEntry = { id: string; entry_type: string };
@@ -77,6 +86,14 @@ export function ConsultationWorkspace({
 
   const [editTarget, setEditTarget] = useState<EditTarget>(null);
   const [draft, setDraft] = useState("");
+  // RolDe Scribe Templates T1 (GREENLIT 2026-07-04): pick from the curated
+  // library → Scribe MORPHS into the structured form in place; Save renders
+  // the answers into a clean readable note. New notes only (edit/amend stay
+  // verbatim text).
+  const [template, setTemplate] = useState<ScribeTemplate | null>(null);
+  const [answers, setAnswers] = useState<TemplateAnswers>({});
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const pickerRef = useClickAway<HTMLDivElement>(() => setPickerOpen(false));
   const [strikeOriginal, setStrikeOriginal] = useState(false);
   const [pending, setPending] = useState(false);
   // Conversational "saved" flash lives in the provider so it survives the
@@ -155,6 +172,8 @@ export function ConsultationWorkspace({
       : "edit";
 
   function handleEdit(e: FeedEntry) {
+    setTemplate(null);
+    setAnswers({});
     const locked = Date.now() - new Date(e.created_at).getTime() > EDIT_WINDOW_MS;
     const original = e.payload?.text ?? "";
     setEditTarget({ id: e.id, original, locked });
@@ -166,16 +185,21 @@ export function ConsultationWorkspace({
     setDraft("");
     setEditTarget(null);
     setStrikeOriginal(false);
+    setTemplate(null);
+    setAnswers({});
   }
 
+  const templateDirty = !!template && templateHasAnswers(template, answers);
+
   async function submit() {
-    if (!draft.trim() || pending) return;
+    const usingTemplate = mode === "new" && !!template;
+    if ((usingTemplate ? !templateDirty : !draft.trim()) || pending) return;
     setPending(true);
     try {
       const fd = new FormData();
       fd.set("patient_id", patient.id);
       if (mode === "new") {
-        fd.set("text", draft);
+        fd.set("text", usingTemplate ? renderTemplate(template, answers) : draft);
         await saveNote(fd);
       } else if (mode === "edit") {
         fd.set("entry_id", editTarget!.id);
@@ -201,21 +225,29 @@ export function ConsultationWorkspace({
   }
 
   const composerTitle =
-    mode === "edit" ? "Editing note" : mode === "amend" ? "Amending note" : COMPOSER_NAME;
+    mode === "edit"
+      ? "Editing note"
+      : mode === "amend"
+        ? "Amending note"
+        : template
+          ? `${COMPOSER_NAME} · ${template.name}`
+          : COMPOSER_NAME;
   const saveLabel =
     mode === "edit" ? "Save edit" : mode === "amend" ? "Save amendment" : "Save note";
 
   // Conversational bottom save bar (Roland 2026-06-11). It SPEAKS — "RolDe has
   // a note ready for Sarah's record" → "RolDe saved this to Sarah's record."
   usePageActionBar({
-    dirty: !!draft.trim() && !pending,
+    dirty: (template ? templateDirty : !!draft.trim()) && !pending,
     saving: pending,
     message:
       mode === "edit"
         ? `You’re editing a note in ${who}’s record.`
         : mode === "amend"
           ? `You’re amending a note in ${who}’s record.`
-          : `RolDe has a note ready for ${who}’s record.`,
+          : template
+            ? `RolDe has a ${template.name} ready for ${who}’s record.`
+            : `RolDe has a note ready for ${who}’s record.`,
     saveLabel,
     onSave: submit,
     onDiscard: editTarget || draft ? discard : undefined,
@@ -287,12 +319,76 @@ export function ConsultationWorkspace({
                     { term: "Amend", definition: "After an hour the note locks; add an amendment and optionally strike the original (it's never deleted)." },
                   ]}
                 />
+                {/* RolDe Scribe Templates (T1): the picker lives IN Scribe's
+                    header — never a separate page (Roland 2026-07-04). */}
+                {mode === "new" && (
+                  <div ref={pickerRef} className="relative ml-auto">
+                    <button
+                      onClick={() => setPickerOpen((v) => !v)}
+                      className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
+                    >
+                      <LayoutTemplate className="size-3.5" />
+                      {template ? template.name : "Template"}
+                      <ChevronDown className={cn("size-3 transition-transform", pickerOpen && "rotate-180")} />
+                    </button>
+                    {pickerOpen && (
+                      <div className="absolute right-0 top-[calc(100%+6px)] z-30 max-h-80 w-64 overflow-y-auto rounded-xl bg-card p-1.5 shadow-overlay">
+                        <button
+                          onClick={() => {
+                            setTemplate(null);
+                            setAnswers({});
+                            setPickerOpen(false);
+                          }}
+                          className={cn(
+                            "flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-hover",
+                            !template ? "font-medium text-foreground" : "text-muted-foreground",
+                          )}
+                        >
+                          <X className="size-3.5" /> Blank Note
+                        </button>
+                        {[...new Set(ROLDE_TEMPLATE_LIBRARY.map((t) => t.specialty))].map(
+                          (spec) => (
+                            <div key={spec}>
+                              <p className="px-2.5 pb-0.5 pt-2 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                                {spec}
+                              </p>
+                              {ROLDE_TEMPLATE_LIBRARY.filter((t) => t.specialty === spec).map(
+                                (t) => (
+                                  <button
+                                    key={t.id}
+                                    onClick={() => {
+                                      setTemplate(t);
+                                      setAnswers({});
+                                      setDraft("");
+                                      setPickerOpen(false);
+                                    }}
+                                    className={cn(
+                                      "flex w-full items-center rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-hover",
+                                      template?.id === t.id
+                                        ? "font-medium text-foreground"
+                                        : "text-muted-foreground",
+                                    )}
+                                  >
+                                    {t.name}
+                                  </button>
+                                ),
+                              )}
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
                 <button
                   onClick={() =>
                     setLeftMode((m) => (m === "bottom" ? "split" : "bottom"))
                   }
                   title={leftMode === "bottom" ? "Restore" : "Expand"}
-                  className="ml-auto flex size-7 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
+                  className={cn(
+                    "flex size-7 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow",
+                    mode !== "new" && "ml-auto",
+                  )}
                 >
                   {leftMode === "bottom" ? (
                     <Minimize2 className="size-4" />
@@ -332,6 +428,13 @@ export function ConsultationWorkspace({
                 )}
                 {/* No focus-grow: the layout NEVER moves on its own — typing
                     included (APPROVALS §4.2, Roland 2026-07-01). */}
+                {mode === "new" && template ? (
+                  <ScribeTemplateForm
+                    template={template}
+                    answers={answers}
+                    onChange={(i, v) => setAnswers((a) => ({ ...a, [i]: v }))}
+                  />
+                ) : (
                 <textarea
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
@@ -342,13 +445,18 @@ export function ConsultationWorkspace({
                   }
                   className="min-h-0 w-full flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 />
+                )}
                 <div className="flex shrink-0 items-center justify-end gap-2 pt-1">
-                  {(editTarget || draft) && (
+                  {(editTarget || draft || template) && (
                     <Button variant="ghost" size="sm" onClick={discard}>
                       Discard
                     </Button>
                   )}
-                  <Button size="sm" onClick={submit} disabled={pending || !draft.trim()}>
+                  <Button
+                    size="sm"
+                    onClick={submit}
+                    disabled={pending || (template && mode === "new" ? !templateDirty : !draft.trim())}
+                  >
                     {saveLabel}
                   </Button>
                 </div>
