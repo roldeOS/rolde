@@ -213,10 +213,10 @@ export function CommandMenu({
           a min-width on larger screens. */}
       <button
         onClick={() => setOpen(true)}
-        className="group flex h-8 items-center gap-2 rounded-lg bg-card px-2.5 text-sm text-muted-foreground shadow-sm transition-shadow hover:shadow-md sm:min-w-[200px] md:min-w-[240px]"
+        className="group flex h-8 items-center gap-2 rounded-lg bg-card px-2.5 text-sm text-muted-foreground shadow-sm transition-shadow hover:shadow-md md:min-w-[240px]"
       >
         <Search className="size-4 shrink-0" />
-        <span className="hidden sm:inline">Search…</span>
+        <span className="hidden md:inline">Search…</span>
         <kbd className="ml-auto hidden rounded bg-muted px-1 text-[10px] sm:inline">
           ⌘K
         </kbd>

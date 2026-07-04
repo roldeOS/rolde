@@ -363,6 +363,9 @@ export function ConsultationWorkspace({
               style={grow(leftTop)}
               className={cn(
                 "flex min-h-[55vh] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[140px]",
+                // MOBILE expand (Roland 2026-07-04): stacked cards grow by
+                // min-height — flex-grow has no track to fill below lg.
+                leftMode === "top" && "min-h-[80dvh] lg:min-h-[140px]",
                 dur,
               )}
             >
@@ -399,12 +402,13 @@ export function ConsultationWorkspace({
               style={grow(showNotes ? 1 - leftTop : 1)}
               className={cn(
                 "flex min-h-[220px] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[92px]",
+                leftMode === "bottom" && "min-h-[75dvh] lg:min-h-[92px]",
                 dur,
               )}
             >
-              <div className="glass sticky top-0 z-10 flex items-center gap-2 px-4 py-2.5">
+              <div className="glass sticky top-0 z-10 flex flex-wrap items-center gap-x-2 gap-y-1 px-4 py-2.5">
                 <CardIcon icon={PenLine} tone="brand" variant="badge" size="sm" />
-                <span className="text-sm font-semibold">{composerTitle}</span>
+                <span className="min-w-0 truncate text-sm font-semibold">{composerTitle}</span>
                 <SectionExplainer
                   label="Scribe"
                   description="Where you write. New notes, edits and amendments all happen here — the card adapts to what you're doing."
@@ -424,7 +428,9 @@ export function ConsultationWorkspace({
                       className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                     >
                       <LayoutTemplate className="size-3.5" />
-                      {template ? template.name : "Template"}
+                      <span className={cn(!template && "hidden sm:inline")}>
+                        {template ? template.name : "Template"}
+                      </span>
                       <ChevronDown className={cn("size-3 transition-transform", pickerOpen && "rotate-180")} />
                     </button>
                     {/* PORTALED (AnchoredPopover) — Scribe is overflow-hidden;
@@ -505,7 +511,9 @@ export function ConsultationWorkspace({
                     )}
                   >
                     <PersonStanding className="size-3.5" />
-                    {bodyMap ? "Close Body Map" : "Body Map"}
+                    <span className={cn(!bodyMap && "hidden sm:inline")}>
+                      {bodyMap ? "Close Body Map" : "Body Map"}
+                    </span>
                   </button>
                 )}
                 <button
@@ -629,6 +637,7 @@ export function ConsultationWorkspace({
               style={grow(showAi ? rightTop : 1)}
               className={cn(
                 "flex min-h-[40vh] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[140px]",
+                rightMode === "top" && "min-h-[80dvh] lg:min-h-[140px]",
                 dur,
               )}
             >
@@ -660,6 +669,7 @@ export function ConsultationWorkspace({
               style={grow(showWorkup ? 1 - rightTop : 1)}
               className={cn(
                 "flex min-h-[200px] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[92px]",
+                rightMode === "bottom" && "min-h-[75dvh] lg:min-h-[92px]",
                 dur,
               )}
             >

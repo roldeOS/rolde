@@ -483,14 +483,21 @@ export function Topbar({
         <div className="flex shrink-0 items-center gap-1.5">
           {onConsult && <LayoutsMenu modules={modules} />}
           <CommandMenu modules={modules} />
+          {/* Phones keep the essentials only: search · bell · profile —
+              clock/recents/glossary return from md up (Roland 2026-07-04,
+              the skewed-topbar screenshot). */}
           {/* Live date + time to the second — sits just AFTER the search bar
               (Roland 2026-06-16). timeZone defaults to the viewer's local clock;
               the Caretaker clinic-timezone setting will feed it later (W1.1.x). */}
-          <Clock />
-          <Recents />
+          <span className="hidden md:contents">
+            <Clock />
+            <Recents />
+          </span>
           <NotificationsBell />
-          <div className="mx-0.5 h-5 w-px bg-border" />
-          <RolesGlossaryButton role={role} />
+          <span className="hidden md:contents">
+            <div className="mx-0.5 h-5 w-px bg-border" />
+            <RolesGlossaryButton role={role} />
+          </span>
           <ProfileMenu user={user} role={role} clinic={clinic} />
         </div>
       </div>
