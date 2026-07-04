@@ -130,16 +130,22 @@ export function BodyMapPanel({
             </Button>
           </div>
         </div>
-        <div className="min-h-0 flex-1 overflow-hidden">
+        {/* Sizing (the second blank-map bug, Roland 2026-07-04): an svg with
+            h-full + w-auto inside nested min-h-0 flex resolves to ZERO width
+            in real browsers — the width must come from an explicit
+            aspect-ratio, and the wrapper guarantees a floor height. */}
+        <div className="flex min-h-[340px] w-full min-w-0 flex-1 justify-center overflow-hidden lg:min-h-0">
           <svg
             ref={svgRef}
             viewBox={BODY_VIEWBOX}
+            preserveAspectRatio="xMidYMid meet"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
+            style={{ aspectRatio: "970 / 2200" }}
             className={cn(
-              "h-full max-h-full w-auto touch-none select-none",
+              "h-full touch-none select-none",
               tool === "pin" ? "cursor-crosshair" : "cursor-cell",
             )}
             aria-label="Body map — tap to mark"

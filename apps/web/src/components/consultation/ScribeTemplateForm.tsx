@@ -86,10 +86,19 @@ export function ScribeTemplateForm({
                             type="button"
                             onClick={() =>
                               write((next) => {
-                                next[TEMP_UNIT_INDEX] = unit === "c" ? "f" : "c";
+                                const to = unit === "c" ? "f" : "c";
+                                next[TEMP_UNIT_INDEX] = to;
+                                // The VALUE converts with the unit (Roland
+                                // 2026-07-04): 36.8 °C ⇄ 98.2 °F, 1 dp.
+                                const v = Number(next[j]);
+                                if (next[j].trim() && Number.isFinite(v)) {
+                                  const converted =
+                                    to === "f" ? v * 1.8 + 32 : (v - 32) / 1.8;
+                                  next[j] = String(Math.round(converted * 10) / 10);
+                                }
                               })
                             }
-                            title="Flip between Celsius and Fahrenheit"
+                            title="Flip between Celsius and Fahrenheit — the value converts"
                             className="ml-1 rounded bg-foreground/6 px-1 font-normal text-foreground/70 transition-colors hover:bg-foreground/10"
                           >
                             {unit === "f" ? "°F" : "°C"} ⇄
