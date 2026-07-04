@@ -1406,12 +1406,31 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     expenses → W4 candidate) and **email-to-filenote** (forward an email, it lands in the client
     record → an ingest hook for the approved W1.6/Covenant inbox). Kiku's in-house secure client
     messaging + client wallet = already covered (inbox · Commercial credit). bacpac (Mayden's
-    private-practice cousin of iaptus) surfaced nothing we lack. Awaiting Roland's word on the two
-    Qunote candidates.
+    private-practice cousin of iaptus) surfaced nothing we lack. The two Qunote candidates were
+    DECLINED (Roland 2026-07-04: "I don't see the point") — no slots taken.
     **COURIER C3 LOCKED SCOPE ADDITION (Roland 2026-07-04):** every Courier email wears the
     ELEGANT RolDe email design (the W1.1.13 clinic-email templates' parchment voice), and every
     attached/linked document is the URDS PDF Kit's LetterPdf — never a bare system email, never an
     unstyled PDF.
+    **✅ COURIER C3 BUILT 2026-07-04 (Roland "Go for courier 3"):** the letter LEAVES from its own
+    tile — a Send action beside PDF opens the portaled Send sheet (GP first, then patient, Address
+    Book, or a typed address; the C2 Typo Guard reads the exact envelope back before Send). Each
+    send is a **dispatch** (courier_dispatches + append-only courier_dispatch_events; RLS
+    tenant-isolated) carrying a 30-day capability token. The email is the RolDe shell
+    (platform-scoped `courier-letter` template, new `courier` category, clinic-overridable) and
+    **PHI-minimal by design** — no patient name; the letter lives behind the secure link. The
+    public viewer `/courier/view/[token]` is **envelope-first**: clinical content renders only
+    after a human presses "Open Letter" — that press IS the honest Opened signal (link-scanner
+    bots GET but never POST; zero tracking pixels), and the recipient's PDF is the SAME LetterPdf
+    via the shared `lib/letterPdf.ts` builder (clinician route refactored onto it; every download
+    is a pdf_downloaded journey event). The journey drives the Feed Tile Status Dot live — "Sent
+    to …" (blue, in flight) → "Opened by …" (green, settled), "Send Failed" critical — plus the
+    Status Trail and the Activity Log (`courier.send`). C2 gates enforced at send time: delegated
+    sending (author-only when off) · countersign (doctor-grade sender required) · quiet hours
+    (patient sends hold overnight, clinic-local clock). Verified E2E in the running app including
+    the negative cases (bad email · foreign entry · no session 307 · bad token · expired token ·
+    PDF-before-open redirect). **C4 next:** Resend delivery webhooks (true Delivered state),
+    attachment mode (secure_link_default OFF), clinic↔clinic handover.
     **MOBILE (Roland 2026-07-04 — "a major flaw… every design should fit iPhone and iPad"):**
     audit run at iPhone width — consult · patients · dashboard · settings all verified painting
     correctly at 393px (screenshots); the two classic iOS traps FIXED platform-wide: h-screen →

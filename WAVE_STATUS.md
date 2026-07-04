@@ -91,7 +91,7 @@
 | ▢ | **RolDe Covenant** | Relationships / marketing (W6.2) |
 | ▢ | **RolDe Compass** | The day view — calendar + tasks (sidebar) |
 | ▢ | **RolDe Cadence** | Recalls / reminders engine (W2.3) |
-| ◐ | **RolDe Courier** | The clinical postal system (GREENLIT 2026-07-02) — **C1 ✅** (team-level unseen → the Status Dot carries it since Feed Tile v3) · **C2 ✅ 2026-07-04: Settings → RolDe Courier — the sending policy (secure-link default · typo guard · countersign · delegated sending · quiet hours · chase window, all audited via Change Describer + clinician-403 verified) + the ADDRESS BOOK (GP practices · pharmacies · labs · hospitals; soft-remove only; country-aware validation)** · C3 outbound email + live tracking ▢ · C4 clinic↔clinic ▢ · C5 chase/kill-switch ▢ |
+| ◐ | **RolDe Courier** | The clinical postal system (GREENLIT 2026-07-02) — **C1 ✅** (team-level unseen → the Status Dot carries it since Feed Tile v3) · **C2 ✅ 2026-07-04: Settings → RolDe Courier — the sending policy (secure-link default · typo guard · countersign · delegated sending · quiet hours · chase window, all audited via Change Describer + clinician-403 verified) + the ADDRESS BOOK (GP practices · pharmacies · labs · hospitals; soft-remove only; country-aware validation)** · **C3 ✅ 2026-07-04: OUTBOUND SENDING — Send sheet on every letter tile (GP-first · patient · Address Book · custom, Typo-Guard read-back) → dispatch + append-only journey (courier_dispatches/_events) → the ELEGANT RolDe-shell email carrying a secure capability link (PHI-minimal: the letter stays behind the token; platform `courier-letter` template, clinic-overridable) → public `/courier/view/[token]` viewer (envelope-first: a human's "Open Letter" IS the honest Opened signal — no pixels, scanners can't fake it) + the SAME URDS LetterPdf via the shared builder; the journey drives the tile's Status Dot ("Sent to…" blue → "Opened by…" green) + Trail + Activity Log; C2 gates live at send time (delegated/countersign/quiet-hours) — full E2E + negative-case verified** · C4 clinic↔clinic + Resend delivery webhooks + attachment mode ▢ · C5 chase/kill-switch ▢ |
 | ⧉ | **RoChat** | AI comms hub — built by iOS-Jarvis (external) |
 
 ## C. The 18 Specialty Packs *(mapped + slotted in Bible 4.8 §15.7c; build = configuration of the spine)*
@@ -110,4 +110,4 @@
 
 ---
 
-*Last updated: 2026-07-04 night (addendum law · iOS dvh fixes · sweep Phase 3 done; next: Courier C3 [URDS-elegant emails + LetterPdf] → Body-Map v2.1 [template-part blend approved] → Templates T2/T3 [body-map part in the Caretaker builder]).*
+*Last updated: 2026-07-04 late (Courier C3 SHIPPED — Send sheet · secure token viewer · live Status-Dot journey · E2E + negative-case verified; Qunote pair declined; next: Body-Map v2.1 [template-part blend approved] → Templates T2/T3 [body-map part in the Caretaker builder] → the expanded world-sweep programme [master list awaiting Roland's phase approval]).*
