@@ -25,6 +25,7 @@ import {
   ChevronDown,
   Mail,
   FileDown,
+  Send as SendIcon,
   TriangleAlert,
   OctagonAlert,
   ClipboardList,
@@ -39,6 +40,7 @@ import {
   BodyMapThumbnail,
 } from "@/components/consultation/StructuredNoteBody";
 import { markEntrySeen } from "@/app/(app)/patients/actions";
+import { CourierSendSheet } from "@/components/consultation/CourierSendSheet";
 import { cn } from "@/lib/utils";
 
 export type FeedEntry = {
@@ -204,6 +206,8 @@ export function ClinicalNotesFeed({
   const toggleTrail = useCallback((id: string, el: HTMLElement) => {
     setTrail((t) => (t?.id === id ? null : { id, el }));
   }, []);
+  // The Courier Send sheet (C3) — one open at a time, portaled like the trail.
+  const [courier, setCourier] = useState<{ id: string; el: HTMLElement } | null>(null);
 
   const [typeF, setTypeF] = useState<Set<string>>(new Set());
   const [authF, setAuthF] = useState<Set<string>>(new Set());
@@ -888,6 +892,22 @@ export function ClinicalNotesFeed({
                         PDF
                       </a>
                     )}
+                    {/* Courier (C3): a letter LEAVES from its own tile — the Send
+                        sheet is portaled (APPROVALS §2.4), never sent struck-through. */}
+                    {isLetter && !struck && (
+                      <button
+                        onClick={(ev) =>
+                          setCourier((c) =>
+                            c?.id === e.id ? null : { id: e.id, el: ev.currentTarget },
+                          )
+                        }
+                        title="Send via Courier"
+                        className="flex h-6 items-center gap-1 rounded-md px-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                      >
+                        <SendIcon className="size-3.5" />
+                        Send
+                      </button>
+                    )}
                     <button
                       onClick={() => onEditNote(e)}
                       title={
@@ -908,6 +928,13 @@ export function ClinicalNotesFeed({
         )}
         {sortDesc && sentinel}
       </div>
+      {/* ONE Courier Send sheet serves every letter tile (portaled). */}
+      <CourierSendSheet
+        entryId={courier?.id ?? ""}
+        anchor={courier?.el ?? null}
+        open={!!courier}
+        onClose={() => setCourier(null)}
+      />
     </div>
   );
 }

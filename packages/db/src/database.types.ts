@@ -300,6 +300,153 @@ export type Database = {
           },
         ]
       }
+      courier_dispatch_events: {
+        Row: {
+          created_at: string
+          dispatch_id: string
+          event: string
+          id: string
+          meta: Json | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          dispatch_id: string
+          event: string
+          id?: string
+          meta?: Json | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          dispatch_id?: string
+          event?: string
+          id?: string
+          meta?: Json | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_dispatch_events_dispatch_id_fkey"
+            columns: ["dispatch_id"]
+            isOneToOne: false
+            referencedRelation: "courier_dispatches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_dispatch_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      courier_dispatches: {
+        Row: {
+          address_book_id: string | null
+          care_provider_id: string | null
+          channel: string
+          created_at: string
+          delivered_at: string | null
+          entry_id: string
+          failed_reason: string | null
+          id: string
+          opened_at: string | null
+          patient_id: string
+          recipient_email: string
+          recipient_kind: string
+          recipient_name: string
+          sent_at: string | null
+          sent_by: string | null
+          status: string
+          tenant_id: string
+          token_expires_at: string
+          updated_at: string
+          view_token: string
+        }
+        Insert: {
+          address_book_id?: string | null
+          care_provider_id?: string | null
+          channel?: string
+          created_at?: string
+          delivered_at?: string | null
+          entry_id: string
+          failed_reason?: string | null
+          id?: string
+          opened_at?: string | null
+          patient_id: string
+          recipient_email: string
+          recipient_kind: string
+          recipient_name: string
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+          tenant_id: string
+          token_expires_at: string
+          updated_at?: string
+          view_token: string
+        }
+        Update: {
+          address_book_id?: string | null
+          care_provider_id?: string | null
+          channel?: string
+          created_at?: string
+          delivered_at?: string | null
+          entry_id?: string
+          failed_reason?: string | null
+          id?: string
+          opened_at?: string | null
+          patient_id?: string
+          recipient_email?: string
+          recipient_kind?: string
+          recipient_name?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+          tenant_id?: string
+          token_expires_at?: string
+          updated_at?: string
+          view_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "courier_dispatches_address_book_id_fkey"
+            columns: ["address_book_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_address_book"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_dispatches_care_provider_id_fkey"
+            columns: ["care_provider_id"]
+            isOneToOne: false
+            referencedRelation: "patient_care_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_dispatches_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "patient_feed_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_dispatches_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "courier_dispatches_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custodian_users: {
         Row: {
           created_at: string

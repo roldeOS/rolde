@@ -24,7 +24,10 @@ export async function proxy(request: NextRequest) {
     path === "/reset" ||
     path.startsWith("/policy") ||
     path.startsWith("/api") ||
-    path.startsWith("/auth");
+    path.startsWith("/auth") ||
+    // Courier's secure letter viewer (C3) — the recipient has no RolDe account;
+    // the long-random capability token in the URL is the authorisation.
+    path.startsWith("/courier/view");
 
   if (!user && !isPublic) {
     return redirectKeepingCookies(request, "/login", supabaseResponse);
