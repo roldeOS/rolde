@@ -1377,8 +1377,16 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     (Carepatron parity — "our RolDe Ambient AI would do this", correct wave) · W6 scheduled saved
     reports with in-app alerts (Halaxy) · Templates T4 client-authenticated patient forms (Zanda).
     PARKED (Roland "Hmmm"): insurer pre-authorisation session tracking at W4 (Splose analogue).
-    Phase 1 was a SURVEY pass (one source per app) — Phase 2 (TM3 · Nookal · PracticePal · Medesk ·
-    OwlPractice) runs at true depth, and Phase 1's five get the same deep revisit.
+    **SWEEP COMPLETE AT DEPTH (2026-07-04):** Phase 2 (TM3 · Nookal · PracticePal · Medesk ·
+    OwlPractice) + the Phase-1 five re-dived (feature pages, 2026 changelogs, user praise). The
+    consolidated features-we-lack table is with Roland for approval; approved lines get registered
+    on their waves. Standouts: the CASE & FUNDING ENGINE (Nookal case ledger + Splose agreements +
+    Halaxy limits — one burn-down engine for authorised sessions/amounts/expiry) · TM3 exercise
+    prescription (the PT pack's backbone) · insurer EDI claims via Healthcode (TM3/PracticePal) ·
+    Medesk acquisition-channel ROI analytics · Fresha's 2026 two-way inbox + AI receptionist ·
+    Owl's clinical-supervision mode · Splose travel/home-visit fees · Zanda ICS calendar sync.
+    Validated (already ours, no new slots): context-aware AI drafting (W5) · team chat (W1.6
+    Confer) · tasks (Compass) · memberships (W4).
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
     **✅ BODY-MAP v2 PROTOTYPE BUILT 2026-07-04:** a Scribe MODE (the "Body Map" button beside
     Template; entering it auto-expands Scribe — the ONE sanctioned automatic move, APPROVALS §4.2).
