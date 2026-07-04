@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { UserCircle, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { PopoverHeader } from "@/components/ui/PopoverHeader";
 import { useClickAway } from "@/lib/useClickAway";
 
 /** Profile dropdown — identity + sign-out (fully functional). */
@@ -48,27 +49,28 @@ export function ProfileMenu({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-56 rounded-xl bg-card p-1.5 shadow-overlay">
-          <div className="px-2.5 py-2">
-            <p className="text-sm font-semibold">{user}</p>
-            <p className="text-xs text-muted-foreground capitalize">
-              {role} · {clinic}
-            </p>
+        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-56 overflow-hidden rounded-xl bg-card shadow-overlay">
+          <PopoverHeader
+            icon={UserCircle}
+            title={user}
+            subtitle={`${role.charAt(0).toUpperCase()}${role.slice(1)} · ${clinic}`}
+            tone="brand"
+          />
+          <div className="p-1.5">
+            <Link
+              href="/settings"
+              onClick={close}
+              className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-hover"
+            >
+              <Settings className="size-4 text-muted-foreground" /> Settings
+            </Link>
+            <button
+              onClick={signOut}
+              className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm text-critical transition-colors hover:bg-critical/10"
+            >
+              <LogOut className="size-4" /> Sign Out
+            </button>
           </div>
-          <div className="my-1 h-px bg-border" />
-          <Link
-            href="/settings"
-            onClick={close}
-            className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors hover:bg-hover"
-          >
-            <Settings className="size-4 text-muted-foreground" /> Settings
-          </Link>
-          <button
-            onClick={signOut}
-            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm text-critical transition-colors hover:bg-critical/10"
-          >
-            <LogOut className="size-4" /> Sign Out
-          </button>
         </div>
       )}
     </div>

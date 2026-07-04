@@ -136,7 +136,7 @@ export function ScribeTemplateForm({
               <div key={i}>
                 <p className="mb-1.5 text-xs font-semibold text-foreground">{p.label}</p>
                 <div className="flex flex-col rounded-xl bg-muted/30 p-2.5">
-                  <BodyMapPanel data={data} onChange={(next) => onChange(i, next)} />
+                  <BodyMapPanel embedded data={data} onChange={(next) => onChange(i, next)} />
                 </div>
               </div>
             );

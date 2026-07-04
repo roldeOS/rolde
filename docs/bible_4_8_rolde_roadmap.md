@@ -1424,7 +1424,31 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     Epic · Oracle Health. Deliberately its own phase: these are procurement-locked NHS/hospital
     systems, not commercial rivals — swept for records-craft, consultation-mode UX, template
     depth and the interop RolDe must speak (GP Connect · PDS · e-RS · Spine), not for feature
-    slots.
+    slots. Roland's framing (2026-07-04): "horrible softwares… clunky and very 1990's… but we can
+    perhaps take some features from it and reimagine in our own image" — the sweep looks for the
+    CAPABILITY under the clunk, never the UI.
+    **✅ PHASE A SWEPT 2026-07-04 (nine UK direct rivals; full findings in the session report):**
+    verdict = validation-heavy, THREE precise steals registered: **specimen-label printing** from
+    the lab request (Semble/TDL → the W3 Lab spine) · **treatment-anchored recall rules** (Pabau's
+    90-day toxin / 6-month filler reactivation + WriteUpp's per-appointment-type reminders →
+    RolDe Cadence W2.3: recall intervals defined per service, seeded at checkout) · **personal
+    autotext shortcuts** (Carebit → Scribe T2, joins the personal-template builder). Also noted:
+    MidexPRO's one-secretary-many-practices pattern (W7 group-practice era) · Meddbase's
+    case-pipeline report-approval step (pairs with Courier C5 countersign) · Carebit charges
+    £119–215/user for dictation AI that W5 covers in-house. Courier C3 = Semble's secure-letter
+    flagship feature, already shipped.
+    **UNREAD PHILOSOPHY SETTLED (Roland 2026-07-04, "its okay"):** strict TEAM-level unseen
+    stands as built — the first non-author read reviews an entry for the whole clinic; the
+    author's own click never counts.
+    **POPOVER ANATOMY v1 (2026-07-04 — PENDING Roland's blessing; URDS only on his word):**
+    Roland: dialog boxes "need a heading of sorts and a splash of colour… I leave it to you to
+    design this." Designed + shipped: shared `PopoverHeader` — squircle CardIcon + Title Case
+    heading (+ subtitle) on a soft Earth & Bloom wash, hairline beneath — worn by the Courier
+    Send sheet (sage/accent) · Status Trail (info) · feed Filter (sky) · Template picker
+    (periwinkle) · Layouts (peach) · Notifications (amber) · Recent Patients (teal) · Profile
+    menu (brand). NOT yet URDS law — Roland reviews first. Separately: Roland is fine-tuning the
+    Clinical Notes TILE himself — no tile design changes until he hands it back ("once done, I
+    will ask you to add it to URDS").
     **COURIER C3 LOCKED SCOPE ADDITION (Roland 2026-07-04):** every Courier email wears the
     ELEGANT RolDe email design (the W1.1.13 clinic-email templates' parchment voice), and every
     attached/linked document is the URDS PDF Kit's LetterPdf — never a bare system email, never an
@@ -1468,6 +1492,25 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     tablet-first, every new surface verified at 393px + 768px before "done". If the real-device
     askew persists post-deploy, ONE screenshot from the device pins the remaining offender.
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
+    **✅ BODY-MAP v2.1 COMPLETED 2026-07-04 (Roland's four calls, same day):** (1) **FACE VIEW
+    SHIPPED** — RolDe's OWN artwork (Roland: "gentle eyes, nose and mouth… for an aesthetic
+    clinic"): a serene front-face crafted with mirrored symmetry in the Earth & Bloom language
+    (silhouette fill + light feature line-work — brows, almond eyes with iris arcs, nose, cupid's-
+    bow lips, ears), self-reviewed by screenshot through two iterations before shipping; Body ⇄
+    Face segmented in the annotator; ONE view per map in v2.1 (switching clears after an honest
+    confirm — per-view marks = v2.2); Face/Body Map titles the note text. (2) **PIN COLOURS**
+    (Roland: "different treatments for different areas — fillers / anti-wrinkle / PRP"): a
+    five-tone deepened Earth & Bloom palette (coral default · amber · sage · lavender · sky) —
+    swatch picker in Pin mode, the Marks-rail number chip click-cycles a pin's colour, and when a
+    map uses more than one colour the note TEXT names each pin's colour (colours carry meaning →
+    the record must too). Suggested next (Roland asked "what do you think?"): T3 lets a clinic
+    NAME its colours (coral = toxin, sage = filler…) so the legend is clinic-official. (3) **PINS
+    BIGGER** — dot 22→30, numeral 30→38, and zoom now scales marks by √(window) so close-up pins
+    grow visibly instead of staying stubbornly small. (4) **EMBEDDED SIZE FIX** — the template-
+    part annotator kept collapsing to a thumbnail (lg:min-h-0 with no card height to fill);
+    embedded mode now holds a real floor (460px body / 380px face) and stacks the Marks rail
+    beneath. Remaining: posterior view · per-view marks (v2.2) · photo underlay (Document Store) ·
+    batch/lot pins.
     **✅ BODY-MAP v2.1 BUILT 2026-07-04 (Roland "Go for body map v2.1"):** (1) the annotator is a
     **template PART** — `body_map` joins the parts palette (T2/T3 builders inherit it free);
     Lesion Review carries a "Lesion Map", the Toxin record carries "Injection Sites"; answers

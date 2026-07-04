@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { PopoverHeader } from "@/components/ui/PopoverHeader";
+import { type CardIconTone } from "@/components/ui/CardIcon";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,6 +23,10 @@ export function AnchoredPopover({
   align = "right",
   width = 256,
   className,
+  icon,
+  title,
+  subtitle,
+  tone = "brand",
   children,
 }: {
   /** The trigger element the popover hangs from. */
@@ -30,6 +36,13 @@ export function AnchoredPopover({
   align?: "left" | "right";
   width?: number;
   className?: string;
+  /** Structured mode (Roland 2026-07-04): give the popover its heading — the
+   *  squircle icon + Title Case title on a pastel wash (PopoverHeader). The
+   *  body scrolls beneath it; `className` styles the BODY in this mode. */
+  icon?: React.ComponentType<{ className?: string }>;
+  title?: string;
+  subtitle?: string;
+  tone?: CardIconTone;
   children: React.ReactNode;
 }) {
   const [el, setEl] = useState<HTMLDivElement | null>(null);
@@ -109,6 +122,22 @@ export function AnchoredPopover({
       ? { bottom: window.innerHeight - rect.top + gap }
       : { top: rect.bottom + gap }),
   };
+
+  if (title && icon) {
+    return createPortal(
+      <div
+        ref={setEl}
+        style={style}
+        className="z-[70] flex flex-col overflow-hidden rounded-xl bg-card shadow-overlay ring-1 ring-black/5"
+      >
+        <PopoverHeader icon={icon} title={title} subtitle={subtitle} tone={tone} />
+        <div className={cn("min-h-0 flex-1 overflow-y-auto overscroll-contain p-1.5", className)}>
+          {children}
+        </div>
+      </div>,
+      document.body,
+    );
+  }
 
   return createPortal(
     <div

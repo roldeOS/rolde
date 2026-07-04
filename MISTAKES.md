@@ -356,5 +356,30 @@ the truth before speaking about it.
 
 ---
 
+## 13. The popover swipe-vanish — the SAME scroll-close bug shipped twice in one day — 2026-07-04
+
+The Status Trail vanished under a two-finger swipe. Same family as the morning's bug (popovers
+closing on inside-list scrolls, fixed by ignoring scrolls whose target is inside the popover) —
+but the trail's content was SHORTER than its scroll window, so the swipe had nothing to scroll
+inside the popover: the browser CHAINED the gesture to the feed behind, the feed scrolled, and
+the "outside scroll" close fired. I fixed the case I'd seen, not the class of bug. Roland:
+"Reminds me of the issue that happened to us just a bit earlier... So fix it."
+
+**Fix (shipped in AnchoredPopover AND Select, law refined in URDS §8):** a gesture OVER a
+popover never dismisses it — `overscroll-contain` stops the chaining, and a wheel/touch-over
+flag turns any leaked scroll into a re-anchor instead of a close. Only genuine outside-page
+scrolls dismiss.
+
+**Trigger:** fixing any event-driven dismiss/close behaviour (scroll, click-away, Escape, blur).
+Enumerate the SIBLING paths of the same event before claiming fixed: inside-scroll, chained
+scroll from non-scrollable content, capture-phase listeners, portalled children. Fix the class,
+not the instance — and fix it in EVERY component carrying the same pattern (AnchoredPopover,
+Select, ⌘K) the same pass.
+
+**Lesson:** an event-handling bug is a family, not an individual. The second family member
+Roland finds costs more trust than the first.
+
+---
+
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or
 when a diagnosed regression is worth locking and Roland approves the entry.*

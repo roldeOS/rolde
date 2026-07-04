@@ -12,23 +12,51 @@ export type BodyMapPin = {
   y: number;
   site: string;
   note: string;
+  /** v2.1 (Roland: "different colours... fillers / anti-wrinkle / PRP") — an
+   *  Earth & Bloom tone per pin, so treatment families read at a glance.
+   *  Missing = coral (every pre-colour pin stays exactly as recorded). */
+  tone?: string;
 };
 
 export type BodyMapStroke = number[][]; // [x, y] points in viewBox space
 
+export type BodyMapView = "anterior" | "face";
+
 export type BodyMapData = {
-  view: "anterior";
+  view: BodyMapView;
   pins: BodyMapPin[];
   strokes: BodyMapStroke[];
 };
 
-/** The readable record — what the feed tile shows and the record keeps. */
+/** The pin palette — deepened Earth & Bloom (pins need presence on parchment;
+ *  the pastels stay for washes). Coral remains the signature default. */
+export const PIN_TONES = [
+  { key: "coral", label: "Coral", fill: "#e0533f" },
+  { key: "amber", label: "Amber", fill: "#C4841D" },
+  { key: "sage", label: "Sage", fill: "#63805F" },
+  { key: "lavender", label: "Lavender", fill: "#7E71B5" },
+  { key: "sky", label: "Sky", fill: "#43799E" },
+] as const;
+export type PinToneKey = (typeof PIN_TONES)[number]["key"];
+
+export const pinFill = (tone?: string): string =>
+  PIN_TONES.find((t) => t.key === tone)?.fill ?? PIN_TONES[0].fill;
+
+const pinToneLabel = (tone?: string): string =>
+  PIN_TONES.find((t) => t.key === tone)?.label ?? PIN_TONES[0].label;
+
+/** The readable record — what the feed tile shows and the record keeps. When
+ *  a map uses MORE than one pin colour, each line names its colour (the
+ *  colours carry meaning — e.g. toxin vs filler — so the text must too). */
 export function renderBodyMapText(data: BodyMapData): string {
-  const lines = [`Body Map — ${data.pins.length} mark${data.pins.length === 1 ? "" : "s"}`];
+  const title = data.view === "face" ? "Face Map" : "Body Map";
+  const lines = [`${title} — ${data.pins.length} mark${data.pins.length === 1 ? "" : "s"}`];
+  const multiTone = new Set(data.pins.map((p) => p.tone ?? "coral")).size > 1;
   data.pins.forEach((p, i) => {
     const site = p.site.trim();
     const note = p.note.trim();
-    lines.push(`${i + 1}. ${site || "Unlabelled site"}${note ? ` — ${note}` : ""}`);
+    const toneTag = multiTone ? ` [${pinToneLabel(p.tone)}]` : "";
+    lines.push(`${i + 1}. ${site || "Unlabelled site"}${note ? ` — ${note}` : ""}${toneTag}`);
   });
   if (data.strokes.length)
     lines.push(`Freehand markings: ${data.strokes.length}`);

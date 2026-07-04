@@ -6,8 +6,8 @@ import {
   TEMP_UNIT_INDEX,
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
-import { BODY_PATH, BODY_VIEWBOX } from "./bodyFigure";
-import { isBodyMapData, bodyMapHasContent, type BodyMapData } from "@/lib/bodyMap";
+import { BodyFigureArt, VIEW_DIMS } from "./BodyFigureArt";
+import { isBodyMapData, bodyMapHasContent, pinFill, type BodyMapData } from "@/lib/bodyMap";
 import { cn } from "@/lib/utils";
 
 /**
@@ -141,19 +141,19 @@ export function StructuredNoteBody({
  * figure: same artwork, same coordinates, pins numbered, strokes drawn.
  */
 export function BodyMapThumbnail({ data }: { data: BodyMapData }) {
+  const view = data.view === "face" ? "face" : "anterior";
+  const dims = VIEW_DIMS[view];
   const strokePath = (pts: number[][]) =>
     pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
   return (
     <svg
-      viewBox={BODY_VIEWBOX}
+      viewBox={dims.viewBox}
       preserveAspectRatio="xMidYMid meet"
-      style={{ aspectRatio: "970 / 2200" }}
-      className="h-48 shrink-0 rounded-lg bg-muted/30"
-      aria-label="Body map thumbnail"
+      style={{ aspectRatio: `${dims.w} / ${dims.h}` }}
+      className={cn("shrink-0 rounded-lg bg-muted/30", view === "face" ? "h-40" : "h-48")}
+      aria-label={view === "face" ? "Face map thumbnail" : "Body map thumbnail"}
     >
-      <g transform="translate(41.500029,630.92312)">
-        <path d={BODY_PATH} fill="#E7E2D6" stroke="#C9C2B0" strokeWidth={4} />
-      </g>
+      <BodyFigureArt view={view} />
       {data.strokes?.map((pts, i) => (
         <path
           key={i}
@@ -168,12 +168,12 @@ export function BodyMapThumbnail({ data }: { data: BodyMapData }) {
       ))}
       {data.pins?.map((p, i) => (
         <g key={i}>
-          <circle cx={p.x} cy={p.y} r={40} fill="#e0533f" />
+          <circle cx={p.x} cy={p.y} r={44} fill={pinFill(p.tone)} />
           <text
             x={p.x}
-            y={p.y + 16}
+            y={p.y + 17}
             textAnchor="middle"
-            fontSize={52}
+            fontSize={56}
             fontWeight={600}
             fill="#fff"
           >

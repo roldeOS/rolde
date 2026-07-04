@@ -110,4 +110,4 @@
 
 ---
 
-*Last updated: 2026-07-04 night (C3 deploy incident fixed — title-case guard; the Status Trail now carries the TIMESTAMPED Courier journey; popover swipe-vanish law refined in AnchoredPopover + Select; Body-Map v2.1 shipped [template PART in Lesion/Toxin + region zoom — face view next chunk, needs sourced artwork]; world-sweep programme locked, Phase A GO; next: Phase A findings → face view → Templates T2/T3).*
+*Last updated: 2026-07-04 late night (MISTAKES #13 [popover swipe-vanish class]; Popover Anatomy v1 shipped on 8 surfaces — PopoverHeader squircle+wash, PENDING Roland's URDS blessing; Body-Map v2.1 COMPLETE: FACE VIEW [RolDe's own artwork] + pin colours ×5 + bigger pins + embedded-size fix; Phase A swept [3 steals: specimen labels → W3 · treatment-anchored recalls → Cadence · autotext → T2]; unread ruling settled strict; Roland fine-tuning the tile himself; next: Phase B findings → T2 → T3).*

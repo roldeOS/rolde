@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Clock } from "lucide-react";
+import { PopoverHeader } from "@/components/ui/PopoverHeader";
 import { getRecents, type Recent } from "@/lib/recents";
 import { useClickAway } from "@/lib/useClickAway";
 
@@ -31,10 +32,14 @@ export function Recents() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 rounded-xl bg-card p-1.5 shadow-overlay">
-          <p className="px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
-            Recent Patients
-          </p>
+        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-64 overflow-hidden rounded-xl bg-card shadow-overlay">
+          <PopoverHeader
+            icon={Clock}
+            title="Recent Patients"
+            subtitle="Your last-opened records"
+            tone="teal"
+          />
+          <div className="p-1.5">
           {items.length === 0 ? (
             <p className="px-2.5 py-3 text-center text-xs text-muted-foreground">
               No recent patients yet.
@@ -52,6 +57,7 @@ export function Recents() {
               </Link>
             ))
           )}
+          </div>
         </div>
       )}
     </div>

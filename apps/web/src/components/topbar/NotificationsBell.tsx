@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Bell } from "lucide-react";
+import { PopoverHeader } from "@/components/ui/PopoverHeader";
 import { useClickAway } from "@/lib/useClickAway";
 
 /**
@@ -26,10 +27,13 @@ export function NotificationsBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 rounded-xl bg-card p-1.5 shadow-overlay">
-          <p className="px-2.5 py-1.5 text-xs font-semibold tracking-wider text-foreground uppercase">
-            Notifications
-          </p>
+        <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 overflow-hidden rounded-xl bg-card shadow-overlay">
+          <PopoverHeader
+            icon={Bell}
+            title="Notifications"
+            subtitle="Results, messages and reminders land here"
+            tone="warning"
+          />
           <p className="px-2.5 py-6 text-center text-xs text-muted-foreground">
             You&apos;re all caught up.
           </p>

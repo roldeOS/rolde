@@ -445,6 +445,10 @@ export function ConsultationWorkspace({
                       open={pickerOpen}
                       onClose={() => setPickerOpen(false)}
                       width={264}
+                      icon={LayoutTemplate}
+                      title="Templates"
+                      subtitle="The curated RolDe library"
+                      tone="periwinkle"
                     >
                         <button
                           onClick={() => {

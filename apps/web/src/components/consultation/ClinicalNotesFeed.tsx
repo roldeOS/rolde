@@ -25,6 +25,7 @@ import {
   ChevronDown,
   Mail,
   FileDown,
+  History,
   Send as SendIcon,
   TriangleAlert,
   OctagonAlert,
@@ -58,16 +59,17 @@ export type FeedEntry = {
         | string[]
         | number
         | {
-            view: "anterior";
-            pins: { x: number; y: number; site: string; note: string }[];
+            view: "anterior" | "face";
+            pins: { x: number; y: number; site: string; note: string; tone?: string }[];
             strokes: number[][][];
           }
       >;
     };
-    /** Body-Map entries: the structured marks behind the text. */
+    /** Body-Map entries: the structured marks behind the text (v2.1: face
+     *  view + per-pin treatment colours). */
     body_map?: {
-      view: "anterior";
-      pins: { x: number; y: number; site: string; note: string }[];
+      view: "anterior" | "face";
+      pins: { x: number; y: number; site: string; note: string; tone?: string }[];
       strokes: number[][][];
     };
   } | null;
@@ -477,6 +479,10 @@ export function ClinicalNotesFeed({
               open={filterOpen}
               onClose={() => setFilterOpen(false)}
               width={230}
+              icon={ListFilter}
+              title="Filter"
+              subtitle="Triage the feed by status, type or author"
+              tone="sky"
               className="p-2"
             >
                 <p className="px-1 pb-1 text-xs font-semibold tracking-wider text-foreground uppercase">
@@ -868,9 +874,12 @@ export function ClinicalNotesFeed({
                       open={trail?.id === e.id}
                       onClose={() => setTrail(null)}
                       width={288}
+                      icon={History}
+                      title="Status Trail"
+                      subtitle="Every status this entry has worn"
+                      tone="info"
                       className="p-3"
                     >
-                        <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Status Trail</p>
                         <ul className="space-y-1.5">
                           {trailFor(e).map((t, i) => (
                             <li key={i} className="text-xs">

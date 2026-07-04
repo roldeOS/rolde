@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Stethoscope, User, BookUser, AtSign, ChevronLeft } from "lucide-react";
+import { Stethoscope, User, BookUser, AtSign, ChevronLeft, Send } from "lucide-react";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { Input } from "@/components/ui/form";
 import {
@@ -122,11 +122,17 @@ export function CourierSendSheet({
   };
 
   return (
-    <AnchoredPopover anchor={anchor} open={open} onClose={onClose} width={304} className="p-3">
-      <p className="mb-1.5 text-xs font-semibold text-muted-foreground">
-        Send via Courier{ctx ? ` — ${ctx.title}` : ""}
-      </p>
-
+    <AnchoredPopover
+      anchor={anchor}
+      open={open}
+      onClose={onClose}
+      width={304}
+      icon={Send}
+      title="Send Via Courier"
+      subtitle={ctx ? `${ctx.title} — pick the recipient` : "Preparing the envelope…"}
+      tone="accent"
+      className="p-3"
+    >
       {loadError && <p className="text-xs text-critical">{loadError}</p>}
       {sendError && (
         <p className="mb-1.5 rounded-lg bg-critical/10 p-2 text-xs text-critical">{sendError}</p>

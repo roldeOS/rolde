@@ -25,8 +25,10 @@ import {
   Scale,
   type LucideIcon,
 } from "lucide-react";
+import { LayoutPanelLeft } from "lucide-react";
 import { useTopbar, DEFAULT_LAYOUT } from "./TopbarContext";
 import { useClickAway } from "@/lib/useClickAway";
+import { PopoverHeader } from "@/components/ui/PopoverHeader";
 import { Switch } from "@/components/ui/Switch";
 import { PatientIsland } from "./PatientIsland";
 import { CommandMenu } from "./CommandMenu";
@@ -178,7 +180,14 @@ function LayoutsMenu({ modules }: { modules: ClinicalModules }) {
         <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} />
       </button>
       {open && (
-        <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-60 rounded-xl bg-card p-1.5 shadow-overlay">
+        <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-60 overflow-hidden rounded-xl bg-card shadow-overlay">
+          <PopoverHeader
+            icon={LayoutPanelLeft}
+            title="Layouts"
+            subtitle="Your consult-room geometry"
+            tone="peach"
+          />
+          <div className="p-1.5">
           <button
             onClick={() => {
               setLayout(DEFAULT_LAYOUT);
@@ -294,6 +303,7 @@ function LayoutsMenu({ modules }: { modules: ClinicalModules }) {
               Save Current Layout As…
             </button>
           )}
+          </div>
         </div>
       )}
     </div>
