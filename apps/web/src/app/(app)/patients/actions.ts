@@ -99,12 +99,28 @@ export async function saveNote(formData: FormData) {
   const tenantId = ctx?.membership?.tenant_id;
   if (!tenantId) throw new Error("No clinic context for this user.");
 
+  // Scribe Templates: the structured answers ride the payload so the pencil
+  // can restore the FORM, not just the text (Roland 2026-07-04).
+  let template: Json | undefined;
+  const rawTemplate = String(formData.get("template_meta") ?? "");
+  if (rawTemplate) {
+    try {
+      template = JSON.parse(rawTemplate) as Json;
+    } catch {
+      template = undefined;
+    }
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.from("patient_feed_entries").insert({
     tenant_id: tenantId,
     patient_id: patientId,
     entry_type: "clinical_note",
-    payload: { text, word_count: text.split(/\s+/).filter(Boolean).length },
+    payload: {
+      text,
+      word_count: text.split(/\s+/).filter(Boolean).length,
+      ...(template !== undefined ? { template } : {}),
+    },
     created_by: ctx?.user.id ?? null,
   });
   if (error) throw new Error(error.message);
@@ -155,10 +171,26 @@ export async function editNote(formData: FormData) {
   if (Date.now() - new Date(entry.created_at).getTime() > EDIT_WINDOW_MS)
     throw new Error("The edit window has closed. Add an amendment instead.");
 
+  // A form-edit carries fresh template answers; a plain-text edit of a
+  // template note DROPS them (the hand-edited text is now the truth).
+  let template: Json | undefined;
+  const rawTemplate = String(formData.get("template_meta") ?? "");
+  if (rawTemplate) {
+    try {
+      template = JSON.parse(rawTemplate) as Json;
+    } catch {
+      template = undefined;
+    }
+  }
+
   const { error } = await supabase
     .from("patient_feed_entries")
     .update({
-      payload: { text, word_count: text.split(/\s+/).filter(Boolean).length },
+      payload: {
+        text,
+        word_count: text.split(/\s+/).filter(Boolean).length,
+        ...(template !== undefined ? { template } : {}),
+      },
       edited_at: new Date().toISOString(),
       updated_by: userId,
     })

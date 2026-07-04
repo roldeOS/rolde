@@ -48,12 +48,18 @@ export type TemplateAnswers = Record<number, string | string[] | number>;
 export const VITALS_FIELDS = [
   { key: "bp", label: "BP", unit: "", placeholder: "128/82", maxLen: 7 },
   { key: "hr", label: "HR", unit: "bpm", placeholder: "72", maxLen: 3 },
-  { key: "temp", label: "Temp", unit: "°C", placeholder: "36.8", maxLen: 4 },
+  { key: "temp", label: "Temp", unit: "°C", placeholder: "36.8", maxLen: 5 },
   { key: "spo2", label: "SpO₂", unit: "%", placeholder: "98", maxLen: 3 },
   { key: "rr", label: "RR", unit: "/min", placeholder: "16", maxLen: 2 },
   { key: "weight", label: "Weight", unit: "kg", placeholder: "72", maxLen: 5 },
 ] as const;
 export type VitalKey = (typeof VITALS_FIELDS)[number]["key"];
+/** The temp unit rides the vitals array as a 7th slot ("c" | "f") — flipped on
+ *  the field itself; the default follows the clinic's country (US/CA → °F). */
+export type TempUnit = "c" | "f";
+export const TEMP_UNIT_INDEX = VITALS_FIELDS.length;
+export const defaultTempUnit = (country: string | null | undefined): TempUnit =>
+  country === "US" ? "f" : "c";
 
 /** Keep only what each vital is MADE of while typing (Roland 2026-07-04 —
  *  "I thought you were smart enough to know what values can be entered in a
@@ -78,7 +84,7 @@ export function sanitiseVital(key: VitalKey, v: string): string {
 
 /** Clinically PLAUSIBLE ranges — wide enough for real extremes, closed to
  *  nonsense. Empty = fine (unanswered); implausible blocks Save. */
-export function vitalOk(key: VitalKey, v: string): boolean {
+export function vitalOk(key: VitalKey, v: string, tempUnit: TempUnit = "c"): boolean {
   const t = v.trim();
   if (!t) return true;
   switch (key) {
@@ -95,7 +101,8 @@ export function vitalOk(key: VitalKey, v: string): boolean {
     }
     case "temp": {
       const n = Number(t);
-      return n >= 25 && n <= 45;
+      // °C 25–45 · °F 77–113 (the same physiological window).
+      return tempUnit === "f" ? n >= 77 && n <= 113 : n >= 25 && n <= 45;
     }
     case "spo2": {
       const n = Number(t);
@@ -118,7 +125,8 @@ export function templateAnswersValid(t: ScribeTemplate, answers: TemplateAnswers
     if (p.kind !== "vitals") return true;
     const a = answers[i];
     if (!Array.isArray(a)) return true;
-    return VITALS_FIELDS.every((f, j) => vitalOk(f.key, String(a[j] ?? "")));
+    const unit: TempUnit = String(a[TEMP_UNIT_INDEX] ?? "c") === "f" ? "f" : "c";
+    return VITALS_FIELDS.every((f, j) => vitalOk(f.key, String(a[j] ?? ""), unit));
   });
 }
 
@@ -158,10 +166,13 @@ export function renderTemplate(t: ScribeTemplate, answers: TemplateAnswers): str
         if (typeof a === "string" && a.trim()) push(p.label, fmtDate(a));
         break;
       case "vitals":
-        if (Array.isArray(a) && a.some((v) => String(v).trim())) {
+        if (Array.isArray(a) && a.slice(0, VITALS_FIELDS.length).some((v) => String(v).trim())) {
+          const unit = String(a[TEMP_UNIT_INDEX] ?? "c") === "f" ? "°F" : "°C";
           const bits = VITALS_FIELDS.map((f, j) => {
             const v = String(a[j] ?? "").trim();
-            return v ? `${f.label} ${v}${f.unit ? ` ${f.unit}` : ""}` : null;
+            if (!v) return null;
+            const u = f.key === "temp" ? unit : f.unit;
+            return `${f.label} ${v}${u ? ` ${u}` : ""}`;
           }).filter(Boolean);
           push(p.label, bits.join(" · "));
         }
@@ -181,7 +192,11 @@ export function templateHasAnswers(t: ScribeTemplate, answers: TemplateAnswers):
   return t.parts.some((p, i) => {
     const a = answers[i];
     if (p.kind === "checkboxes") return Array.isArray(a) && a.length > 0;
-    if (p.kind === "vitals") return Array.isArray(a) && a.some((v) => String(v).trim() !== "");
+    if (p.kind === "vitals")
+      return (
+        Array.isArray(a) &&
+        a.slice(0, VITALS_FIELDS.length).some((v) => String(v).trim() !== "")
+      );
     if (p.kind === "range") return typeof a === "number";
     if (p.kind === "text" || p.kind === "textarea" || p.kind === "dropdown" || p.kind === "date")
       return typeof a === "string" && a.trim() !== "";

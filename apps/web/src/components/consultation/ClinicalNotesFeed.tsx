@@ -40,7 +40,11 @@ import { cn } from "@/lib/utils";
 export type FeedEntry = {
   id: string;
   entry_type: string;
-  payload: { text?: string } | null;
+  payload: {
+    text?: string;
+    /** Scribe Templates round-trip: the structured answers behind the text. */
+    template?: { id: string; answers: Record<number, string | string[] | number> };
+  } | null;
   created_at: string;
   created_by: string | null;
   edited_at: string | null;

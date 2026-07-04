@@ -4,8 +4,10 @@ import { Field, Input } from "@/components/ui/form";
 import { Select } from "@/components/ui/Select";
 import {
   VITALS_FIELDS,
+  TEMP_UNIT_INDEX,
   sanitiseVital,
   vitalOk,
+  type TempUnit,
   type ScribeTemplate,
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
@@ -21,10 +23,13 @@ export function ScribeTemplateForm({
   template,
   answers,
   onChange,
+  tempUnit = "c",
 }: {
   template: ScribeTemplate;
   answers: TemplateAnswers;
   onChange: (index: number, value: string | string[] | number) => void;
+  /** The clinic's default temperature unit (US → °F); flippable per note. */
+  tempUnit?: TempUnit;
 }) {
   return (
     <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
@@ -59,6 +64,15 @@ export function ScribeTemplateForm({
             );
           case "vitals": {
             const vals = Array.isArray(a) ? a : [];
+            const unit: TempUnit =
+              String(vals[TEMP_UNIT_INDEX] ?? tempUnit) === "f" ? "f" : "c";
+            const write = (mutate: (next: string[]) => void) => {
+              const next = [...Array(VITALS_FIELDS.length + 1)].map((_, k) =>
+                String(vals[k] ?? (k === TEMP_UNIT_INDEX ? unit : "")),
+              );
+              mutate(next);
+              onChange(i, next);
+            };
             return (
               <div key={i}>
                 <p className="mb-1.5 text-xs font-semibold text-foreground">{p.label}</p>
@@ -67,19 +81,34 @@ export function ScribeTemplateForm({
                     <div key={f.key}>
                       <p className="mb-0.5 text-[10px] font-semibold text-muted-foreground">
                         {f.label}
-                        {f.unit && <span className="font-normal"> {f.unit}</span>}
+                        {f.key === "temp" ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              write((next) => {
+                                next[TEMP_UNIT_INDEX] = unit === "c" ? "f" : "c";
+                              })
+                            }
+                            title="Flip between Celsius and Fahrenheit"
+                            className="ml-1 rounded bg-foreground/6 px-1 font-normal text-foreground/70 transition-colors hover:bg-foreground/10"
+                          >
+                            {unit === "f" ? "°F" : "°C"} ⇄
+                          </button>
+                        ) : (
+                          f.unit && <span className="font-normal"> {f.unit}</span>
+                        )}
                       </p>
                       <Input
                         value={String(vals[j] ?? "")}
-                        placeholder={f.placeholder}
+                        placeholder={f.key === "temp" && unit === "f" ? "98.6" : f.placeholder}
                         inputMode="decimal"
-                        maxLength={f.maxLen}
-                        error={!vitalOk(f.key, String(vals[j] ?? ""))}
-                        onChange={(e) => {
-                          const next = VITALS_FIELDS.map((_, k) => String(vals[k] ?? ""));
-                          next[j] = sanitiseVital(f.key, e.target.value);
-                          onChange(i, next);
-                        }}
+                        maxLength={f.key === "temp" && unit === "f" ? 5 : f.maxLen}
+                        error={!vitalOk(f.key, String(vals[j] ?? ""), unit)}
+                        onChange={(e) =>
+                          write((next) => {
+                            next[j] = sanitiseVital(f.key, e.target.value);
+                          })
+                        }
                       />
                     </div>
                   ))}

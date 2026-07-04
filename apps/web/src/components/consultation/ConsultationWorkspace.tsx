@@ -30,6 +30,7 @@ import { ScribeTemplateForm } from "@/components/consultation/ScribeTemplateForm
 import {
   ROLDE_TEMPLATE_LIBRARY,
   VITALS_FIELDS,
+  defaultTempUnit,
   renderTemplate,
   templateHasAnswers,
   templateAnswersValid,
@@ -84,7 +85,7 @@ export function ConsultationWorkspace({
    *  reflows 4/3/2. Sits OVER the user's Layouts card toggles. */
   modules?: ClinicalModules;
 }) {
-  const { layout, setLayout } = useTopbar();
+  const { layout, setLayout, patient: topbarPatient } = useTopbar();
   const [leftMode, setLeftMode] = useState<Mode>("split");
   const [rightMode, setRightMode] = useState<Mode>("split");
   const [ready, setReady] = useState(false);
@@ -190,8 +191,19 @@ export function ConsultationWorkspace({
     const locked = Date.now() - new Date(e.created_at).getTime() > EDIT_WINDOW_MS;
     const original = e.payload?.text ?? "";
     setEditTarget({ id: e.id, original, locked });
-    setDraft(locked ? "" : original);
     setStrikeOriginal(false);
+    // A template-authored note restores its FORM within the edit window
+    // (Roland 2026-07-04: "it did not load back the SOAP for me to edit") —
+    // the saved answers ride the payload. Unknown template id → plain text.
+    const meta = e.payload?.template;
+    const t = meta ? ROLDE_TEMPLATE_LIBRARY.find((x) => x.id === meta.id) : undefined;
+    if (!locked && meta && t) {
+      setTemplate(t);
+      setAnswers(meta.answers ?? {});
+      setDraft("");
+    } else {
+      setDraft(locked ? "" : original);
+    }
   }
 
   function discard() {
@@ -227,7 +239,7 @@ export function ConsultationWorkspace({
   }
 
   async function submit() {
-    const usingTemplate = mode === "new" && !!template;
+    const usingTemplate = (mode === "new" || mode === "edit") && !!template;
     const usingMap = mode === "new" && !!bodyMap;
     if (
       (usingMap
@@ -248,10 +260,14 @@ export function ConsultationWorkspace({
         await saveBodyMap(fd);
       } else if (mode === "new") {
         fd.set("text", usingTemplate ? renderTemplate(template, answers) : draft);
+        if (usingTemplate)
+          fd.set("template_meta", JSON.stringify({ id: template.id, answers }));
         await saveNote(fd);
       } else if (mode === "edit") {
         fd.set("entry_id", editTarget!.id);
-        fd.set("text", draft);
+        fd.set("text", usingTemplate ? renderTemplate(template, answers) : draft);
+        if (usingTemplate)
+          fd.set("template_meta", JSON.stringify({ id: template.id, answers }));
         await editNote(fd);
       } else {
         if (strikeOriginal) {
@@ -274,7 +290,9 @@ export function ConsultationWorkspace({
 
   const composerTitle =
     mode === "edit"
-      ? "Editing note"
+      ? template
+        ? `Editing · ${template.name}`
+        : "Editing note"
       : mode === "amend"
         ? "Amending note"
         : bodyMap
@@ -521,11 +539,12 @@ export function ConsultationWorkspace({
                     included (APPROVALS §4.2, Roland 2026-07-01). */}
                 {mode === "new" && bodyMap ? (
                   <BodyMapPanel data={bodyMap} onChange={setBodyMap} />
-                ) : mode === "new" && template ? (
+                ) : (mode === "new" || mode === "edit") && template ? (
                   <ScribeTemplateForm
                     template={template}
                     answers={answers}
                     onChange={(i, v) => setAnswers((a) => ({ ...a, [i]: v }))}
+                    tempUnit={defaultTempUnit(topbarPatient?.clinicCountry)}
                   />
                 ) : (
                 <textarea
@@ -552,7 +571,7 @@ export function ConsultationWorkspace({
                       pending ||
                       (bodyMap && mode === "new"
                         ? !mapDirty
-                        : template && mode === "new"
+                        : template
                           ? !templateDirty || !templateValid
                           : !draft.trim())
                     }

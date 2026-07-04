@@ -144,8 +144,13 @@ export function BodyMapPanel({
             )}
             aria-label="Body map — tap to mark"
           >
-            {/* PD figure (Häggström/RexxS, Wikimedia Commons) in Earth & Bloom. */}
-            <path d={BODY_PATH} fill="#E7E2D6" stroke="#C9C2B0" strokeWidth={4} />
+            {/* PD figure (Häggström/RexxS, Wikimedia Commons) in Earth & Bloom.
+                The source path is authored around a translate — without it the
+                figure draws 625 units above the canvas (the blank-map bug,
+                Roland 2026-07-04). */}
+            <g transform="translate(41.500029,630.92312)">
+              <path d={BODY_PATH} fill="#E7E2D6" stroke="#C9C2B0" strokeWidth={4} />
+            </g>
             {data.strokes.map((pts, i) => (
               <path
                 key={i}
