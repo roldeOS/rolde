@@ -1437,6 +1437,24 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     case-pipeline report-approval step (pairs with Courier C5 countersign) · Carebit charges
     £119–215/user for dictation AI that W5 covers in-house. Courier C3 = Semble's secure-letter
     flagship feature, already shipped.
+    **✅ PHASE B SWEPT 2026-07-04 (UK specialty; Roland "Go for Phase B"):** the finds:
+    **Accurx** (the NHS comms standard) — Self-Book links (a link that books the patient into a
+    controlled slot set → Cadence/W2, precision sibling of the approved availability-blast) ·
+    Floreys (structured questionnaires sent as secure links → T4 intake rides COURIER's token
+    viewer: the same infrastructure carries FORMS, not just letters — registered as the C-future
+    "Courier carries forms" seam) · total-triage shared inbox (validates W1.6). **Kiroku** —
+    templates that LEARN (suggests template edits from how you fill them → W5-era T2 candidate)
+    + stores transcripts never audio (adopted as a W5 privacy stance). **Consentz** — consent
+    auto-triggered PRE-appointment on booking a consented treatment type (→ T4 × Cadence).
+    **Faces** — a curated per-treatment consent LIBRARY (Botox/filler/PDO/Profhilo ready-made →
+    T4 curation, our library law applied to consent). **Clinicminds** — Quinn AI treatment
+    registration (validates W5 + our toxin-template × face-map × batch-pin roadmap exactly).
+    **iaptus/Mayden** (70% of NHS Talking Therapies) — the CARE PATHWAY as the core object +
+    session-by-session outcome measures GRAPHED over time (PHQ-9/GAD-7 → the therapy/physio
+    packs get outcome-score trend charts; specialty-pack candidate). **Dentally / SOE-EXACT** —
+    perio/tooth charting = the dental pack's body-map-spine variant, confirmed; recalls already
+    stolen via Pabau. **ANS** — no meaningful public footprint (UK podiatry = FootCo/Podware/TM3
+    territory, TM3 already swept); dropped honestly, nothing we lack surfaced.
     **UNREAD PHILOSOPHY SETTLED (Roland 2026-07-04, "its okay"):** strict TEAM-level unseen
     stands as built — the first non-author read reviews an entry for the whole clinic; the
     author's own click never counts.
