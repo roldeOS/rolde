@@ -1385,6 +1385,19 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     prescription (the PT pack's backbone) · insurer EDI claims via Healthcode (TM3/PracticePal) ·
     Medesk acquisition-channel ROI analytics · Fresha's 2026 two-way inbox + AI receptionist ·
     Owl's clinical-supervision mode · Splose travel/home-visit fees · Zanda ICS calendar sync.
+    **ROLAND'S APPROVALS (2026-07-04 — "every other point is a go"), registered:**
+    W1.2-later feed polish (pin notes · colour-group by type) · W1.3 family/linked accounts ·
+    W1.6 + roles: clinical SUPERVISION mode (supervisor review of trainee notes/sessions, gated +
+    logged) · W1.6/Covenant: the two-way comms INBOX (SMS/email/WhatsApp threaded — the RolDe OS
+    surface; RoChat, the external iOS-Jarvis AI comms hub, integrates through a defined seam — the
+    boundary to be synced with iOS-Jarvis) · W2: classes & group scheduling (+ unique group
+    telehealth links) · ICS calendar subscriptions · travel/home-visit fees (+W4 side) · W3.3+W4:
+    the CASE & FUNDING ENGINE (a case carries authorised sessions/amount/expiry with burn-down on
+    appointments + invoices — grows from the approved referral-limits line) · W4: insurer EDI
+    claims via Healthcode · expense tracking · W6: acquisition-channel ROI analytics (Covenant) ·
+    the AI RECEPTIONIST (after-hours bookings + FAQ) — runs on RolDe's OWN W5 Ambient-AI engine,
+    never third-party (Roland: "RolDe Ambient AI would handle this") · PT/MSK pack + W6 portal:
+    exercise prescription / home programmes.
     Validated (already ours, no new slots): context-aware AI drafting (W5) · team chat (W1.6
     Confer) · tasks (Compass) · memberships (W4).
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.

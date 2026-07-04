@@ -34,6 +34,10 @@ import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
 import { useClickAway } from "@/lib/useClickAway";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
+import {
+  StructuredNoteBody,
+  BodyMapThumbnail,
+} from "@/components/consultation/StructuredNoteBody";
 import { markEntrySeen } from "@/app/(app)/patients/actions";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +48,12 @@ export type FeedEntry = {
     text?: string;
     /** Scribe Templates round-trip: the structured answers behind the text. */
     template?: { id: string; answers: Record<number, string | string[] | number> };
+    /** Body-Map entries: the structured marks behind the text. */
+    body_map?: {
+      view: "anterior";
+      pins: { x: number; y: number; site: string; note: string }[];
+      strokes: number[][][];
+    };
   } | null;
   created_at: string;
   created_by: string | null;
@@ -215,6 +225,21 @@ export function ClinicalNotesFeed({
     () => new Map(entries.map((e) => [e.id, e])),
     [entries],
   );
+  // Amendment lineage (Roland 2026-07-04): the trail tells the WHOLE story —
+  // an amendment's trail starts at its original; an original's trail lists
+  // every amendment made against it.
+  const amendmentsByParent = useMemo(() => {
+    const m = new Map<string, FeedEntry[]>();
+    for (const e of entries) {
+      if (!e.related_entry_id) continue;
+      const list = m.get(e.related_entry_id) ?? [];
+      list.push(e);
+      m.set(e.related_entry_id, list);
+    }
+    for (const list of m.values())
+      list.sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
+    return m;
+  }, [entries]);
   const presentTypes = useMemo(
     () => [...new Set(entries.map((e) => e.entry_type))],
     [entries],
@@ -609,14 +634,31 @@ export function ClinicalNotesFeed({
              *  recorder) · edits/strikes · the send state. C3 appends real
              *  Sent/Delivered/Opened events to this same list. */
             const trailFor = (entry: FeedEntry) => {
-              const rows: { label: string; who?: string; when?: string; dot: string }[] = [
-                {
-                  label: "Written",
-                  who: authors[entry.created_by ?? ""]?.name ?? "—",
-                  when: fmtTime(entry.created_at),
+              const rows: { label: string; who?: string; when?: string; dot: string }[] = [];
+              // An amendment's story STARTS at its original (Roland 2026-07-04).
+              const parent = entry.related_entry_id
+                ? byId.get(entry.related_entry_id)
+                : undefined;
+              if (parent) {
+                rows.push({
+                  label: "Original Written",
+                  who: authors[parent.created_by ?? ""]?.name ?? "—",
+                  when: fmtTime(parent.created_at),
                   dot: "bg-foreground/30",
-                },
-              ];
+                });
+                if (parent.struck_at)
+                  rows.push({
+                    label: "Original Struck Through",
+                    when: fmtTime(parent.struck_at),
+                    dot: "bg-warning",
+                  });
+              }
+              rows.push({
+                label: parent ? "Amended" : "Written",
+                who: authors[entry.created_by ?? ""]?.name ?? "—",
+                when: fmtTime(entry.created_at),
+                dot: "bg-foreground/30",
+              });
               if (entry.edited_at)
                 rows.push({ label: "Edited", when: fmtTime(entry.edited_at), dot: "bg-foreground/30" });
               if (entry.struck_at)
@@ -643,6 +685,14 @@ export function ClinicalNotesFeed({
                       : /sent/i.test(sendState)
                         ? "bg-info"
                         : "bg-warning",
+                });
+              // An ORIGINAL lists every amendment made against it.
+              for (const am of amendmentsByParent.get(entry.id) ?? [])
+                rows.push({
+                  label: "Amended",
+                  who: authors[am.created_by ?? ""]?.name ?? "—",
+                  when: fmtTime(am.created_at),
+                  dot: "bg-info",
                 });
               return rows;
             };
@@ -740,6 +790,29 @@ export function ClinicalNotesFeed({
                     </AnchoredPopover>
                   </div>
                 </div>
+                {/* The tile BODY (Roland 2026-07-04, URDS law): template
+                    notes render STRUCTURED (semibold headings + label rows,
+                    never a text gumbo); body maps show the FIGURE with its
+                    marks; everything else is honest pre-wrapped text. */}
+                {e.payload?.template ? (
+                  <StructuredNoteBody
+                    templateId={e.payload.template.id}
+                    answers={e.payload.template.answers}
+                    struck={struck}
+                  />
+                ) : e.entry_type === "body_map" && e.payload?.body_map ? (
+                  <div className="mt-2 flex flex-wrap items-start gap-3">
+                    <BodyMapThumbnail data={e.payload.body_map} />
+                    <p
+                      className={cn(
+                        "min-w-0 flex-1 text-sm whitespace-pre-wrap",
+                        struck && "text-muted-foreground line-through",
+                      )}
+                    >
+                      {text}
+                    </p>
+                  </div>
+                ) : (
                 <p
                   className={cn(
                     "mt-2 text-sm whitespace-pre-wrap",
@@ -748,6 +821,7 @@ export function ClinicalNotesFeed({
                 >
                   {text}
                 </p>
+                )}
 
                 {/* Amendment shows a truncated, chevron-expandable preview of the
                     note it amends — struck through if the original was (Roland #6). */}

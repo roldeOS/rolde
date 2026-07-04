@@ -527,7 +527,7 @@ export function ConsultationWorkspace({
                     </div>
                     <p
                       className={cn(
-                        "mt-1 text-sm",
+                        "mt-1 text-sm whitespace-pre-wrap",
                         strikeOriginal && "text-muted-foreground line-through",
                       )}
                     >
