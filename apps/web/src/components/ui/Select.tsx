@@ -115,10 +115,13 @@ export function Select({
     const estH = Math.min(options.length * 40 + 8, 264);
     const spaceBelow = window.innerHeight - rect.bottom;
     const above = spaceBelow < estH + 12 && rect.top > spaceBelow;
+    // The list matches the trigger UP TO a cap — a full-card-width Select
+    // must not open a full-card-width menu (Roland 2026-07-04: "the popover
+    // should not be the whole field").
     menuStyle = {
       position: "fixed",
       left: rect.left,
-      width: rect.width,
+      width: Math.min(rect.width, 320),
       ...(above ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }),
     };
   }

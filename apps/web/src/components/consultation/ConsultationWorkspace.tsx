@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X } from "lucide-react";
+import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -24,6 +24,7 @@ import {
   editNote,
   strikeNote,
   amendNote,
+  saveBodyMap,
 } from "@/app/(app)/patients/actions";
 import { ScribeTemplateForm } from "@/components/consultation/ScribeTemplateForm";
 import {
@@ -31,10 +32,17 @@ import {
   VITALS_FIELDS,
   renderTemplate,
   templateHasAnswers,
+  templateAnswersValid,
   type ScribeTemplate,
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
+import { BodyMapPanel } from "@/components/consultation/BodyMapPanel";
+import {
+  renderBodyMapText,
+  bodyMapHasContent,
+  type BodyMapData,
+} from "@/lib/bodyMap";
 import { cn } from "@/lib/utils";
 
 type WorkupEntry = { id: string; entry_type: string };
@@ -95,6 +103,9 @@ export function ConsultationWorkspace({
   const [answers, setAnswers] = useState<TemplateAnswers>({});
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerBtn, setPickerBtn] = useState<HTMLElement | null>(null);
+  // Body-Map v2 (greenlit 2026-07-04) — a Scribe MODE (APPROVALS §4.3: the
+  // one sanctioned automatic move is Scribe expanding for the map).
+  const [bodyMap, setBodyMap] = useState<BodyMapData | null>(null);
   const [strikeOriginal, setStrikeOriginal] = useState(false);
   const [pending, setPending] = useState(false);
   // Conversational "saved" flash lives in the provider so it survives the
@@ -175,6 +186,7 @@ export function ConsultationWorkspace({
   function handleEdit(e: FeedEntry) {
     setTemplate(null);
     setAnswers({});
+    setBodyMap(null);
     const locked = Date.now() - new Date(e.created_at).getTime() > EDIT_WINDOW_MS;
     const original = e.payload?.text ?? "";
     setEditTarget({ id: e.id, original, locked });
@@ -188,9 +200,14 @@ export function ConsultationWorkspace({
     setStrikeOriginal(false);
     setTemplate(null);
     setAnswers({});
+    setBodyMap(null);
+    setLeftMode("split");
   }
 
   const templateDirty = !!template && templateHasAnswers(template, answers);
+  // Implausible vitals BLOCK Save (structural safety, Roland 2026-07-04).
+  const templateValid = !template || templateAnswersValid(template, answers);
+  const mapDirty = !!bodyMap && bodyMapHasContent(bodyMap);
 
   // Vital Signs AUTO-POPULATE (Roland 2026-07-04): picking a template seeds
   // its vitals part from the patient's LATEST recorded vital_signs entry
@@ -211,12 +228,25 @@ export function ConsultationWorkspace({
 
   async function submit() {
     const usingTemplate = mode === "new" && !!template;
-    if ((usingTemplate ? !templateDirty : !draft.trim()) || pending) return;
+    const usingMap = mode === "new" && !!bodyMap;
+    if (
+      (usingMap
+        ? !mapDirty
+        : usingTemplate
+          ? !templateDirty || !templateValid
+          : !draft.trim()) ||
+      pending
+    )
+      return;
     setPending(true);
     try {
       const fd = new FormData();
       fd.set("patient_id", patient.id);
-      if (mode === "new") {
+      if (usingMap) {
+        fd.set("text", renderBodyMapText(bodyMap));
+        fd.set("body_map", JSON.stringify(bodyMap));
+        await saveBodyMap(fd);
+      } else if (mode === "new") {
         fd.set("text", usingTemplate ? renderTemplate(template, answers) : draft);
         await saveNote(fd);
       } else if (mode === "edit") {
@@ -247,25 +277,35 @@ export function ConsultationWorkspace({
       ? "Editing note"
       : mode === "amend"
         ? "Amending note"
-        : template
-          ? `${COMPOSER_NAME} · ${template.name}`
-          : COMPOSER_NAME;
+        : bodyMap
+          ? `${COMPOSER_NAME} · Body Map`
+          : template
+            ? `${COMPOSER_NAME} · ${template.name}`
+            : COMPOSER_NAME;
   const saveLabel =
-    mode === "edit" ? "Save edit" : mode === "amend" ? "Save amendment" : "Save note";
+    mode === "edit"
+      ? "Save edit"
+      : mode === "amend"
+        ? "Save amendment"
+        : bodyMap
+          ? "Save body map"
+          : "Save note";
 
   // Conversational bottom save bar (Roland 2026-06-11). It SPEAKS — "RolDe has
   // a note ready for Sarah's record" → "RolDe saved this to Sarah's record."
   usePageActionBar({
-    dirty: (template ? templateDirty : !!draft.trim()) && !pending,
+    dirty: (bodyMap ? mapDirty : template ? templateDirty : !!draft.trim()) && !pending,
     saving: pending,
     message:
       mode === "edit"
         ? `You’re editing a note in ${who}’s record.`
         : mode === "amend"
           ? `You’re amending a note in ${who}’s record.`
-          : template
-            ? `RolDe has a ${template.name} ready for ${who}’s record.`
-            : `RolDe has a note ready for ${who}’s record.`,
+          : bodyMap
+            ? `RolDe has a body map ready for ${who}’s record.`
+            : template
+              ? `RolDe has a ${template.name} ready for ${who}’s record.`
+              : `RolDe has a note ready for ${who}’s record.`,
     saveLabel,
     onSave: submit,
     onDiscard: editTarget || draft ? discard : undefined,
@@ -339,7 +379,7 @@ export function ConsultationWorkspace({
                 />
                 {/* RolDe Scribe Templates (T1): the picker lives IN Scribe's
                     header — never a separate page (Roland 2026-07-04). */}
-                {mode === "new" && (
+                {mode === "new" && !bodyMap && (
                   <div className="ml-auto">
                     <button
                       ref={setPickerBtn}
@@ -404,6 +444,33 @@ export function ConsultationWorkspace({
                     </AnchoredPopover>
                   </div>
                 )}
+                {mode === "new" && (
+                  <button
+                    onClick={() => {
+                      if (bodyMap) {
+                        setBodyMap(null);
+                        setLeftMode("split");
+                      } else {
+                        setTemplate(null);
+                        setAnswers({});
+                        setBodyMap({ view: "anterior", pins: [], strokes: [] });
+                        // The ONE sanctioned automatic move (APPROVALS §4.2):
+                        // opening the Body-Map expands Scribe — user-initiated.
+                        setLeftMode("bottom");
+                      }
+                    }}
+                    className={cn(
+                      "flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:shadow",
+                      bodyMap
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                      !bodyMap && "ml-1",
+                    )}
+                  >
+                    <PersonStanding className="size-3.5" />
+                    {bodyMap ? "Close Body Map" : "Body Map"}
+                  </button>
+                )}
                 <button
                   onClick={() =>
                     setLeftMode((m) => (m === "bottom" ? "split" : "bottom"))
@@ -452,7 +519,9 @@ export function ConsultationWorkspace({
                 )}
                 {/* No focus-grow: the layout NEVER moves on its own — typing
                     included (APPROVALS §4.2, Roland 2026-07-01). */}
-                {mode === "new" && template ? (
+                {mode === "new" && bodyMap ? (
+                  <BodyMapPanel data={bodyMap} onChange={setBodyMap} />
+                ) : mode === "new" && template ? (
                   <ScribeTemplateForm
                     template={template}
                     answers={answers}
@@ -471,7 +540,7 @@ export function ConsultationWorkspace({
                 />
                 )}
                 <div className="flex shrink-0 items-center justify-end gap-2 pt-1">
-                  {(editTarget || draft || template) && (
+                  {(editTarget || draft || template || bodyMap) && (
                     <Button variant="ghost" size="sm" onClick={discard}>
                       Discard
                     </Button>
@@ -479,7 +548,14 @@ export function ConsultationWorkspace({
                   <Button
                     size="sm"
                     onClick={submit}
-                    disabled={pending || (template && mode === "new" ? !templateDirty : !draft.trim())}
+                    disabled={
+                      pending ||
+                      (bodyMap && mode === "new"
+                        ? !mapDirty
+                        : template && mode === "new"
+                          ? !templateDirty || !templateValid
+                          : !draft.trim())
+                    }
                   >
                     {saveLabel}
                   </Button>

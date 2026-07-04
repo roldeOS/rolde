@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionContext } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import type { Json } from "@rolde/db";
 import { emailOk, phonePlausible, dobOk, nationalIdOk, asCountry } from "@/lib/validation";
 
 /**
@@ -242,6 +243,51 @@ export async function amendNote(formData: FormData) {
     resourceType: "patient",
     resourceId: patientId,
     summary: "Amended a clinical note",
+  });
+
+  revalidatePath(`/patients/${patientId}`);
+}
+
+/**
+ * Body-Map v2 (Roland greenlit 2026-07-04) — save the annotated figure as a
+ * typed feed entry: the rendered TEXT is the readable record; the structured
+ * marks (pins + strokes, viewBox coordinates) ride the payload for the future
+ * thumbnail + per-specialty tracking (derm lesions, injection points).
+ */
+export async function saveBodyMap(formData: FormData) {
+  const patientId = String(formData.get("patient_id") ?? "");
+  const text = String(formData.get("text") ?? "").trim();
+  const raw = String(formData.get("body_map") ?? "");
+  if (!patientId || !text || !raw) return;
+
+  let bodyMap: Json;
+  try {
+    bodyMap = JSON.parse(raw) as Json;
+  } catch {
+    return;
+  }
+
+  const ctx = await getSessionContext();
+  const tenantId = ctx?.membership?.tenant_id;
+  if (!tenantId) throw new Error("No clinic context for this user.");
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("patient_feed_entries").insert({
+    tenant_id: tenantId,
+    patient_id: patientId,
+    entry_type: "body_map",
+    payload: { text, body_map: bodyMap },
+    created_by: ctx?.user.id ?? null,
+  });
+  if (error) throw new Error(error.message);
+
+  await logAudit({
+    tenantId,
+    actorUserId: ctx?.user.id,
+    action: "note.body_map",
+    resourceType: "patient",
+    resourceId: patientId,
+    summary: "Added a body map",
   });
 
   revalidatePath(`/patients/${patientId}`);

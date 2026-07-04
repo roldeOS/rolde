@@ -1380,7 +1380,21 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     Phase 1 was a SURVEY pass (one source per app) — Phase 2 (TM3 · Nookal · PracticePal · Medesk ·
     OwlPractice) runs at true depth, and Phase 1's five get the same deep revisit.
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
-    ▢ REMAINING — Body-Map v2 prototype · Scribe Templates T2–T4. New pieces to build + add to the URDS:
+    **✅ BODY-MAP v2 PROTOTYPE BUILT 2026-07-04:** a Scribe MODE (the "Body Map" button beside
+    Template; entering it auto-expands Scribe — the ONE sanctioned automatic move, APPROVALS §4.2).
+    REAL artwork, not a sketch: the public-domain anatomical silhouette (Häggström/RexxS, Wikimedia
+    Commons — credited in bodyFigure.ts) restyled Earth & Bloom. The engine: tap → numbered coral
+    PIN → structured sub-note (site + note) in the Marks rail; a DRAW mode (freehand marker,
+    thinned points); Undo/Clear; viewBox-space coordinates (identical at any size, tablet-first).
+    Save posts a typed **body_map** feed entry (enum extended): rendered TEXT is the readable
+    record; the structured marks ride the payload for the future thumbnail + per-specialty tracking.
+    Vitals hardening same day: per-field sanitise-as-you-type + clinical plausibility (BP 40–300/
+    20–200 sys>dia · HR 10–300 · Temp 25–45 · SpO₂ 40–100 · RR 4–80 · Weight 0.5–500) — implausible
+    values BLOCK Save; Select menus cap at 320px (never the whole field's width).
+    ▢ Body-Map v2.1 (needs W1.2.4 Document Store bucket + licensed multi-view set): photo underlay
+    (annotate the patient's own face — aesthetics) · posterior/lateral/face views · auto region
+    labels · batch/lot fields on injection pins · tile thumbnails.
+    ▢ REMAINING — Scribe Templates T2–T4 · sweep Phase 2 at depth. New pieces to build + add to the URDS:
     - **Adaptive Workspace** — the four cards reflow by **Clinical Modules** (a new W1.1 Settings toggle:
       Lab · Radiology · Procedures · Prescriptions · RolDe AI) → 4/3/2-card states, AND are sized by
       **user-controlled LAYOUTS — no auto-resize (Roland 2026-07-01, FINAL; supersedes both the old

@@ -69,7 +69,9 @@
 | ✅ | **RolDe Scribe Templates T1** (GREENLIT + built 2026-07-04) — typed parts engine · picker in Scribe's header · Scribe morphs into the form in place · curated library ×6 → renders a clean note through saveNote. **Enriched same day:** SOAP made the flagship (PC · history · review checklist · vitals · differentials · full plan + follow-up) · GP gains ICE · derm gains Fitzpatrick · toxin gains a real DATE expiry + dilution + review interval · new date part · heading-aware rendering (no label doubling) |
 | ✅ | **AnchoredPopover** (URDS §8) — in-card popovers portal to body (Template picker · feed Filter · Status Trail were CLIPPING at card edges); coloured Status filter options actually landed (the earlier claim was an unwritten edit — owned + fixed) |
 | ▢ | **Scribe Templates T2–T4** — T2 builder + personal templates (DB) → T3 Caretaker clinic templates (Settings) → T4 patient-facing intake/consent + payment hook |
-| ▢ | **Body-Map v2 prototype** (GREENLIT 2026-07-04) — annotation engine (pins + structured sub-notes + freehand + photo underlay) on licensed professional artwork; becomes the Body Chart template part |
+| ✅ | **Body-Map v2 prototype** — a Scribe mode on REAL public-domain anatomical artwork (Earth & Bloom restyle): tap → numbered pins → structured sub-notes (site+note) · freehand Draw · Undo/Clear · saves as a typed body_map feed entry — 2026-07-04 |
+| ✅ | **Vitals hardening + Select width** — per-field sanitise + clinical plausibility (implausible BLOCKS Save; the '656565…' BP is impossible now) · Select menus cap at 320px — 2026-07-04 |
+| ▢ | **Body-Map v2.1** — photo underlay (needs the Document Store bucket) · posterior/lateral/face views (licensed set) · auto region labels · batch/lot on injection pins · tile thumbnails |
 | ▢ | Consultation redesign remainder: **Body-Map** (Servier style TBC) |
 | ▢ | W1.2.1 Problem List (SNOMED-coded) · W1.2.2 Medication List + reconciliation · W1.2.3 History (PMH/surgical/family/social) |
 | ▢ | W1.2.4 Document Store · W1.2.6 Digital Consents (e-sign) |
@@ -102,4 +104,4 @@
 
 ---
 
-*Last updated: 2026-07-04 late (popover/template fixes · Courier C2 live · sweep Phase-1 approvals registered; next: Body-Map v2 prototype → sweep Phase 2 AT DEPTH (+ Phase-1 redo) → C3 → Templates T2).*
+*Last updated: 2026-07-04 late (Body-Map v2 prototype live · vitals hardened · dropdowns fully fixed; next: sweep Phase 2 AT DEPTH (+ Phase-1 redo) → C3 → Templates T2 → Body-Map v2.1).*

@@ -46,13 +46,81 @@ export type TemplateAnswers = Record<number, string | string[] | number>;
  *  form pre-fills from the latest recorded set today and from the W1.2.7
  *  Vitals module when it lands. Stored per-template as a fixed-order array. */
 export const VITALS_FIELDS = [
-  { key: "bp", label: "BP", unit: "", placeholder: "128/82" },
-  { key: "hr", label: "HR", unit: "bpm", placeholder: "72" },
-  { key: "temp", label: "Temp", unit: "°C", placeholder: "36.8" },
-  { key: "spo2", label: "SpO₂", unit: "%", placeholder: "98" },
-  { key: "rr", label: "RR", unit: "/min", placeholder: "16" },
-  { key: "weight", label: "Weight", unit: "kg", placeholder: "72" },
+  { key: "bp", label: "BP", unit: "", placeholder: "128/82", maxLen: 7 },
+  { key: "hr", label: "HR", unit: "bpm", placeholder: "72", maxLen: 3 },
+  { key: "temp", label: "Temp", unit: "°C", placeholder: "36.8", maxLen: 4 },
+  { key: "spo2", label: "SpO₂", unit: "%", placeholder: "98", maxLen: 3 },
+  { key: "rr", label: "RR", unit: "/min", placeholder: "16", maxLen: 2 },
+  { key: "weight", label: "Weight", unit: "kg", placeholder: "72", maxLen: 5 },
 ] as const;
+export type VitalKey = (typeof VITALS_FIELDS)[number]["key"];
+
+/** Keep only what each vital is MADE of while typing (Roland 2026-07-04 —
+ *  "I thought you were smart enough to know what values can be entered in a
+ *  blood-pressure field"): BP = digits + one slash; temp/weight = digits + one
+ *  dot; the rest digits only. */
+export function sanitiseVital(key: VitalKey, v: string): string {
+  const f = VITALS_FIELDS.find((x) => x.key === key)!;
+  let out: string;
+  if (key === "bp") {
+    const kept = v.replace(/[^\d/]/g, "");
+    const [a, ...rest] = kept.split("/");
+    out = rest.length ? `${a}/${rest.join("").replace(/\//g, "")}` : a;
+  } else if (key === "temp" || key === "weight") {
+    const kept = v.replace(/[^\d.]/g, "");
+    const [a, ...rest] = kept.split(".");
+    out = rest.length ? `${a}.${rest.join("").replace(/\./g, "")}` : a;
+  } else {
+    out = v.replace(/\D/g, "");
+  }
+  return out.slice(0, f.maxLen);
+}
+
+/** Clinically PLAUSIBLE ranges — wide enough for real extremes, closed to
+ *  nonsense. Empty = fine (unanswered); implausible blocks Save. */
+export function vitalOk(key: VitalKey, v: string): boolean {
+  const t = v.trim();
+  if (!t) return true;
+  switch (key) {
+    case "bp": {
+      const m = /^(\d{2,3})\/(\d{2,3})$/.exec(t);
+      if (!m) return false;
+      const sys = Number(m[1]);
+      const dia = Number(m[2]);
+      return sys >= 40 && sys <= 300 && dia >= 20 && dia <= 200 && sys > dia;
+    }
+    case "hr": {
+      const n = Number(t);
+      return n >= 10 && n <= 300;
+    }
+    case "temp": {
+      const n = Number(t);
+      return n >= 25 && n <= 45;
+    }
+    case "spo2": {
+      const n = Number(t);
+      return n >= 40 && n <= 100;
+    }
+    case "rr": {
+      const n = Number(t);
+      return n >= 4 && n <= 80;
+    }
+    case "weight": {
+      const n = Number(t);
+      return n >= 0.5 && n <= 500;
+    }
+  }
+}
+
+/** True when every ANSWERED validating part is plausible — Save requires it. */
+export function templateAnswersValid(t: ScribeTemplate, answers: TemplateAnswers): boolean {
+  return t.parts.every((p, i) => {
+    if (p.kind !== "vitals") return true;
+    const a = answers[i];
+    if (!Array.isArray(a)) return true;
+    return VITALS_FIELDS.every((f, j) => vitalOk(f.key, String(a[j] ?? "")));
+  });
+}
 
 const fmtDate = (iso: string) => {
   const t = new Date(iso);

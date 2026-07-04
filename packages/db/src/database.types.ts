@@ -1634,6 +1634,7 @@ export type Database = {
         | "alert_recorded"
         | "problem_recorded"
         | "medication_recorded"
+        | "body_map"
       user_role:
         | "custodian"
         | "caretaker"
@@ -1799,6 +1800,7 @@ export const Constants = {
         "alert_recorded",
         "problem_recorded",
         "medication_recorded",
+        "body_map",
       ],
       user_role: [
         "custodian",

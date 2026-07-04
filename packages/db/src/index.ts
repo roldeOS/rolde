@@ -12,4 +12,4 @@ export function createClient(url: string, key: string) {
   return createSupabaseClient<Database>(url, key);
 }
 
-export type { Database } from "./database.types";
+export type { Database, Json } from "./database.types";

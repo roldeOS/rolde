@@ -4,6 +4,8 @@ import { Field, Input } from "@/components/ui/form";
 import { Select } from "@/components/ui/Select";
 import {
   VITALS_FIELDS,
+  sanitiseVital,
+  vitalOk,
   type ScribeTemplate,
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
@@ -70,9 +72,12 @@ export function ScribeTemplateForm({
                       <Input
                         value={String(vals[j] ?? "")}
                         placeholder={f.placeholder}
+                        inputMode="decimal"
+                        maxLength={f.maxLen}
+                        error={!vitalOk(f.key, String(vals[j] ?? ""))}
                         onChange={(e) => {
                           const next = VITALS_FIELDS.map((_, k) => String(vals[k] ?? ""));
-                          next[j] = e.target.value;
+                          next[j] = sanitiseVital(f.key, e.target.value);
                           onChange(i, next);
                         }}
                       />
