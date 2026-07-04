@@ -152,13 +152,24 @@ export default async function ConsultationPage({
   // the caller's own unread state AND the "Seen by" thread on each tile
   // (who read what, when — Roland 2026-07-02).
   const entryIds = (entries ?? []).map((e) => e.id);
-  const { data: reads } = entryIds.length
-    ? await supabase
-        .from("feed_entry_reads")
-        .select("entry_id, user_id, read_at")
-        .in("entry_id", entryIds)
-        .order("read_at", { ascending: true })
-    : { data: [] };
+  const [{ data: reads }, { data: dispatches }] = entryIds.length
+    ? await Promise.all([
+        supabase
+          .from("feed_entry_reads")
+          .select("entry_id, user_id, read_at")
+          .in("entry_id", entryIds)
+          .order("read_at", { ascending: true }),
+        // Courier C3 — each letter's REAL dispatch journey (sent to whom, when
+        // opened, PDF pulled) feeds the tile's Status Trail (RLS: team-only).
+        supabase
+          .from("courier_dispatches")
+          .select(
+            "entry_id, recipient_name, status, created_at, courier_dispatch_events(event, created_at)",
+          )
+          .in("entry_id", entryIds)
+          .order("created_at", { ascending: true }),
+      ])
+    : [{ data: [] }, { data: [] }];
 
   const { data: members } = await supabase
     .from("tenant_users")
@@ -187,6 +198,7 @@ export default async function ConsultationPage({
       authors={authors}
       currentUserId={currentUserId}
       reads={reads ?? []}
+      dispatches={dispatches ?? []}
       modules={modules}
     />
   );

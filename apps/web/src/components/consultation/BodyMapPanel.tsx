@@ -1,11 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Undo2, Eraser } from "lucide-react";
+import { Undo2, Eraser, Shrink } from "lucide-react";
 import { Segmented } from "@/components/ui/Segmented";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/form";
-import { BODY_PATH, BODY_VIEWBOX } from "./bodyFigure";
+import { BODY_PATH } from "./bodyFigure";
 import { type BodyMapData, type BodyMapPin } from "@/lib/bodyMap";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +15,12 @@ const VB_H = 2200;
  *  small in the payload. */
 const MIN_DIST = 12;
 
-type Tool = "pin" | "draw";
+type Tool = "pin" | "draw" | "zoom";
+
+/** Region zoom (v2.1) — one tap frames a close-up at 1/ZOOM_FACTOR of the
+ *  figure, centred on the tap; taps while zoomed re-centre; Fit returns. */
+const ZOOM_FACTOR = 3;
+const FULL_VB = { x: 0, y: 0, w: VB_W, h: VB_H };
 
 /**
  * The Body-Map annotator (Body-Map v2 prototype, Roland greenlit 2026-07-04) —
@@ -33,6 +38,11 @@ export function BodyMapPanel({
   onChange: (next: BodyMapData) => void;
 }) {
   const [tool, setTool] = useState<Tool>("pin");
+  const [vb, setVb] = useState(FULL_VB);
+  const zoomed = vb.w < VB_W;
+  // Marks keep a CONSTANT apparent size: their viewBox-unit sizes shrink with
+  // the window so a close-up shows finer pins/lines, not comically fat ones.
+  const scale = vb.w / VB_W;
   const svgRef = useRef<SVGSVGElement>(null);
   const drawing = useRef<number[][] | null>(null);
   const [liveStroke, setLiveStroke] = useState<number[][] | null>(null);
@@ -44,16 +54,31 @@ export function BodyMapPanel({
     if (!svg) return null;
     const r = svg.getBoundingClientRect();
     if (!r.width || !r.height) return null;
+    // Through the CURRENT window (zoom-aware) — coordinates always land in
+    // full-figure space, so marks placed in a close-up render right at Fit.
     return [
-      Math.round(((e.clientX - r.left) / r.width) * VB_W),
-      Math.round(((e.clientY - r.top) / r.height) * VB_H),
+      Math.round(vb.x + ((e.clientX - r.left) / r.width) * vb.w),
+      Math.round(vb.y + ((e.clientY - r.top) / r.height) * vb.h),
     ];
   };
+
+  function zoomTo(pt: [number, number]) {
+    const w = VB_W / ZOOM_FACTOR;
+    const h = VB_H / ZOOM_FACTOR;
+    setVb({
+      x: Math.max(0, Math.min(pt[0] - w / 2, VB_W - w)),
+      y: Math.max(0, Math.min(pt[1] - h / 2, VB_H - h)),
+      w,
+      h,
+    });
+  }
 
   function onPointerDown(e: React.PointerEvent) {
     const pt = toViewBox(e);
     if (!pt) return;
-    if (tool === "pin") {
+    if (tool === "zoom") {
+      zoomTo(pt);
+    } else if (tool === "pin") {
       history.current.push("pin");
       onChange({
         ...data,
@@ -70,7 +95,8 @@ export function BodyMapPanel({
     const pt = toViewBox(e);
     if (!pt) return;
     const last = drawing.current[drawing.current.length - 1];
-    if (Math.hypot(pt[0] - last[0], pt[1] - last[1]) < MIN_DIST) return;
+    // Thinning follows the zoom — close-up work keeps finer detail.
+    if (Math.hypot(pt[0] - last[0], pt[1] - last[1]) < MIN_DIST * scale) return;
     drawing.current = [...drawing.current, pt];
     setLiveStroke(drawing.current);
   }
@@ -116,12 +142,18 @@ export function BodyMapPanel({
             options={[
               { value: "pin", label: "Pin" },
               { value: "draw", label: "Draw" },
+              { value: "zoom", label: "Zoom" },
             ]}
             value={tool}
             onChange={setTool}
-            className="w-40"
+            className="w-56"
           />
           <div className="flex items-center gap-1">
+            {zoomed && (
+              <Button variant="ghost" size="sm" onClick={() => setVb(FULL_VB)}>
+                <Shrink className="size-3.5" /> Fit
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={undo} disabled={!data.pins.length && !data.strokes.length}>
               <Undo2 className="size-3.5" /> Undo
             </Button>
@@ -137,7 +169,7 @@ export function BodyMapPanel({
         <div className="flex min-h-[340px] w-full min-w-0 flex-1 justify-center overflow-hidden lg:min-h-0">
           <svg
             ref={svgRef}
-            viewBox={BODY_VIEWBOX}
+            viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`}
             preserveAspectRatio="xMidYMid meet"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
@@ -146,7 +178,7 @@ export function BodyMapPanel({
             style={{ aspectRatio: "970 / 2200" }}
             className={cn(
               "h-full touch-none select-none",
-              tool === "pin" ? "cursor-crosshair" : "cursor-cell",
+              tool === "pin" ? "cursor-crosshair" : tool === "draw" ? "cursor-cell" : "cursor-zoom-in",
             )}
             aria-label="Body map — tap to mark"
           >
@@ -163,7 +195,7 @@ export function BodyMapPanel({
                 d={strokePath(pts)}
                 fill="none"
                 stroke="#e0533f"
-                strokeWidth={10}
+                strokeWidth={10 * scale}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 opacity={0.85}
@@ -174,7 +206,7 @@ export function BodyMapPanel({
                 d={strokePath(liveStroke)}
                 fill="none"
                 stroke="#e0533f"
-                strokeWidth={10}
+                strokeWidth={10 * scale}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 opacity={0.5}
@@ -182,13 +214,13 @@ export function BodyMapPanel({
             )}
             {data.pins.map((p, i) => (
               <g key={i}>
-                <circle cx={p.x} cy={p.y} r={34} fill="#e0533f" opacity={0.2} />
-                <circle cx={p.x} cy={p.y} r={22} fill="#e0533f" />
+                <circle cx={p.x} cy={p.y} r={34 * scale} fill="#e0533f" opacity={0.2} />
+                <circle cx={p.x} cy={p.y} r={22 * scale} fill="#e0533f" />
                 <text
                   x={p.x}
-                  y={p.y + 10}
+                  y={p.y + 10 * scale}
                   textAnchor="middle"
-                  fontSize={30}
+                  fontSize={30 * scale}
                   fontWeight={600}
                   fill="#fff"
                 >
@@ -208,7 +240,8 @@ export function BodyMapPanel({
         {data.pins.length === 0 && (
           <p className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
             Tap the figure to drop a numbered pin — each pin carries a site and
-            a note. Switch to Draw for freehand marking.
+            a note. Switch to Draw for freehand marking, or Zoom for close-up
+            work (Fit brings the whole figure back).
           </p>
         )}
         {data.pins.map((p, i) => (

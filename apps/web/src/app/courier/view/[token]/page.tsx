@@ -14,7 +14,7 @@ import { openLetter } from "./actions";
  */
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
-  title: "A Letter via RolDe Courier",
+  title: "A Letter Via RolDe Courier",
   robots: { index: false, follow: false },
 };
 

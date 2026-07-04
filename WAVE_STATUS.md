@@ -110,4 +110,4 @@
 
 ---
 
-*Last updated: 2026-07-04 late (Courier C3 SHIPPED — Send sheet · secure token viewer · live Status-Dot journey · E2E + negative-case verified; Qunote pair declined; next: Body-Map v2.1 [template-part blend approved] → Templates T2/T3 [body-map part in the Caretaker builder] → the expanded world-sweep programme [master list awaiting Roland's phase approval]).*
+*Last updated: 2026-07-04 night (C3 deploy incident fixed — title-case guard; the Status Trail now carries the TIMESTAMPED Courier journey; popover swipe-vanish law refined in AnchoredPopover + Select; Body-Map v2.1 shipped [template PART in Lesion/Toxin + region zoom — face view next chunk, needs sourced artwork]; world-sweep programme locked, Phase A GO; next: Phase A findings → face view → Templates T2/T3).*

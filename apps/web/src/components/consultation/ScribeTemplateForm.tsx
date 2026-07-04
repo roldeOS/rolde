@@ -11,6 +11,8 @@ import {
   type ScribeTemplate,
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
+import { BodyMapPanel } from "@/components/consultation/BodyMapPanel";
+import { isBodyMapData, EMPTY_BODY_MAP, type BodyMapData } from "@/lib/bodyMap";
 import { cn } from "@/lib/utils";
 
 /**
@@ -27,7 +29,7 @@ export function ScribeTemplateForm({
 }: {
   template: ScribeTemplate;
   answers: TemplateAnswers;
-  onChange: (index: number, value: string | string[] | number) => void;
+  onChange: (index: number, value: string | string[] | number | BodyMapData) => void;
   /** The clinic's default temperature unit (US → °F); flippable per note. */
   tempUnit?: TempUnit;
 }) {
@@ -121,6 +123,20 @@ export function ScribeTemplateForm({
                       />
                     </div>
                   ))}
+                </div>
+              </div>
+            );
+          }
+          case "body_map": {
+            // Body-Map v2.1 — the annotator embedded as a template part: same
+            // engine as the Scribe mode (pins · draw · zoom), answers ride the
+            // template like any other part.
+            const data = isBodyMapData(a) ? a : EMPTY_BODY_MAP;
+            return (
+              <div key={i}>
+                <p className="mb-1.5 text-xs font-semibold text-foreground">{p.label}</p>
+                <div className="flex flex-col rounded-xl bg-muted/30 p-2.5">
+                  <BodyMapPanel data={data} onChange={(next) => onChange(i, next)} />
                 </div>
               </div>
             );

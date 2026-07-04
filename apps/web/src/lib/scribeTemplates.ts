@@ -14,6 +14,12 @@
  * Product dropdowns become DATA-BOUND (the clinic's own stock list) when W6.1
  * Inventory lands — options here are the sane starting set.
  */
+import {
+  isBodyMapData,
+  bodyMapHasContent,
+  renderBodyMapText,
+  type BodyMapData,
+} from "@/lib/bodyMap";
 export type TemplatePart =
   | { kind: "heading"; label: string }
   | { kind: "instruction"; text: string }
@@ -23,6 +29,10 @@ export type TemplatePart =
   | { kind: "vitals"; label: string }
   | { kind: "checkboxes"; label: string; options: string[] }
   | { kind: "dropdown"; label: string; options: string[] }
+  /** Body-Map v2.1 (Roland "Get me?" → approved): the annotator IS a template
+   *  part — a lesion chart inside Lesion Review, injection sites inside the
+   *  toxin record; T2/T3 builders offer it like any other part. */
+  | { kind: "body_map"; label: string }
   | {
       kind: "range";
       label: string;
@@ -39,7 +49,7 @@ export type ScribeTemplate = {
   parts: TemplatePart[];
 };
 
-export type TemplateAnswers = Record<number, string | string[] | number>;
+export type TemplateAnswers = Record<number, string | string[] | number | BodyMapData>;
 
 /** The canonical vitals shape (Roland 2026-07-04: "Vital Signs should
  *  auto-populate") — the SAME keys a vital_signs feed entry carries, so the
@@ -178,7 +188,17 @@ export function renderTemplate(t: ScribeTemplate, answers: TemplateAnswers): str
         }
         break;
       case "checkboxes":
-        if (Array.isArray(a) && a.length) push(p.label, a.join(" · "));
+        if (Array.isArray(a) && a.length && a.every((v) => typeof v === "string"))
+          push(p.label, a.join(" · "));
+        break;
+      case "body_map":
+        if (isBodyMapData(a) && bodyMapHasContent(a)) {
+          // renderBodyMapText opens with "Body Map — N marks"; the part's own
+          // label takes that headline's place, the marks follow line by line.
+          const mapLines = renderBodyMapText(a).split("\n");
+          push(p.label, mapLines[0].replace(/^Body Map — /, ""));
+          lines.push(...mapLines.slice(1));
+        }
         break;
       case "range":
         if (typeof a === "number") push(p.label, `${a}/${p.max}`);
@@ -198,6 +218,7 @@ export function templateHasAnswers(t: ScribeTemplate, answers: TemplateAnswers):
         a.slice(0, VITALS_FIELDS.length).some((v) => String(v).trim() !== "")
       );
     if (p.kind === "range") return typeof a === "number";
+    if (p.kind === "body_map") return isBodyMapData(a) && bodyMapHasContent(a);
     if (p.kind === "text" || p.kind === "textarea" || p.kind === "dropdown" || p.kind === "date")
       return typeof a === "string" && a.trim() !== "";
     return false;
@@ -263,6 +284,7 @@ export const ROLDE_TEMPLATE_LIBRARY: ScribeTemplate[] = [
     specialty: "Dermatology",
     parts: [
       { kind: "text", label: "Site", placeholder: "e.g. left forearm, extensor aspect" },
+      { kind: "body_map", label: "Lesion Map" },
       { kind: "text", label: "Duration", placeholder: "e.g. 6 months, enlarging over 8 weeks" },
       { kind: "text", label: "Size", placeholder: "e.g. 7 × 5 mm" },
       { kind: "dropdown", label: "Fitzpatrick Skin Type", options: ["I", "II", "III", "IV", "V", "VI"] },
@@ -287,6 +309,7 @@ export const ROLDE_TEMPLATE_LIBRARY: ScribeTemplate[] = [
       { kind: "text", label: "Total Units", placeholder: "e.g. 24" },
       { kind: "text", label: "Dilution", placeholder: "e.g. 2.5 ml 0.9% saline per 100 units" },
       { kind: "checkboxes", label: "Areas Treated", options: ["Glabella", "Frontalis", "Crow's Feet", "Bunny Lines", "Masseter", "Other"] },
+      { kind: "body_map", label: "Injection Sites" },
       { kind: "textarea", label: "Injection Notes", placeholder: "Points and units per area · technique · any immediate reactions…" },
       { kind: "checkboxes", label: "Aftercare", options: ["Aftercare Leaflet Given", "Verbal Advice Given", "Review Booked"] },
       { kind: "dropdown", label: "Review Interval", options: ["2 Weeks", "3 Weeks", "1 Month", "As Required"] },

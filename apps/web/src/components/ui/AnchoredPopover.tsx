@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +33,10 @@ export function AnchoredPopover({
   children: React.ReactNode;
 }) {
   const [el, setEl] = useState<HTMLDivElement | null>(null);
+  // Re-render counter: a guarded scroll RE-ANCHORS the popover instead of
+  // closing it (position derives from the anchor rect at render time).
+  const [, setTick] = useState(0);
+  const overWheel = useRef(0);
 
   useEffect(() => {
     if (!open) return;
@@ -47,21 +51,38 @@ export function AnchoredPopover({
       e.stopPropagation();
       onClose();
     };
+    // A wheel/touch gesture OVER the popover marks the next instants as
+    // "the user is on me" — even when the popover has nothing to scroll and
+    // the browser chains the gesture to the page behind (Roland 2026-07-04:
+    // two-finger swipe over the Status Trail made it vanish — the sibling of
+    // the inside-scroll bug). overscroll-contain blocks the chaining in
+    // modern engines; this flag is the belt for the ones that still leak.
+    const onWheel = (e: Event) => {
+      if (el?.contains(e.target as Node)) overWheel.current = Date.now();
+    };
     // Scrolling INSIDE the popover (its own list) must never close it — only
     // outside/page scrolls do (Roland 2026-07-04: "I tried to scroll and the
     // popup just disappeared").
     const onScroll = (e: Event) => {
       if (el?.contains(e.target as Node)) return;
+      if (Date.now() - overWheel.current < 450) {
+        setTick((t) => t + 1); // gesture was over me — follow the tile, stay open
+        return;
+      }
       onClose();
     };
     const close = () => onClose();
     document.addEventListener("pointerdown", onDoc);
     document.addEventListener("keydown", onKey);
+    window.addEventListener("wheel", onWheel, { capture: true, passive: true });
+    window.addEventListener("touchmove", onWheel, { capture: true, passive: true });
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", close);
     return () => {
       document.removeEventListener("pointerdown", onDoc);
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("wheel", onWheel, true);
+      window.removeEventListener("touchmove", onWheel, true);
       window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", close);
     };
@@ -94,7 +115,7 @@ export function AnchoredPopover({
       ref={setEl}
       style={style}
       className={cn(
-        "z-[70] overflow-y-auto rounded-xl bg-card p-1.5 shadow-overlay ring-1 ring-black/5",
+        "z-[70] overflow-y-auto overscroll-contain rounded-xl bg-card p-1.5 shadow-overlay ring-1 ring-black/5",
         className,
       )}
     >

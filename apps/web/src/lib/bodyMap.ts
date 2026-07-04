@@ -37,3 +37,13 @@ export function renderBodyMapText(data: BodyMapData): string {
 
 export const bodyMapHasContent = (d: BodyMapData): boolean =>
   d.pins.length > 0 || d.strokes.length > 0;
+
+export const EMPTY_BODY_MAP: BodyMapData = { view: "anterior", pins: [], strokes: [] };
+
+/** Type guard for a body-map answer riding a template's answers (v2.1 —
+ *  the Body Map is a template PART; answers are Json at rest). */
+export const isBodyMapData = (v: unknown): v is BodyMapData =>
+  typeof v === "object" &&
+  v !== null &&
+  Array.isArray((v as BodyMapData).pins) &&
+  Array.isArray((v as BodyMapData).strokes);

@@ -91,19 +91,37 @@ export function Select({
       setOpen(false);
     };
     const close = () => setOpen(false);
+    // A wheel/touch gesture OVER the menu must never close it — even when the
+    // short list has nothing to scroll and the browser chains the gesture to
+    // the page behind (the Status-Trail swipe-vanish sibling, Roland
+    // 2026-07-04). overscroll-contain blocks the chaining; this flag is the
+    // belt for engines that still leak.
+    const overWheel = { t: 0 };
+    const onWheel = (e: Event) => {
+      if (popRef.current?.contains(e.target as Node)) overWheel.t = Date.now();
+    };
     // Fixed-positioned popover would drift on OUTSIDE scroll/resize — close it.
     // A scroll inside the option list itself must NOT close (Roland 2026-07-04).
     const onScroll = (e: Event) => {
       if (popRef.current?.contains(e.target as Node)) return;
+      if (Date.now() - overWheel.t < 450) {
+        // The gesture was over the menu — re-anchor to the moved trigger.
+        if (btnRef.current) setRect(btnRef.current.getBoundingClientRect());
+        return;
+      }
       setOpen(false);
     };
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
+    window.addEventListener("wheel", onWheel, { capture: true, passive: true });
+    window.addEventListener("touchmove", onWheel, { capture: true, passive: true });
     window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", close);
     return () => {
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("wheel", onWheel, true);
+      window.removeEventListener("touchmove", onWheel, true);
       window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", close);
     };
@@ -154,7 +172,7 @@ export function Select({
             ref={popRef}
             role="listbox"
             style={menuStyle}
-            className="z-[200] max-h-64 overflow-auto rounded-xl bg-card p-1 shadow-overlay ring-1 ring-border"
+            className="z-[200] max-h-64 overflow-auto overscroll-contain rounded-xl bg-card p-1 shadow-overlay ring-1 ring-border"
           >
             {options.map((o) => {
               const isSel = o.value === value;

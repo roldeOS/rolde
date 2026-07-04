@@ -11,6 +11,7 @@ import {
   ClinicalNotesFeed,
   type FeedEntry,
   type Author,
+  type CourierDispatchTrail,
 } from "@/components/consultation/ClinicalNotesFeed";
 import { useTopbar, DEFAULT_LAYOUT } from "@/components/topbar/TopbarContext";
 import {
@@ -79,6 +80,7 @@ export function ConsultationWorkspace({
   authors,
   currentUserId,
   reads,
+  dispatches = [],
   modules = ALL_MODULES_ON,
 }: {
   patient: { id: string; firstName: string };
@@ -89,6 +91,8 @@ export function ConsultationWorkspace({
   /** Courier C1 — every read receipt on this patient's entries (unread state +
    *  the per-tile "Seen by" thread). */
   reads: { entry_id: string; user_id: string; read_at: string }[];
+  /** Courier C3 — each letter's dispatch journey, for the Status Trail. */
+  dispatches?: CourierDispatchTrail[];
   /** Clinical Modules (W1.1, APPROVALS §4.2) — the CLINIC's switches; the grid
    *  reflows 4/3/2. Sits OVER the user's Layouts card toggles. */
   modules?: ClinicalModules;
@@ -374,6 +378,7 @@ export function ConsultationWorkspace({
                 authors={authors}
                 currentUserId={currentUserId}
                 reads={reads}
+                dispatches={dispatches}
                 maximized={leftMode === "top"}
                 onToggleMaximize={() =>
                   setLeftMode((m) => (m === "top" ? "split" : "top"))

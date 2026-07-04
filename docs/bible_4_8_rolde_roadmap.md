@@ -1408,6 +1408,23 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     messaging + client wallet = already covered (inbox · Commercial credit). bacpac (Mayden's
     private-practice cousin of iaptus) surfaced nothing we lack. The two Qunote candidates were
     DECLINED (Roland 2026-07-04: "I don't see the point") — no slots taken.
+    **THE WORLD SWEEP PROGRAMME (Roland 2026-07-04 "list out all major apps… phase by phase" +
+    "Go one by one"; runs after the 13-app sweep):**
+    **Phase A — UK direct rivals (GO 2026-07-04):** Semble · WriteUpp · Pabau · PPS (Rushcliff) ·
+    Meddbase · e-clinic · MidexPRO · Carebit · DGL Practice Manager.
+    **Phase B — UK specialty:** Accurx (GP comms) · Dentally · Software of Excellence · Kiroku ·
+    Consentz · Faces · Clinicminds · iaptus (Mayden) · ANS.
+    **Phase C — world giants:** Jane (deeper) · SimplePractice · IntakeQ · Healthie · Practice
+    Better · Tebra · DrChrono · Noterro · Coreplus.
+    **Phase D — world specialty/spa-crossover:** ChiroTouch · OptiMantra · Aesthetic Record ·
+    PatientNow · Nextech · Symplast · Zenoti · Boulevard · Mindbody.
+    **Phase E — AI scribes (feeds W5):** Heidi · Lyrebird · Nabla · Abridge.
+    **Phase F — NHS & hospital EPR giants (Roland's catch: "You did not add Vision, Trac, EMIS
+    web"):** EMIS Web · SystmOne (TPP) · Vision (Cegedim) · Docman · TrakCare (InterSystems) ·
+    Epic · Oracle Health. Deliberately its own phase: these are procurement-locked NHS/hospital
+    systems, not commercial rivals — swept for records-craft, consultation-mode UX, template
+    depth and the interop RolDe must speak (GP Connect · PDS · e-RS · Spine), not for feature
+    slots.
     **COURIER C3 LOCKED SCOPE ADDITION (Roland 2026-07-04):** every Courier email wears the
     ELEGANT RolDe email design (the W1.1.13 clinic-email templates' parchment voice), and every
     attached/linked document is the URDS PDF Kit's LetterPdf — never a bare system email, never an
@@ -1431,6 +1448,18 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     the negative cases (bad email · foreign entry · no session 307 · bad token · expired token ·
     PDF-before-open redirect). **C4 next:** Resend delivery webhooks (true Delivered state),
     attachment mode (secure_link_default OFF), clinic↔clinic handover.
+    **C3 DEPLOY INCIDENT (2026-07-04, owned):** the first C3 push FAILED on Vercel — our own
+    title-case build guard rejected the viewer's browser-tab title ("A Letter via…" — lowercase
+    "via"); I had run typecheck + lint but NOT the build, and announced "deploying" without
+    watching it land, so production served the previous build and Roland found no Send button.
+    Process now law (Jarvis memory): `pnpm build` locally before every push; after every push,
+    watch the Vercel deployment to READY before claiming live.
+    **C3.1 TRAIL JOURNEY (Roland 2026-07-04 "Is there a Courier sent audit trail?"):** the Status
+    Trail now shows the REAL dispatch journey per letter, timestamped per leg — "Sent to {name}"
+    (info) · "Opened — {name}" (success) · "PDF Downloaded" · "Send Failed" (critical) — read from
+    courier_dispatch_events under team RLS; the payload.status word remains the fallback for
+    never-sent letters. The Courier audit story is three-layered: journey events (the record) ·
+    the Status Trail (the tile) · the Activity Log `courier.send` (governance, in Logs).
     **MOBILE (Roland 2026-07-04 — "a major flaw… every design should fit iPhone and iPad"):**
     audit run at iPhone width — consult · patients · dashboard · settings all verified painting
     correctly at 393px (screenshots); the two classic iOS traps FIXED platform-wide: h-screen →
@@ -1439,6 +1468,17 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     tablet-first, every new surface verified at 393px + 768px before "done". If the real-device
     askew persists post-deploy, ONE screenshot from the device pins the remaining offender.
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
+    **✅ BODY-MAP v2.1 BUILT 2026-07-04 (Roland "Go for body map v2.1"):** (1) the annotator is a
+    **template PART** — `body_map` joins the parts palette (T2/T3 builders inherit it free);
+    Lesion Review carries a "Lesion Map", the Toxin record carries "Injection Sites"; answers
+    ride payload.template like any part, render as readable pin-lines in the note text and as the
+    figure thumbnail + structured pin rows on the tile. (2) **Region ZOOM** — a third tool beside
+    Pin/Draw: tap = 3× close-up centred on the tap (clamped to the figure), further taps
+    re-centre, "Fit" restores; coordinates stay in full-figure space so close-up marks render
+    perfectly at any zoom, and mark sizes scale with the window (constant apparent size, finer
+    stroke thinning when zoomed). **Remaining v2.1 scope, next chunk:** the FACE view (needs a
+    properly licensed PD face figure — sourced with the same care as the Häggström body) and the
+    posterior view; then photo underlay (Document Store bucket) + batch/lot pins.
     **✅ BODY-MAP v2 PROTOTYPE BUILT 2026-07-04:** a Scribe MODE (the "Body Map" button beside
     Template; entering it auto-expands Scribe — the ONE sanctioned automatic move, APPROVALS §4.2).
     REAL artwork, not a sketch: the public-domain anatomical silhouette (Häggström/RexxS, Wikimedia

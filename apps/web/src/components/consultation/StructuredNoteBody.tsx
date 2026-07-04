@@ -7,7 +7,7 @@ import {
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
 import { BODY_PATH, BODY_VIEWBOX } from "./bodyFigure";
-import { type BodyMapData } from "@/lib/bodyMap";
+import { isBodyMapData, bodyMapHasContent, type BodyMapData } from "@/lib/bodyMap";
 import { cn } from "@/lib/utils";
 
 /**
@@ -91,7 +91,36 @@ export function StructuredNoteBody({
         break;
       }
       case "checkboxes":
-        if (Array.isArray(a) && a.length) labelled(p.label, a.join(" · "));
+        if (Array.isArray(a) && a.length && a.every((v) => typeof v === "string"))
+          labelled(p.label, a.join(" · "));
+        break;
+      case "body_map":
+        // The template part renders like the body-map tile: the FIGURE with
+        // its marks beside the numbered pin notes (URDS structured-tile law).
+        if (isBodyMapData(a) && bodyMapHasContent(a)) {
+          rows.push(
+            <div key={i} className="flex flex-wrap items-start gap-3 pt-1">
+              <BodyMapThumbnail data={a} />
+              <div className="min-w-0 flex-1 space-y-0.5">
+                <p className="text-sm">
+                  <span className="font-semibold">{p.label}: </span>
+                  {a.pins.length} mark{a.pins.length === 1 ? "" : "s"}
+                </p>
+                {a.pins.map((pin, j) => (
+                  <p key={j} className="text-sm">
+                    {j + 1}. {pin.site.trim() || "Unlabelled site"}
+                    {pin.note.trim() ? ` — ${pin.note.trim()}` : ""}
+                  </p>
+                ))}
+                {a.strokes.length > 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    Freehand markings: {a.strokes.length}
+                  </p>
+                )}
+              </div>
+            </div>,
+          );
+        }
         break;
       case "range":
         if (typeof a === "number") labelled(p.label, `${a}/${p.max}`);

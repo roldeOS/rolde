@@ -48,8 +48,22 @@ export type FeedEntry = {
   entry_type: string;
   payload: {
     text?: string;
-    /** Scribe Templates round-trip: the structured answers behind the text. */
-    template?: { id: string; answers: Record<number, string | string[] | number> };
+    /** Scribe Templates round-trip: the structured answers behind the text
+     *  (v2.1: a body_map PART's marks ride here like any other answer). */
+    template?: {
+      id: string;
+      answers: Record<
+        number,
+        | string
+        | string[]
+        | number
+        | {
+            view: "anterior";
+            pins: { x: number; y: number; site: string; note: string }[];
+            strokes: number[][][];
+          }
+      >;
+    };
     /** Body-Map entries: the structured marks behind the text. */
     body_map?: {
       view: "anterior";
@@ -64,6 +78,14 @@ export type FeedEntry = {
   related_entry_id: string | null;
 };
 export type Author = { name: string; role: string };
+/** Courier C3 — one letter dispatch + its journey, for the Status Trail. */
+export type CourierDispatchTrail = {
+  entry_id: string;
+  recipient_name: string;
+  status: string;
+  created_at: string;
+  courier_dispatch_events: { event: string; created_at: string }[];
+};
 
 type Icon = React.ComponentType<{ className?: string }>;
 /** Letters live in the FEED, not Workup (Roland 2026-07-01) — labelled by their
@@ -156,6 +178,7 @@ export function ClinicalNotesFeed({
   authors,
   currentUserId,
   reads,
+  dispatches = [],
   maximized,
   onToggleMaximize,
   onEditNote,
@@ -166,6 +189,8 @@ export function ClinicalNotesFeed({
   currentUserId: string;
   /** Courier C1 — every read receipt on this patient's entries. */
   reads: { entry_id: string; user_id: string; read_at: string }[];
+  /** Courier C3 — the letters' dispatch journeys (Status Trail rows). */
+  dispatches?: CourierDispatchTrail[];
   maximized: boolean;
   onToggleMaximize: () => void;
   onEditNote: (e: FeedEntry) => void;
@@ -191,6 +216,24 @@ export function ClinicalNotesFeed({
       list.sort((a, b) => (a.read_at < b.read_at ? -1 : 1));
     return m;
   }, [reads]);
+  // Courier C3 — dispatch journeys per letter, events oldest-first (the trail
+  // reads top-to-bottom like the letter's life).
+  const dispatchesByEntry = useMemo(() => {
+    const m = new Map<string, CourierDispatchTrail[]>();
+    for (const d of dispatches) {
+      const list = m.get(d.entry_id) ?? [];
+      list.push({
+        ...d,
+        courier_dispatch_events: [...d.courier_dispatch_events].sort((a, b) =>
+          a.created_at < b.created_at ? -1 : 1,
+        ),
+      });
+      m.set(d.entry_id, list);
+    }
+    for (const list of m.values())
+      list.sort((a, b) => (a.created_at < b.created_at ? -1 : 1));
+    return m;
+  }, [dispatches]);
   const [seenNow, setSeenNow] = useState<Set<string>>(new Set());
   const isUnread = useCallback(
     (e: FeedEntry) =>
@@ -683,7 +726,52 @@ export function ClinicalNotesFeed({
                 });
               else if (seenNow.has(entry.id))
                 rows.push({ label: "Read", who: "You", when: "Just now", dot: "bg-success" });
-              if (sendState)
+              // Courier C3 — the REAL journey, timestamped per leg (Roland
+              // 2026-07-04: "Is there a Courier sent audit trail?" — yes, and
+              // it lives right here). Falls back to the payload.status word
+              // (e.g. "Not Sent") for letters that never dispatched.
+              const journey = dispatchesByEntry.get(entry.id) ?? [];
+              if (journey.length) {
+                for (const d of journey)
+                  for (const ev of d.courier_dispatch_events) {
+                    if (ev.event === "queued") continue; // sent follows in the same breath
+                    rows.push(
+                      ev.event === "sent"
+                        ? {
+                            label: `Sent to ${d.recipient_name}`,
+                            when: fmtTime(ev.created_at),
+                            dot: "bg-info",
+                          }
+                        : ev.event === "delivered"
+                          ? { label: "Delivered", when: fmtTime(ev.created_at), dot: "bg-info" }
+                          : ev.event === "opened"
+                            ? {
+                                label: "Opened",
+                                who: d.recipient_name,
+                                when: fmtTime(ev.created_at),
+                                dot: "bg-success",
+                              }
+                            : ev.event === "pdf_downloaded"
+                              ? {
+                                  label: "PDF Downloaded",
+                                  who: d.recipient_name,
+                                  when: fmtTime(ev.created_at),
+                                  dot: "bg-success",
+                                }
+                              : ev.event === "failed"
+                                ? {
+                                    label: "Send Failed",
+                                    when: fmtTime(ev.created_at),
+                                    dot: "bg-critical",
+                                  }
+                                : {
+                                    label: ev.event.replace(/_/g, " "),
+                                    when: fmtTime(ev.created_at),
+                                    dot: "bg-foreground/30",
+                                  },
+                    );
+                  }
+              } else if (sendState)
                 rows.push({
                   label: sendState,
                   dot: settledSend
