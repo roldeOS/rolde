@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      clinic_address_book: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          contact_name: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          email: string | null
+          id: string
+          kind: string
+          name: string
+          notes: string | null
+          phone: string | null
+          postcode: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          id?: string
+          kind?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          postcode?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          contact_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          email?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          postcode?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_address_book_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_clinical_modules: {
         Row: {
           created_at: string
@@ -48,6 +116,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "clinic_clinical_modules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_courier_settings: {
+        Row: {
+          chase_after_days: number
+          countersign_required: boolean
+          created_at: string
+          delegated_sending: boolean
+          quiet_end: string
+          quiet_hours_enabled: boolean
+          quiet_start: string
+          secure_link_default: boolean
+          tenant_id: string
+          typo_guard: boolean
+          updated_at: string
+        }
+        Insert: {
+          chase_after_days?: number
+          countersign_required?: boolean
+          created_at?: string
+          delegated_sending?: boolean
+          quiet_end?: string
+          quiet_hours_enabled?: boolean
+          quiet_start?: string
+          secure_link_default?: boolean
+          tenant_id: string
+          typo_guard?: boolean
+          updated_at?: string
+        }
+        Update: {
+          chase_after_days?: number
+          countersign_required?: boolean
+          created_at?: string
+          delegated_sending?: boolean
+          quiet_end?: string
+          quiet_hours_enabled?: boolean
+          quiet_start?: string
+          secure_link_default?: boolean
+          tenant_id?: string
+          typo_guard?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_courier_settings_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: true
             referencedRelation: "tenants"

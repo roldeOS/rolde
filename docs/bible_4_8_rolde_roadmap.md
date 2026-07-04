@@ -1370,6 +1370,16 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     pins → structured sub-notes with batch/lot for injectables · freehand layer · PHOTO UNDERLAY) on
     professionally licensed medical artwork; per-specialty view sets (derm mole-map · aesthetics
     face · MSK). Next deliverable = a working prototype on real artwork, not sketches.
+    **Sweep Phase 1 — Roland's approvals registered (2026-07-04):** W2 no-show protection (card at
+    booking + the Commercial deposit policy wired in — Fresha parity) · W2.4 waitlist
+    availability-blast (a freed slot texts the queue — Zanda parity) · W3.3 referral limit tracking
+    (above) · W5 explicitly includes LIVE-during-video structured drafting with RolDe Connect
+    (Carepatron parity — "our RolDe Ambient AI would do this", correct wave) · W6 scheduled saved
+    reports with in-app alerts (Halaxy) · Templates T4 client-authenticated patient forms (Zanda).
+    PARKED (Roland "Hmmm"): insurer pre-authorisation session tracking at W4 (Splose analogue).
+    Phase 1 was a SURVEY pass (one source per app) — Phase 2 (TM3 · Nookal · PracticePal · Medesk ·
+    OwlPractice) runs at true depth, and Phase 1's five get the same deep revisit.
+    **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
     ▢ REMAINING — Body-Map v2 prototype · Scribe Templates T2–T4. New pieces to build + add to the URDS:
     - **Adaptive Workspace** — the four cards reflow by **Clinical Modules** (a new W1.1 Settings toggle:
       Lab · Radiology · Procedures · Prescriptions · RolDe AI) → 4/3/2-card states, AND are sized by
@@ -1457,7 +1467,9 @@ reminders engine *(LOCKED name, Roland 2026-06-30)*: automated patient-facing ou
 holds the relationship with Covenant. The shared recall engine every pack reuses ("recall engine
 (W2.3)" = RolDe Cadence). · W2.4 Waitlist · W2.5 Recurring course series
 **W3 — Clinical Orders** — W3.1 Prescribing + drug-safety · W3.2 Investigations + results inbox +
-trends · W3.3 Letters + closed-loop referrals
+trends · W3.3 Letters + closed-loop referrals **(+ APPROVED 2026-07-04, sweep Phase 1 — Halaxy
+parity: referral LIMIT tracking — sessions/amount remaining per referral with expiring/exhausted
+alerts; the private-insurer N-sessions reality)**
 
 > **The NHS prescription rails, documented for the NHS-expansion future (researched 2026-07-03/04,
 > Roland: "document this in the bible").** NHS **nomination** is a central mechanism — the patient's

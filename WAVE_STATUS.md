@@ -66,7 +66,8 @@
 | ✅ | **Status-Dot colour taxonomy APPROVED + locked** (bible + the Clinical Notes (i) glossary); Filter's Status options now wear their dot colours; Segmented tabs lift onto a true white card — 2026-07-04 |
 | ✅ | **Independent row splits** — Scribe's divider moves Scribe alone (per-column splitLeft/splitRight; old saved layouts migrate) — 2026-07-04 |
 | ✅ | **Deep clean** — nhs_number → national_health_id (all the way down) · five unused scaffold columns dropped · AIS chip in the island (interpreter/communication needs flagged at a glance) — 2026-07-04 |
-| ✅ | **RolDe Scribe Templates T1** (GREENLIT + built 2026-07-04) — typed parts engine · picker in Scribe's header · Scribe morphs into the form in place · curated library ×6 (SOAP · GP Consult · Lesion Review · Toxin Record · Therapy Session · Physio Initial) → renders a clean note through saveNote |
+| ✅ | **RolDe Scribe Templates T1** (GREENLIT + built 2026-07-04) — typed parts engine · picker in Scribe's header · Scribe morphs into the form in place · curated library ×6 → renders a clean note through saveNote. **Enriched same day:** SOAP made the flagship (PC · history · review checklist · vitals · differentials · full plan + follow-up) · GP gains ICE · derm gains Fitzpatrick · toxin gains a real DATE expiry + dilution + review interval · new date part · heading-aware rendering (no label doubling) |
+| ✅ | **AnchoredPopover** (URDS §8) — in-card popovers portal to body (Template picker · feed Filter · Status Trail were CLIPPING at card edges); coloured Status filter options actually landed (the earlier claim was an unwritten edit — owned + fixed) |
 | ▢ | **Scribe Templates T2–T4** — T2 builder + personal templates (DB) → T3 Caretaker clinic templates (Settings) → T4 patient-facing intake/consent + payment hook |
 | ▢ | **Body-Map v2 prototype** (GREENLIT 2026-07-04) — annotation engine (pins + structured sub-notes + freehand + photo underlay) on licensed professional artwork; becomes the Body Chart template part |
 | ▢ | Consultation redesign remainder: **Body-Map** (Servier style TBC) |
@@ -82,7 +83,7 @@
 | ▢ | **RolDe Covenant** | Relationships / marketing (W6.2) |
 | ▢ | **RolDe Compass** | The day view — calendar + tasks (sidebar) |
 | ▢ | **RolDe Cadence** | Recalls / reminders engine (W2.3) |
-| ◐ | **RolDe Courier** | The clinical postal system (GREENLIT 2026-07-02) — **C1 ✅ complete + Roland-verified: TEAM-level unseen (first colleague's read reviews it for the clinic; author never counts) · pastel-amber "Unseen"→"Read ✓" pill (top-right) · "N Unseen" header pill (click = jump to oldest unread) · the Read-by popover (full names, "· first" = the reviewer of record)**; C2 address book/settings · C3 outbound email + live tracking · C4 clinic↔clinic · C5 chase/kill-switch ▢ |
+| ◐ | **RolDe Courier** | The clinical postal system (GREENLIT 2026-07-02) — **C1 ✅** (team-level unseen → the Status Dot carries it since Feed Tile v3) · **C2 ✅ 2026-07-04: Settings → RolDe Courier — the sending policy (secure-link default · typo guard · countersign · delegated sending · quiet hours · chase window, all audited via Change Describer + clinician-403 verified) + the ADDRESS BOOK (GP practices · pharmacies · labs · hospitals; soft-remove only; country-aware validation)** · C3 outbound email + live tracking ▢ · C4 clinic↔clinic ▢ · C5 chase/kill-switch ▢ |
 | ⧉ | **RoChat** | AI comms hub — built by iOS-Jarvis (external) |
 
 ## C. The 18 Specialty Packs *(mapped + slotted in Bible 4.8 §15.7c; build = configuration of the spine)*
@@ -101,4 +102,4 @@
 
 ---
 
-*Last updated: 2026-07-04 (Scribe Templates T1 live · Body-Map v2 greenlit · sweep Phase 1 delivered; next: Body-Map prototype → T2 → Courier C2/C3 · sweep Phase 2).*
+*Last updated: 2026-07-04 late (popover/template fixes · Courier C2 live · sweep Phase-1 approvals registered; next: Body-Map v2 prototype → sweep Phase 2 AT DEPTH (+ Phase-1 redo) → C3 → Templates T2).*

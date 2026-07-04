@@ -1,6 +1,7 @@
 import {
   Blocks,
   Building2,
+  Send,
   Palette,
   Hash,
   LayoutPanelTop,
@@ -115,6 +116,17 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     group: "Spaces & People",
   },
   // — Clinical & Services —
+  {
+    key: "courier",
+    title: "RolDe Courier",
+    blurb:
+      "How your clinic sends — the address book Courier delivers to (GP practices, pharmacies, labs), secure-link defaults, countersigning, delegated sending and quiet hours.",
+    icon: Send,
+    tone: "accent",
+    source: "Bible 4.8 §15.7c (Courier C2)",
+    status: "ready",
+    group: "Clinical & Services",
+  },
   {
     key: "clinical-modules",
     title: "Clinical Modules",

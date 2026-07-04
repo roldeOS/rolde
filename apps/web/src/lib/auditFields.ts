@@ -129,6 +129,19 @@ export const MEDICATION_FIELDS: FieldMap = {
   notes: { label: "Notes", section: "Medication" },
 };
 
+/** RolDe Courier settings (C2) — the clinic's sending policy; every flip is
+ *  trail-worthy (governance of outbound clinical mail). */
+export const COURIER_FIELDS: FieldMap = {
+  secure_link_default: { label: "Secure link by default", section: "Courier", format: onOff },
+  typo_guard: { label: "Typo guard", section: "Courier", format: onOff },
+  countersign_required: { label: "Countersign required", section: "Courier", format: onOff },
+  delegated_sending: { label: "Delegated sending", section: "Courier", format: onOff },
+  quiet_hours_enabled: { label: "Quiet hours", section: "Courier", format: onOff },
+  quiet_start: { label: "Quiet hours start", section: "Courier" },
+  quiet_end: { label: "Quiet hours end", section: "Courier" },
+  chase_after_days: { label: "Chase unopened after (days)", section: "Courier" },
+};
+
 /** Clinical Modules (W1.1) — the clinic's on/off switches for its clinical
  *  tools. Pure toggles, so every value renders "On"/"Off" in the save line and
  *  the Activity Log trail. */
