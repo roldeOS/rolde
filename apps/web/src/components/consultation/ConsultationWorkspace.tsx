@@ -62,7 +62,15 @@ type Mode = "split" | "top" | "bottom";
 const EDIT_WINDOW_MS = 60 * 60 * 1000;
 const COMPOSER_NAME = "Scribe"; // the writing card (Roland 2026-06-10)
 
-type EditTarget = { id: string; original: string; locked: boolean } | null;
+type EditTarget = {
+  id: string;
+  original: string;
+  locked: boolean;
+  /** true = someone ELSE's note → the entry becomes an ADDENDUM (clinical
+   *  records law, Roland 2026-07-04: same author after the hour = amendment;
+   *  a different author = addendum, any time). */
+  foreign: boolean;
+} | null;
 
 export function ConsultationWorkspace({
   patient,
@@ -178,26 +186,29 @@ export function ConsultationWorkspace({
   const showAi = modules.rolde_ai_enabled && !hidden.has("ai");
   const showRight = showWorkup || showAi;
 
-  const mode: "new" | "edit" | "amend" = !editTarget
+  const mode: "new" | "edit" | "amend" | "addendum" = !editTarget
     ? "new"
-    : editTarget.locked
-      ? "amend"
-      : "edit";
+    : editTarget.foreign
+      ? "addendum"
+      : editTarget.locked
+        ? "amend"
+        : "edit";
 
   function handleEdit(e: FeedEntry) {
     setTemplate(null);
     setAnswers({});
     setBodyMap(null);
     const locked = Date.now() - new Date(e.created_at).getTime() > EDIT_WINDOW_MS;
+    const foreign = !!currentUserId && e.created_by !== currentUserId;
     const original = e.payload?.text ?? "";
-    setEditTarget({ id: e.id, original, locked });
+    setEditTarget({ id: e.id, original, locked, foreign });
     setStrikeOriginal(false);
     // A template-authored note restores its FORM within the edit window
     // (Roland 2026-07-04: "it did not load back the SOAP for me to edit") —
     // the saved answers ride the payload. Unknown template id → plain text.
     const meta = e.payload?.template;
     const t = meta ? ROLDE_TEMPLATE_LIBRARY.find((x) => x.id === meta.id) : undefined;
-    if (!locked && meta && t) {
+    if (!locked && !foreign && meta && t) {
       setTemplate(t);
       setAnswers(meta.answers ?? {});
       setDraft("");
@@ -270,7 +281,9 @@ export function ConsultationWorkspace({
           fd.set("template_meta", JSON.stringify({ id: template.id, answers }));
         await editNote(fd);
       } else {
-        if (strikeOriginal) {
+        // Amendment (own, locked) may strike the original; an ADDENDUM never
+        // touches someone else's original (author-only, RLS-enforced too).
+        if (strikeOriginal && mode === "amend") {
           const sf = new FormData();
           sf.set("entry_id", editTarget!.id);
           sf.set("patient_id", patient.id);
@@ -293,8 +306,10 @@ export function ConsultationWorkspace({
       ? template
         ? `Editing · ${template.name}`
         : "Editing note"
-      : mode === "amend"
-        ? "Amending note"
+      : mode === "addendum"
+        ? "Adding addendum"
+        : mode === "amend"
+          ? "Amending note"
         : bodyMap
           ? `${COMPOSER_NAME} · Body Map`
           : template
@@ -305,9 +320,11 @@ export function ConsultationWorkspace({
       ? "Save edit"
       : mode === "amend"
         ? "Save amendment"
-        : bodyMap
-          ? "Save body map"
-          : "Save note";
+        : mode === "addendum"
+          ? "Save addendum"
+          : bodyMap
+            ? "Save body map"
+            : "Save note";
 
   // Conversational bottom save bar (Roland 2026-06-11). It SPEAKS — "RolDe has
   // a note ready for Sarah's record" → "RolDe saved this to Sarah's record."
@@ -317,8 +334,10 @@ export function ConsultationWorkspace({
     message:
       mode === "edit"
         ? `You’re editing a note in ${who}’s record.`
-        : mode === "amend"
-          ? `You’re amending a note in ${who}’s record.`
+        : mode === "addendum"
+          ? `You’re adding an addendum to a colleague’s note in ${who}’s record.`
+          : mode === "amend"
+            ? `You’re amending a note in ${who}’s record.`
           : bodyMap
             ? `RolDe has a body map ready for ${who}’s record.`
             : template
@@ -508,12 +527,15 @@ export function ConsultationWorkspace({
               </div>
 
               <div className="flex min-h-0 flex-1 flex-col px-4 pb-3">
-                {mode === "amend" && (
+                {(mode === "amend" || mode === "addendum") && (
                   <div className="mb-2 rounded-lg bg-muted/50 p-2.5">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-muted-foreground">
-                        Original (locked after 1 hour)
+                        {mode === "addendum"
+                          ? "A colleague’s note — your addendum attaches beneath it"
+                          : "Original (locked after 1 hour)"}
                       </span>
+                      {mode === "amend" && (
                       <button
                         onClick={() => setStrikeOriginal((v) => !v)}
                         className={cn(
@@ -524,6 +546,7 @@ export function ConsultationWorkspace({
                         <Strikethrough className="size-3.5" />
                         {strikeOriginal ? "Will strike" : "Strike out"}
                       </button>
+                      )}
                     </div>
                     <p
                       className={cn(
@@ -553,7 +576,9 @@ export function ConsultationWorkspace({
                   placeholder={
                     mode === "amend"
                       ? "Amendment…"
-                      : `Note for ${patient.firstName}…`
+                      : mode === "addendum"
+                        ? "Addendum…"
+                        : `Note for ${patient.firstName}…`
                   }
                   className="min-h-0 w-full flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 />

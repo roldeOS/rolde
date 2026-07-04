@@ -341,3 +341,9 @@ body {
   backdrop-filter: blur(10px) saturate(150%);
   -webkit-backdrop-filter: blur(10px) saturate(150%);
 }
+
+/* iOS Safari: never auto-inflate text (the askew-on-iPhone class). */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}

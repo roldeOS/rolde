@@ -81,7 +81,7 @@ export function AppFrame({
 
   return (
     <TopbarProvider>
-      <div className="flex h-screen overflow-hidden bg-sidebar">
+      <div className="flex h-dvh overflow-hidden bg-sidebar">
         {/* Mobile backdrop */}
         {mobileOpen && (
           <div

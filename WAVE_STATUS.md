@@ -74,6 +74,8 @@
 | ✅ | **Vitals °C/°F flip** — the Temp field carries its own unit toggle (default follows clinic country, US → °F); plausibility per unit (25–45 °C / 77–113 °F); **the value CONVERTS with the flip** (36.8 °C ⇄ 98.2 °F) — 2026-07-04 |
 | ✅ | **Body-Map blank #2 (Safari)** — h-full/w-auto svg resolves to zero width in Safari; explicit aspect-ratio + floor height; figure render VERIFIED by screenshot — 2026-07-04 |
 | ✅ | **Vitals hardening + Select width** — per-field sanitise + clinical plausibility (implausible BLOCKS Save; the '656565…' BP is impossible now) · Select menus cap at 320px — 2026-07-04 |
+| ✅ | **Addendum law** — same author after the hour = Amendment · a DIFFERENT author = Addendum (pencil now on colleagues' notes; no strike on others' originals; tile tag · trail rows · audit action all name it truthfully) — 2026-07-04 |
+| ✅ | **iOS mobile hardening** — h-screen → h-dvh platform-wide (Safari URL-bar trap) · text-size-adjust guard · consult/patients/dashboard verified at iPhone width by screenshot — 2026-07-04 |
 | ✅ | **Structured tile rendering (URDS law)** — template notes format themselves on the tile (semibold headings + label rows via StructuredNoteBody, generic over parts — every future template inherits it) · body-map tiles show the annotated FIGURE · amend-original block keeps its line breaks · Status Trail tells the amendment LINEAGE (original ↔ amendments) — 2026-07-04 |
 | ▢ | **Body-Map v2.1** — body-map as a TEMPLATE PART (inline in the aesthetics note — Roland's blend) · click-to-zoom regions + face close-up view (features: eyes/nose/lips) · photo underlay (Document Store bucket) · batch/lot on injection pins |
 | ▢ | Consultation redesign remainder: **Body-Map** (Servier style TBC) |
@@ -108,4 +110,4 @@
 
 ---
 
-*Last updated: 2026-07-04 night (structured tiles + trail lineage + sweep approvals registered; next: Courier C3 on the Resend rails → Body-Map v2.1 blend/zoom/face → Templates T2).*
+*Last updated: 2026-07-04 night (addendum law · iOS dvh fixes · sweep Phase 3 done; next: Courier C3 [URDS-elegant emails + LetterPdf] → Body-Map v2.1 [template-part blend approved] → Templates T2/T3 [body-map part in the Caretaker builder]).*

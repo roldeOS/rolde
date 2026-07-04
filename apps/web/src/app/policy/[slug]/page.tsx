@@ -37,7 +37,7 @@ export default async function PolicyPage({
   if (!version) notFound();
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center px-6 py-12">
+    <main className="relative flex min-h-dvh flex-col items-center px-6 py-12">
       <div className="w-full max-w-2xl flex-1 space-y-8">
         <Link href="/login" className="flex justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}

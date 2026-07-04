@@ -1400,6 +1400,25 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     exercise prescription / home programmes.
     Validated (already ours, no new slots): context-aware AI drafting (W5) · team chat (W1.6
     Confer) · tasks (Compass) · memberships (W4).
+    **SWEEP PHASE 3 (2026-07-04 — Kiku · Qunote · bacpac/Mayden):** the finds worth stealing:
+    **Qunote's billable-time-inside-the-note** (time · travel · mileage · expenses captured in the
+    SAME form as the clinical note → invoice from the note; pairs with approved travel fees +
+    expenses → W4 candidate) and **email-to-filenote** (forward an email, it lands in the client
+    record → an ingest hook for the approved W1.6/Covenant inbox). Kiku's in-house secure client
+    messaging + client wallet = already covered (inbox · Commercial credit). bacpac (Mayden's
+    private-practice cousin of iaptus) surfaced nothing we lack. Awaiting Roland's word on the two
+    Qunote candidates.
+    **COURIER C3 LOCKED SCOPE ADDITION (Roland 2026-07-04):** every Courier email wears the
+    ELEGANT RolDe email design (the W1.1.13 clinic-email templates' parchment voice), and every
+    attached/linked document is the URDS PDF Kit's LetterPdf — never a bare system email, never an
+    unstyled PDF.
+    **MOBILE (Roland 2026-07-04 — "a major flaw… every design should fit iPhone and iPad"):**
+    audit run at iPhone width — consult · patients · dashboard · settings all verified painting
+    correctly at 393px (screenshots); the two classic iOS traps FIXED platform-wide: h-screen →
+    h-dvh (Safari's collapsing URL bar made 100vh lie — the app shell + all auth/error pages) and
+    -webkit-text-size-adjust: 100% (Safari's text auto-inflation). Standing law re-affirmed:
+    tablet-first, every new surface verified at 393px + 768px before "done". If the real-device
+    askew persists post-deploy, ONE screenshot from the device pins the remaining offender.
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
     **✅ BODY-MAP v2 PROTOTYPE BUILT 2026-07-04:** a Scribe MODE (the "Body Map" button beside
     Template; entering it auto-expands Scribe — the ONE sanctioned automatic move, APPROVALS §4.2).

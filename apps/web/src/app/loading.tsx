@@ -7,7 +7,7 @@ import { RoldeLoader } from "@/components/ui/RoldeLoader";
  */
 export default function RootLoading() {
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
+    <main className="flex min-h-dvh items-center justify-center p-6">
       <RoldeLoader className="h-12 w-auto" />
     </main>
   );

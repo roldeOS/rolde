@@ -99,7 +99,7 @@ export default function ResetPage() {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center px-6 py-12">
+    <main className="relative flex min-h-dvh items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm space-y-8">
         <div className="flex flex-col items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -654,7 +654,11 @@ export function ClinicalNotesFeed({
                   });
               }
               rows.push({
-                label: parent ? "Amended" : "Written",
+                label: parent
+                  ? parent.created_by === entry.created_by
+                    ? "Amended"
+                    : "Addendum Added"
+                  : "Written",
                 who: authors[entry.created_by ?? ""]?.name ?? "—",
                 when: fmtTime(entry.created_at),
                 dot: "bg-foreground/30",
@@ -689,7 +693,7 @@ export function ClinicalNotesFeed({
               // An ORIGINAL lists every amendment made against it.
               for (const am of amendmentsByParent.get(entry.id) ?? [])
                 rows.push({
-                  label: "Amended",
+                  label: am.created_by === entry.created_by ? "Amended" : "Addendum Added",
                   who: authors[am.created_by ?? ""]?.name ?? "—",
                   when: fmtTime(am.created_at),
                   dot: "bg-info",
@@ -720,7 +724,11 @@ export function ClinicalNotesFeed({
                     {e.related_entry_id && (
                       <span className="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground">
                         <CornerDownRight className="size-3" />
-                        <span className="hidden sm:inline">Amendment</span>
+                        <span className="hidden sm:inline">
+                          {byId.get(e.related_entry_id)?.created_by === e.created_by
+                            ? "Amendment"
+                            : "Addendum"}
+                        </span>
                       </span>
                     )}
                   </span>
@@ -844,7 +852,9 @@ export function ClinicalNotesFeed({
                       )}
                     />
                     <span className={cn("min-w-0", orig.struck_at && "line-through")}>
-                      <span className="font-medium not-italic">Amends:</span>{" "}
+                      <span className="font-medium not-italic">
+                        {orig.created_by === e.created_by ? "Amends:" : "Adds to:"}
+                      </span>{" "}
                       {(() => {
                         const ot = orig.payload?.text ?? "";
                         return origOpen || ot.length <= 80 ? ot : ot.slice(0, 80) + "…";
@@ -878,15 +888,17 @@ export function ClinicalNotesFeed({
                         PDF
                       </a>
                     )}
-                    {mine && (
-                      <button
-                        onClick={() => onEditNote(e)}
-                        title="Open in composer"
-                        className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-                      >
-                        <Pencil className="size-3.5" />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => onEditNote(e)}
+                      title={
+                        mine
+                          ? "Open in composer (edit or amend)"
+                          : "Add an addendum (a colleague's note)"
+                      }
+                      className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                    >
+                      <Pencil className="size-3.5" />
+                    </button>
                   </span>
                 </div>
               </article>

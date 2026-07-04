@@ -258,6 +258,15 @@ export async function amendNote(formData: FormData) {
   if (!tenantId) throw new Error("No clinic context for this user.");
 
   const supabase = await createClient();
+  // Same author = amendment · a DIFFERENT author = addendum (clinical records
+  // law, Roland 2026-07-04) — the trail and audit name it truthfully.
+  const { data: parent } = await supabase
+    .from("patient_feed_entries")
+    .select("created_by")
+    .eq("id", parentId)
+    .maybeSingle();
+  const isAddendum = !!parent && parent.created_by !== (ctx?.user.id ?? null);
+
   const { error } = await supabase.from("patient_feed_entries").insert({
     tenant_id: tenantId,
     patient_id: patientId,
@@ -271,10 +280,12 @@ export async function amendNote(formData: FormData) {
   await logAudit({
     tenantId,
     actorUserId: ctx?.user.id,
-    action: "note.amend",
+    action: isAddendum ? "note.addendum" : "note.amend",
     resourceType: "patient",
     resourceId: patientId,
-    summary: "Amended a clinical note",
+    summary: isAddendum
+      ? "Added an addendum to a colleague's note"
+      : "Amended a clinical note",
   });
 
   revalidatePath(`/patients/${patientId}`);

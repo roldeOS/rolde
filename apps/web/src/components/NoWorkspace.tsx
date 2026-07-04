@@ -21,7 +21,7 @@ export function NoWorkspace({ email }: { email: string }) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-sidebar p-6">
+    <div className="flex min-h-dvh items-center justify-center bg-sidebar p-6">
       <div className="mx-auto flex max-w-md flex-col items-center gap-4 rounded-xl bg-card p-10 text-center shadow-float">
         <CardIcon icon={DoorClosed} tone="neutral" variant="badge" size="md" />
         <div>
