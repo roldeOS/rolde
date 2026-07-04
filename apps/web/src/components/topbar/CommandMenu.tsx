@@ -358,7 +358,7 @@ function Group({
 }) {
   return (
     <div className="pb-1">
-      <p className="px-2.5 pt-2 pb-1 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
+      <p className="px-2.5 pt-2 pb-1 text-xs font-semibold tracking-wide text-foreground uppercase">
         {heading}
       </p>
       {children}

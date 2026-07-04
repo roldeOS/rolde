@@ -401,7 +401,7 @@ export function ClinicalNotesFeed({
               width={230}
               className="p-2"
             >
-                <p className="px-1 pb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                <p className="px-1 pb-1 text-xs font-semibold tracking-wider text-foreground uppercase">
                   Status
                 </p>
                 {/* Each status option wears ITS pill + dot (Roland 2026-07-04
@@ -431,33 +431,63 @@ export function ClinicalNotesFeed({
                   </button>
                 ))}
                 <div className="my-1.5 h-px bg-border" />
-                <p className="px-1 pb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                <p className="px-1 pb-1 text-xs font-semibold tracking-wider text-foreground uppercase">
                   Type
                 </p>
-                {presentTypes.map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => toggle(typeF, t, setTypeF)}
-                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm capitalize transition-colors hover:bg-hover"
-                  >
-                    {t.replace(/_/g, " ")}
-                    {typeF.has(t) && <Check className="size-3.5 text-info" />}
-                  </button>
-                ))}
+                {/* Type options wear the SAME tone pills their tiles wear
+                    (Roland 2026-07-04 — every filter option is a pill). */}
+                {presentTypes.map((t) => {
+                  const meta =
+                    RECORD_KINDS[t] ??
+                    (t in LETTER_KINDS
+                      ? { label: LETTER_KINDS[t], tone: "accent" as CardIconTone, icon: Mail }
+                      : t === "clinical_note"
+                        ? { label: "Clinical Note", tone: "info" as CardIconTone, icon: Stethoscope }
+                        : { label: t.replace(/_/g, " "), tone: "neutral" as CardIconTone, icon: FileText });
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => toggle(typeF, t, setTypeF)}
+                      className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm capitalize transition-colors hover:bg-hover"
+                    >
+                      <span
+                        className={cn(
+                          "flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold",
+                          TONE_BADGE[meta.tone],
+                        )}
+                      >
+                        <meta.icon className="size-3" />
+                        {meta.label}
+                      </span>
+                      {typeF.has(t) && <Check className="size-3.5 text-info" />}
+                    </button>
+                  );
+                })}
                 <div className="my-1.5 h-px bg-border" />
-                <p className="px-1 pb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                <p className="px-1 pb-1 text-xs font-semibold tracking-wider text-foreground uppercase">
                   Author
                 </p>
-                {presentAuthors.map((a) => (
-                  <button
-                    key={a}
-                    onClick={() => toggle(authF, a, setAuthF)}
-                    className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-hover"
-                  >
-                    {authors[a]?.name ?? "Unknown"}
-                    {authF.has(a) && <Check className="size-3.5 text-info" />}
-                  </button>
-                ))}
+                {/* Authors wear their ROLE's tone (the tile pill palette). */}
+                {presentAuthors.map((a) => {
+                  const roleMeta = noteKind(authors[a]?.role);
+                  return (
+                    <button
+                      key={a}
+                      onClick={() => toggle(authF, a, setAuthF)}
+                      className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-hover"
+                    >
+                      <span
+                        className={cn(
+                          "rounded-md px-1.5 py-0.5 text-xs font-semibold",
+                          TONE_BADGE[roleMeta.tone],
+                        )}
+                      >
+                        {authors[a]?.name ?? "Unknown"}
+                      </span>
+                      {authF.has(a) && <Check className="size-3.5 text-info" />}
+                    </button>
+                  );
+                })}
                 {filterCount > 0 && (
                   <button
                     onClick={() => {

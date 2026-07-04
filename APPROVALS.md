@@ -133,6 +133,15 @@ blurb / description copy); **aria-labels** + HTML `title=` hover tooltips; enum 
 any new chrome string is Title Case — Roland must be able to trust this without asking. (mindate
 CI-guards this via `check-title-case.mjs`; RolDe stays review-enforced until a guard is ported.)
 
+2.4 **POPOVERS ALWAYS PORTAL — never absolute inside a card (Roland 2026-07-04, LOCKED).** The
+consult cards (and most RolDe cards) are `overflow-hidden` — an absolutely-positioned dropdown
+inside one gets CLIPPED at the card edge (the Template-picker / feed-Filter regression). Every
+popover that lives inside a card rides the shared **`AnchoredPopover`** (portal to `<body>` +
+trigger-rect positioning + flip-up + Escape-claim) or an equivalent portal (Select, ⌘K).
+Additionally: **a scroll INSIDE a popover's own list never closes it** — only outside scrolls do;
+and **dropdown GROUP HEADERS are black + semibold** (`text-xs font-semibold text-foreground
+uppercase`) — muted-grey micro-headers in dropdowns read as blur (Roland). See MISTAKES #11.
+
 ## 3. Colour
 
 3.1 **Clinic accent — creamish-yellow pastel** (Roland 2026-06-10; earlier sunny-peach revised).

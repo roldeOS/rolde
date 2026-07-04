@@ -20,6 +20,7 @@ export type TemplatePart =
   | { kind: "text"; label: string; placeholder?: string }
   | { kind: "textarea"; label: string; placeholder?: string }
   | { kind: "date"; label: string }
+  | { kind: "vitals"; label: string }
   | { kind: "checkboxes"; label: string; options: string[] }
   | { kind: "dropdown"; label: string; options: string[] }
   | {
@@ -39,6 +40,19 @@ export type ScribeTemplate = {
 };
 
 export type TemplateAnswers = Record<number, string | string[] | number>;
+
+/** The canonical vitals shape (Roland 2026-07-04: "Vital Signs should
+ *  auto-populate") — the SAME keys a vital_signs feed entry carries, so the
+ *  form pre-fills from the latest recorded set today and from the W1.2.7
+ *  Vitals module when it lands. Stored per-template as a fixed-order array. */
+export const VITALS_FIELDS = [
+  { key: "bp", label: "BP", unit: "", placeholder: "128/82" },
+  { key: "hr", label: "HR", unit: "bpm", placeholder: "72" },
+  { key: "temp", label: "Temp", unit: "°C", placeholder: "36.8" },
+  { key: "spo2", label: "SpO₂", unit: "%", placeholder: "98" },
+  { key: "rr", label: "RR", unit: "/min", placeholder: "16" },
+  { key: "weight", label: "Weight", unit: "kg", placeholder: "72" },
+] as const;
 
 const fmtDate = (iso: string) => {
   const t = new Date(iso);
@@ -75,6 +89,15 @@ export function renderTemplate(t: ScribeTemplate, answers: TemplateAnswers): str
       case "date":
         if (typeof a === "string" && a.trim()) push(p.label, fmtDate(a));
         break;
+      case "vitals":
+        if (Array.isArray(a) && a.some((v) => String(v).trim())) {
+          const bits = VITALS_FIELDS.map((f, j) => {
+            const v = String(a[j] ?? "").trim();
+            return v ? `${f.label} ${v}${f.unit ? ` ${f.unit}` : ""}` : null;
+          }).filter(Boolean);
+          push(p.label, bits.join(" · "));
+        }
+        break;
       case "checkboxes":
         if (Array.isArray(a) && a.length) push(p.label, a.join(" · "));
         break;
@@ -90,6 +113,7 @@ export function templateHasAnswers(t: ScribeTemplate, answers: TemplateAnswers):
   return t.parts.some((p, i) => {
     const a = answers[i];
     if (p.kind === "checkboxes") return Array.isArray(a) && a.length > 0;
+    if (p.kind === "vitals") return Array.isArray(a) && a.some((v) => String(v).trim() !== "");
     if (p.kind === "range") return typeof a === "number";
     if (p.kind === "text" || p.kind === "textarea" || p.kind === "dropdown" || p.kind === "date")
       return typeof a === "string" && a.trim() !== "";
@@ -121,7 +145,7 @@ export const ROLDE_TEMPLATE_LIBRARY: ScribeTemplate[] = [
       { kind: "checkboxes", label: "Reviewed", options: ["Past Medical History", "Medications", "Allergies", "Family History", "Social History"] },
       { kind: "textarea", label: "Review Notes", placeholder: "Anything from the review worth recording…" },
       { kind: "heading", label: "Objective" },
-      { kind: "text", label: "Vital Signs", placeholder: "e.g. BP 128/82 · HR 72 · T 36.8 °C · SpO₂ 98%" },
+      { kind: "vitals", label: "Vital Signs" },
       { kind: "textarea", label: "Examination", placeholder: "General appearance · focused system examination findings…" },
       { kind: "textarea", label: "Investigations Reviewed", placeholder: "Results seen today, with their dates…" },
       { kind: "heading", label: "Assessment" },

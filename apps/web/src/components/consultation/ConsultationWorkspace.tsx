@@ -28,6 +28,7 @@ import {
 import { ScribeTemplateForm } from "@/components/consultation/ScribeTemplateForm";
 import {
   ROLDE_TEMPLATE_LIBRARY,
+  VITALS_FIELDS,
   renderTemplate,
   templateHasAnswers,
   type ScribeTemplate,
@@ -190,6 +191,23 @@ export function ConsultationWorkspace({
   }
 
   const templateDirty = !!template && templateHasAnswers(template, answers);
+
+  // Vital Signs AUTO-POPULATE (Roland 2026-07-04): picking a template seeds
+  // its vitals part from the patient's LATEST recorded vital_signs entry
+  // (canonical keys bp/hr/temp/spo2/rr/weight — W1.2.7 Vitals writes the same
+  // shape, so this gets richer for free when it lands). Editable after seeding.
+  function prefillFor(t: ScribeTemplate): TemplateAnswers {
+    const latest = [...feedEntries].reverse().find((e) => e.entry_type === "vital_signs");
+    const pay = latest?.payload as Record<string, unknown> | null | undefined;
+    const seeded: TemplateAnswers = {};
+    if (pay) {
+      t.parts.forEach((part, i) => {
+        if (part.kind === "vitals")
+          seeded[i] = VITALS_FIELDS.map((f) => String(pay[f.key] ?? ""));
+      });
+    }
+    return seeded;
+  }
 
   async function submit() {
     const usingTemplate = mode === "new" && !!template;
@@ -356,7 +374,7 @@ export function ConsultationWorkspace({
                         {[...new Set(ROLDE_TEMPLATE_LIBRARY.map((t) => t.specialty))].map(
                           (spec) => (
                             <div key={spec}>
-                              <p className="px-2.5 pb-0.5 pt-2 text-xs font-semibold tracking-wide text-foreground/60 uppercase">
+                              <p className="px-2.5 pb-0.5 pt-2 text-xs font-semibold tracking-wide text-foreground uppercase">
                                 {spec}
                               </p>
                               {ROLDE_TEMPLATE_LIBRARY.filter((t) => t.specialty === spec).map(
@@ -365,7 +383,7 @@ export function ConsultationWorkspace({
                                     key={t.id}
                                     onClick={() => {
                                       setTemplate(t);
-                                      setAnswers({});
+                                      setAnswers(prefillFor(t));
                                       setDraft("");
                                       setPickerOpen(false);
                                     }}

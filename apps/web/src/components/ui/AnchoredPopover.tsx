@@ -47,15 +47,22 @@ export function AnchoredPopover({
       e.stopPropagation();
       onClose();
     };
+    // Scrolling INSIDE the popover (its own list) must never close it — only
+    // outside/page scrolls do (Roland 2026-07-04: "I tried to scroll and the
+    // popup just disappeared").
+    const onScroll = (e: Event) => {
+      if (el?.contains(e.target as Node)) return;
+      onClose();
+    };
     const close = () => onClose();
     document.addEventListener("pointerdown", onDoc);
     document.addEventListener("keydown", onKey);
-    window.addEventListener("scroll", close, true);
+    window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", close);
     return () => {
       document.removeEventListener("pointerdown", onDoc);
       document.removeEventListener("keydown", onKey);
-      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", close);
     };
   }, [open, onClose, el, anchor]);

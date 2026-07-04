@@ -3,6 +3,7 @@
 import { Field, Input } from "@/components/ui/form";
 import { Select } from "@/components/ui/Select";
 import {
+  VITALS_FIELDS,
   type ScribeTemplate,
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
@@ -54,6 +55,33 @@ export function ScribeTemplateForm({
                 />
               </Field>
             );
+          case "vitals": {
+            const vals = Array.isArray(a) ? a : [];
+            return (
+              <div key={i}>
+                <p className="mb-1.5 text-xs font-semibold text-foreground">{p.label}</p>
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                  {VITALS_FIELDS.map((f, j) => (
+                    <div key={f.key}>
+                      <p className="mb-0.5 text-[10px] font-semibold text-muted-foreground">
+                        {f.label}
+                        {f.unit && <span className="font-normal"> {f.unit}</span>}
+                      </p>
+                      <Input
+                        value={String(vals[j] ?? "")}
+                        placeholder={f.placeholder}
+                        onChange={(e) => {
+                          const next = VITALS_FIELDS.map((_, k) => String(vals[k] ?? ""));
+                          next[j] = e.target.value;
+                          onChange(i, next);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          }
           case "date":
             return (
               <Field key={i} label={p.label} htmlFor={`tp-${i}`}>

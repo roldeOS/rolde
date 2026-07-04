@@ -308,5 +308,53 @@ one thing that can't be rebuilt cheaply — trust.
 
 ---
 
+## 11. Built dropdowns as absolute divs inside overflow-hidden cards — they clipped at the card edge — 2026-07-04
+
+The Scribe Template picker and the feed Filter were positioned `absolute` inside consult cards.
+Every consult card is `overflow-hidden` (that's its rounded floating shape) — so both dropdowns
+were CUT OFF at the card boundary. Roland caught it twice in screenshots ("the dropdown went
+hidden… limited to the card").
+
+**Fix:** the shared `AnchoredPopover` (portal to `<body>`, fixed positioning from the trigger's
+rect, flip-up when out of room, Escape-claim) — now APPROVALS §2.4 + URDS §8. Sibling sweep the
+same day: the Status Trail popover moved onto it too; Select/⌘K already portal. A second sibling
+bug found in the same family: closing on ANY scroll — including a scroll INSIDE the popover's own
+list — made popovers vanish mid-use; inside-scrolls are now ignored (AnchoredPopover + Select).
+
+**Trigger:** ANY new dropdown/popover/menu. If it renders inside a card (anything
+`overflow-hidden`), it MUST portal — reach for AnchoredPopover, never `absolute` + `z-index`.
+Then test: open it near the card's bottom edge AND scroll inside its list.
+
+**Lesson:** the card's `overflow-hidden` is invisible until the popover needs the space; position
+popovers against the viewport, not the card.
+
+---
+
+## 12. Claimed an edit that was never written, then blamed deploy timing twice without re-checking the file — 2026-07-04
+
+The coloured Status-filter options: my edit script prepared the change in memory, then exited
+WITHOUT writing the file (the next script re-read the file fresh, silently discarding it). When
+Roland reported plain text I diagnosed "deploy timing" — twice — without re-opening the file.
+The change had never existed. Roland: "the filter does not reflect the colours I asked you
+to… What is going on?????"
+
+**Fix (process, two halves):**
+1. **Every scripted multi-edit ends with a WRITE per file it touched, and the change is verified
+   by re-reading/grepping the FILE (not the script's output) before it is claimed.** A python
+   block that edits `s` but never calls `write` looks identical in the transcript to one that
+   worked.
+2. **When Roland reports a discrepancy, the FIRST act is opening the artefact** (file, deploy,
+   DB row) — never a from-memory diagnosis. "Deploy timing" may only be claimed after the commit
+   hash is confirmed IN the deployed build AND the change confirmed IN the commit.
+
+**Trigger:** claiming any change shipped; diagnosing any "it should be there" discrepancy.
+Grep the committed file first. (Pairs with MISTAKES #10's lesson and the
+verify-the-diagnosis-not-just-fix memory.)
+
+**Lesson:** an unverified claim compounds into a false diagnosis. The file is the truth; check
+the truth before speaking about it.
+
+---
+
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or
 when a diagnosed regression is worth locking and Roland approves the entry.*

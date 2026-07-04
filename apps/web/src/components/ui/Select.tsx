@@ -91,15 +91,20 @@ export function Select({
       setOpen(false);
     };
     const close = () => setOpen(false);
+    // Fixed-positioned popover would drift on OUTSIDE scroll/resize — close it.
+    // A scroll inside the option list itself must NOT close (Roland 2026-07-04).
+    const onScroll = (e: Event) => {
+      if (popRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    };
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
-    // Fixed-positioned popover would drift on scroll/resize — just close it.
-    window.addEventListener("scroll", close, true);
+    window.addEventListener("scroll", onScroll, true);
     window.addEventListener("resize", close);
     return () => {
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
-      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", close);
     };
   }, [open]);

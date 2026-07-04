@@ -229,7 +229,7 @@ function LayoutsMenu({ modules }: { modules: ClinicalModules }) {
               clinical module the CLINIC switched off (W1.1) has no row here —
               a user can hide what the clinic has on, never show what it has off. */}
           <div className="my-1 border-t border-border/60" />
-          <p className="px-2.5 pb-0.5 pt-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+          <p className="px-2.5 pb-0.5 pt-1 text-xs font-semibold tracking-wide text-foreground uppercase">
             Cards
           </p>
           {(

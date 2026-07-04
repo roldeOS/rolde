@@ -27,7 +27,7 @@ export function NotificationsBell() {
 
       {open && (
         <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-72 rounded-xl bg-card p-1.5 shadow-overlay">
-          <p className="px-2.5 py-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+          <p className="px-2.5 py-1.5 text-xs font-semibold tracking-wider text-foreground uppercase">
             Notifications
           </p>
           <p className="px-2.5 py-6 text-center text-xs text-muted-foreground">
