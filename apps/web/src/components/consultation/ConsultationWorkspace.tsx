@@ -33,7 +33,7 @@ import {
   type ScribeTemplate,
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
-import { useClickAway } from "@/lib/useClickAway";
+import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { cn } from "@/lib/utils";
 
 type WorkupEntry = { id: string; entry_type: string };
@@ -93,7 +93,7 @@ export function ConsultationWorkspace({
   const [template, setTemplate] = useState<ScribeTemplate | null>(null);
   const [answers, setAnswers] = useState<TemplateAnswers>({});
   const [pickerOpen, setPickerOpen] = useState(false);
-  const pickerRef = useClickAway<HTMLDivElement>(() => setPickerOpen(false));
+  const [pickerBtn, setPickerBtn] = useState<HTMLElement | null>(null);
   const [strikeOriginal, setStrikeOriginal] = useState(false);
   const [pending, setPending] = useState(false);
   // Conversational "saved" flash lives in the provider so it survives the
@@ -322,8 +322,9 @@ export function ConsultationWorkspace({
                 {/* RolDe Scribe Templates (T1): the picker lives IN Scribe's
                     header — never a separate page (Roland 2026-07-04). */}
                 {mode === "new" && (
-                  <div ref={pickerRef} className="relative ml-auto">
+                  <div className="ml-auto">
                     <button
+                      ref={setPickerBtn}
                       onClick={() => setPickerOpen((v) => !v)}
                       className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                     >
@@ -331,8 +332,14 @@ export function ConsultationWorkspace({
                       {template ? template.name : "Template"}
                       <ChevronDown className={cn("size-3 transition-transform", pickerOpen && "rotate-180")} />
                     </button>
-                    {pickerOpen && (
-                      <div className="absolute right-0 top-[calc(100%+6px)] z-30 max-h-80 w-64 overflow-y-auto rounded-xl bg-card p-1.5 shadow-overlay">
+                    {/* PORTALED (AnchoredPopover) — Scribe is overflow-hidden;
+                        the in-card version clipped (Roland 2026-07-04). */}
+                    <AnchoredPopover
+                      anchor={pickerBtn}
+                      open={pickerOpen}
+                      onClose={() => setPickerOpen(false)}
+                      width={264}
+                    >
                         <button
                           onClick={() => {
                             setTemplate(null);
@@ -349,7 +356,7 @@ export function ConsultationWorkspace({
                         {[...new Set(ROLDE_TEMPLATE_LIBRARY.map((t) => t.specialty))].map(
                           (spec) => (
                             <div key={spec}>
-                              <p className="px-2.5 pb-0.5 pt-2 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                              <p className="px-2.5 pb-0.5 pt-2 text-xs font-semibold tracking-wide text-foreground/60 uppercase">
                                 {spec}
                               </p>
                               {ROLDE_TEMPLATE_LIBRARY.filter((t) => t.specialty === spec).map(
@@ -376,8 +383,7 @@ export function ConsultationWorkspace({
                             </div>
                           ),
                         )}
-                      </div>
-                    )}
+                    </AnchoredPopover>
                   </div>
                 )}
                 <button

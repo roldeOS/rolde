@@ -32,6 +32,7 @@ import {
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
 import { useClickAway } from "@/lib/useClickAway";
+import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { markEntrySeen } from "@/app/(app)/patients/actions";
 import { cn } from "@/lib/utils";
 
@@ -180,15 +181,12 @@ export function ClinicalNotesFeed({
       !seenNow.has(e.id),
     [currentUserId, readsByEntry, seenNow],
   );
-  // The STATUS TRAIL popover (v3) — replaces the eye/Read-by window.
-  const [trailOpen, setTrailOpen] = useState<Set<string>>(new Set());
-  const toggleTrail = useCallback((id: string) => {
-    setTrailOpen((s) => {
-      const n = new Set(s);
-      if (n.has(id)) n.delete(id);
-      else n.add(id);
-      return n;
-    });
+  // The STATUS TRAIL popover (v3) — replaces the eye/Read-by window. One open
+  // at a time; PORTALED via AnchoredPopover (the card is overflow-hidden — an
+  // in-card popover gets clipped; Roland 2026-07-04).
+  const [trail, setTrail] = useState<{ id: string; el: HTMLElement } | null>(null);
+  const toggleTrail = useCallback((id: string, el: HTMLElement) => {
+    setTrail((t) => (t?.id === id ? null : { id, el }));
   }, []);
 
   const [typeF, setTypeF] = useState<Set<string>>(new Set());
@@ -197,6 +195,7 @@ export function ClinicalNotesFeed({
   const [statusF, setStatusF] = useState<Set<string>>(new Set());
   const [visible, setVisible] = useState(PAGE);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [filterBtn, setFilterBtn] = useState<HTMLElement | null>(null);
   const [expandedOrig, setExpandedOrig] = useState<Set<string>>(new Set());
   const filterRef = useClickAway<HTMLDivElement>(
     useCallback(() => setFilterOpen(false), []),
@@ -382,6 +381,7 @@ export function ClinicalNotesFeed({
           </button>
           <div ref={filterRef} className="relative">
             <button
+              ref={setFilterBtn}
               onClick={() => setFilterOpen((v) => !v)}
               title="Filter"
               className={cn(
@@ -394,16 +394,23 @@ export function ClinicalNotesFeed({
                 <span className="text-xs font-medium tabular-nums">{filterCount}</span>
               )}
             </button>
-            {filterOpen && (
-              <div className="absolute right-0 top-[calc(100%+6px)] z-50 w-56 rounded-xl bg-card p-2 shadow-overlay">
+            <AnchoredPopover
+              anchor={filterBtn}
+              open={filterOpen}
+              onClose={() => setFilterOpen(false)}
+              width={230}
+              className="p-2"
+            >
                 <p className="px-1 pb-1 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                   Status
                 </p>
+                {/* Each status option wears ITS pill + dot (Roland 2026-07-04
+                    — the filter mirrors the tiles, never a bland text list). */}
                 {(
                   [
-                    { key: "needs_attention", label: "Needs Attention" },
-                    { key: "in_flight", label: "In Flight" },
-                    { key: "settled", label: "Settled" },
+                    { key: "needs_attention", label: "Needs Attention", pill: "bg-warning/15 text-warning", dot: "bg-warning" },
+                    { key: "in_flight", label: "In Flight", pill: "bg-info/10 text-info", dot: "bg-info" },
+                    { key: "settled", label: "Settled", pill: "bg-success/10 text-success", dot: "bg-success" },
                   ] as const
                 ).map((st) => (
                   <button
@@ -411,7 +418,15 @@ export function ClinicalNotesFeed({
                     onClick={() => toggle(statusF, st.key, setStatusF)}
                     className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-hover"
                   >
-                    {st.label}
+                    <span
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold",
+                        st.pill,
+                      )}
+                    >
+                      {st.label}
+                      <span className={cn("size-[7px] rounded-full", st.dot)} />
+                    </span>
                     {statusF.has(st.key) && <Check className="size-3.5 text-info" />}
                   </button>
                 ))}
@@ -448,14 +463,14 @@ export function ClinicalNotesFeed({
                     onClick={() => {
                       setTypeF(new Set());
                       setAuthF(new Set());
+                      setStatusF(new Set());
                     }}
                     className="mt-1.5 w-full rounded-lg px-2 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:bg-hover"
                   >
-                    Clear filters
+                    Clear Filters
                   </button>
                 )}
-              </div>
-            )}
+            </AnchoredPopover>
           </div>
           <button
             onClick={onToggleMaximize}
@@ -633,12 +648,12 @@ export function ClinicalNotesFeed({
                   <div className="relative flex shrink-0 items-center gap-1 text-xs">
                     {tileStatus.text ? (
                       <button
-                        onClick={() => {
+                        onClick={(ev) => {
                           if (unread) {
                             setSeenNow((sn) => new Set(sn).add(e.id));
                             void markEntrySeen(e.id);
                           } else {
-                            toggleTrail(e.id);
+                            toggleTrail(e.id, ev.currentTarget);
                           }
                         }}
                         title={unread ? "Mark as read (recorded)" : "The status trail"}
@@ -652,7 +667,7 @@ export function ClinicalNotesFeed({
                       </button>
                     ) : (
                       <button
-                        onClick={() => toggleTrail(e.id)}
+                        onClick={(ev) => toggleTrail(e.id, ev.currentTarget)}
                         title="Handled — click for the status trail"
                         className="flex size-6 items-center justify-center rounded-md transition-colors hover:bg-hover"
                       >
@@ -660,10 +675,15 @@ export function ClinicalNotesFeed({
                       </button>
                     )}
                     {/* The STATUS TRAIL — every status this tile has worn, in
-                        order (the popover grammar Courier C3's live journey
-                        will extend with Sent/Delivered/Opened events). */}
-                    {trailOpen.has(e.id) && (
-                      <div className="absolute right-0 top-[calc(100%+6px)] z-20 w-72 rounded-xl bg-card p-3 shadow-overlay">
+                        order (Courier C3's live journey extends this). PORTALED
+                        (AnchoredPopover) — the card clips in-card popovers. */}
+                    <AnchoredPopover
+                      anchor={trail?.id === e.id ? trail.el : null}
+                      open={trail?.id === e.id}
+                      onClose={() => setTrail(null)}
+                      width={288}
+                      className="p-3"
+                    >
                         <p className="mb-1.5 text-xs font-semibold text-muted-foreground">Status Trail</p>
                         <ul className="space-y-1.5">
                           {trailFor(e).map((t, i) => (
@@ -681,8 +701,7 @@ export function ClinicalNotesFeed({
                             </li>
                           ))}
                         </ul>
-                      </div>
-                    )}
+                    </AnchoredPopover>
                   </div>
                 </div>
                 <p

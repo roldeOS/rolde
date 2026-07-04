@@ -54,6 +54,17 @@ export function ScribeTemplateForm({
                 />
               </Field>
             );
+          case "date":
+            return (
+              <Field key={i} label={p.label} htmlFor={`tp-${i}`}>
+                <Input
+                  id={`tp-${i}`}
+                  type="date"
+                  value={typeof a === "string" ? a : ""}
+                  onChange={(e) => onChange(i, e.target.value)}
+                />
+              </Field>
+            );
           case "textarea":
             return (
               <Field key={i} label={p.label} htmlFor={`tp-${i}`}>
