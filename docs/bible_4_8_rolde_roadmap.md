@@ -1363,9 +1363,23 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     payload at T2). Library v1 (curation beats volume — Jane's 50,000 user-dump expressly
     rejected): SOAP Note · GP Consultation · Lesion Review (ABCDE + urgent-pathway plan) · Toxin
     Treatment Record (batch/expiry/units/areas) · Therapy Session Note (mood scale + risk review) ·
-    Physio Initial Assessment. ▢ T2 the builder + personal templates (per-user, DB) → T3 Caretaker
-    clinic templates (Settings → Templates card) → T4 patient-facing intake/consent + payment hook
-    (W2/W4) → the Body Chart part joins from Body-Map v2.
+    Physio Initial Assessment. **✅ T2 BUILT 2026-07-13 (Roland "you are Fable, so go for Scribe
+    T2"):** the personal TEMPLATE BUILDER — a right-hand sheet over the consult room (name +
+    specialty + stack parts from the full palette incl. Body Map, reorder, inline delete-confirm);
+    `user_templates` (RLS owner-only — personal means personal, E2E-proven: a colleague's list
+    returns empty); the picker gains "My Templates" (hover-pencil edits) + "New Template…"; parts
+    sanitised SERVER-side (crafted kinds/one-option lists dropped — proven with a hostile
+    payload); and the SNAPSHOT law: every template note now carries name+parts in its payload, so
+    it renders structured FOREVER, however the template later changes (clinical records never
+    depend on a live lookup — pre-snapshot notes keep the library fallback). Autotext shortcuts =
+    the next T2 chunk. ▢ T2.5 autotext (Carebit steal) → T3 Caretaker clinic templates (Settings →
+    Templates card) **+
+    CLINIC-NAMED PIN-COLOUR LEGENDS (Roland approved 2026-07-13: the Caretaker names the clinic's
+    body-map colours — coral = anti-wrinkle, sage = filler… — the legend becomes clinic-official,
+    renders beside every map and PRINTS on the record)** → T4 patient-facing intake/consent +
+    payment hook (W2/W4; + the Phase-B steals: consent auto-triggered on booking · the curated
+    consent library · forms riding Courier's secure-link viewer) → the Body Chart part joins from
+    Body-Map v2.
     **BODY-MAP v2 GREENLIT (2026-07-04):** annotation ENGINE (zoomable multi-view canvas · numbered
     pins → structured sub-notes with batch/lot for injectables · freehand layer · PHOTO UNDERLAY) on
     professionally licensed medical artwork; per-specialty view sets (derm mole-map · aesthetics
@@ -1458,6 +1472,25 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     **UNREAD PHILOSOPHY SETTLED (Roland 2026-07-04, "its okay"):** strict TEAM-level unseen
     stands as built — the first non-author read reviews an entry for the whole clinic; the
     author's own click never counts.
+    **✅ PHASE C SWEPT 2026-07-13 (world giants; Roland "Go for Phase C"):** the finds:
+    **Jane (deep)** — AI Scribe drafts INTO a chosen chart template ("Scribe-ready" tagged
+    templates; recordings deletable, data never trains models) → the architectural marriage
+    registered for W5: **RolDe's ambient scribe fills a TEMPLATE's parts** (T1/T2's parts model IS
+    the AI's output contract — our templates were built for this without knowing it). **IntakeQ**
+    — questionnaire ANALYTICS (aggregate intake/outcome answers across clients → T4 forms feed
+    Reports). **Healthie** — patient-logged metrics + wearable sync (Apple Health/Fitbit/iHealth
+    scales auto-pull into the record) → W6 portal candidate; validates our canonical vitals keys.
+    **Practice Better** — the PROGRAMME BUILDER (multi-session packages with automated content
+    drops, task assignments, milestone tracking, sold as products; cohort/group programmes) →
+    W4/W6 candidate beside the case & funding engine. **SimplePractice** ($29 solo benchmark) →
+    W7 pricing-tier reference. **Tebra** (marketing suite) = Covenant ROI validated · **DrChrono**
+    (20+ specialty EHR) = specialty packs validated · **Noterro** = nothing we lack · **Coreplus**
+    = AU claiming (Medicare/DVA/NDIS), noted for international claiming (W7+). Phase D next on
+    Roland's word.
+    **POPOVER ANATOMY — LOCKED INTO THE URDS (Roland 2026-07-13: "Lock it in the URDS"):** the
+    PopoverHeader roster row + tone map are law (§8); the audit found every remaining floating
+    surface belongs to a DIFFERENT standardised species (SectionExplainer · ConfirmDialog · ⌘K ·
+    PatientIsland · full overlays) — nothing left uncorrected. Original design note below.
     **POPOVER ANATOMY v1 (2026-07-04 — PENDING Roland's blessing; URDS only on his word):**
     Roland: dialog boxes "need a heading of sorts and a splash of colour… I leave it to you to
     design this." Designed + shipped: shared `PopoverHeader` — squircle CardIcon + Title Case
@@ -1510,6 +1543,20 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     tablet-first, every new surface verified at 393px + 768px before "done". If the real-device
     askew persists post-deploy, ONE screenshot from the device pins the remaining offender.
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
+    **✅ FACE PORTRAIT v7 + THE EMBEDDED-MAP TRUTH (2026-07-13):** Roland's verdict on the v2
+    face — "a load of bland crap… ghastly" against a reference beauty portrait — accepted in
+    full. REBUILT as a genuine portrait (his stock reference is copyrighted — ours is RolDe's
+    own): facial-canon proportions, hair swept over the shoulders (which kills every neck/hair
+    seam BY CONSTRUCTION and keeps forehead/temples/jaw clear for injection mapping), lash
+    flicks, iris arcs, refined nose, rose lips (the colour splash), collarbone hints — iterated
+    v3→v7 against rendered screenshots, each self-critiqued before Roland sees it. AND the
+    embedded map's second truth: my "fixed" was WRONG (h-full is a PERCENTAGE — indefinite
+    against a min-h-only parent, Safari collapses it); the real fix is an EXPLICIT pixel height
+    on the svg (480px body / 400px face — definite by construction), this time PROVEN by
+    screenshot: a static harness wearing the app's own compiled CSS rendered both views full-size
+    with coloured pins. If Roland still wants more beauty: the licensed-artwork route stands
+    ready (he buys a professional aesthetic-chart vector set, Jarvis integrates — a £10–50
+    one-off; self-hosted as an embedded asset, no service).
     **✅ BODY-MAP v2.1 COMPLETED 2026-07-04 (Roland's four calls, same day):** (1) **FACE VIEW
     SHIPPED** — RolDe's OWN artwork (Roland: "gentle eyes, nose and mouth… for an aesthetic
     clinic"): a serene front-face crafted with mirrored symmetry in the Earth & Bloom language

@@ -4,6 +4,7 @@ import {
   ROLDE_TEMPLATE_LIBRARY,
   VITALS_FIELDS,
   TEMP_UNIT_INDEX,
+  sanitiseParts,
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
 import { BodyFigureArt, VIEW_DIMS } from "./BodyFigureArt";
@@ -20,15 +21,22 @@ import { cn } from "@/lib/utils";
  * for notes without structured answers.
  */
 export function StructuredNoteBody({
-  templateId,
+  template,
   answers,
   struck,
 }: {
-  templateId: string;
+  /** The payload's template meta — T2 notes carry a NAME + PARTS snapshot
+   *  (personal templates render forever, however the template later changes);
+   *  pre-snapshot notes fall back to the library by id. */
+  template: { id: string; name?: string; parts?: unknown };
   answers: TemplateAnswers;
   struck?: boolean;
 }) {
-  const t = ROLDE_TEMPLATE_LIBRARY.find((x) => x.id === templateId);
+  const snapParts = template.parts ? sanitiseParts(template.parts) : null;
+  const lib = snapParts ? undefined : ROLDE_TEMPLATE_LIBRARY.find((x) => x.id === template.id);
+  const t = snapParts
+    ? { name: template.name ?? lib?.name ?? "Template", parts: snapParts }
+    : lib;
   if (!t) return null;
 
   const rows: React.ReactNode[] = [

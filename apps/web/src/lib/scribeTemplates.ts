@@ -208,6 +208,75 @@ export function renderTemplate(t: ScribeTemplate, answers: TemplateAnswers): str
   return lines.join("\n");
 }
 
+/** T2 — sanitise a PERSONAL template's parts (client draft or server write):
+ *  whitelist kinds, coerce every field, drop malformed parts, cap the count.
+ *  The server never trusts a crafted payload; the note renderers never meet
+ *  a part shape they don't know. Returns null when nothing usable remains. */
+export const MAX_TEMPLATE_PARTS = 40;
+export function sanitiseParts(raw: unknown): TemplatePart[] | null {
+  if (!Array.isArray(raw)) return null;
+  const out: TemplatePart[] = [];
+  const str = (v: unknown, max = 120) => String(v ?? "").trim().slice(0, max);
+  const opts = (v: unknown) =>
+    Array.isArray(v)
+      ? v.map((o) => str(o, 60)).filter(Boolean).slice(0, 12)
+      : [];
+  for (const p of raw.slice(0, MAX_TEMPLATE_PARTS)) {
+    if (typeof p !== "object" || p === null) continue;
+    const q = p as Record<string, unknown>;
+    const label = str(q.label);
+    switch (q.kind) {
+      case "heading":
+        if (label) out.push({ kind: "heading", label });
+        break;
+      case "instruction": {
+        const text = str(q.text, 240);
+        if (text) out.push({ kind: "instruction", text });
+        break;
+      }
+      case "text":
+      case "textarea":
+        if (label)
+          out.push({
+            kind: q.kind,
+            label,
+            ...(str(q.placeholder, 160) ? { placeholder: str(q.placeholder, 160) } : {}),
+          });
+        break;
+      case "date":
+        if (label) out.push({ kind: "date", label });
+        break;
+      case "vitals":
+        out.push({ kind: "vitals", label: label || "Vital Signs" });
+        break;
+      case "body_map":
+        out.push({ kind: "body_map", label: label || "Body Map" });
+        break;
+      case "checkboxes":
+      case "dropdown": {
+        const options = opts(q.options);
+        if (label && options.length >= 2) out.push({ kind: q.kind, label, options });
+        break;
+      }
+      case "range": {
+        const min = Number(q.min);
+        const max = Number(q.max);
+        if (label && Number.isFinite(min) && Number.isFinite(max) && min < max)
+          out.push({
+            kind: "range",
+            label,
+            min: Math.max(-1000, Math.trunc(min)),
+            max: Math.min(1000, Math.trunc(max)),
+            ...(str(q.minLabel, 40) ? { minLabel: str(q.minLabel, 40) } : {}),
+            ...(str(q.maxLabel, 40) ? { maxLabel: str(q.maxLabel, 40) } : {}),
+          });
+        break;
+      }
+    }
+  }
+  return out.length ? out : null;
+}
+
 export function templateHasAnswers(t: ScribeTemplate, answers: TemplateAnswers): boolean {
   return t.parts.some((p, i) => {
     const a = answers[i];

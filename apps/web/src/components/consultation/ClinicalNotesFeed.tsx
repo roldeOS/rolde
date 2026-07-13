@@ -50,9 +50,12 @@ export type FeedEntry = {
   payload: {
     text?: string;
     /** Scribe Templates round-trip: the structured answers behind the text
-     *  (v2.1: a body_map PART's marks ride here like any other answer). */
+     *  (v2.1: a body_map PART's marks ride here like any other answer;
+     *  T2: name + parts SNAPSHOT so personal-template notes render forever). */
     template?: {
       id: string;
+      name?: string;
+      parts?: unknown;
       answers: Record<
         number,
         | string
@@ -905,7 +908,7 @@ export function ClinicalNotesFeed({
                     marks; everything else is honest pre-wrapped text. */}
                 {e.payload?.template ? (
                   <StructuredNoteBody
-                    templateId={e.payload.template.id}
+                    template={e.payload.template}
                     answers={e.payload.template.answers}
                     struck={struck}
                   />

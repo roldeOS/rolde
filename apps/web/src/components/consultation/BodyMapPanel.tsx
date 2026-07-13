@@ -260,14 +260,16 @@ export function BodyMapPanel({
             aspect-ratio, and the wrapper guarantees a floor height. Embedded
             (template part) keeps the floor at EVERY breakpoint — there is no
             card height to fill (the "sooo tiny" figure, Roland 2026-07-04). */}
+        {/* EMBEDDED SIZING, take two (Roland: "NO I still do not see a body
+            map"): h-full is a PERCENTAGE — against a parent whose height comes
+            only from min-h it is indefinite, and Safari resolves it to
+            nothing (the min-h floor fixed the WRAPPER, not the svg inside).
+            Embedded now sets an EXPLICIT pixel height on the svg itself —
+            definite by construction, no percentage left to resolve. */}
         <div
           className={cn(
             "flex w-full min-w-0 flex-1 justify-center overflow-hidden",
-            embedded
-              ? view === "face"
-                ? "min-h-[380px]"
-                : "min-h-[460px]"
-              : "min-h-[340px] lg:min-h-0",
+            !embedded && "min-h-[340px] lg:min-h-0",
           )}
         >
           <svg
@@ -280,7 +282,8 @@ export function BodyMapPanel({
             onPointerCancel={onPointerUp}
             style={{ aspectRatio: `${dims.w} / ${dims.h}` }}
             className={cn(
-              "h-full touch-none select-none",
+              embedded ? (view === "face" ? "h-[400px]" : "h-[480px]") : "h-full",
+              "touch-none select-none",
               tool === "pin" ? "cursor-crosshair" : tool === "draw" ? "cursor-cell" : "cursor-zoom-in",
             )}
             aria-label={view === "face" ? "Face map — tap to mark" : "Body map — tap to mark"}

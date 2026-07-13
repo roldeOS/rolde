@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -35,9 +35,15 @@ import {
   renderTemplate,
   templateHasAnswers,
   templateAnswersValid,
+  sanitiseParts,
   type ScribeTemplate,
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
+import { TemplateBuilder } from "@/components/consultation/TemplateBuilder";
+import {
+  listMyTemplates,
+  type PersonalTemplate,
+} from "@/app/(app)/patients/templateActions";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { BodyMapPanel } from "@/components/consultation/BodyMapPanel";
 import {
@@ -116,6 +122,23 @@ export function ConsultationWorkspace({
   const [answers, setAnswers] = useState<TemplateAnswers>({});
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerBtn, setPickerBtn] = useState<HTMLElement | null>(null);
+  // Scribe T2 — the caller's personal templates + the builder sheet. Loaded
+  // once, the first time the picker opens; refreshed after every builder save.
+  const [myTemplates, setMyTemplates] = useState<PersonalTemplate[]>([]);
+  const [myLoaded, setMyLoaded] = useState(false);
+  const [builder, setBuilder] = useState<{ open: boolean; editing: PersonalTemplate | null }>({
+    open: false,
+    editing: null,
+  });
+  const refreshMyTemplates = useCallback(async () => {
+    const r = await listMyTemplates();
+    if (r.ok) setMyTemplates(r.data);
+  }, []);
+  useEffect(() => {
+    if (!pickerOpen || myLoaded) return;
+    setMyLoaded(true);
+    void refreshMyTemplates();
+  }, [pickerOpen, myLoaded, refreshMyTemplates]);
   // Body-Map v2 (greenlit 2026-07-04) — a Scribe MODE (APPROVALS §4.3: the
   // one sanctioned automatic move is Scribe expanding for the map).
   const [bodyMap, setBodyMap] = useState<BodyMapData | null>(null);
@@ -209,9 +232,16 @@ export function ConsultationWorkspace({
     setStrikeOriginal(false);
     // A template-authored note restores its FORM within the edit window
     // (Roland 2026-07-04: "it did not load back the SOAP for me to edit") —
-    // the saved answers ride the payload. Unknown template id → plain text.
+    // the saved answers ride the payload. T2: the payload's parts SNAPSHOT is
+    // the first truth (personal templates + library notes alike); the library
+    // lookup remains for pre-snapshot notes. Unknown → plain text.
     const meta = e.payload?.template;
-    const t = meta ? ROLDE_TEMPLATE_LIBRARY.find((x) => x.id === meta.id) : undefined;
+    const snapParts = meta?.parts ? sanitiseParts(meta.parts) : null;
+    const t = snapParts
+      ? { id: meta!.id, name: meta!.name ?? "Template", specialty: "", parts: snapParts }
+      : meta
+        ? ROLDE_TEMPLATE_LIBRARY.find((x) => x.id === meta.id)
+        : undefined;
     if (!locked && !foreign && meta && t) {
       setTemplate(t);
       setAnswers(meta.answers ?? {});
@@ -275,14 +305,23 @@ export function ConsultationWorkspace({
         await saveBodyMap(fd);
       } else if (mode === "new") {
         fd.set("text", usingTemplate ? renderTemplate(template, answers) : draft);
+        // T2: the template's NAME + PARTS ride the payload as a snapshot — the
+        // note renders structured forever, even if the template is later
+        // edited or removed (a clinical record never depends on a live lookup).
         if (usingTemplate)
-          fd.set("template_meta", JSON.stringify({ id: template.id, answers }));
+          fd.set(
+            "template_meta",
+            JSON.stringify({ id: template.id, name: template.name, parts: template.parts, answers }),
+          );
         await saveNote(fd);
       } else if (mode === "edit") {
         fd.set("entry_id", editTarget!.id);
         fd.set("text", usingTemplate ? renderTemplate(template, answers) : draft);
         if (usingTemplate)
-          fd.set("template_meta", JSON.stringify({ id: template.id, answers }));
+          fd.set(
+            "template_meta",
+            JSON.stringify({ id: template.id, name: template.name, parts: template.parts, answers }),
+          );
         await editNote(fd);
       } else {
         // Amendment (own, locked) may strike the original; an ADDENDUM never
@@ -493,6 +532,54 @@ export function ConsultationWorkspace({
                             </div>
                           ),
                         )}
+                        {/* T2 — the caller's OWN templates, then the builder. */}
+                        {myTemplates.length > 0 && (
+                          <p className="px-2.5 pb-0.5 pt-2 text-xs font-semibold tracking-wide text-foreground uppercase">
+                            My Templates
+                          </p>
+                        )}
+                        {myTemplates.map((t) => (
+                          <div
+                            key={t.id}
+                            className="group flex w-full items-center rounded-lg transition-colors hover:bg-hover"
+                          >
+                            <button
+                              onClick={() => {
+                                setTemplate(t);
+                                setAnswers(prefillFor(t));
+                                setDraft("");
+                                setPickerOpen(false);
+                              }}
+                              className={cn(
+                                "min-w-0 flex-1 truncate px-2.5 py-1.5 text-left text-sm",
+                                template?.id === t.id
+                                  ? "font-medium text-foreground"
+                                  : "text-muted-foreground",
+                              )}
+                            >
+                              {t.name}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setBuilder({ open: true, editing: t });
+                                setPickerOpen(false);
+                              }}
+                              title="Edit This Template"
+                              className="mr-1 hidden size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground group-hover:flex"
+                            >
+                              <Pencil className="size-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => {
+                            setBuilder({ open: true, editing: null });
+                            setPickerOpen(false);
+                          }}
+                          className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-border/60 px-2.5 pt-2 pb-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                        >
+                          <Plus className="size-3.5" /> New Template…
+                        </button>
                     </AnchoredPopover>
                   </div>
                 )}
@@ -689,6 +776,38 @@ export function ConsultationWorkspace({
           )}
         </div>
       </div>
+      {/* Scribe T2 — the personal template builder (portaled sheet). A save
+          refreshes the picker; if the ACTIVE template was edited, the form
+          picks up its new shape (answers reset — honest, never misaligned). */}
+      {builder.open && (
+        <TemplateBuilder
+          editing={builder.editing}
+          onClose={() => setBuilder({ open: false, editing: null })}
+          onSaved={async (id) => {
+            setBuilder({ open: false, editing: null });
+            const r = await listMyTemplates();
+            if (r.ok) {
+              setMyTemplates(r.data);
+              if (template && template.id === id) {
+                const fresh = r.data.find((t) => t.id === id);
+                if (fresh) {
+                  setTemplate(fresh);
+                  setAnswers(prefillFor(fresh));
+                }
+              }
+            }
+            flashSaved("RolDe saved your template.");
+          }}
+          onDeleted={(id) => {
+            setBuilder({ open: false, editing: null });
+            setMyTemplates((ts) => ts.filter((t) => t.id !== id));
+            if (template?.id === id) {
+              setTemplate(null);
+              setAnswers({});
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
