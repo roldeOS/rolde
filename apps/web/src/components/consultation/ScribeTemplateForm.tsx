@@ -26,13 +26,19 @@ export function ScribeTemplateForm({
   answers,
   onChange,
   tempUnit = "c",
+  expandText,
 }: {
   template: ScribeTemplate;
   answers: TemplateAnswers;
   onChange: (index: number, value: string | string[] | number | BodyMapData) => void;
   /** The clinic's default temperature unit (US → °F); flippable per note. */
   tempUnit?: TempUnit;
+  /** T2.5 autotext — the workspace's expander: reads the element's value +
+   *  caret, applies ".shortcut " expansions, restores the caret. */
+  expandText?: (el: HTMLTextAreaElement | HTMLInputElement, apply: (v: string) => void) => void;
 }) {
+  // Named writeText — the vitals part has its own local `write` for arrays.
+  const writeText = expandText ?? ((el: HTMLTextAreaElement | HTMLInputElement, apply: (v: string) => void) => apply(el.value));
   return (
     <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
       {template.parts.map((p, i) => {
@@ -60,7 +66,7 @@ export function ScribeTemplateForm({
                   id={`tp-${i}`}
                   value={typeof a === "string" ? a : ""}
                   placeholder={p.placeholder}
-                  onChange={(e) => onChange(i, e.target.value)}
+                  onChange={(e) => writeText(e.target, (v) => onChange(i, v))}
                 />
               </Field>
             );
@@ -160,7 +166,7 @@ export function ScribeTemplateForm({
                   value={typeof a === "string" ? a : ""}
                   placeholder={p.placeholder}
                   rows={3}
-                  onChange={(e) => onChange(i, e.target.value)}
+                  onChange={(e) => writeText(e.target, (v) => onChange(i, v))}
                   className="w-full resize-y rounded-lg bg-muted/40 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:bg-muted/60"
                 />
               </Field>

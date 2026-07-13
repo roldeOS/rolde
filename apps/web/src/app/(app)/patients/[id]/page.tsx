@@ -199,6 +199,7 @@ export default async function ConsultationPage({
       currentUserId={currentUserId}
       reads={reads ?? []}
       dispatches={dispatches ?? []}
+      canManageTemplates={ctx?.membership?.role === "caretaker"}
       modules={modules}
     />
   );

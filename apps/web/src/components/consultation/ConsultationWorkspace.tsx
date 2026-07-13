@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus } from "lucide-react";
+import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -41,9 +41,13 @@ import {
 } from "@/lib/scribeTemplates";
 import { TemplateBuilder } from "@/components/consultation/TemplateBuilder";
 import {
-  listMyTemplates,
-  type PersonalTemplate,
+  listClinicTemplates,
+  listMyShortcuts,
+  type ClinicTemplate,
+  type AutotextShortcut,
 } from "@/app/(app)/patients/templateActions";
+import { ShortcutsManager } from "@/components/consultation/ShortcutsManager";
+import { expandAutotext } from "@/lib/autotext";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { BodyMapPanel } from "@/components/consultation/BodyMapPanel";
 import {
@@ -87,6 +91,7 @@ export function ConsultationWorkspace({
   currentUserId,
   reads,
   dispatches = [],
+  canManageTemplates = false,
   modules = ALL_MODULES_ON,
 }: {
   patient: { id: string; firstName: string };
@@ -99,6 +104,9 @@ export function ConsultationWorkspace({
   reads: { entry_id: string; user_id: string; read_at: string }[];
   /** Courier C3 — each letter's dispatch journey, for the Status Trail. */
   dispatches?: CourierDispatchTrail[];
+  /** Roland's governance ruling (2026-07-13): only the Caretaker designs
+   *  clinic templates — gates the builder's entry points (server re-checks). */
+  canManageTemplates?: boolean;
   /** Clinical Modules (W1.1, APPROVALS §4.2) — the CLINIC's switches; the grid
    *  reflows 4/3/2. Sits OVER the user's Layouts card toggles. */
   modules?: ClinicalModules;
@@ -122,23 +130,45 @@ export function ConsultationWorkspace({
   const [answers, setAnswers] = useState<TemplateAnswers>({});
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerBtn, setPickerBtn] = useState<HTMLElement | null>(null);
-  // Scribe T2 — the caller's personal templates + the builder sheet. Loaded
-  // once, the first time the picker opens; refreshed after every builder save.
-  const [myTemplates, setMyTemplates] = useState<PersonalTemplate[]>([]);
-  const [myLoaded, setMyLoaded] = useState(false);
-  const [builder, setBuilder] = useState<{ open: boolean; editing: PersonalTemplate | null }>({
+  // Scribe T2 — the CLINIC's templates (Caretaker-designed, team-filled) +
+  // the builder sheet. Loaded the first time the picker opens; refreshed
+  // after every builder save.
+  const [clinicTemplates, setClinicTemplates] = useState<ClinicTemplate[]>([]);
+  const [clinicLoaded, setClinicLoaded] = useState(false);
+  const [builder, setBuilder] = useState<{ open: boolean; editing: ClinicTemplate | null }>({
     open: false,
     editing: null,
   });
-  const refreshMyTemplates = useCallback(async () => {
-    const r = await listMyTemplates();
-    if (r.ok) setMyTemplates(r.data);
-  }, []);
   useEffect(() => {
-    if (!pickerOpen || myLoaded) return;
-    setMyLoaded(true);
-    void refreshMyTemplates();
-  }, [pickerOpen, myLoaded, refreshMyTemplates]);
+    if (!pickerOpen || clinicLoaded) return;
+    setClinicLoaded(true);
+    void listClinicTemplates().then((r) => {
+      if (r.ok) setClinicTemplates(r.data);
+    });
+  }, [pickerOpen, clinicLoaded]);
+  // Scribe T2.5 — the writer's PERSONAL autotext (".sn" + space → their
+  // sentence). Loaded once on mount; the manager hands back fresh lists.
+  const [shortcuts, setShortcuts] = useState<AutotextShortcut[]>([]);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  useEffect(() => {
+    void listMyShortcuts().then((r) => {
+      if (r.ok) setShortcuts(r.data);
+    });
+  }, []);
+  /** Expansion for any Scribe-owned text surface: returns the next value and
+   *  restores the caret after React re-renders. */
+  const withAutotext = useCallback(
+    (el: HTMLTextAreaElement | HTMLInputElement, apply: (v: string) => void) => {
+      const hit = expandAutotext(el.value, el.selectionStart ?? el.value.length, shortcuts);
+      if (!hit) {
+        apply(el.value);
+        return;
+      }
+      apply(hit.value);
+      requestAnimationFrame(() => el.setSelectionRange(hit.caret, hit.caret));
+    },
+    [shortcuts],
+  );
   // Body-Map v2 (greenlit 2026-07-04) — a Scribe MODE (APPROVALS §4.3: the
   // one sanctioned automatic move is Scribe expanding for the map).
   const [bodyMap, setBodyMap] = useState<BodyMapData | null>(null);
@@ -532,13 +562,14 @@ export function ConsultationWorkspace({
                             </div>
                           ),
                         )}
-                        {/* T2 — the caller's OWN templates, then the builder. */}
-                        {myTemplates.length > 0 && (
+                        {/* T2 — the CLINIC's templates (Caretaker-designed,
+                            team-filled); the builder is the Caretaker's. */}
+                        {clinicTemplates.length > 0 && (
                           <p className="px-2.5 pb-0.5 pt-2 text-xs font-semibold tracking-wide text-foreground uppercase">
-                            My Templates
+                            Clinic Templates
                           </p>
                         )}
-                        {myTemplates.map((t) => (
+                        {clinicTemplates.map((t) => (
                           <div
                             key={t.id}
                             className="group flex w-full items-center rounded-lg transition-colors hover:bg-hover"
@@ -559,26 +590,42 @@ export function ConsultationWorkspace({
                             >
                               {t.name}
                             </button>
-                            <button
-                              onClick={() => {
-                                setBuilder({ open: true, editing: t });
-                                setPickerOpen(false);
-                              }}
-                              title="Edit This Template"
-                              className="mr-1 hidden size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground group-hover:flex"
-                            >
-                              <Pencil className="size-3.5" />
-                            </button>
+                            {canManageTemplates && (
+                              <button
+                                onClick={() => {
+                                  setBuilder({ open: true, editing: t });
+                                  setPickerOpen(false);
+                                }}
+                                title="Edit This Template"
+                                className="mr-1 hidden size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground group-hover:flex"
+                              >
+                                <Pencil className="size-3.5" />
+                              </button>
+                            )}
                           </div>
                         ))}
+                        {canManageTemplates && (
+                          <button
+                            onClick={() => {
+                              setBuilder({ open: true, editing: null });
+                              setPickerOpen(false);
+                            }}
+                            className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-border/60 px-2.5 pt-2 pb-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                          >
+                            <Plus className="size-3.5" /> New Template…
+                          </button>
+                        )}
                         <button
                           onClick={() => {
-                            setBuilder({ open: true, editing: null });
+                            setShortcutsOpen(true);
                             setPickerOpen(false);
                           }}
-                          className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-border/60 px-2.5 pt-2 pb-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                          className={cn(
+                            "flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-hover hover:text-foreground",
+                            !canManageTemplates && "mt-1 border-t border-border/60 pt-2",
+                          )}
                         >
-                          <Plus className="size-3.5" /> New Template…
+                          <Zap className="size-3.5" /> My Shortcuts…
                         </button>
                     </AnchoredPopover>
                   </div>
@@ -671,12 +718,13 @@ export function ConsultationWorkspace({
                     template={template}
                     answers={answers}
                     onChange={(i, v) => setAnswers((a) => ({ ...a, [i]: v }))}
+                    expandText={withAutotext}
                     tempUnit={defaultTempUnit(topbarPatient?.clinicCountry)}
                   />
                 ) : (
                 <textarea
                   value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
+                  onChange={(e) => withAutotext(e.target, setDraft)}
                   placeholder={
                     mode === "amend"
                       ? "Amendment…"
@@ -779,15 +827,21 @@ export function ConsultationWorkspace({
       {/* Scribe T2 — the personal template builder (portaled sheet). A save
           refreshes the picker; if the ACTIVE template was edited, the form
           picks up its new shape (answers reset — honest, never misaligned). */}
+      {shortcutsOpen && (
+        <ShortcutsManager
+          onClose={() => setShortcutsOpen(false)}
+          onChanged={setShortcuts}
+        />
+      )}
       {builder.open && (
         <TemplateBuilder
           editing={builder.editing}
           onClose={() => setBuilder({ open: false, editing: null })}
           onSaved={async (id) => {
             setBuilder({ open: false, editing: null });
-            const r = await listMyTemplates();
+            const r = await listClinicTemplates();
             if (r.ok) {
-              setMyTemplates(r.data);
+              setClinicTemplates(r.data);
               if (template && template.id === id) {
                 const fresh = r.data.find((t) => t.id === id);
                 if (fresh) {
@@ -800,7 +854,7 @@ export function ConsultationWorkspace({
           }}
           onDeleted={(id) => {
             setBuilder({ open: false, editing: null });
-            setMyTemplates((ts) => ts.filter((t) => t.id !== id));
+            setClinicTemplates((ts) => ts.filter((t) => t.id !== id));
             if (template?.id === id) {
               setTemplate(null);
               setAnswers({});

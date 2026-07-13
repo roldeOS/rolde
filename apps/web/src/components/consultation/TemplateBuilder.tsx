@@ -28,17 +28,19 @@ import {
   type TemplatePart,
 } from "@/lib/scribeTemplates";
 import {
-  saveMyTemplate,
-  deleteMyTemplate,
-  type PersonalTemplate,
+  saveClinicTemplate,
+  deleteClinicTemplate,
+  type ClinicTemplate,
 } from "@/app/(app)/patients/templateActions";
 
 /**
- * Scribe T2 — the personal TEMPLATE BUILDER (Roland "go for Scribe T2",
- * 2026-07-13). A right-hand sheet over the consult room: name it, stack parts
- * from the same palette the curated library uses (Body Map included), reorder,
- * save — the picker's "My Templates" section carries it from then on. Personal
- * means personal: only its author sees it (clinic-official arrives at T3).
+ * Scribe T2 — the CLINIC TEMPLATE BUILDER (governance rework, Roland
+ * 2026-07-13: "Only Caretakers should be able to design and add templates").
+ * A right-hand sheet over the consult room: the CARETAKER names it, stacks
+ * parts from the same palette the curated library uses (Body Map included),
+ * reorders, saves — and the whole team's picker carries it under "Clinic
+ * Templates" from then on. Documentation structure is a clinical-safety
+ * artefact: one hand designs it, every hand fills it.
  */
 type DraftPart = {
   kind: TemplatePart["kind"];
@@ -117,8 +119,8 @@ export function TemplateBuilder({
   onSaved,
   onDeleted,
 }: {
-  /** null = building a new template; a PersonalTemplate = editing it. */
-  editing: PersonalTemplate | null;
+  /** null = building a new template; a ClinicTemplate = editing it. */
+  editing: ClinicTemplate | null;
   onClose: () => void;
   onSaved: (id: string) => void;
   onDeleted: (id: string) => void;
@@ -162,10 +164,10 @@ export function TemplateBuilder({
     if (!clean) return setError("Add at least one complete part — labels filled, choices given.");
     setPending(true);
     setError(null);
-    const r = await saveMyTemplate({
+    const r = await saveClinicTemplate({
       id: editing?.id,
       name: name.trim(),
-      specialty: specialty.trim() || "Personal",
+      specialty: specialty.trim() || "Clinic",
       parts: clean,
     });
     setPending(false);
@@ -176,7 +178,7 @@ export function TemplateBuilder({
   async function remove() {
     if (!editing || pending) return;
     setPending(true);
-    const r = await deleteMyTemplate(editing.id);
+    const r = await deleteClinicTemplate(editing.id);
     setPending(false);
     if (r.ok) onDeleted(editing.id);
     else setError(r.error);
@@ -198,7 +200,7 @@ export function TemplateBuilder({
               {editing ? "Edit Template" : "New Template"}
             </p>
             <p className="truncate text-xs leading-tight text-muted-foreground">
-              Yours alone — clinic-wide templates arrive with the Caretaker builder
+              Clinic-official — every team member fills what you design
             </p>
           </div>
           <button
@@ -224,7 +226,7 @@ export function TemplateBuilder({
               <Input
                 id="tb-spec"
                 value={specialty}
-                placeholder="Personal"
+                placeholder="Clinic"
                 onChange={(e) => setSpecialty(e.target.value)}
               />
             </Field>

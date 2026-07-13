@@ -1738,7 +1738,7 @@ export type Database = {
           },
         ]
       }
-      user_templates: {
+      clinic_templates: {
         Row: {
           created_at: string
           deleted_at: string | null
@@ -1749,7 +1749,7 @@ export type Database = {
           specialty: string
           tenant_id: string
           updated_at: string
-          user_id: string
+          created_by: string
         }
         Insert: {
           created_at?: string
@@ -1761,7 +1761,7 @@ export type Database = {
           specialty?: string
           tenant_id: string
           updated_at?: string
-          user_id: string
+          created_by: string
         }
         Update: {
           created_at?: string
@@ -1773,11 +1773,52 @@ export type Database = {
           specialty?: string
           tenant_id?: string
           updated_at?: string
+          created_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_autotext: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          expansion: string
+          id: string
+          shortcut: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          expansion: string
+          id?: string
+          shortcut: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          expansion?: string
+          id?: string
+          shortcut?: string
+          tenant_id?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "user_templates_tenant_id_fkey"
+            foreignKeyName: "user_autotext_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"

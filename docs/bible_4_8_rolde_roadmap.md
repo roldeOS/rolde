@@ -1372,7 +1372,26 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     payload); and the SNAPSHOT law: every template note now carries name+parts in its payload, so
     it renders structured FOREVER, however the template later changes (clinical records never
     depend on a live lookup — pre-snapshot notes keep the library fallback). Autotext shortcuts =
-    the next T2 chunk. ▢ T2.5 autotext (Carebit steal) → T3 Caretaker clinic templates (Settings →
+    the next T2 chunk.
+    **✅ T2 GOVERNANCE REWORK (Roland 2026-07-13: "Only Caretakers should be able to design and
+    add templates… Do you agree with me?" — Jarvis agrees; documentation structure is a
+    clinical-safety artefact, the same governance NHS-grade systems apply to their template
+    libraries):** "personal templates" RETIRED before any real use; deep rename user_templates →
+    clinic_templates (user_id → created_by, policies rebuilt: TEAM-read + Caretaker-write via
+    is_caretaker_of, server actions role-gated too). The Caretaker designs, the whole team fills;
+    the picker section reads "Clinic Templates", the builder's entry points render only for the
+    Caretaker. E2E-proven: clinician create → "Clinic templates are designed by the Caretaker." ·
+    caretaker create ✓ · clinician READS the clinic library ✓. Roland's own "Roland's Test"
+    template (built live in prod!) migrated cleanly as a clinic template.
+    **✅ T2.5 AUTOTEXT SHIPPED 2026-07-13 (the Carebit steal):** PERSONAL typing expansions —
+    ".sn" + space becomes the writer's own saved sentence, inline, caret restored; personal BY
+    DESIGN (unlike templates: a shortcut is a typing aid whose text lands under the author's own
+    eyes and signature, so governance rides the note, not the snippet). user_autotext (owner-only
+    RLS + per-user unique shortcut), "My Shortcuts…" manager (teal sheet, all roles) at the
+    picker's foot, expansion live in Scribe's draft AND every template text/textarea. Engine
+    unit-tested six ways (mid-string · newline · bracket · dot-inside-a-word and unknown-shortcut
+    must-NOT-fire) + E2E: clinician saves ".sn" ✓, caretaker's list stays empty (isolation) ✓.
+    ▢ T3 Caretaker clinic templates (Settings →
     Templates card) **+
     CLINIC-NAMED PIN-COLOUR LEGENDS (Roland approved 2026-07-13: the Caretaker names the clinic's
     body-map colours — coral = anti-wrinkle, sage = filler… — the legend becomes clinic-official,
@@ -1543,6 +1562,14 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     tablet-first, every new surface verified at 393px + 768px before "done". If the real-device
     askew persists post-deploy, ONE screenshot from the device pins the remaining offender.
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
+    **BODY-MAP ARTWORK HANDOVER AGREED (Roland 2026-07-13):** Roland is AI-generating his OWN
+    rights-owned figure images (face close-up man+woman · full body man+woman; posterior welcome).
+    Spec given: PNG (transparent background preferred), ~2000px+ long side — face ≈1940×2400,
+    body ≈1940×4400 (exact ratio flexible; the viewBox adapts per asset), front-on anatomical
+    pose, forehead/temples/jaw unobstructed, no text/watermarks, soft neutral palette (pins are
+    coral/amber/sage/lavender/sky). Integration when files land: image-underlay figures + a
+    Man/Woman toggle beside Body/Face (BodyMapData gains `figure`), assets served self-hosted
+    from /public; the v7 SVG portrait + PD silhouette stay as the fallback set.
     **✅ FACE PORTRAIT v7 + THE EMBEDDED-MAP TRUTH (2026-07-13):** Roland's verdict on the v2
     face — "a load of bland crap… ghastly" against a reference beauty portrait — accepted in
     full. REBUILT as a genuine portrait (his stock reference is copyrighted — ours is RolDe's
