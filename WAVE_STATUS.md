@@ -116,4 +116,4 @@
 
 ---
 
-*Last updated: 2026-07-21 late (T4 SHIPPED + AUDITED — patient-facing forms on Courier secure links: envelope-first viewer · frozen snapshots · hostile-proof sanitiser [audit found + closed the vitals-plausibility gap] · form_response tiles "The Patient" · Send A Form sheet; JSX space-eating bug found by audit + fixed as a class in both viewers; palette 5→8 [plum/teal/cocoa]; single-letter shortcuts [digit-leading banned — dose safety]; Sarah's demo email → Roland's inbox with a live form to fill; next: T4.2 [consent library · booking-trigger · questionnaire analytics] → Phase D on Roland's word.)*
+*Last updated: 2026-07-21 night (Compose ▾ split SHIPPED [modes vs inserts — Roland's pick]; dead-Safari-link ROOT-CAUSED + fixed as a class [dev emails now carry prod links; fresh form email in Roland's inbox, link verified live]; artwork masters out of git; TWO memory laws written [clinicians-are-not-coders · email-links-need-prod-base-url]; Calm Formatting proposals awaiting Roland; next: his formatting pick → T4.2 → Phase D.)*

@@ -1562,6 +1562,22 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     tablet-first, every new surface verified at 393px + 768px before "done". If the real-device
     askew persists post-deploy, ONE screenshot from the device pins the remaining offender.
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
+    **✅ COMPOSE SPLIT + THE LOCALHOST-LINK FIX + MASTERS OUT OF GIT (2026-07-21, Roland's
+    round):** (1) **Scribe de-cluttered by NATURE (Roland approved "split by nature")**: ONE
+    "Compose ▾" control (Blank Note · Body Map · the template library · Clinic Templates · New
+    Template [Caretaker] · My Shortcuts… · Send A Form…) + the lone ⚡ Snippets chip — Template
+    and Body Map are MODES, Snippets is an INSERT; the standalone Body Map chip retired; every
+    mode switch exits the others cleanly. (2) **THE DEAD SAFARI PAGE (Roland's find)**: his form
+    email carried http://localhost:3000 — dev-server sends fell back to localhost in siteUrl().
+    Fixed as a CLASS: NEXT_PUBLIC_SITE_URL=https://rolde-web.vercel.app in .env.local (shared DB
+    → prod serves every token); FRESH email re-sent and the rendered_html link verified
+    https://rolde-web… answering live. Memory law written: grep the rendered link host before
+    claiming an email works. (3) Artwork MASTERS untracked from git (/assets ignored; files safe
+    on disk; one historical copy remains in old commits — a history rewrite needs Roland's word).
+    (4) **MEMORY LAW (Roland): "clinicians are not coders"** — markdown/syntax is never a
+    clinician-facing feature; formatting must be baked-in behaviour or buttons. Markdown-lite
+    proposal WITHDRAWN accordingly; baked-in "Calm Formatting" proposals presented (auto-lists ·
+    display-time smart rendering · select-to-emphasise), awaiting Roland's pick.
     **✅ T4 SHIPPED & AUDITED (Roland "Go for T4", 2026-07-21) — PATIENT-FACING FORMS:** a
     Patient-Facing template travels to the patient exactly as a letter does — a PHI-minimal
     RolDe-shell email ('courier-form' platform template, clinic-overridable) carrying a Courier
