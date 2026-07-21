@@ -158,6 +158,45 @@ export async function uploadPatientPhoto(
   };
 }
 
+/** Attach staged photos (feed_entry_id null) to the note that was just saved —
+ *  they become part of that Clinical Note (Roland 2026-07-22). */
+export async function attachPhotosToEntry(
+  photoIds: string[],
+  entryId: string,
+  patientId: string,
+): Promise<{ ok: boolean }> {
+  if (!photoIds.length) return { ok: true };
+  const ctx = await getSessionContext();
+  if (!ctx?.membership?.tenant_id) return { ok: false };
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("patient_photo")
+    .update({ feed_entry_id: entryId })
+    .in("id", photoIds)
+    .is("feed_entry_id", null);
+  if (error) return { ok: false };
+  revalidatePath(`/patients/${patientId}`);
+  return { ok: true };
+}
+
+/** Bulk soft-delete (used when a draft with staged photos is discarded). */
+export async function discardStagedPhotos(
+  photoIds: string[],
+  patientId: string,
+): Promise<{ ok: boolean }> {
+  if (!photoIds.length) return { ok: true };
+  const ctx = await getSessionContext();
+  if (!ctx?.membership?.tenant_id) return { ok: false };
+  const supabase = await createClient();
+  await supabase
+    .from("patient_photo")
+    .update({ deleted_at: new Date().toISOString() })
+    .in("id", photoIds)
+    .is("feed_entry_id", null);
+  revalidatePath(`/patients/${patientId}`);
+  return { ok: true };
+}
+
 export async function removePatientPhoto(
   id: string,
   patientId: string,

@@ -20,11 +20,28 @@ const MASTER_Q = 0.82;
 const THUMB_Q = 0.8;
 const MIME = "image/jpeg";
 
+const isHeic = (file: File) =>
+  /hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
+
 async function decode(file: File): Promise<ImageBitmap> {
   try {
-    // imageOrientation:"from-image" bakes in EXIF rotation so the pixels are upright.
+    // imageOrientation:"from-image" bakes in EXIF rotation so the pixels are
+    // upright. Safari/iPad decode HEIC natively here.
     return await createImageBitmap(file, { imageOrientation: "from-image" });
   } catch {
+    // Browsers that can't decode HEIC (Chrome/Firefox) — transcode to JPEG with
+    // a bundled decoder loaded ON DEMAND (dynamic import, self-hosted WASM; it
+    // never touches the main bundle or any third party).
+    if (isHeic(file)) {
+      try {
+        const heic2any = (await import("heic2any")).default;
+        const out = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.92 });
+        const jpeg = Array.isArray(out) ? out[0] : out;
+        return await createImageBitmap(jpeg as Blob, { imageOrientation: "from-image" });
+      } catch {
+        throw new Error("Couldn’t read that iPhone photo — please try again.");
+      }
+    }
     throw new Error("This image format can’t be read here — please use a JPEG or PNG.");
   }
 }

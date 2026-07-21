@@ -105,12 +105,14 @@ export async function createPatient(formData: FormData) {
  * Save a clinical note into a patient's feed. The clinic comes from the caller's
  * membership; RLS independently enforces they can only write into their own clinic.
  */
-export async function saveNote(formData: FormData) {
+export async function saveNote(formData: FormData): Promise<{ id: string } | undefined> {
   const patientId = String(formData.get("patient_id") ?? "");
   // CRLF from browser form posts normalises to LF at the door (the
   // invisible-\r lesson, 2026-07-21) — stored records are clean text.
   const text = String(formData.get("text") ?? "").replace(/\r\n?/g, "\n").trim();
-  if (!patientId || !text) return;
+  // Photo M2 — a photos-only note is valid (empty text OK when photos attach).
+  const photoCount = Number(formData.get("photo_count")) || 0;
+  if (!patientId || (!text && photoCount === 0)) return undefined;
 
   const ctx = await getSessionContext();
   const tenantId = ctx?.membership?.tenant_id;
@@ -131,18 +133,24 @@ export async function saveNote(formData: FormData) {
   const marks = template === undefined ? parseMarks(formData, text.length) : undefined;
 
   const supabase = await createClient();
-  const { error } = await supabase.from("patient_feed_entries").insert({
-    tenant_id: tenantId,
-    patient_id: patientId,
-    entry_type: "clinical_note",
-    payload: {
-      text,
-      word_count: text.split(/\s+/).filter(Boolean).length,
-      ...(template !== undefined ? { template } : {}),
-      ...(marks !== undefined ? { format_marks: marks } : {}),
-    },
-    created_by: ctx?.user.id ?? null,
-  });
+  // .select().single() is safe here (unlike audit tables): the feed is
+  // team-readable, so the author can read the row they just wrote.
+  const { data: row, error } = await supabase
+    .from("patient_feed_entries")
+    .insert({
+      tenant_id: tenantId,
+      patient_id: patientId,
+      entry_type: "clinical_note",
+      payload: {
+        text,
+        word_count: text.split(/\s+/).filter(Boolean).length,
+        ...(template !== undefined ? { template } : {}),
+        ...(marks !== undefined ? { format_marks: marks } : {}),
+      },
+      created_by: ctx?.user.id ?? null,
+    })
+    .select("id")
+    .single();
   if (error) throw new Error(error.message);
 
   // Activity Log: a clinical note was written. Summary is content-free metadata —
@@ -157,6 +165,7 @@ export async function saveNote(formData: FormData) {
   });
 
   revalidatePath(`/patients/${patientId}`);
+  return row ? { id: row.id } : undefined;
 }
 
 const EDIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour (Roland 2026-06-10)

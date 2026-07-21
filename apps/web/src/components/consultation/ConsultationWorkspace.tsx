@@ -53,7 +53,13 @@ import { ShortcutsManager } from "@/components/consultation/ShortcutsManager";
 import { FormSendSheet } from "@/components/consultation/FormSendSheet";
 import { CourierMenu, type UnsentLetter } from "@/components/consultation/CourierMenu";
 import { CourierSendSheet } from "@/components/consultation/CourierSendSheet";
-import { PhotoStrip } from "@/components/consultation/PhotoStrip";
+import { PhotoCaptureButton } from "@/components/consultation/PhotoCaptureButton";
+import { type NotePhoto } from "@/components/consultation/NotePhotoGallery";
+import {
+  attachPhotosToEntry,
+  discardStagedPhotos,
+  type PatientPhoto,
+} from "@/app/(app)/patients/photoActions";
 import { formatDay } from "@/lib/dates";
 import { expandAutotext } from "@/lib/autotext";
 import { continueListOnEnter } from "@/lib/calmFormatting";
@@ -121,6 +127,7 @@ export function ConsultationWorkspace({
   currentUserId,
   reads,
   dispatches = [],
+  photosByEntry = {},
   canManageTemplates = false,
   modules = ALL_MODULES_ON,
 }: {
@@ -134,6 +141,8 @@ export function ConsultationWorkspace({
   reads: { entry_id: string; user_id: string; read_at: string }[];
   /** Courier C3 — each letter's dispatch journey, for the Status Trail. */
   dispatches?: CourierDispatchTrail[];
+  /** Photo M2 — each note's attached before/after photos (signed URLs). */
+  photosByEntry?: Record<string, NotePhoto[]>;
   /** Roland's governance ruling (2026-07-13): only the Caretaker designs
    *  clinic templates — gates the builder's entry points (server re-checks). */
   canManageTemplates?: boolean;
@@ -158,6 +167,9 @@ export function ConsultationWorkspace({
   // DOM — bump this on discard/after-save and it's in the editor's docKey, so
   // the editor remounts empty (Roland 2026-07-21: "Scribe still held the text").
   const [editorNonce, setEditorNonce] = useState(0);
+  // Photo M2 — photos captured for the note being written; attached to the
+  // Clinical Note on Save, discarded (soft-deleted) if the draft is dropped.
+  const [stagedPhotos, setStagedPhotos] = useState<PatientPhoto[]>([]);
   // RolDe Scribe Templates T1 (GREENLIT 2026-07-04): pick from the curated
   // library → Scribe MORPHS into the structured form in place; Save renders
   // the answers into a clean readable note. New notes only (edit/amend stay
@@ -424,9 +436,12 @@ export function ConsultationWorkspace({
     }
   }
 
-  function discard() {
+  // Clear the composer WITHOUT touching staged photos (used after a save, when
+  // the photos have already been attached to the new note).
+  function resetComposer() {
     setDraft("");
     setDraftMarks([]);
+    setStagedPhotos([]);
     setEditTarget(null);
     setStrikeOriginal(false);
     setTemplate(null);
@@ -434,6 +449,13 @@ export function ConsultationWorkspace({
     setBodyMap(null);
     setLeftMode("split");
     setEditorNonce((n) => n + 1); // remount the uncontrolled editor empty
+  }
+
+  function discard() {
+    // Photos staged for a DROPPED draft are soft-deleted (never orphaned).
+    if (stagedPhotos.length)
+      void discardStagedPhotos(stagedPhotos.map((p) => p.id), patient.id);
+    resetComposer();
   }
 
   const templateDirty = !!template && templateHasAnswers(template, answers);
@@ -466,7 +488,8 @@ export function ConsultationWorkspace({
         ? !mapDirty
         : usingTemplate
           ? !templateDirty || !templateValid
-          : !draft.trim()) ||
+          : // a free note saves with text OR with staged photos (a photo note)
+            !draft.trim() && stagedPhotos.length === 0) ||
       pending
     )
       return;
@@ -490,7 +513,12 @@ export function ConsultationWorkspace({
           );
         // B6 — a free note's inline formatting (sidecar marks over the text).
         else if (draftMarks.length) fd.set("marks", JSON.stringify(draftMarks));
-        await saveNote(fd);
+        // Photo M2 — let a photos-only note save (empty text is fine) and
+        // attach the staged photos to it once it's created.
+        fd.set("photo_count", String(stagedPhotos.length));
+        const res = await saveNote(fd);
+        if (res?.id && stagedPhotos.length)
+          await attachPhotosToEntry(stagedPhotos.map((p) => p.id), res.id, patient.id);
       } else if (mode === "edit") {
         fd.set("entry_id", editTarget!.id);
         fd.set("text", usingTemplate ? renderTemplate(template, answers, legend) : draft);
@@ -516,7 +544,8 @@ export function ConsultationWorkspace({
         if (draftMarks.length) fd.set("marks", JSON.stringify(draftMarks));
         await amendNote(fd);
       }
-      discard();
+      // Photos are already attached above — reset WITHOUT soft-deleting them.
+      resetComposer();
       flashSaved(`RolDe saved this to ${who}’s record.`);
     } finally {
       setPending(false);
@@ -551,7 +580,9 @@ export function ConsultationWorkspace({
   // Conversational bottom save bar (Roland 2026-06-11). It SPEAKS — "RolDe has
   // a note ready for Sarah's record" → "RolDe saved this to Sarah's record."
   usePageActionBar({
-    dirty: (bodyMap ? mapDirty : template ? templateDirty : !!draft.trim()) && !pending,
+    dirty:
+      (bodyMap ? mapDirty : template ? templateDirty : !!draft.trim() || stagedPhotos.length > 0) &&
+      !pending,
     saving: pending,
     message:
       mode === "edit"
@@ -567,7 +598,7 @@ export function ConsultationWorkspace({
               : `RolDe has a note ready for ${who}’s record.`,
     saveLabel,
     onSave: submit,
-    onDiscard: editTarget || draft ? discard : undefined,
+    onDiscard: editTarget || draft || stagedPhotos.length ? discard : undefined,
     // Scribe owns its in-card Save/Discard buttons; the bar keeps only the
     // nav guard + the conversational confirmation (no pinned Save).
     pinned: false,
@@ -597,6 +628,7 @@ export function ConsultationWorkspace({
                 currentUserId={currentUserId}
                 reads={reads}
                 dispatches={dispatches}
+                photosByEntry={photosByEntry}
                 maximized={leftMode === "top"}
                 onToggleMaximize={() =>
                   setLeftMode((m) => (m === "top" ? "split" : "top"))
@@ -793,6 +825,17 @@ export function ConsultationWorkspace({
                         )}
                     </AnchoredPopover>
                   </div>
+                )}
+                {/* Photo M2 (Roland 2026-07-22): the camera lives next to
+                    Templates; captures STAGE for this note and attach on Save. */}
+                {mode === "new" && !bodyMap && (
+                  <PhotoCaptureButton
+                    patientId={patient.id}
+                    staged={stagedPhotos}
+                    onStage={(p) => setStagedPhotos((s) => [...s, p])}
+                    onUnstage={(id) => setStagedPhotos((s) => s.filter((x) => x.id !== id))}
+                    showLabel={chipsWide}
+                  />
                 )}
                 {mode === "new" && (
                   <button
@@ -1012,11 +1055,6 @@ export function ConsultationWorkspace({
               </div>
 
               <div className="flex min-h-0 flex-1 flex-col px-4 pb-2.5">
-                {/* Photo tool M1 (Roland 2026-07-22): capture + square thumbnails
-                    in the note-writing context (a free note, no template/map). */}
-                {mode === "new" && !template && !bodyMap && (
-                  <PhotoStrip patientId={patient.id} />
-                )}
                 {(mode === "amend" || mode === "addendum") && (
                   <div className="mb-2 rounded-lg bg-muted/50 p-2.5">
                     <div className="flex items-center justify-between">
@@ -1092,7 +1130,7 @@ export function ConsultationWorkspace({
                 {/* Symmetric breathing room above and below the buttons
                     (Roland 2026-07-21): footer pt matches the card's pb-2.5. */}
                 <div className="flex shrink-0 items-center justify-end gap-2 pt-2.5">
-                  {(editTarget || draft || template || bodyMap) && (
+                  {(editTarget || draft || template || bodyMap || stagedPhotos.length > 0) && (
                     <Button variant="ghost" size="sm" onClick={discard}>
                       Discard
                     </Button>
@@ -1106,7 +1144,7 @@ export function ConsultationWorkspace({
                         ? !mapDirty
                         : template
                           ? !templateDirty || !templateValid
-                          : !draft.trim())
+                          : !draft.trim() && stagedPhotos.length === 0)
                     }
                   >
                     {saveLabel}

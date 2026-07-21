@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { formatDayTime, formatDayShort } from "@/lib/dates";
+import { NotePhotoGallery, type NotePhoto } from "@/components/consultation/NotePhotoGallery";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
 import { useClickAway } from "@/lib/useClickAway";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
@@ -195,6 +196,7 @@ export function ClinicalNotesFeed({
   currentUserId,
   reads,
   dispatches = [],
+  photosByEntry = {},
   maximized,
   onToggleMaximize,
   onEditNote,
@@ -207,6 +209,8 @@ export function ClinicalNotesFeed({
   reads: { entry_id: string; user_id: string; read_at: string }[];
   /** Courier C3 — the letters' dispatch journeys (Status Trail rows). */
   dispatches?: CourierDispatchTrail[];
+  /** Photo M2 — a note's attached before/after photos, keyed by entry id. */
+  photosByEntry?: Record<string, NotePhoto[]>;
   maximized: boolean;
   onToggleMaximize: () => void;
   onEditNote: (e: FeedEntry) => void;
@@ -939,6 +943,11 @@ export function ClinicalNotesFeed({
                      inline marks (bold/italic/underline/highlight) layer on. */
                   <SmartNoteBody text={text} marks={e.payload?.format_marks} struck={struck} />
                 )}
+
+                {/* Photo M2 — this note's before/after photos (tap to view/compare). */}
+                {photosByEntry[e.id]?.length ? (
+                  <NotePhotoGallery photos={photosByEntry[e.id]} />
+                ) : null}
 
                 {/* Amendment shows a truncated, chevron-expandable preview of the
                     note it amends — struck through if the original was (Roland #6). */}
