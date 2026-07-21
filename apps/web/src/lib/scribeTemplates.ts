@@ -278,6 +278,85 @@ export function sanitiseParts(raw: unknown): TemplatePart[] | null {
   return out.length ? out : null;
 }
 
+/** T4 — sanitise a PATIENT'S submitted answers against the frozen parts
+ *  (a public form is a hostile surface): every answer is type-checked to its
+ *  part, strings capped, choices must be subset of the offered options,
+ *  ranges clamped, body-map data guarded. Unknown/malformed answers DROP —
+ *  the record only ever holds what the form legitimately asked. */
+export function sanitiseAnswers(parts: TemplatePart[], raw: unknown): TemplateAnswers {
+  const out: TemplateAnswers = {};
+  if (typeof raw !== "object" || raw === null) return out;
+  const src = raw as Record<string, unknown>;
+  parts.forEach((p, i) => {
+    const a = src[String(i)];
+    if (a === undefined || a === null) return;
+    switch (p.kind) {
+      case "text":
+      case "textarea":
+        if (typeof a === "string" && a.trim())
+          out[i] = a.trim().slice(0, p.kind === "text" ? 300 : 4000);
+        break;
+      case "date":
+        if (typeof a === "string" && /^\d{4}-\d{2}-\d{2}$/.test(a)) out[i] = a;
+        break;
+      case "dropdown":
+        if (typeof a === "string" && p.options.includes(a)) out[i] = a;
+        break;
+      case "checkboxes":
+        if (Array.isArray(a)) {
+          const picks = a.filter(
+            (v): v is string => typeof v === "string" && p.options.includes(v),
+          );
+          if (picks.length) out[i] = [...new Set(picks)];
+        }
+        break;
+      case "range": {
+        const n = Number(a);
+        if (Number.isFinite(n))
+          out[i] = Math.max(p.min, Math.min(p.max, Math.trunc(n)));
+        break;
+      }
+      case "vitals":
+        if (Array.isArray(a)) {
+          const unit: TempUnit = String(a[TEMP_UNIT_INDEX] ?? "c") === "f" ? "f" : "c";
+          // Character-clean AND clinically plausible — an implausible value
+          // is dropped, never stored (the server can't trust a public form).
+          const vals = VITALS_FIELDS.map((f, j) => {
+            const v = sanitiseVital(f.key, String(a[j] ?? ""));
+            return vitalOk(f.key, v, unit) ? v : "";
+          });
+          if (vals.some((v) => v.trim())) out[i] = [...vals, unit];
+        }
+        break;
+      case "body_map":
+        if (isBodyMapData(a) && bodyMapHasContent(a)) {
+          const pins = a.pins.slice(0, 100).map((pin) => ({
+            x: Number(pin.x) || 0,
+            y: Number(pin.y) || 0,
+            site: String(pin.site ?? "").slice(0, 120),
+            note: String(pin.note ?? "").slice(0, 300),
+            ...(typeof pin.tone === "string" ? { tone: pin.tone.slice(0, 16) } : {}),
+          }));
+          const strokes = Array.isArray(a.strokes)
+            ? a.strokes.slice(0, 60).map((st) =>
+                Array.isArray(st)
+                  ? st.slice(0, 600).map((pt) => [Number(pt?.[0]) || 0, Number(pt?.[1]) || 0])
+                  : [],
+              )
+            : [];
+          out[i] = {
+            view: a.view === "face" ? "face" : a.view === "posterior" ? "posterior" : "anterior",
+            ...(a.figure === "man" || a.figure === "woman" ? { figure: a.figure } : {}),
+            pins,
+            strokes,
+          };
+        }
+        break;
+    }
+  });
+  return out;
+}
+
 export function templateHasAnswers(t: ScribeTemplate, answers: TemplateAnswers): boolean {
   return t.parts.some((p, i) => {
     const a = answers[i];

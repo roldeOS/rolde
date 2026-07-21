@@ -30,6 +30,7 @@ import {
   TriangleAlert,
   OctagonAlert,
   ClipboardList,
+  ClipboardCheck,
   PersonStanding,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
@@ -49,6 +50,8 @@ export type FeedEntry = {
   entry_type: string;
   payload: {
     text?: string;
+    /** T4 — a patient's own submission via a Courier secure form. */
+    patient_submitted?: boolean;
     /** Scribe Templates round-trip: the structured answers behind the text
      *  (v2.1: a body_map PART's marks ride here like any other answer;
      *  T2: name + parts SNAPSHOT so personal-template notes render forever). */
@@ -111,6 +114,7 @@ const RECORD_KINDS: Record<string, { label: string; tone: CardIconTone; icon: Ic
   problem_recorded: { label: "Problem", tone: "peach", icon: ClipboardList },
   medication_recorded: { label: "Medication", tone: "warning", icon: Pill },
   body_map: { label: "Body Map", tone: "peach", icon: PersonStanding },
+  form_response: { label: "Form Response", tone: "sky", icon: ClipboardCheck },
 };
 function noteKind(
   role: string | undefined,
@@ -972,7 +976,7 @@ export function ClinicalNotesFeed({
                     LEFT · time+date BOTTOM-CENTRE · status pill + actions RIGHT. */}
                 <div className="mt-2 flex items-center gap-2">
                   <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-                    {author?.name ?? "—"}
+                    {e.payload?.patient_submitted ? "The Patient" : (author?.name ?? "—")}
                   </span>
                   <span className="shrink-0 text-center text-xs text-muted-foreground">
                     {fmtTime(e.created_at)}

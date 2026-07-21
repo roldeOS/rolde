@@ -117,8 +117,7 @@ export default async function CourierViewPage({
             A {title} For {d.recipient_name}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {clinicName} has sent you a {title.toLowerCase()} to read securely. The clinic is
-            told when it&apos;s been opened.
+            {`${clinicName} has sent you a ${title.toLowerCase()} to read securely. The clinic is told when it’s been opened.`}
           </p>
           <form action={open} className="mt-6">
             <button

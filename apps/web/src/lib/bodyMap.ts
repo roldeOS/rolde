@@ -42,6 +42,9 @@ export const PIN_TONES = [
   { key: "sage", label: "Sage", fill: "#63805F" },
   { key: "lavender", label: "Lavender", fill: "#7E71B5" },
   { key: "sky", label: "Sky", fill: "#43799E" },
+  { key: "plum", label: "Plum", fill: "#9C5A74" },
+  { key: "teal", label: "Teal", fill: "#3E7F7C" },
+  { key: "cocoa", label: "Cocoa", fill: "#8A6248" },
 ] as const;
 export type PinToneKey = (typeof PIN_TONES)[number]["key"];
 

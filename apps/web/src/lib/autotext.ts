@@ -8,14 +8,14 @@
 export type AutotextEntry = { shortcut: string; expansion: string };
 
 /** Matches "…(start or whitespace/bracket) .shortcut" right before the caret. */
-const TRIGGER = /(^|[\s([{])\.([a-z0-9-]{2,24})$/i;
+const TRIGGER = /(^|[\s([{])\.([a-z][a-z0-9-]{0,23})$/i;
 
 export function expandAutotext(
   value: string,
   caret: number,
   shortcuts: AutotextEntry[],
 ): { value: string; caret: number } | null {
-  if (!shortcuts.length || caret < 4) return null;
+  if (!shortcuts.length || caret < 3) return null;
   const typed = value[caret - 1];
   if (typed !== " " && typed !== "\n") return null;
   const before = value.slice(0, caret - 1);

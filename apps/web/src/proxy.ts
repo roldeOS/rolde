@@ -25,9 +25,10 @@ export async function proxy(request: NextRequest) {
     path.startsWith("/policy") ||
     path.startsWith("/api") ||
     path.startsWith("/auth") ||
-    // Courier's secure letter viewer (C3) — the recipient has no RolDe account;
-    // the long-random capability token in the URL is the authorisation.
-    path.startsWith("/courier/view");
+    // Courier's secure token surfaces (C3 letters · T4 forms) — recipients
+    // have no RolDe account; the long-random capability token in each URL is
+    // the authorisation, enforced by the routes themselves.
+    path.startsWith("/courier/");
 
   if (!user && !isPublic) {
     return redirectKeepingCookies(request, "/login", supabaseResponse);

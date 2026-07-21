@@ -167,7 +167,9 @@ export async function deleteClinicTemplate(id: string): Promise<ActionResult> {
 
 // ── T2.5 — personal autotext shortcuts ────────────────────────────────────
 
-const SHORTCUT_RE = /^[a-z0-9-]{2,24}$/;
+// Letter-first, 1–24 chars (Roland 2026-07-21: ".r" allowed). NEVER
+// digit-leading — clinical dose notation (" .5 ml") must never expand.
+const SHORTCUT_RE = /^[a-z][a-z0-9-]{0,23}$/;
 
 export async function listMyShortcuts(): Promise<
   { ok: true; data: AutotextShortcut[] } | { ok: false; error: string }
@@ -197,7 +199,7 @@ export async function saveMyShortcut(input: {
   const shortcut = String(input.shortcut ?? "").trim().toLowerCase().replace(/^\./, "");
   const expansion = String(input.expansion ?? "").trim().slice(0, 500);
   if (!SHORTCUT_RE.test(shortcut))
-    return fail("Shortcuts are 2–24 letters, numbers or dashes — e.g. “sn”.");
+    return fail("Shortcuts start with a letter (1–24 letters, numbers or dashes) — e.g. “r” or “sn”.");
   if (!expansion) return fail("The shortcut needs its expansion text.");
 
   const { data: created, error } = await c.supabase

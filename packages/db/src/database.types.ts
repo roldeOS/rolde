@@ -604,6 +604,98 @@ export type Database = {
           },
         ]
       }
+      form_requests: {
+        Row: {
+          created_at: string
+          failed_reason: string | null
+          id: string
+          opened_at: string | null
+          patient_id: string
+          recipient_email: string
+          recipient_name: string
+          response_entry_id: string | null
+          sent_at: string | null
+          sent_by: string | null
+          status: string
+          submitted_at: string | null
+          template_id: string
+          template_snapshot: Json
+          tenant_id: string
+          token_expires_at: string
+          updated_at: string
+          view_token: string
+        }
+        Insert: {
+          created_at?: string
+          failed_reason?: string | null
+          id?: string
+          opened_at?: string | null
+          patient_id: string
+          recipient_email: string
+          recipient_name: string
+          response_entry_id?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          template_id: string
+          template_snapshot: Json
+          tenant_id: string
+          token_expires_at: string
+          updated_at?: string
+          view_token: string
+        }
+        Update: {
+          created_at?: string
+          failed_reason?: string | null
+          id?: string
+          opened_at?: string | null
+          patient_id?: string
+          recipient_email?: string
+          recipient_name?: string
+          response_entry_id?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          template_id?: string
+          template_snapshot?: Json
+          tenant_id?: string
+          token_expires_at?: string
+          updated_at?: string
+          view_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "form_requests_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_requests_response_entry_id_fkey"
+            columns: ["response_entry_id"]
+            isOneToOne: false
+            referencedRelation: "patient_feed_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_requests_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_templates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "form_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legal_doc_versions: {
         Row: {
           created_at: string
@@ -1902,6 +1994,7 @@ export type Database = {
         | "problem_recorded"
         | "medication_recorded"
         | "body_map"
+        | "form_response"
       user_role:
         | "custodian"
         | "caretaker"
@@ -2068,6 +2161,7 @@ export const Constants = {
         "problem_recorded",
         "medication_recorded",
         "body_map",
+        "form_response",
       ],
       user_role: [
         "custodian",

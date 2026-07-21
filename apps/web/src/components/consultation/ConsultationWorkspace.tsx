@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap } from "lucide-react";
+import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -48,6 +48,7 @@ import {
   type AutotextShortcut,
 } from "@/app/(app)/patients/templateActions";
 import { ShortcutsManager } from "@/components/consultation/ShortcutsManager";
+import { FormSendSheet } from "@/components/consultation/FormSendSheet";
 import { expandAutotext } from "@/lib/autotext";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { BodyMapPanel } from "@/components/consultation/BodyMapPanel";
@@ -152,6 +153,8 @@ export function ConsultationWorkspace({
   // sentence). Loaded once on mount; the manager hands back fresh lists.
   const [shortcuts, setShortcuts] = useState<AutotextShortcut[]>([]);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  // T4 — Send A Form (patient-facing templates via Courier secure links).
+  const [formSheetOpen, setFormSheetOpen] = useState(false);
   // T3 — the clinic's colour legend: names print on the record + label the
   // annotator's swatches.
   const [legend, setLegend] = useState<BodymapLegendNames>({});
@@ -677,6 +680,15 @@ export function ConsultationWorkspace({
                         >
                           <Zap className="size-3.5" /> My Shortcuts…
                         </button>
+                        <button
+                          onClick={() => {
+                            setPickerOpen(false);
+                            setFormSheetOpen(true);
+                          }}
+                          className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                        >
+                          <ClipboardList className="size-3.5" /> Send A Form…
+                        </button>
                     </AnchoredPopover>
                   </div>
                 )}
@@ -936,6 +948,12 @@ export function ConsultationWorkspace({
       {/* Scribe T2 — the personal template builder (portaled sheet). A save
           refreshes the picker; if the ACTIVE template was edited, the form
           picks up its new shape (answers reset — honest, never misaligned). */}
+      <FormSendSheet
+        patientId={patient.id}
+        anchor={pickerBtn}
+        open={formSheetOpen}
+        onClose={() => setFormSheetOpen(false)}
+      />
       {shortcutsOpen && (
         <ShortcutsManager
           onClose={() => setShortcutsOpen(false)}

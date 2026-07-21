@@ -1562,6 +1562,35 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     tablet-first, every new surface verified at 393px + 768px before "done". If the real-device
     askew persists post-deploy, ONE screenshot from the device pins the remaining offender.
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
+    **✅ T4 SHIPPED & AUDITED (Roland "Go for T4", 2026-07-21) — PATIENT-FACING FORMS:** a
+    Patient-Facing template travels to the patient exactly as a letter does — a PHI-minimal
+    RolDe-shell email ('courier-form' platform template, clinic-overridable) carrying a Courier
+    secure link; the token viewer is ENVELOPE-first (a human's "Start The Form" is the honest
+    Opened signal); the patient fills the SAME ScribeTemplateForm the clinic uses (every part,
+    Body Map included, vitals plausibility blocking Submit); the submission lands in the feed as
+    a typed **form_response** tile ("Form Response", sky, author line "The Patient") rendering
+    structured via the snapshot. THE SNAPSHOT LAW at send: form_requests freezes {name, parts} —
+    what the patient saw never changes underneath them. One submission per request, ever.
+    Send UI: Template picker → "Send A Form…" (sky sheet: the Caretaker's Patient-Facing
+    templates only · email read-back · recent requests). Server sanitises EVERYTHING
+    (sanitiseAnswers): options must be subset, strings capped, ranges clamped, body-map guarded —
+    and the AUDIT ITSELF found + closed a gap (vitals were character-clean but not
+    plausibility-checked server-side; implausible values now DROP).
+    **THE T4 AUDIT (all live):** non-Patient-Facing send → refused with the governance message ·
+    flag flip → context lists it · REAL email sent (Roland's inbox — his own "Roland's Test"
+    form: "Are you alive? — Yep/Nope") · envelope leaks no fields pre-open · open → fields ·
+    HOSTILE submit (fake checkbox option · off-list dropdown · BP 999/40) → all three DROPPED
+    while legitimate answers survived, proven in the stored payload · resubmit → "already been
+    submitted" · expired GET + expired submit + bad token → honest copy ×3 · feed tile "Form
+    Response · The Patient" SSR ✓ · 393px + 768px screenshots clean · gates green. BONUS AUDIT
+    CATCH: JSX ate the space after {clinicName} in multi-line text (RSC: "Skinhas asked") — fixed
+    as a CLASS in BOTH courier viewers (template-string children), live-verified.
+    **PALETTE 5 → 8 (Roland 2026-07-21 "more colours?"):** plum · teal · cocoa join coral/amber/
+    sage/lavender/sky — curated, not a free picker (Earth & Bloom law; red stays reserved;
+    distinguishable at pin size on skin artwork; the legend editor + swatches auto-extend).
+    **SHORTCUTS: SINGLE LETTERS ALLOWED (Roland "why not .r?"):** rule now letter-first 1–24
+    ([a-z][a-z0-9-]{0,23}) — ".r" works; digit-leading stays BANNED so dose notation (" .5 ml")
+    can never expand; unit-proven both ways.
     **✅ BODY-MAP v3 ARTWORK INSTALLED + T3 SHIPPED & AUDITED (2026-07-21):**
     **(1) Roland's figure set is IN** — his rights-owned files assessed honestly: the two FACE
     portraits superb as delivered (professional medical-illustration, transparent background);
