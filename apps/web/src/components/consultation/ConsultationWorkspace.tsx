@@ -56,6 +56,8 @@ import { CourierSendSheet } from "@/components/consultation/CourierSendSheet";
 import { formatDay } from "@/lib/dates";
 import { expandAutotext } from "@/lib/autotext";
 import { continueListOnEnter } from "@/lib/calmFormatting";
+import { RichNoteEditor, type RichNoteHandle } from "@/components/consultation/RichNoteEditor";
+import { sanitizeMarks, type NoteMark } from "@/lib/richText";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { BodyMapPanel } from "@/components/consultation/BodyMapPanel";
 import {
@@ -131,6 +133,8 @@ export function ConsultationWorkspace({
 
   const [editTarget, setEditTarget] = useState<EditTarget>(null);
   const [draft, setDraft] = useState("");
+  // B6 — the free note's inline formatting (sidecar marks over `draft`).
+  const [draftMarks, setDraftMarks] = useState<NoteMark[]>([]);
   // RolDe Scribe Templates T1 (GREENLIT 2026-07-04): pick from the curated
   // library → Scribe MORPHS into the structured form in place; Save renders
   // the answers into a clean readable note. New notes only (edit/amend stay
@@ -221,35 +225,47 @@ export function ConsultationWorkspace({
   const [snippetBtn, setSnippetBtn] = useState<HTMLElement | null>(null);
   const [snippetsMenuOpen, setSnippetsMenuOpen] = useState(false);
   const lastTextRef = useRef<HTMLTextAreaElement | HTMLInputElement | null>(null);
-  const draftRef = useRef<HTMLTextAreaElement | null>(null);
+  // B6 — the free-note editor (contentEditable). A snippet insert routes here
+  // when the rich editor was the last-focused Scribe surface, else to the
+  // last-focused template input.
+  const richRef = useRef<RichNoteHandle | null>(null);
+  const lastWasRichRef = useRef(false);
   const trackFocus = useCallback((e: React.FocusEvent) => {
     const t = e.target as HTMLElement;
     if (
       t instanceof HTMLTextAreaElement ||
       (t instanceof HTMLInputElement && (t.type === "text" || t.type === ""))
-    )
+    ) {
       lastTextRef.current = t;
+      lastWasRichRef.current = false;
+    }
   }, []);
   const insertSnippet = useCallback((expansion: string) => {
-    const el =
-      lastTextRef.current && document.contains(lastTextRef.current)
-        ? lastTextRef.current
-        : draftRef.current;
-    if (!el) return;
-    const start = el.selectionStart ?? el.value.length;
-    const end = el.selectionEnd ?? start;
-    const next = el.value.slice(0, start) + expansion + el.value.slice(end);
-    const proto =
-      el instanceof HTMLTextAreaElement
-        ? HTMLTextAreaElement.prototype
-        : HTMLInputElement.prototype;
-    Object.getOwnPropertyDescriptor(proto, "value")?.set?.call(el, next);
-    el.dispatchEvent(new Event("input", { bubbles: true }));
-    const caret = start + expansion.length;
-    requestAnimationFrame(() => {
-      el.focus();
-      el.setSelectionRange(caret, caret);
-    });
+    // Prefer the rich note editor when it was last active; else a template input.
+    if (lastWasRichRef.current && richRef.current) {
+      richRef.current.insertText(expansion);
+      return;
+    }
+    const el = lastTextRef.current;
+    if (el && document.contains(el)) {
+      const start = el.selectionStart ?? el.value.length;
+      const end = el.selectionEnd ?? start;
+      const next = el.value.slice(0, start) + expansion + el.value.slice(end);
+      const proto =
+        el instanceof HTMLTextAreaElement
+          ? HTMLTextAreaElement.prototype
+          : HTMLInputElement.prototype;
+      Object.getOwnPropertyDescriptor(proto, "value")?.set?.call(el, next);
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      const caret = start + expansion.length;
+      requestAnimationFrame(() => {
+        el.focus();
+        el.setSelectionRange(caret, caret);
+      });
+      return;
+    }
+    // No input in play → the free note.
+    richRef.current?.insertText(expansion);
   }, []);
   // Body-Map v2 (greenlit 2026-07-04) — a Scribe MODE (APPROVALS §4.3: the
   // one sanctioned automatic move is Scribe expanding for the map).
@@ -358,13 +374,17 @@ export function ConsultationWorkspace({
       setTemplate(t);
       setAnswers(meta.answers ?? {});
       setDraft("");
+      setDraftMarks([]);
     } else {
       setDraft(locked ? "" : original);
+      // B6 — the note's own inline formatting loads back for editing.
+      setDraftMarks(locked ? [] : sanitizeMarks(e.payload?.format_marks, original.length));
     }
   }
 
   function discard() {
     setDraft("");
+    setDraftMarks([]);
     setEditTarget(null);
     setStrikeOriginal(false);
     setTemplate(null);
@@ -425,6 +445,8 @@ export function ConsultationWorkspace({
             "template_meta",
             JSON.stringify({ id: template.id, name: template.name, parts: template.parts, answers }),
           );
+        // B6 — a free note's inline formatting (sidecar marks over the text).
+        else if (draftMarks.length) fd.set("marks", JSON.stringify(draftMarks));
         await saveNote(fd);
       } else if (mode === "edit") {
         fd.set("entry_id", editTarget!.id);
@@ -434,6 +456,7 @@ export function ConsultationWorkspace({
             "template_meta",
             JSON.stringify({ id: template.id, name: template.name, parts: template.parts, answers }),
           );
+        else fd.set("marks", JSON.stringify(draftMarks));
         await editNote(fd);
       } else {
         // Amendment (own, locked) may strike the original; an ADDENDUM never
@@ -447,6 +470,7 @@ export function ConsultationWorkspace({
         }
         fd.set("parent_id", editTarget!.id);
         fd.set("text", draft);
+        if (draftMarks.length) fd.set("marks", JSON.stringify(draftMarks));
         await amendNote(fd);
       }
       discard();
@@ -875,29 +899,31 @@ export function ConsultationWorkspace({
                     tempUnit={defaultTempUnit(topbarPatient?.clinicCountry)}
                   />
                 ) : (
-                <textarea
-                  ref={draftRef}
-                  value={draft}
-                  onChange={(e) => withAutotext(e.target, setDraft)}
-                  onKeyDown={(e) => {
-                    // Calm Formatting A — lists that carry themselves on.
-                    if (e.key !== "Enter" || e.shiftKey) return;
-                    const el = e.currentTarget;
-                    const hit = continueListOnEnter(el.value, el.selectionStart ?? el.value.length);
-                    if (!hit) return;
-                    e.preventDefault();
-                    setDraft(hit.value);
-                    requestAnimationFrame(() => el.setSelectionRange(hit.caret, hit.caret));
-                  }}
-                  placeholder={
-                    mode === "amend"
-                      ? "Amendment…"
-                      : mode === "addendum"
-                        ? "Addendum…"
-                        : `Note for ${patient.firstName}…`
-                  }
-                  className="min-h-0 w-full flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-                />
+                  // B6 — the rich free-note editor (bold/italic/underline/
+                  // highlight); Calm Formatting A (self-continuing lists) and
+                  // autotext run through it, snippets insert at its caret.
+                  <RichNoteEditor
+                    ref={richRef}
+                    docKey={`${mode}-${editTarget?.id ?? "new"}`}
+                    initialText={draft}
+                    initialMarks={draftMarks}
+                    onChange={(text, marks) => {
+                      setDraft(text);
+                      setDraftMarks(marks);
+                    }}
+                    expand={(text, caret) => expandAutotext(text, caret, shortcuts)}
+                    continueList={continueListOnEnter}
+                    onFocusCapture={() => {
+                      lastWasRichRef.current = true;
+                    }}
+                    placeholder={
+                      mode === "amend"
+                        ? "Amendment…"
+                        : mode === "addendum"
+                          ? "Addendum…"
+                          : `Note for ${patient.firstName}…`
+                    }
+                  />
                 )}
                 <div className="flex shrink-0 items-center justify-end gap-2 pt-1">
                   {(editTarget || draft || template || bodyMap) && (

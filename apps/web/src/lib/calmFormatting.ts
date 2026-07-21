@@ -84,3 +84,53 @@ export function classifyLine(raw: string): SmartLine {
 
 export const classifyNote = (text: string): SmartLine[] =>
   text.split(/\r?\n/).map(classifyLine);
+
+/**
+ * B6 — the same classification, plus each line's absolute [start] in the full
+ * text and the absolute offset where its rendered `text` begins, so inline
+ * formatting marks (sidecar model, offsets over the plain text) map onto the
+ * dressed line. New notes are LF; a legacy CRLF line keeps its \r stripped by
+ * classifyLine, and offsets over such notes don't matter (they carry no marks).
+ */
+export type PlacedLine = {
+  line: SmartLine;
+  /** The \r-stripped raw line (marks over it map 1:1 from `start`). */
+  raw: string;
+  /** Absolute offset of the raw line in the full text. */
+  start: number;
+  /** Absolute offset where the rendered `text` begins (marker/number dropped). */
+  textStart: number;
+};
+
+function relTextStart(raw: string, line: SmartLine): number {
+  const stripped = raw.replace(/\r$/, "");
+  switch (line.kind) {
+    // `text` is a suffix of the stripped line (the marker/number is dropped).
+    case "bullet":
+    case "numbered":
+    case "plain":
+      return Math.max(0, stripped.length - line.text.length);
+    case "header":
+      return stripped.length - stripped.trimStart().length;
+    default:
+      return 0;
+  }
+}
+
+export function classifyNotePlaced(text: string): PlacedLine[] {
+  let offset = 0;
+  const parts = text.split("\n");
+  return parts.map((rawWithCr, idx) => {
+    const line = classifyLine(rawWithCr);
+    const raw = rawWithCr.replace(/\r$/, "");
+    const placed: PlacedLine = {
+      line,
+      raw,
+      start: offset,
+      textStart: offset + relTextStart(rawWithCr, line),
+    };
+    // Advance past the raw line incl. its \n (and the \r if it was CRLF).
+    offset += rawWithCr.length + (idx < parts.length - 1 ? 1 : 0);
+    return placed;
+  });
+}

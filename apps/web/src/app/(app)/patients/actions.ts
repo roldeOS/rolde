@@ -7,6 +7,21 @@ import { getSessionContext } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import type { Json } from "@rolde/db";
 import { emailOk, phonePlausible, dobOk, nationalIdOk, asCountry } from "@/lib/validation";
+import { sanitizeMarks } from "@/lib/richText";
+
+/** B6 — a free note's inline formatting (sidecar marks), parsed + hostile-proofed
+ *  against the FINAL text length at the door. Absent/empty → undefined (the
+ *  payload simply carries no format_marks, and the note renders plain). */
+function parseMarks(formData: FormData, textLen: number): Json | undefined {
+  const raw = String(formData.get("marks") ?? "");
+  if (!raw) return undefined;
+  try {
+    const marks = sanitizeMarks(JSON.parse(raw), textLen);
+    return marks.length ? (marks as unknown as Json) : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Create a patient in the caller's clinic. The clinic (tenant) comes from the
@@ -113,6 +128,8 @@ export async function saveNote(formData: FormData) {
     }
   }
 
+  const marks = template === undefined ? parseMarks(formData, text.length) : undefined;
+
   const supabase = await createClient();
   const { error } = await supabase.from("patient_feed_entries").insert({
     tenant_id: tenantId,
@@ -122,6 +139,7 @@ export async function saveNote(formData: FormData) {
       text,
       word_count: text.split(/\s+/).filter(Boolean).length,
       ...(template !== undefined ? { template } : {}),
+      ...(marks !== undefined ? { format_marks: marks } : {}),
     },
     created_by: ctx?.user.id ?? null,
   });
@@ -187,6 +205,8 @@ export async function editNote(formData: FormData) {
     }
   }
 
+  const marks = template === undefined ? parseMarks(formData, text.length) : undefined;
+
   const { error } = await supabase
     .from("patient_feed_entries")
     .update({
@@ -194,6 +214,7 @@ export async function editNote(formData: FormData) {
         text,
         word_count: text.split(/\s+/).filter(Boolean).length,
         ...(template !== undefined ? { template } : {}),
+        ...(marks !== undefined ? { format_marks: marks } : {}),
         },
       edited_at: new Date().toISOString(),
       updated_by: userId,
@@ -273,11 +294,16 @@ export async function amendNote(formData: FormData) {
     .maybeSingle();
   const isAddendum = !!parent && parent.created_by !== (ctx?.user.id ?? null);
 
+  const marks = parseMarks(formData, text.length);
   const { error } = await supabase.from("patient_feed_entries").insert({
     tenant_id: tenantId,
     patient_id: patientId,
     entry_type: "clinical_note",
-    payload: { text, word_count: text.split(/\s+/).filter(Boolean).length },
+    payload: {
+      text,
+      word_count: text.split(/\s+/).filter(Boolean).length,
+      ...(marks !== undefined ? { format_marks: marks } : {}),
+    },
     related_entry_id: parentId,
     created_by: ctx?.user.id ?? null,
   });

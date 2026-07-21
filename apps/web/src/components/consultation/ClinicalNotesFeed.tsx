@@ -52,6 +52,8 @@ export type FeedEntry = {
   entry_type: string;
   payload: {
     text?: string;
+    /** B6 — inline formatting for a free note (sidecar marks over `text`). */
+    format_marks?: { s: number; e: number; k: "b" | "i" | "u" | "h" }[];
     /** T4 — a patient's own submission via a Courier secure form. */
     patient_submitted?: boolean;
     /** Scribe Templates round-trip: the structured answers behind the text
@@ -933,8 +935,9 @@ export function ClinicalNotesFeed({
                     />
                   </div>
                 ) : (
-                  /* Calm Formatting B — free-text notes dress themselves. */
-                  <SmartNoteBody text={text} struck={struck} />
+                  /* Calm Formatting B — free-text notes dress themselves; B6
+                     inline marks (bold/italic/underline/highlight) layer on. */
+                  <SmartNoteBody text={text} marks={e.payload?.format_marks} struck={struck} />
                 )}
 
                 {/* Amendment shows a truncated, chevron-expandable preview of the
