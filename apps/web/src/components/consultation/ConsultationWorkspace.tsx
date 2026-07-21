@@ -554,9 +554,13 @@ export function ConsultationWorkspace({
                       onClick={() => setPickerOpen((v) => !v)}
                       className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                     >
-                      <LayoutTemplate className="size-3.5" />
-                      <span className={cn(!template && "hidden sm:inline")}>
-                        {template ? template.name : "Template"}
+                      {bodyMap ? (
+                        <PersonStanding className="size-3.5" />
+                      ) : (
+                        <LayoutTemplate className="size-3.5" />
+                      )}
+                      <span className={cn(!template && !bodyMap && "hidden sm:inline")}>
+                        {bodyMap ? "Body Map" : template ? template.name : "Compose"}
                       </span>
                       <ChevronDown className={cn("size-3 transition-transform", pickerOpen && "rotate-180")} />
                     </button>
@@ -567,24 +571,55 @@ export function ConsultationWorkspace({
                       open={pickerOpen}
                       onClose={() => setPickerOpen(false)}
                       width={264}
-                      icon={LayoutTemplate}
-                      title="Templates"
-                      subtitle="The curated RolDe library"
+                      icon={PenLine}
+                      title="Compose"
+                      subtitle="Blank note · templates · body map"
                       tone="periwinkle"
                     >
                         <button
                           onClick={() => {
                             setTemplate(null);
                             setAnswers({});
+                            if (bodyMap) {
+                              setBodyMap(null);
+                              setLeftMode("split");
+                            }
                             setPickerOpen(false);
                           }}
                           className={cn(
                             "flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-hover",
-                            !template ? "font-medium text-foreground" : "text-muted-foreground",
+                            !template && !bodyMap ? "font-medium text-foreground" : "text-muted-foreground",
                           )}
                         >
                           <X className="size-3.5" /> Blank Note
                         </button>
+                        {/* Body Map is a MODE, so it lives with the modes
+                            (Roland 2026-07-21: split by nature). Entering it
+                            auto-expands Scribe — the ONE sanctioned automatic
+                            move (APPROVALS §4.2). */}
+                        {mode === "new" && (
+                          <button
+                            onClick={() => {
+                              if (bodyMap) {
+                                setBodyMap(null);
+                                setLeftMode("split");
+                              } else {
+                                setTemplate(null);
+                                setAnswers({});
+                                setBodyMap({ view: "anterior", figure: "woman", pins: [], strokes: [] });
+                                setLeftMode("bottom");
+                              }
+                              setPickerOpen(false);
+                            }}
+                            className={cn(
+                              "flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-hover",
+                              bodyMap ? "font-medium text-foreground" : "text-muted-foreground",
+                            )}
+                          >
+                            <PersonStanding className="size-3.5" />
+                            {bodyMap ? "Close Body Map" : "Body Map"}
+                          </button>
+                        )}
                         {[...new Set(ROLDE_TEMPLATE_LIBRARY.map((t) => t.specialty))].map(
                           (spec) => (
                             <div key={spec}>
@@ -599,6 +634,10 @@ export function ConsultationWorkspace({
                                       setTemplate(t);
                                       setAnswers(prefillFor(t));
                                       setDraft("");
+                                      if (bodyMap) {
+                                        setBodyMap(null);
+                                        setLeftMode("split");
+                                      }
                                       setPickerOpen(false);
                                     }}
                                     className={cn(
@@ -632,6 +671,10 @@ export function ConsultationWorkspace({
                                 setTemplate(t);
                                 setAnswers(prefillFor(t));
                                 setDraft("");
+                                if (bodyMap) {
+                                  setBodyMap(null);
+                                  setLeftMode("split");
+                                }
                                 setPickerOpen(false);
                               }}
                               className={cn(
@@ -691,35 +734,6 @@ export function ConsultationWorkspace({
                         </button>
                     </AnchoredPopover>
                   </div>
-                )}
-                {mode === "new" && (
-                  <button
-                    onClick={() => {
-                      if (bodyMap) {
-                        setBodyMap(null);
-                        setLeftMode("split");
-                      } else {
-                        setTemplate(null);
-                        setAnswers({});
-                        setBodyMap({ view: "anterior", figure: "woman", pins: [], strokes: [] });
-                        // The ONE sanctioned automatic move (APPROVALS §4.2):
-                        // opening the Body-Map expands Scribe — user-initiated.
-                        setLeftMode("bottom");
-                      }
-                    }}
-                    className={cn(
-                      "flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:shadow",
-                      bodyMap
-                        ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground",
-                      !bodyMap && "ml-1",
-                    )}
-                  >
-                    <PersonStanding className="size-3.5" />
-                    <span className={cn(!bodyMap && "hidden sm:inline")}>
-                      {bodyMap ? "Close Body Map" : "Body Map"}
-                    </span>
-                  </button>
                 )}
                 {mode !== "new" || !bodyMap ? (
                   <>

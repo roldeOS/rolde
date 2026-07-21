@@ -53,3 +53,8 @@ apps/web/src/app/api/dev/
 
 # DEV-ONLY seed/test scripts — never ship
 apps/web/scripts/dev/
+
+# Roland's rights-owned artwork MASTERS live here on disk but stay OUT of
+# git (35MB+ exports; the app serves only the optimised set in
+# apps/web/public/bodymap). Keep the originals safe locally.
+/assets/
