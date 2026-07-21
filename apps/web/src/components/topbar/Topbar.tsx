@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   PanelLeft,
   ChevronRight,
-  ChevronDown,
   Check,
   X,
   Plus,
@@ -172,12 +171,15 @@ function LayoutsMenu({ modules }: { modules: ClinicalModules }) {
 
   return (
     <div ref={ref} className="relative hidden lg:block">
+      {/* ICON-ONLY (Roland 2026-07-21, B1) — the word "Layouts" gave way to the
+          patient's name; the peach icon mirrors its popover tone. */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 rounded-lg bg-card/70 px-2.5 py-1.5 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-colors hover:text-foreground"
+        title="Layouts"
+        aria-label="Layouts"
+        className="flex size-8 items-center justify-center rounded-lg bg-card text-orange-700 shadow-sm ring-1 ring-border/50 transition-shadow hover:text-orange-800 hover:shadow-md"
       >
-        Layouts
-        <ChevronDown className={cn("size-3.5 transition-transform", open && "rotate-180")} />
+        <LayoutPanelLeft className="size-[18px]" />
       </button>
       {open && (
         <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-60 overflow-hidden rounded-xl bg-card shadow-overlay">

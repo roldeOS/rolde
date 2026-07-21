@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
+import { CARD_ICON_TEXT } from "@/lib/cardTones";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
 import { WorkupPanel } from "@/components/WorkupPanel";
 import { AiPanel } from "@/components/AiPanel";
@@ -560,7 +561,9 @@ export function ConsultationWorkspace({
                       onClick={() => setPickerOpen((v) => !v)}
                       className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                     >
-                      <LayoutTemplate className="size-3.5" />
+                      {/* B3 (Roland 2026-07-21): chip icons wear their popover's
+                          Earth & Bloom tone — the colour teaches the feature. */}
+                      <LayoutTemplate className={cn("size-3.5", CARD_ICON_TEXT.periwinkle)} />
                       <span className={cn(!template && "hidden sm:inline")}>
                         {template ? template.name : "Templates"}
                       </span>
@@ -711,7 +714,7 @@ export function ConsultationWorkspace({
                         : "text-muted-foreground hover:text-foreground",
                     )}
                   >
-                    <PersonStanding className="size-3.5" />
+                    <PersonStanding className={cn("size-3.5", CARD_ICON_TEXT.peach)} />
                     <span className={cn(!bodyMap && "hidden sm:inline")}>
                       {bodyMap ? "Close Body Map" : "Body Map"}
                     </span>
@@ -725,7 +728,7 @@ export function ConsultationWorkspace({
                       title="Insert A Shortcut"
                       className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                     >
-                      <Zap className="size-3.5" />
+                      <Zap className={cn("size-3.5", CARD_ICON_TEXT.teal)} />
                       <span className="hidden lg:inline">Snippets</span>
                     </button>
                     <AnchoredPopover

@@ -208,18 +208,16 @@ export function CommandMenu({
 
   return (
     <>
-      {/* Floating search — a SOLID white chip on a drop shadow (no ring), so it
-          lifts over the glass topbar like mindate's. Reads as a search BAR with
-          a min-width on larger screens. */}
+      {/* Floating search — ICON-ONLY on every width (Roland 2026-07-21, B1:
+          the old 240px bar was the pixel-thief truncating the patient's name).
+          ⌘K stays the real door; the tooltip teaches it. */}
       <button
         onClick={() => setOpen(true)}
-        className="group flex h-8 items-center gap-2 rounded-lg bg-card px-2.5 text-sm text-muted-foreground shadow-sm transition-shadow hover:shadow-md md:min-w-[240px]"
+        title="Search — ⌘K"
+        aria-label="Search"
+        className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-border/50 transition-shadow hover:text-foreground hover:shadow-md"
       >
-        <Search className="size-4 shrink-0" />
-        <span className="hidden md:inline">Search…</span>
-        <kbd className="ml-auto hidden rounded bg-muted px-1 text-[10px] sm:inline">
-          ⌘K
-        </kbd>
+        <Search className="size-[18px]" />
       </button>
 
       {open &&

@@ -68,8 +68,11 @@ menu only.
 1.8 **Floating topbar + floating search** (Roland 2026-06-11, mindate parity). The glass topbar
 FLOATS — a bright inset top-highlight ("wet glass lip") + a soft drop shadow
 (`shadow-[inset_0_1px_0_0_rgba(255,255,255,0.6),0_8px_22px_-10px_rgba(0,0,0,0.22)]`), not a flat
-seam. The ⌘K search trigger is a SOLID white chip on a drop shadow (no ring), with a min-width so
-it reads as a search bar.
+seam. ~~The ⌘K search trigger is a SOLID white chip on a drop shadow (no ring), with a min-width so
+it reads as a search bar.~~ **SUPERSEDED (Roland 2026-07-21, B1 "Go"):** the search trigger and the
+Layouts trigger are ICON-ONLY white chips (size-8, matching the Recents/bell cluster) — the old
+240px search bar was truncating the patient's name; every rescued pixel belongs to the patient
+island. ⌘K remains the one universal search (§1.4 unchanged); the tooltip teaches the shortcut.
 
 1.9 **Legal & Safety surface** (Roland 2026-06-11). A sidebar nav item → `/legal`: ONE card hosts
 the selected document (title on top, body below) with its **version history as the RIGHT rail**
