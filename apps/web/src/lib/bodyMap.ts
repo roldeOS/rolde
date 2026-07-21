@@ -18,7 +18,24 @@ export type BodyMapPin = {
   tone?: string;
 };
 
-export type BodyMapStroke = number[][]; // [x, y] points in viewBox space
+/** v2.2 (Roland 2026-07-21: "more colour choices... label what I draw"): a
+ *  drawing now carries its own colour + a label, like a pin. LEGACY strokes
+ *  were bare `[x,y]` point arrays — both shapes render forever (records law):
+ *  a bare array is a coral, unlabelled drawing. */
+export type BodyMapDrawing = {
+  points: number[][]; // [x, y] points in viewBox space
+  tone?: string;
+  label?: string;
+};
+export type BodyMapStroke = number[][] | BodyMapDrawing;
+
+/** Read either shape without a care for its era. */
+export const strokePoints = (s: BodyMapStroke): number[][] =>
+  Array.isArray(s) ? s : Array.isArray(s?.points) ? s.points : [];
+export const strokeTone = (s: BodyMapStroke): string | undefined =>
+  Array.isArray(s) ? undefined : s?.tone;
+export const strokeLabel = (s: BodyMapStroke): string =>
+  Array.isArray(s) ? "" : (s?.label ?? "");
 
 export type BodyMapView = "anterior" | "posterior" | "face";
 /** v3 artwork (Roland's own rights-owned figures, 2026-07-21): every NEW map
@@ -67,15 +84,35 @@ export function renderBodyMapText(data: BodyMapData, legend?: BodymapLegendNames
     data.view === "face" ? "Face Map" : data.view === "posterior" ? "Back Map" : "Body Map";
   const figure = data.figure === "man" ? " (Man)" : data.figure === "woman" ? " (Woman)" : "";
   const lines = [`${title}${figure} — ${data.pins.length} mark${data.pins.length === 1 ? "" : "s"}`];
-  const multiTone = new Set(data.pins.map((p) => p.tone ?? "coral")).size > 1;
+  // Colours carry meaning (toxin vs filler), so when a map mixes them — across
+  // pins AND drawings — every line names its colour.
+  const multiTone =
+    new Set([
+      ...data.pins.map((p) => p.tone ?? "coral"),
+      ...data.strokes.map((s) => strokeTone(s) ?? "coral"),
+    ]).size > 1;
   data.pins.forEach((p, i) => {
     const site = p.site.trim();
     const note = p.note.trim();
     const toneTag = multiTone ? ` [${pinToneLabel(p.tone, legend)}]` : "";
     lines.push(`${i + 1}. ${site || "Unlabelled site"}${note ? ` — ${note}` : ""}${toneTag}`);
   });
-  if (data.strokes.length)
-    lines.push(`Freehand markings: ${data.strokes.length}`);
+  if (data.strokes.length) {
+    // v2.2 — a labelled drawing reads into the record like a mark; bare/legacy
+    // drawings just count.
+    const labelled = data.strokes.filter((s) => strokeLabel(s).trim());
+    if (labelled.length === 0) {
+      lines.push(`Freehand markings: ${data.strokes.length}`);
+    } else {
+      lines.push(`Drawings: ${data.strokes.length}`);
+      data.strokes.forEach((s) => {
+        const lbl = strokeLabel(s).trim();
+        if (!lbl) return;
+        const toneTag = multiTone ? ` [${pinToneLabel(strokeTone(s), legend)}]` : "";
+        lines.push(`• ${lbl}${toneTag}`);
+      });
+    }
+  }
   return lines.join("\n");
 }
 

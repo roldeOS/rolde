@@ -339,12 +339,22 @@ export function sanitiseAnswers(parts: TemplatePart[], raw: unknown): TemplateAn
             note: String(pin.note ?? "").slice(0, 300),
             ...(typeof pin.tone === "string" ? { tone: pin.tone.slice(0, 16) } : {}),
           }));
+          // v2.2 — a drawing may be a bare point array (legacy) OR an object
+          // with points + colour + label; both are clamped hostile-proof.
+          const clampPts = (pts: unknown): number[][] =>
+            Array.isArray(pts)
+              ? pts.slice(0, 600).map((pt) => [Number(pt?.[0]) || 0, Number(pt?.[1]) || 0])
+              : [];
           const strokes = Array.isArray(a.strokes)
-            ? a.strokes.slice(0, 60).map((st) =>
-                Array.isArray(st)
-                  ? st.slice(0, 600).map((pt) => [Number(pt?.[0]) || 0, Number(pt?.[1]) || 0])
-                  : [],
-              )
+            ? a.strokes.slice(0, 60).map((st) => {
+                if (Array.isArray(st)) return clampPts(st);
+                const obj = st as { points?: unknown; tone?: unknown; label?: unknown };
+                return {
+                  points: clampPts(obj?.points),
+                  ...(typeof obj?.tone === "string" ? { tone: obj.tone.slice(0, 16) } : {}),
+                  ...(typeof obj?.label === "string" ? { label: obj.label.slice(0, 120) } : {}),
+                };
+              })
             : [];
           out[i] = {
             view: a.view === "face" ? "face" : a.view === "posterior" ? "posterior" : "anterior",

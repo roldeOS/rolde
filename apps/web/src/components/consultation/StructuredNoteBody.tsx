@@ -9,7 +9,15 @@ import {
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
 import { BodyFigureArt, resolveFigureArt } from "./BodyFigureArt";
-import { isBodyMapData, bodyMapHasContent, pinFill, type BodyMapData } from "@/lib/bodyMap";
+import {
+  isBodyMapData,
+  bodyMapHasContent,
+  pinFill,
+  strokePoints,
+  strokeTone,
+  strokeLabel,
+  type BodyMapData,
+} from "@/lib/bodyMap";
 import { cn } from "@/lib/utils";
 
 /**
@@ -119,11 +127,24 @@ export function StructuredNoteBody({
                     {pin.note.trim() ? ` — ${pin.note.trim()}` : ""}
                   </p>
                 ))}
-                {a.strokes.length > 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    Freehand markings: {a.strokes.length}
-                  </p>
-                )}
+                {a.strokes.length > 0 &&
+                  (a.strokes.some((s) => strokeLabel(s).trim()) ? (
+                    a.strokes.map((s, j) =>
+                      strokeLabel(s).trim() ? (
+                        <p key={`d${j}`} className="text-sm">
+                          <span
+                            className="mr-1 inline-block size-2.5 shrink-0 rounded-full align-middle"
+                            style={{ backgroundColor: pinFill(strokeTone(s)) }}
+                          />
+                          {strokeLabel(s).trim()}
+                        </p>
+                      ) : null,
+                    )
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Freehand markings: {a.strokes.length}
+                    </p>
+                  ))}
               </div>
             </div>,
           );
@@ -162,12 +183,12 @@ export function BodyMapThumbnail({ data }: { data: BodyMapData }) {
       aria-label={view === "face" ? "Face map thumbnail" : "Body map thumbnail"}
     >
       <BodyFigureArt art={art} view={view} />
-      {data.strokes?.map((pts, i) => (
+      {data.strokes?.map((s, i) => (
         <path
           key={i}
-          d={strokePath(pts)}
+          d={strokePath(strokePoints(s))}
           fill="none"
-          stroke="#e0533f"
+          stroke={pinFill(strokeTone(s))}
           strokeWidth={art.w * 0.0145}
           strokeLinecap="round"
           strokeLinejoin="round"

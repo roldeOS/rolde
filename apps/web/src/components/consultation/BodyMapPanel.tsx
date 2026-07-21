@@ -11,8 +11,12 @@ import {
   pinFill,
   pinToneLabel,
   bodyMapHasContent,
+  strokePoints,
+  strokeTone,
+  strokeLabel,
   type BodyMapData,
   type BodyMapPin,
+  type BodyMapStroke,
   type BodyMapView,
   type BodyMapFigure,
   type BodymapLegendNames,
@@ -260,7 +264,12 @@ export function BodyMapPanel({
     if (g.mode === "draw") {
       if (drawing.current && drawing.current.length > 1) {
         history.current.push("stroke");
-        onChange({ ...data, strokes: [...data.strokes, drawing.current] });
+        // v2.2 — a drawing carries the active colour + an (empty) label to fill
+        // in the rail. Coordinates stay in figure space (records law).
+        onChange({
+          ...data,
+          strokes: [...data.strokes, { points: drawing.current, tone: activeTone, label: "" }],
+        });
       }
       drawing.current = null;
       setLiveStroke(null);
@@ -327,6 +336,30 @@ export function BodyMapPanel({
     const idx = PIN_TONES.findIndex((t) => t.key === current);
     setPin(i, { tone: PIN_TONES[(idx + 1) % PIN_TONES.length].key });
   }
+  // v2.2 — drawings behave like pins in the rail: colour + label + remove. A
+  // legacy bare-array stroke is normalised to the object shape the moment it's
+  // touched (its points are preserved exactly).
+  function patchStroke(i: number, patch: Partial<{ tone: string; label: string }>) {
+    onChange({
+      ...data,
+      strokes: data.strokes.map((s, j) =>
+        j === i
+          ? { points: strokePoints(s), tone: strokeTone(s), label: strokeLabel(s), ...patch }
+          : s,
+      ),
+    });
+  }
+  function cycleStrokeTone(i: number) {
+    const current = strokeTone(data.strokes[i]) ?? PIN_TONES[0].key;
+    const idx = PIN_TONES.findIndex((t) => t.key === current);
+    patchStroke(i, { tone: PIN_TONES[(idx + 1) % PIN_TONES.length].key });
+  }
+  function removeStroke(i: number) {
+    history.current = history.current.filter(
+      (_, idx) => idx !== history.current.lastIndexOf("stroke"),
+    );
+    onChange({ ...data, strokes: data.strokes.filter((_, j) => j !== i) });
+  }
   function requestChange(nextView: BodyMapView, nextFigure?: BodyMapFigure) {
     const figure = nextFigure ?? data.figure;
     if (nextView === view && figure === data.figure) return;
@@ -383,8 +416,10 @@ export function BodyMapPanel({
               onChange={setTool}
               className="w-32"
             />
-            {/* The pin palette — treatment families in colour (v2.1). */}
-            {tool === "pin" && (
+            {/* The colour palette — treatment families in colour, for pins AND
+                drawings (v2.2, Roland: "when I draw, I need more colour
+                choices"). One active tone serves whichever tool is live. */}
+            {(tool === "pin" || tool === "draw") && (
               <span className="flex items-center gap-1.5">
                 {PIN_TONES.map((t) => (
                   <button
@@ -492,12 +527,12 @@ export function BodyMapPanel({
             aria-label={view === "face" ? "Face map — tap to mark" : "Body map — tap to mark"}
           >
             <BodyFigureArt art={art} view={view} />
-            {data.strokes.map((pts, i) => (
+            {data.strokes.map((s, i) => (
               <path
                 key={i}
-                d={strokePath(pts)}
+                d={strokePath(strokePoints(s))}
                 fill="none"
-                stroke="#e0533f"
+                stroke={pinFill(strokeTone(s))}
                 strokeWidth={dims.w * REL.stroke * scale}
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -508,7 +543,7 @@ export function BodyMapPanel({
               <path
                 d={strokePath(liveStroke)}
                 fill="none"
-                stroke="#e0533f"
+                stroke={pinFill(activeTone)}
                 strokeWidth={dims.w * REL.stroke * scale}
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -543,13 +578,13 @@ export function BodyMapPanel({
         <p className="text-xs font-semibold tracking-wider text-foreground uppercase">
           Marks
         </p>
-        {data.pins.length === 0 && (
+        {data.pins.length === 0 && data.strokes.length === 0 && (
           <p className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
             Tap the figure to drop a numbered pin — each pin carries a site, a
             note and a colour (pick one per treatment family). Pinch, scroll
             or double-tap to zoom close; drag moves around while zoomed.
-            Switch to Draw for freehand marking, and flip Body ⇄ Face for
-            facial treatments.
+            Switch to Draw to sketch freehand in any colour and label it, and
+            flip Body ⇄ Face for facial treatments.
           </p>
         )}
         {data.pins.map((p, i) => (
@@ -588,6 +623,38 @@ export function BodyMapPanel({
             />
           </div>
         ))}
+        {/* v2.2 — freehand drawings, each with a colour swatch (tap to cycle)
+            and a label, so a sketch reads into the record like a mark. */}
+        {data.strokes.length > 0 && (
+          <>
+            <p className="pt-1 text-xs font-semibold tracking-wider text-foreground uppercase">
+              Drawings
+            </p>
+            {data.strokes.map((s: BodyMapStroke, i: number) => (
+              <div key={i} className="flex items-center gap-2 rounded-xl bg-muted/40 p-2.5">
+                <button
+                  type="button"
+                  onClick={() => cycleStrokeTone(i)}
+                  title={`Change Colour — ${pinToneLabel(strokeTone(s), legend)}`}
+                  className="size-5 shrink-0 rounded-full transition-transform hover:scale-110"
+                  style={{ backgroundColor: pinFill(strokeTone(s)) }}
+                  aria-label="Change drawing colour"
+                />
+                <Input
+                  value={strokeLabel(s)}
+                  placeholder="Label — e.g. rash outline"
+                  onChange={(e) => patchStroke(i, { label: e.target.value })}
+                />
+                <button
+                  onClick={() => removeStroke(i)}
+                  className="shrink-0 rounded px-1.5 py-0.5 text-xs text-muted-foreground transition-colors hover:text-critical"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
