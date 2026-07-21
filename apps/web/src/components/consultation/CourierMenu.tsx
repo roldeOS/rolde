@@ -78,11 +78,20 @@ export function CourierMenu({
           setView("menu");
           setOpen((v) => !v);
         }}
-        title="Send Something To Someone"
-        className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
+        aria-label="Courier"
+        className="group/tip relative flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
       >
         <Send className={cn("size-3.5", CARD_ICON_TEXT.warning)} />
-        {showLabel && <span>Courier</span>}
+        {showLabel ? (
+          <span>Courier</span>
+        ) : (
+          <span
+            role="tooltip"
+            className="pointer-events-none absolute top-[calc(100%+7px)] right-0 z-50 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-[11px] font-medium text-background opacity-0 shadow-md transition-opacity duration-100 group-hover/tip:opacity-100"
+          >
+            Courier
+          </span>
+        )}
       </button>
       <AnchoredPopover
         anchor={btn}

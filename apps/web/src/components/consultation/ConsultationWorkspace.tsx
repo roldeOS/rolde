@@ -84,6 +84,24 @@ type Mode = "split" | "top" | "bottom";
 const EDIT_WINDOW_MS = 60 * 60 * 1000;
 const COMPOSER_NAME = "Scribe"; // the writing card (Roland 2026-06-10)
 
+/** An instant hover label for the Scribe header icons (Roland 2026-07-21:
+ *  native `title` is slow / absent). Renders BELOW the chip (never clipped at
+ *  the card's top); `align` keeps the rightmost chips inside the card edge.
+ *  The parent button must carry `relative group/tip`. */
+function ChipTip({ label, align = "center" }: { label: string; align?: "center" | "right" }) {
+  return (
+    <span
+      role="tooltip"
+      className={cn(
+        "pointer-events-none absolute top-[calc(100%+7px)] z-50 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-[11px] font-medium text-background opacity-0 shadow-md transition-opacity duration-100 group-hover/tip:opacity-100",
+        align === "right" ? "right-0" : "left-1/2 -translate-x-1/2",
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
 type EditTarget = {
   id: string;
   original: string;
@@ -640,7 +658,8 @@ export function ConsultationWorkspace({
                     <button
                       ref={setPickerBtn}
                       onClick={() => setPickerOpen((v) => !v)}
-                      className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
+                      aria-label="Templates"
+                      className="group/tip relative flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                     >
                       {/* B3 (Roland 2026-07-21): chip icons wear their popover's
                           Earth & Bloom tone — the colour teaches the feature. */}
@@ -649,6 +668,7 @@ export function ConsultationWorkspace({
                         {template ? template.name : "Templates"}
                       </span>
                       <ChevronDown className={cn("size-3 transition-transform", pickerOpen && "rotate-180")} />
+                      {!chipsWide && <ChipTip label={template ? template.name : "Templates"} />}
                     </button>
                     {/* PORTALED (AnchoredPopover) — Scribe is overflow-hidden;
                         the in-card version clipped (Roland 2026-07-04). */}
@@ -775,6 +795,7 @@ export function ConsultationWorkspace({
                 )}
                 {mode === "new" && (
                   <button
+                    aria-label={bodyMap ? "Close Anatomy" : "Anatomy"}
                     onClick={() => {
                       if (bodyMap) {
                         setBodyMap(null);
@@ -789,7 +810,7 @@ export function ConsultationWorkspace({
                       }
                     }}
                     className={cn(
-                      "order-2 flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:shadow",
+                      "group/tip relative order-2 flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:shadow",
                       bodyMap
                         ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground",
@@ -799,6 +820,7 @@ export function ConsultationWorkspace({
                     <span className={cn(!chipsWide && "hidden")}>
                       {bodyMap ? "Close Anatomy" : "Anatomy"}
                     </span>
+                    {!chipsWide && <ChipTip label={bodyMap ? "Close Anatomy" : "Anatomy"} />}
                   </button>
                 )}
                 {mode !== "new" || !bodyMap ? (
@@ -806,11 +828,12 @@ export function ConsultationWorkspace({
                     <button
                       ref={setSnippetBtn}
                       onClick={() => setSnippetsMenuOpen((v) => !v)}
-                      title="Insert A Shortcut"
-                      className="order-2 flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
+                      aria-label="Snips"
+                      className="group/tip relative order-2 flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                     >
                       <Zap className={cn("size-3.5", CARD_ICON_TEXT.teal)} />
                       <span className={cn(!chipsWide && "hidden")}>Snips</span>
+                      {!chipsWide && <ChipTip label="Snips" />}
                     </button>
                     <AnchoredPopover
                       anchor={snippetBtn}
@@ -878,24 +901,25 @@ export function ConsultationWorkspace({
                           ref={setFormatBtn}
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => setFormatOpen((v) => !v)}
-                          title="Format The Text"
-                          className="order-1 flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
+                          aria-label="Format"
+                          className="group/tip relative order-1 flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                         >
                           <Type className={cn("size-3.5", CARD_ICON_TEXT.rose)} />
                           <span className={cn(!chipsWide && "hidden")}>Format</span>
+                          {!chipsWide && <ChipTip label="Format" />}
                         </button>
                         <AnchoredPopover
                           anchor={formatBtn}
                           open={formatOpen}
                           onClose={() => setFormatOpen(false)}
-                          width={248}
+                          width={212}
                           icon={Type}
                           title="Format"
                           subtitle="Style the selected text"
                           tone="rose"
-                          className="space-y-2 p-2"
+                          className="space-y-1.5 p-1.5"
                         >
-                          <div className="flex gap-1">
+                          <div className="flex gap-0.5">
                             {(["b", "i", "u", "s"] as MarkKind[]).map((k) => (
                               <button
                                 key={k}
@@ -905,17 +929,17 @@ export function ConsultationWorkspace({
                                 }
                                 onMouseDown={(e) => e.preventDefault()}
                                 onClick={() => richRef.current?.format(k)}
-                                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                                className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
                               >
                                 <MarkGlyph k={k} />
                               </button>
                             ))}
                           </div>
                           <div>
-                            <p className="pb-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                            <p className="pb-0.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
                               Highlight
                             </p>
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-1">
                               {HIGHLIGHT_COLOURS.map((c) => (
                                 <button
                                   key={c.key}
@@ -924,17 +948,17 @@ export function ConsultationWorkspace({
                                   aria-label={`Highlight ${c.label}`}
                                   onMouseDown={(e) => e.preventDefault()}
                                   onClick={() => richRef.current?.highlight(c.key)}
-                                  className="size-6 rounded-full ring-1 ring-black/10 transition-transform hover:scale-110"
+                                  className="size-5 rounded-full ring-1 ring-black/10 transition-transform hover:scale-110"
                                   style={{ backgroundColor: c.bg }}
                                 />
                               ))}
                             </div>
                           </div>
                           <div>
-                            <p className="pb-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                            <p className="pb-0.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
                               Lists
                             </p>
-                            <div className="flex gap-1">
+                            <div className="flex gap-0.5">
                               {(
                                 [
                                   { op: "bullet", icon: List, label: "Bullet List" },
@@ -950,7 +974,7 @@ export function ConsultationWorkspace({
                                   aria-label={label}
                                   onMouseDown={(e) => e.preventDefault()}
                                   onClick={() => richRef.current?.lineOp(op)}
-                                  className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                                  className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
                                 >
                                   <Icon className="size-4" />
                                 </button>
@@ -961,7 +985,7 @@ export function ConsultationWorkspace({
                             type="button"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={() => richRef.current?.clearFormat()}
-                            className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-border/60 px-2 pt-2 pb-1 text-left text-xs text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                            className="flex w-full items-center gap-1.5 rounded-lg border-t border-border/60 px-2 pt-1.5 pb-0.5 text-left text-xs text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
                           >
                             <RemoveFormatting className="size-3.5" /> Clear Formatting
                           </button>
@@ -974,16 +998,15 @@ export function ConsultationWorkspace({
                   onClick={() =>
                     setLeftMode((m) => (m === "bottom" ? "split" : "bottom"))
                   }
-                  title={leftMode === "bottom" ? "Restore" : "Expand"}
-                  className={cn(
-                    "order-2 flex size-7 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow",
-                  )}
+                  aria-label={leftMode === "bottom" ? "Restore" : "Expand"}
+                  className="group/tip relative order-2 flex size-7 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                 >
                   {leftMode === "bottom" ? (
                     <Minimize2 className="size-4" />
                   ) : (
                     <Maximize2 className="size-4" />
                   )}
+                  <ChipTip label={leftMode === "bottom" ? "Restore" : "Expand"} align="right" />
                 </button>
               </div>
 
