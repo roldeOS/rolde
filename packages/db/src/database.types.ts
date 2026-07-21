@@ -604,6 +604,63 @@ export type Database = {
           },
         ]
       }
+      patient_photo: {
+        Row: {
+          bytes: number | null
+          caption: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          feed_entry_id: string | null
+          height: number | null
+          id: string
+          mime: string
+          patient_id: string
+          phase: string
+          storage_path: string
+          taken_at: string | null
+          tenant_id: string
+          thumb_path: string
+          width: number | null
+        }
+        Insert: {
+          bytes?: number | null
+          caption?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          feed_entry_id?: string | null
+          height?: number | null
+          id?: string
+          mime?: string
+          patient_id: string
+          phase?: string
+          storage_path: string
+          taken_at?: string | null
+          tenant_id: string
+          thumb_path: string
+          width?: number | null
+        }
+        Update: {
+          bytes?: number | null
+          caption?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          feed_entry_id?: string | null
+          height?: number | null
+          id?: string
+          mime?: string
+          patient_id?: string
+          phase?: string
+          storage_path?: string
+          taken_at?: string | null
+          tenant_id?: string
+          thumb_path?: string
+          width?: number | null
+        }
+        Relationships: []
+      }
       form_requests: {
         Row: {
           created_at: string

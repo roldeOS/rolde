@@ -53,6 +53,7 @@ import { ShortcutsManager } from "@/components/consultation/ShortcutsManager";
 import { FormSendSheet } from "@/components/consultation/FormSendSheet";
 import { CourierMenu, type UnsentLetter } from "@/components/consultation/CourierMenu";
 import { CourierSendSheet } from "@/components/consultation/CourierSendSheet";
+import { PhotoStrip } from "@/components/consultation/PhotoStrip";
 import { formatDay } from "@/lib/dates";
 import { expandAutotext } from "@/lib/autotext";
 import { continueListOnEnter } from "@/lib/calmFormatting";
@@ -1011,6 +1012,11 @@ export function ConsultationWorkspace({
               </div>
 
               <div className="flex min-h-0 flex-1 flex-col px-4 pb-2.5">
+                {/* Photo tool M1 (Roland 2026-07-22): capture + square thumbnails
+                    in the note-writing context (a free note, no template/map). */}
+                {mode === "new" && !template && !bodyMap && (
+                  <PhotoStrip patientId={patient.id} />
+                )}
                 {(mode === "amend" || mode === "addendum") && (
                   <div className="mb-2 rounded-lg bg-muted/50 p-2.5">
                     <div className="flex items-center justify-between">
