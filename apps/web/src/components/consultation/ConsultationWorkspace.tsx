@@ -135,6 +135,10 @@ export function ConsultationWorkspace({
   const [draft, setDraft] = useState("");
   // B6 — the free note's inline formatting (sidecar marks over `draft`).
   const [draftMarks, setDraftMarks] = useState<NoteMark[]>([]);
+  // The rich editor is UNCONTROLLED, so clearing `draft` alone won't wipe its
+  // DOM — bump this on discard/after-save and it's in the editor's docKey, so
+  // the editor remounts empty (Roland 2026-07-21: "Scribe still held the text").
+  const [editorNonce, setEditorNonce] = useState(0);
   // RolDe Scribe Templates T1 (GREENLIT 2026-07-04): pick from the curated
   // library → Scribe MORPHS into the structured form in place; Save renders
   // the answers into a clean readable note. New notes only (edit/amend stay
@@ -391,6 +395,7 @@ export function ConsultationWorkspace({
     setAnswers({});
     setBodyMap(null);
     setLeftMode("split");
+    setEditorNonce((n) => n + 1); // remount the uncontrolled editor empty
   }
 
   const templateDirty = !!template && templateHasAnswers(template, answers);
@@ -904,7 +909,7 @@ export function ConsultationWorkspace({
                   // autotext run through it, snippets insert at its caret.
                   <RichNoteEditor
                     ref={richRef}
-                    docKey={`${mode}-${editTarget?.id ?? "new"}`}
+                    docKey={`${mode}-${editTarget?.id ?? "new"}-${editorNonce}`}
                     initialText={draft}
                     initialMarks={draftMarks}
                     onChange={(text, marks) => {

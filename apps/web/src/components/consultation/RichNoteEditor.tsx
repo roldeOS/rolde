@@ -451,7 +451,10 @@ export const RichNoteEditor = forwardRef<
   return (
     <div className={cn("relative flex min-h-0 flex-1 flex-row gap-2", className)}>
       {/* The writing surface. */}
-      <div className="relative min-h-0 flex-1">
+      {/* The text SCROLLS inside its own box (min-h-0 + overflow) so long notes
+          never spill under the Save/Discard footer — the caret stays reachable
+          in a short card (Roland 2026-07-21: "cursor blinking behind Save"). */}
+      <div className="relative min-h-0 flex-1 overflow-y-auto pb-1">
         {empty && (
           <p className="pointer-events-none absolute left-0 top-0 text-sm text-muted-foreground">
             {placeholder}
