@@ -1648,9 +1648,37 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     prescribing's NHS path) · **MESH / ITK3** (the secure messaging/transport under it all) ·
     **CDA** for inbound documents (the Docman pipeline). This is the GATE for NHS tenancy vs
     pure-private, and it is deliberately its own wave — procurement-locked rails, not features.
-    **THE WORLD SWEEP PROGRAMME IS COMPLETE (Phases A–F, 2026-07-04 → 2026-07-21):** UK direct
-    rivals · UK specialty · world giants · specialty/spa · AI scribes · NHS/EPR giants — every
-    steal registered across §15.7. Nothing further queued; new entrants get swept ad hoc.
+    **THE WORLD SWEEP PROGRAMME (Phases A–F, 2026-07-04 → 2026-07-21):** UK direct rivals · UK
+    specialty · world giants · specialty/spa · AI scribes · NHS/EPR giants — every steal
+    registered across §15.7.
+    **✅ PHASE G — the GAP CHECK (2026-07-21, Roland: "would you say A–F is exhaustive… if not,
+    do a few more, think deep"). Honest verdict: A–F was thorough for our positioning but NOT
+    exhaustive — four genuine blind spots existed; I swept them.** The finds:
+    **Doctolib** (Europe's giant, 500k+ pros, 300k+ doctors) — booking + telehealth + (since
+    autumn 2025) an AI consultation assistant with ICD-10 suggestions + **OCR auto-classification
+    of incoming documents** + an **AI phone assistant** for calls/booking. It's the whole RolDe
+    thesis — booking + record + AI receptionist + inbound-doc pipeline — proven at massive scale
+    in one integrated product. Validates S18 (AI receptionist), S22 (inbound docs), the W5 scribe;
+    the OCR-classify-on-arrival is a concrete shape for the S22 inbox. Doctolib = the closest
+    thing to "RolDe done at EU scale" — strong validation that the integrated bet is right.
+    **Cliniko + Halaxy** (allied-health PM — physio/chiro/osteo/psychology) — Cliniko = simplicity
+    + template notes + clean online booking (validates our allied packs + the calm-UX bet);
+    Halaxy = feature breadth + **native claiming with claims-scrubbing** → W4 claiming steal
+    (scrub a claim before submit). Nothing we lack architecturally; validates the multi-specialty
+    spine + per-practitioner economics.
+    **Dental PM (Open Dental · Dentrix · Curve)** — Dentrix "Smart Image" ties 2D/3D imaging INTO
+    the chart (images beside the record without tool-switching) → exactly the Photo Spine (S14)
+    generalised; tooth charting = the dental pack's body-map variant (already registered). Curve =
+    cloud all-in-one; Open Dental = open-source/self-hostable. Confirms the dental pack shape.
+    **Verdict on exhaustiveness (honest):** the CORE competitive landscape — UK private, aesthetics,
+    allied health, dental, NHS interop, the AI-scribe frontier, and the standards we must meet — is
+    now thoroughly mapped, and Phase G surfaced **no capability we lack** (only validation +
+    S22-OCR + Halaxy claims-scrubbing). So we do **not** need another systematic sweep. But no
+    market research is ever "done forever" — Doctolib itself added documentation+billing only in
+    late 2025, and AI-native tools appear constantly. Standing policy: **no more scheduled sweeps;
+    Jarvis flags a notable NEW entrant ad hoc when one appears.** Regional/international players
+    (e.g. Practo in India) are deferred until RolDe targets those markets — swept then, not now.
+    Every steal remains indexed in the §15.7 STEALS REGISTER. Nothing further queued.
     **THE STEALS REGISTER (Roland 2026-07-21: "confirm all phases are detailed… no ambiguity when
     we build") — every registered steal → its target wave → the acceptance line that makes it
     build-ready. Full implementation spec lives in each wave's Build Register (§15.7) + the

@@ -381,5 +381,34 @@ Roland finds costs more trust than the first.
 
 ---
 
+## 14. Stamped Roland's personal gmail as the commit author email — 2026-07-21
+
+Every commit this session was authored `roldeOS <rolandmanoj@gmail.com>` because I passed
+`-c user.email="rolandmanoj@gmail.com"` on each commit — carrying a stale value from the session
+summary, NOT from the memory. The repo's own local git config was already correct
+(`user.name=roldeOS`, `user.email=292867105+roldeOS@users.noreply.github.com`), and the
+[[git-remote-roldeos]] memory explicitly says *"Don't author as rolandmanoj anymore."* So I
+overrode a correct setting with a wrong one, and pushed 11 commits to **roldeOS/rolde** (RolDe's
+own repo — never his personal account) carrying his personal email as the author. Roland: *"Why
+the hell would you upload to my rolandmanoj@gmail.com github… RolDe has its own github. NEVER
+MAKE SUCH SILLY MISTAKES."*
+
+**Fix:** commit with NO email override — the local config is already the RolDe identity. If an
+explicit value is ever needed, it is `292867105+roldeOS@users.noreply.github.com`, never a
+personal address. Offer to scrub the wrong author off already-pushed session commits (a rebase
+`--exec 'git commit --amend --reset-author'` + force-push) — but force-push needs Roland's
+explicit per-instance OK (Universal Brief §5).
+
+**Trigger:** ANY `git commit`. Do NOT pass `-c user.email=` unless you have just READ the value
+from `git config user.email` or the [[git-remote-roldeos]] memory and it is the roldeOS noreply.
+A personal email must never appear as a commit author. When in doubt, run plain `git commit` and
+let the repo's own config stand.
+
+**Lesson:** don't override a setting the repo already got right — verify the live config before
+"correcting" it. A value from a conversation summary is not a source of truth; the file and the
+live config are.
+
+---
+
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or
 when a diagnosed regression is worth locking and Roland approves the entry.*

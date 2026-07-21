@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { Bold, Italic, Underline, Highlighter } from "lucide-react";
+import { Highlighter } from "lucide-react";
 import {
   mergeMarks,
   toSegments,
@@ -247,12 +247,22 @@ function diffSplice(a: string, b: string): { start: number; oldEnd: number; newL
   return { start, oldEnd: ae, newLen: be - start };
 }
 
-const BUBBLE: { k: MarkKind; icon: typeof Bold; label: string; sc: string }[] = [
-  { k: "b", icon: Bold, label: "Bold", sc: "⌘B" },
-  { k: "i", icon: Italic, label: "Italic", sc: "⌘I" },
-  { k: "u", icon: Underline, label: "Underline", sc: "⌘U" },
-  { k: "h", icon: Highlighter, label: "Highlight", sc: "⌘⇧H" },
+const BUBBLE: { k: MarkKind; label: string; sc: string }[] = [
+  { k: "b", label: "Bold", sc: "⌘B" },
+  { k: "i", label: "Italic", sc: "⌘I" },
+  { k: "u", label: "Underline", sc: "⌘U" },
+  { k: "h", label: "Highlight", sc: "⌘⇧H" },
 ];
+
+/** The button face — crisp typographic letters in the app's own font (Inter)
+ *  for B/I/U (Roland 2026-07-21: the chunky icon glyphs "looked like Comic
+ *  Sans"), a marker icon for Highlight (the word-processor convention). */
+function MarkGlyph({ k }: { k: MarkKind }) {
+  if (k === "b") return <span className="text-[15px] leading-none font-bold">B</span>;
+  if (k === "i") return <span className="text-[15px] leading-none italic">I</span>;
+  if (k === "u") return <span className="text-[15px] leading-none underline underline-offset-[3px]">U</span>;
+  return <Highlighter className="size-4" />;
+}
 
 export const RichNoteEditor = forwardRef<
   RichNoteHandle,
@@ -486,7 +496,7 @@ export const RichNoteEditor = forwardRef<
             onClick={() => applyKind(b.k)}
             className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
           >
-            <b.icon className="size-4" />
+            <MarkGlyph k={b.k} />
           </button>
         ))}
       </div>
@@ -515,7 +525,7 @@ export const RichNoteEditor = forwardRef<
                     : "text-muted-foreground hover:bg-hover hover:text-foreground",
                 )}
               >
-                <b.icon className="size-4" />
+                <MarkGlyph k={b.k} />
               </button>
             ))}
           </div>,
