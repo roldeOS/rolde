@@ -5,20 +5,24 @@ import { Undo2, Eraser, Shrink } from "lucide-react";
 import { Segmented } from "@/components/ui/Segmented";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/form";
-import { BodyFigureArt, VIEW_DIMS } from "./BodyFigureArt";
+import { BodyFigureArt, resolveFigureArt } from "./BodyFigureArt";
 import {
   PIN_TONES,
   pinFill,
+  pinToneLabel,
   bodyMapHasContent,
   type BodyMapData,
   type BodyMapPin,
   type BodyMapView,
+  type BodyMapFigure,
+  type BodymapLegendNames,
 } from "@/lib/bodyMap";
 import { cn } from "@/lib/utils";
 
-/** Freehand points are thinned to every ~12 viewBox units — smooth to the eye,
- *  small in the payload. */
-const MIN_DIST = 12;
+/** Freehand thinning + marker sizes are RELATIVE to the figure's width —
+ *  the assets differ (v3 images ~610–1320 units wide, legacy 970), so
+ *  everything scales by art.w and looks identical across figures. */
+const REL = { minDist: 0.0124, pin: 0.031, stroke: 0.0104 };
 
 type Tool = "pin" | "draw" | "zoom";
 
@@ -27,32 +31,41 @@ type Tool = "pin" | "draw" | "zoom";
 const ZOOM_FACTOR = 3;
 
 /**
- * The Body-Map annotator (v2 greenlit 2026-07-04; v2.1 view switch + zoom +
- * pin colours) — a Scribe MODE (APPROVALS §4.3) and a template PART: the real
- * figure (Body silhouette or RolDe's Face) restyled Earth & Bloom, numbered
- * PINS in treatment colours (each with a site + a note), a freehand MARKER
- * and a close-up ZOOM. Coordinates live in viewBox space — identical at every
- * size, tablet-first. One VIEW per map (v2.1): switching Body ⇄ Face clears
- * the marks after an honest confirm — per-view marks arrive with v2.2.
+ * The Body-Map annotator (v2 2026-07-04 · v2.1 zoom/colours · v3 2026-07-21:
+ * Roland's OWN figure set) — a Scribe MODE (APPROVALS §4.3) and a template
+ * PART: professional figure artwork (Body · Back · Face, Woman ⇄ Man),
+ * numbered PINS in treatment colours (site + note each), freehand MARKER,
+ * close-up ZOOM. Coordinates live in the figure's own viewBox space —
+ * identical at every size, tablet-first. ONE figure per map: switching view
+ * or figure clears after an honest confirm (marks belong to one geometry);
+ * legacy maps (pre-figure) keep their original artwork forever.
  */
 export function BodyMapPanel({
   data,
   onChange,
   embedded = false,
+  legend,
 }: {
   data: BodyMapData;
   onChange: (next: BodyMapData) => void;
   /** Inside a template form (no card height to fill) — the figure keeps a
    *  real floor height and the Marks rail stacks beneath. */
   embedded?: boolean;
+  /** T3 — the clinic's colour names (Caretaker-set); swatches + record wear them. */
+  legend?: BodymapLegendNames;
 }) {
-  const view: BodyMapView = data.view === "face" ? "face" : "anterior";
-  const dims = VIEW_DIMS[view];
+  const view: BodyMapView =
+    data.view === "face" ? "face" : data.view === "posterior" ? "posterior" : "anterior";
+  // v3 artwork: figure-era maps render Roland's image set; legacy maps keep
+  // their original artwork (the resolver owns that law).
+  const art = resolveFigureArt(data);
+  const dims = { w: art.w, h: art.h };
   const [tool, setTool] = useState<Tool>("pin");
   const [vb, setVb] = useState({ x: 0, y: 0, w: dims.w, h: dims.h });
   const [activeTone, setActiveTone] = useState<string>(PIN_TONES[0].key);
-  // Switching views clears the map (one view per map, v2.1) — never silently.
-  const [pendingView, setPendingView] = useState<BodyMapView | null>(null);
+  // Switching view OR figure clears the map (marks belong to one figure's
+  // geometry) — never silently.
+  const [pending, setPending] = useState<{ view: BodyMapView; figure?: BodyMapFigure } | null>(null);
   const zoomed = vb.w < dims.w;
   // Marks scale with the SQUARE ROOT of the window: close-ups get visibly
   // bigger pins (Roland: "the number 1 on the pin looks very small") while
@@ -116,7 +129,7 @@ export function BodyMapPanel({
     if (!pt) return;
     const last = drawing.current[drawing.current.length - 1];
     // Thinning follows the zoom — close-up work keeps finer detail.
-    if (Math.hypot(pt[0] - last[0], pt[1] - last[1]) < MIN_DIST * scale) return;
+    if (Math.hypot(pt[0] - last[0], pt[1] - last[1]) < dims.w * REL.minDist * scale) return;
     drawing.current = [...drawing.current, pt];
     setLiveStroke(drawing.current);
   }
@@ -154,12 +167,13 @@ export function BodyMapPanel({
     const idx = PIN_TONES.findIndex((t) => t.key === current);
     setPin(i, { tone: PIN_TONES[(idx + 1) % PIN_TONES.length].key });
   }
-  function requestView(next: BodyMapView) {
-    if (next === view) return;
-    if (bodyMapHasContent(data)) setPendingView(next);
+  function requestChange(nextView: BodyMapView, nextFigure?: BodyMapFigure) {
+    const figure = nextFigure ?? data.figure;
+    if (nextView === view && figure === data.figure) return;
+    if (bodyMapHasContent(data)) setPending({ view: nextView, figure });
     else {
       history.current = [];
-      onChange({ view: next, pins: [], strokes: [] });
+      onChange({ view: nextView, figure, pins: [], strokes: [] });
     }
   }
 
@@ -173,14 +187,33 @@ export function BodyMapPanel({
         <div className="flex w-full flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Segmented
-              options={[
-                { value: "anterior", label: "Body" },
-                { value: "face", label: "Face" },
-              ]}
+              options={
+                data.figure
+                  ? [
+                      { value: "anterior", label: "Body" },
+                      { value: "posterior", label: "Back" },
+                      { value: "face", label: "Face" },
+                    ]
+                  : [
+                      { value: "anterior", label: "Body" },
+                      { value: "face", label: "Face" },
+                    ]
+              }
               value={view}
-              onChange={(v) => requestView(v as BodyMapView)}
-              className="w-32"
+              onChange={(v) => requestChange(v as BodyMapView)}
+              className={data.figure ? "w-44" : "w-32"}
             />
+            {data.figure && (
+              <Segmented
+                options={[
+                  { value: "woman", label: "Woman" },
+                  { value: "man", label: "Man" },
+                ]}
+                value={data.figure}
+                onChange={(f) => requestChange(view, f as BodyMapFigure)}
+                className="w-36"
+              />
+            )}
             <Segmented
               options={[
                 { value: "pin", label: "Pin" },
@@ -198,7 +231,7 @@ export function BodyMapPanel({
                   <button
                     key={t.key}
                     type="button"
-                    title={t.label}
+                    title={pinToneLabel(t.key, legend)}
                     onClick={() => setActiveTone(t.key)}
                     className={cn(
                       "size-5 rounded-full transition-transform",
@@ -226,19 +259,30 @@ export function BodyMapPanel({
             </Button>
           </div>
         </div>
+        {/* The clinic's legend (T3): named colours read at a glance. */}
+        {legend && Object.keys(legend).length > 0 && (
+          <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-1">
+            {PIN_TONES.filter((t) => legend[t.key]).map((t) => (
+              <span key={t.key} className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                <span className="size-2.5 rounded-full" style={{ backgroundColor: t.fill }} />
+                {legend[t.key]}
+              </span>
+            ))}
+          </div>
+        )}
         {/* Switching views clears the marks — say so before doing it. */}
-        {pendingView && (
+        {pending && (
           <div className="flex w-full items-center justify-between gap-2 rounded-lg bg-warning/10 px-2.5 py-1.5 text-xs text-foreground">
             <span>
-              Switching to the {pendingView === "face" ? "Face" : "Body"} view clears this map&apos;s marks.
+              Switching the figure clears this map&apos;s marks.
             </span>
             <span className="flex shrink-0 items-center gap-1">
               <button
                 type="button"
                 onClick={() => {
                   history.current = [];
-                  onChange({ view: pendingView, pins: [], strokes: [] });
-                  setPendingView(null);
+                  onChange({ view: pending.view, figure: pending.figure, pins: [], strokes: [] });
+                  setPending(null);
                 }}
                 className="rounded-md bg-foreground px-2 py-1 font-semibold text-background"
               >
@@ -246,7 +290,7 @@ export function BodyMapPanel({
               </button>
               <button
                 type="button"
-                onClick={() => setPendingView(null)}
+                onClick={() => setPending(null)}
                 className="rounded-md px-2 py-1 font-medium text-muted-foreground hover:text-foreground"
               >
                 Keep
@@ -288,14 +332,14 @@ export function BodyMapPanel({
             )}
             aria-label={view === "face" ? "Face map — tap to mark" : "Body map — tap to mark"}
           >
-            <BodyFigureArt view={view} />
+            <BodyFigureArt art={art} view={view} />
             {data.strokes.map((pts, i) => (
               <path
                 key={i}
                 d={strokePath(pts)}
                 fill="none"
                 stroke="#e0533f"
-                strokeWidth={10 * scale}
+                strokeWidth={dims.w * REL.stroke * scale}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 opacity={0.85}
@@ -306,28 +350,31 @@ export function BodyMapPanel({
                 d={strokePath(liveStroke)}
                 fill="none"
                 stroke="#e0533f"
-                strokeWidth={10 * scale}
+                strokeWidth={dims.w * REL.stroke * scale}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 opacity={0.5}
               />
             )}
-            {data.pins.map((p, i) => (
-              <g key={i}>
-                <circle cx={p.x} cy={p.y} r={44 * scale} fill={pinFill(p.tone)} opacity={0.2} />
-                <circle cx={p.x} cy={p.y} r={30 * scale} fill={pinFill(p.tone)} />
-                <text
-                  x={p.x}
-                  y={p.y + 13 * scale}
-                  textAnchor="middle"
-                  fontSize={38 * scale}
-                  fontWeight={600}
-                  fill="#fff"
-                >
-                  {i + 1}
-                </text>
-              </g>
-            ))}
+            {data.pins.map((p, i) => {
+              const r = dims.w * REL.pin * scale;
+              return (
+                <g key={i}>
+                  <circle cx={p.x} cy={p.y} r={r * 1.45} fill={pinFill(p.tone)} opacity={0.2} />
+                  <circle cx={p.x} cy={p.y} r={r} fill={pinFill(p.tone)} />
+                  <text
+                    x={p.x}
+                    y={p.y + r * 0.43}
+                    textAnchor="middle"
+                    fontSize={r * 1.26}
+                    fontWeight={600}
+                    fill="#fff"
+                  >
+                    {i + 1}
+                  </text>
+                </g>
+              );
+            })}
           </svg>
         </div>
       </div>
@@ -352,7 +399,7 @@ export function BodyMapPanel({
                 <button
                   type="button"
                   onClick={() => cycleTone(i)}
-                  title="Change Colour"
+                  title={`Change Colour — ${pinToneLabel(p.tone, legend)}`}
                   className="flex size-5 items-center justify-center rounded-full text-[11px] font-semibold text-white transition-transform hover:scale-110"
                   style={{ backgroundColor: pinFill(p.tone) }}
                 >

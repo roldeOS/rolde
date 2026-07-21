@@ -7,7 +7,7 @@ import {
   sanitiseParts,
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
-import { BodyFigureArt, VIEW_DIMS } from "./BodyFigureArt";
+import { BodyFigureArt, resolveFigureArt } from "./BodyFigureArt";
 import { isBodyMapData, bodyMapHasContent, pinFill, type BodyMapData } from "@/lib/bodyMap";
 import { cn } from "@/lib/utils";
 
@@ -149,46 +149,50 @@ export function StructuredNoteBody({
  * figure: same artwork, same coordinates, pins numbered, strokes drawn.
  */
 export function BodyMapThumbnail({ data }: { data: BodyMapData }) {
-  const view = data.view === "face" ? "face" : "anterior";
-  const dims = VIEW_DIMS[view];
+  const view =
+    data.view === "face" ? "face" : data.view === "posterior" ? "posterior" : "anterior";
+  const art = resolveFigureArt(data);
   const strokePath = (pts: number[][]) =>
     pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
   return (
     <svg
-      viewBox={dims.viewBox}
+      viewBox={art.viewBox}
       preserveAspectRatio="xMidYMid meet"
-      style={{ aspectRatio: `${dims.w} / ${dims.h}` }}
+      style={{ aspectRatio: `${art.w} / ${art.h}` }}
       className={cn("shrink-0 rounded-lg bg-muted/30", view === "face" ? "h-40" : "h-48")}
       aria-label={view === "face" ? "Face map thumbnail" : "Body map thumbnail"}
     >
-      <BodyFigureArt view={view} />
+      <BodyFigureArt art={art} view={view} />
       {data.strokes?.map((pts, i) => (
         <path
           key={i}
           d={strokePath(pts)}
           fill="none"
           stroke="#e0533f"
-          strokeWidth={14}
+          strokeWidth={art.w * 0.0145}
           strokeLinecap="round"
           strokeLinejoin="round"
           opacity={0.85}
         />
       ))}
-      {data.pins?.map((p, i) => (
-        <g key={i}>
-          <circle cx={p.x} cy={p.y} r={44} fill={pinFill(p.tone)} />
-          <text
-            x={p.x}
-            y={p.y + 17}
-            textAnchor="middle"
-            fontSize={56}
-            fontWeight={600}
-            fill="#fff"
-          >
-            {i + 1}
-          </text>
-        </g>
-      ))}
+      {data.pins?.map((p, i) => {
+        const r = art.w * 0.045;
+        return (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r={r} fill={pinFill(p.tone)} />
+            <text
+              x={p.x}
+              y={p.y + r * 0.39}
+              textAnchor="middle"
+              fontSize={r * 1.27}
+              fontWeight={600}
+              fill="#fff"
+            >
+              {i + 1}
+            </text>
+          </g>
+        );
+      })}
     </svg>
   );
 }

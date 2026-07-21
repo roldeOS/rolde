@@ -19,6 +19,7 @@ import {
   bodyMapHasContent,
   renderBodyMapText,
   type BodyMapData,
+  type BodymapLegendNames,
 } from "@/lib/bodyMap";
 export type TemplatePart =
   | { kind: "heading"; label: string }
@@ -151,7 +152,7 @@ const fmtDate = (iso: string) => {
  *  Unanswered parts are omitted (an honest note never says "N/A"), and a field
  *  whose label repeats its section heading renders WITHOUT the label prefix
  *  (no "SUBJECTIVE / Subjective:" doubling — Roland 2026-07-04). */
-export function renderTemplate(t: ScribeTemplate, answers: TemplateAnswers): string {
+export function renderTemplate(t: ScribeTemplate, answers: TemplateAnswers, legend?: BodymapLegendNames): string {
   const lines: string[] = [t.name];
   let heading = "";
   const push = (label: string, value: string) => {
@@ -195,7 +196,7 @@ export function renderTemplate(t: ScribeTemplate, answers: TemplateAnswers): str
         if (isBodyMapData(a) && bodyMapHasContent(a)) {
           // renderBodyMapText opens with "Body Map — N marks"; the part's own
           // label takes that headline's place, the marks follow line by line.
-          const mapLines = renderBodyMapText(a).split("\n");
+          const mapLines = renderBodyMapText(a, legend).split("\n");
           push(p.label, mapLines[0].replace(/^Body Map — /, ""));
           lines.push(...mapLines.slice(1));
         }

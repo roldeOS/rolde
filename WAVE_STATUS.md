@@ -114,4 +114,4 @@
 
 ---
 
-*Last updated: 2026-07-13 evening (T2 governance rework — Roland's ruling: Caretaker designs, team fills, deep-renamed clinic_templates, E2E gates proven; T2.5 autotext SHIPPED [".sn"+space expansions, personal by design, unit-tested ×6]; body-map artwork handover agreed [Roland generating rights-owned figures — spec: PNG transparent, face 1940×2400, body 1940×4400]; next: Roland's image files → Man/Woman underlay figures → T3 → Phase D on his word.)*
+*Last updated: 2026-07-21 (BODY-MAP v3: Roland's own figure set installed — face/body/back × woman/man, posters cropped programmatically, posterior view early, legacy maps keep original art [records law]; SNIPPET MENU beside shortcut-typing; T3 SHIPPED + AUDITED [Settings→Scribe Templates: usage counts · retire/patient-facing switches · colour-legend editor — names print on the record; clinician refusals + team-read + picker-exclusion + 393/768 all proven, one mobile flaw found-and-fixed in audit]; RoChat template-request seam registered; next: T4 [Roland's word] → Phase D.)*

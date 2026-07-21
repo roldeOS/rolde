@@ -1562,6 +1562,41 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     tablet-first, every new surface verified at 393px + 768px before "done". If the real-device
     askew persists post-deploy, ONE screenshot from the device pins the remaining offender.
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
+    **✅ BODY-MAP v3 ARTWORK INSTALLED + T3 SHIPPED & AUDITED (2026-07-21):**
+    **(1) Roland's figure set is IN** — his rights-owned files assessed honestly: the two FACE
+    portraits superb as delivered (professional medical-illustration, transparent background);
+    the two body files were labelled anatomy POSTERS — unusable raw, but each contained clean
+    anterior AND posterior figures, cropped programmatically at full res (title/caption text and
+    plate-edge strips detected and stripped; verified by contact-sheet screenshots). Final set:
+    SIX WebP assets (face/body/back × woman/man, ~80–156KB each, self-hosted /public/bodymap).
+    The annotator gains Body/Back/Face + Woman ⇄ Man; ONE figure per map (switch = honest
+    confirm-clear); marker sizes now RELATIVE to figure width (identical look across assets); the
+    record titles itself "Face Map (Woman) — N marks". **THE RECORDS LAW: pre-figure maps keep
+    the ORIGINAL artwork forever** (resolver renders legacy silhouette/v7 portrait — pin
+    coordinates are never re-projected). POSTERIOR VIEW arrived early free of charge.
+    **(2) SNIPPET MENU (Roland: "people may forget the shortcuts… add a dropdown"):** the Zap
+    "Snippets" chip in Scribe's header lists saved shortcuts — click inserts at the caret of the
+    last-focused field (native-setter + input event → flows through React state; works in every
+    present/future field), "Manage Shortcuts…" opens the manager. Shortcut-typing AND menu now
+    coexist.
+    **(3) T3 SHIPPED:** Settings → Scribe Templates (registry-driven: hub card + breadcrumb +
+    ⌘K) — the clinic library with USAGE COUNTS (from payload snapshots), Active/retire +
+    Patient-Facing switches (T4's eligibility flag, governed from day one), the same builder
+    sheet, and the COLOUR LEGEND editor. Legend names THREAD THE RECORD: renderBodyMapText/
+    renderTemplate print "[Anti-Wrinkle]" instead of "[Coral]", annotator swatches wear the names
+    + a legend chip row. Retired templates leave the picker; snapshots keep old notes rendering.
+    **(4) THE AUDIT (Roland: "do an audit… I want robust future proof iron clad"):** assets ×6
+    → 200 · caretaker SSR full · clinician → "Managed By Your Caretaker" · hub card present ·
+    retire → picker EXCLUDES → reactivate → returns · clinician flag-write refused · legend:
+    caretaker saves, clinician READS (team), clinician write refused · record naming unit-proven
+    · v3 artwork + pins screenshot-verified · plate-strips found + polished + dims re-synced ·
+    393px layout flaw FOUND during audit and FIXED (row stacks on phones) · 768px clean ·
+    typecheck/lint/title-case/build green. Roland's own template ("Roland's Test", Cardiology,
+    1 note written) alive through every migration.
+    **RoChat SEAM REGISTERED (Roland's idea 2026-07-21):** when RoChat lands, a clinician
+    REQUESTS a template (or an addition to one) through chat → the request reaches the Caretaker
+    → they build it in this same builder. The request→governance loop rides W1.6/RoChat; noted
+    for the boundary sync with iOS-Jarvis.
     **BODY-MAP ARTWORK HANDOVER AGREED (Roland 2026-07-13):** Roland is AI-generating his OWN
     rights-owned figure images (face close-up man+woman · full body man+woman; posterior welcome).
     Spec given: PNG (transparent background preferred), ~2000px+ long side — face ≈1940×2400,

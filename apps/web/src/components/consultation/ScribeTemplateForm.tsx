@@ -12,7 +12,7 @@ import {
   type TemplateAnswers,
 } from "@/lib/scribeTemplates";
 import { BodyMapPanel } from "@/components/consultation/BodyMapPanel";
-import { isBodyMapData, EMPTY_BODY_MAP, type BodyMapData } from "@/lib/bodyMap";
+import { isBodyMapData, EMPTY_BODY_MAP, type BodyMapData, type BodymapLegendNames } from "@/lib/bodyMap";
 import { cn } from "@/lib/utils";
 
 /**
@@ -27,6 +27,7 @@ export function ScribeTemplateForm({
   onChange,
   tempUnit = "c",
   expandText,
+  legend,
 }: {
   template: ScribeTemplate;
   answers: TemplateAnswers;
@@ -36,6 +37,8 @@ export function ScribeTemplateForm({
   /** T2.5 autotext — the workspace's expander: reads the element's value +
    *  caret, applies ".shortcut " expansions, restores the caret. */
   expandText?: (el: HTMLTextAreaElement | HTMLInputElement, apply: (v: string) => void) => void;
+  /** T3 — the clinic's colour names for embedded body-map parts. */
+  legend?: BodymapLegendNames;
 }) {
   // Named writeText — the vitals part has its own local `write` for arrays.
   const writeText = expandText ?? ((el: HTMLTextAreaElement | HTMLInputElement, apply: (v: string) => void) => apply(el.value));
@@ -142,7 +145,7 @@ export function ScribeTemplateForm({
               <div key={i}>
                 <p className="mb-1.5 text-xs font-semibold text-foreground">{p.label}</p>
                 <div className="flex flex-col rounded-xl bg-muted/30 p-2.5">
-                  <BodyMapPanel embedded data={data} onChange={(next) => onChange(i, next)} />
+                  <BodyMapPanel embedded data={data} onChange={(next) => onChange(i, next)} legend={legend} />
                 </div>
               </div>
             );

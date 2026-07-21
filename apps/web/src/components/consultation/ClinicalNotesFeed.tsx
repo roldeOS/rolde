@@ -62,7 +62,8 @@ export type FeedEntry = {
         | string[]
         | number
         | {
-            view: "anterior" | "face";
+            view: "anterior" | "posterior" | "face";
+            figure?: "woman" | "man";
             pins: { x: number; y: number; site: string; note: string; tone?: string }[];
             strokes: number[][][];
           }
@@ -71,7 +72,8 @@ export type FeedEntry = {
     /** Body-Map entries: the structured marks behind the text (v2.1: face
      *  view + per-pin treatment colours). */
     body_map?: {
-      view: "anterior" | "face";
+      view: "anterior" | "posterior" | "face";
+      figure?: "woman" | "man";
       pins: { x: number; y: number; site: string; note: string; tone?: string }[];
       strokes: number[][][];
     };

@@ -43,6 +43,7 @@ import { TemplateBuilder } from "@/components/consultation/TemplateBuilder";
 import {
   listClinicTemplates,
   listMyShortcuts,
+  getBodymapLegend,
   type ClinicTemplate,
   type AutotextShortcut,
 } from "@/app/(app)/patients/templateActions";
@@ -54,6 +55,7 @@ import {
   renderBodyMapText,
   bodyMapHasContent,
   type BodyMapData,
+  type BodymapLegendNames,
 } from "@/lib/bodyMap";
 import { cn } from "@/lib/utils";
 
@@ -150,9 +152,15 @@ export function ConsultationWorkspace({
   // sentence). Loaded once on mount; the manager hands back fresh lists.
   const [shortcuts, setShortcuts] = useState<AutotextShortcut[]>([]);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  // T3 — the clinic's colour legend: names print on the record + label the
+  // annotator's swatches.
+  const [legend, setLegend] = useState<BodymapLegendNames>({});
   useEffect(() => {
     void listMyShortcuts().then((r) => {
       if (r.ok) setShortcuts(r.data);
+    });
+    void getBodymapLegend().then((r) => {
+      if (r.ok) setLegend(r.data);
     });
   }, []);
   /** Expansion for any Scribe-owned text surface: returns the next value and
@@ -169,6 +177,45 @@ export function ConsultationWorkspace({
     },
     [shortcuts],
   );
+  // T2.5b — the SNIPPET MENU (Roland 2026-07-21: "people may forget the
+  // shortcuts… add this as a dropdown too"): the Zap chip lists the saved
+  // snippets; a click INSERTS at the caret of the last-focused Scribe field.
+  // The insert drives the element's native setter + an input event, so it
+  // flows through React's own onChange — every field, present or future,
+  // works with zero per-field wiring.
+  const [snippetBtn, setSnippetBtn] = useState<HTMLElement | null>(null);
+  const [snippetsMenuOpen, setSnippetsMenuOpen] = useState(false);
+  const lastTextRef = useRef<HTMLTextAreaElement | HTMLInputElement | null>(null);
+  const draftRef = useRef<HTMLTextAreaElement | null>(null);
+  const trackFocus = useCallback((e: React.FocusEvent) => {
+    const t = e.target as HTMLElement;
+    if (
+      t instanceof HTMLTextAreaElement ||
+      (t instanceof HTMLInputElement && (t.type === "text" || t.type === ""))
+    )
+      lastTextRef.current = t;
+  }, []);
+  const insertSnippet = useCallback((expansion: string) => {
+    const el =
+      lastTextRef.current && document.contains(lastTextRef.current)
+        ? lastTextRef.current
+        : draftRef.current;
+    if (!el) return;
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? start;
+    const next = el.value.slice(0, start) + expansion + el.value.slice(end);
+    const proto =
+      el instanceof HTMLTextAreaElement
+        ? HTMLTextAreaElement.prototype
+        : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(proto, "value")?.set?.call(el, next);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+    const caret = start + expansion.length;
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(caret, caret);
+    });
+  }, []);
   // Body-Map v2 (greenlit 2026-07-04) — a Scribe MODE (APPROVALS §4.3: the
   // one sanctioned automatic move is Scribe expanding for the map).
   const [bodyMap, setBodyMap] = useState<BodyMapData | null>(null);
@@ -330,11 +377,11 @@ export function ConsultationWorkspace({
       const fd = new FormData();
       fd.set("patient_id", patient.id);
       if (usingMap) {
-        fd.set("text", renderBodyMapText(bodyMap));
+        fd.set("text", renderBodyMapText(bodyMap, legend));
         fd.set("body_map", JSON.stringify(bodyMap));
         await saveBodyMap(fd);
       } else if (mode === "new") {
-        fd.set("text", usingTemplate ? renderTemplate(template, answers) : draft);
+        fd.set("text", usingTemplate ? renderTemplate(template, answers, legend) : draft);
         // T2: the template's NAME + PARTS ride the payload as a snapshot — the
         // note renders structured forever, even if the template is later
         // edited or removed (a clinical record never depends on a live lookup).
@@ -346,7 +393,7 @@ export function ConsultationWorkspace({
         await saveNote(fd);
       } else if (mode === "edit") {
         fd.set("entry_id", editTarget!.id);
-        fd.set("text", usingTemplate ? renderTemplate(template, answers) : draft);
+        fd.set("text", usingTemplate ? renderTemplate(template, answers, legend) : draft);
         if (usingTemplate)
           fd.set(
             "template_meta",
@@ -471,8 +518,11 @@ export function ConsultationWorkspace({
             </div>
             )}
 
-            {/* Composer — borderless, the whole white space; Save + Discard */}
+            {/* Composer — borderless, the whole white space; Save + Discard.
+                onFocusCapture feeds the snippet menu's insert target: the
+                last text field the writer was in. */}
             <section
+              onFocusCapture={trackFocus}
               style={grow(showNotes ? 1 - leftTop : 1)}
               className={cn(
                 "flex min-h-[220px] flex-col overflow-hidden rounded-2xl bg-card shadow-float transition-[flex-grow] ease-out lg:min-h-[92px]",
@@ -639,7 +689,7 @@ export function ConsultationWorkspace({
                       } else {
                         setTemplate(null);
                         setAnswers({});
-                        setBodyMap({ view: "anterior", pins: [], strokes: [] });
+                        setBodyMap({ view: "anterior", figure: "woman", pins: [], strokes: [] });
                         // The ONE sanctioned automatic move (APPROVALS §4.2):
                         // opening the Body-Map expands Scribe — user-initiated.
                         setLeftMode("bottom");
@@ -659,6 +709,63 @@ export function ConsultationWorkspace({
                     </span>
                   </button>
                 )}
+                {mode !== "new" || !bodyMap ? (
+                  <>
+                    <button
+                      ref={setSnippetBtn}
+                      onClick={() => setSnippetsMenuOpen((v) => !v)}
+                      title="Insert A Shortcut"
+                      className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
+                    >
+                      <Zap className="size-3.5" />
+                      <span className="hidden lg:inline">Snippets</span>
+                    </button>
+                    <AnchoredPopover
+                      anchor={snippetBtn}
+                      open={snippetsMenuOpen}
+                      onClose={() => setSnippetsMenuOpen(false)}
+                      width={300}
+                      icon={Zap}
+                      title="My Shortcuts"
+                      subtitle="Click to insert where you were typing"
+                      tone="teal"
+                      className="p-1.5"
+                    >
+                      {shortcuts.length === 0 && (
+                        <p className="px-2.5 py-3 text-xs text-muted-foreground">
+                          No shortcuts yet — save the sentences you type every
+                          day, then insert them from here or with “.shortcut”.
+                        </p>
+                      )}
+                      {shortcuts.map((sc) => (
+                        <button
+                          key={sc.id}
+                          onClick={() => {
+                            insertSnippet(sc.expansion);
+                            setSnippetsMenuOpen(false);
+                          }}
+                          className="flex w-full items-start gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-hover"
+                        >
+                          <span className="shrink-0 rounded-md bg-foreground/6 px-1.5 py-0.5 font-mono text-[11px] font-semibold text-foreground">
+                            .{sc.shortcut}
+                          </span>
+                          <span className="line-clamp-2 min-w-0 flex-1 text-xs text-muted-foreground">
+                            {sc.expansion}
+                          </span>
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => {
+                          setSnippetsMenuOpen(false);
+                          setShortcutsOpen(true);
+                        }}
+                        className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-border/60 px-2.5 pt-2 pb-1.5 text-left text-xs font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                      >
+                        Manage Shortcuts…
+                      </button>
+                    </AnchoredPopover>
+                  </>
+                ) : null}
                 <button
                   onClick={() =>
                     setLeftMode((m) => (m === "bottom" ? "split" : "bottom"))
@@ -712,17 +819,19 @@ export function ConsultationWorkspace({
                 {/* No focus-grow: the layout NEVER moves on its own — typing
                     included (APPROVALS §4.2, Roland 2026-07-01). */}
                 {mode === "new" && bodyMap ? (
-                  <BodyMapPanel data={bodyMap} onChange={setBodyMap} />
+                  <BodyMapPanel data={bodyMap} onChange={setBodyMap} legend={legend} />
                 ) : (mode === "new" || mode === "edit") && template ? (
                   <ScribeTemplateForm
                     template={template}
                     answers={answers}
                     onChange={(i, v) => setAnswers((a) => ({ ...a, [i]: v }))}
                     expandText={withAutotext}
+                    legend={legend}
                     tempUnit={defaultTempUnit(topbarPatient?.clinicCountry)}
                   />
                 ) : (
                 <textarea
+                  ref={draftRef}
                   value={draft}
                   onChange={(e) => withAutotext(e.target, setDraft)}
                   placeholder={

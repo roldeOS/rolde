@@ -82,6 +82,32 @@ export type Database = {
           },
         ]
       }
+      clinic_bodymap_legend: {
+        Row: {
+          labels: Json
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          labels?: Json
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          labels?: Json
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_bodymap_legend_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_clinical_modules: {
         Row: {
           created_at: string
@@ -1744,8 +1770,10 @@ export type Database = {
           deleted_at: string | null
           deleted_by: string | null
           id: string
+          is_active: boolean
           name: string
           parts: Json
+          patient_facing: boolean
           specialty: string
           tenant_id: string
           updated_at: string
@@ -1756,8 +1784,10 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           id?: string
+          is_active?: boolean
           name: string
           parts: Json
+          patient_facing?: boolean
           specialty?: string
           tenant_id: string
           updated_at?: string
@@ -1768,8 +1798,10 @@ export type Database = {
           deleted_at?: string | null
           deleted_by?: string | null
           id?: string
+          is_active?: boolean
           name?: string
           parts?: Json
+          patient_facing?: boolean
           specialty?: string
           tenant_id?: string
           updated_at?: string

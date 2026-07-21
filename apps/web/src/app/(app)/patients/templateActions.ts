@@ -54,6 +54,7 @@ export async function listClinicTemplates(): Promise<
     .from("clinic_templates")
     .select("id, name, specialty, parts")
     .eq("tenant_id", c.tenantId)
+    .eq("is_active", true)
     .is("deleted_at", null)
     .order("name");
   if (error) {
@@ -230,5 +231,141 @@ export async function deleteMyShortcut(id: string): Promise<ActionResult> {
     if (error) console.error("[autotext delete]", error.message);
     return fail(error ? "That didn’t save — try again." : "That shortcut was already removed.");
   }
+  return { ok: true };
+}
+
+
+// ── T3 — the Caretaker's governance card (Settings → Scribe Templates) ────
+
+export type ClinicTemplateAdmin = ClinicTemplate & {
+  is_active: boolean;
+  patient_facing: boolean;
+};
+
+/** The FULL library for the Settings card — retired templates included. */
+export async function listClinicTemplatesAdmin(): Promise<
+  { ok: true; data: ClinicTemplateAdmin[] } | { ok: false; error: string }
+> {
+  const c = await requireClinic();
+  if (!c) return fail("No clinic context for this user.");
+  const { data, error } = await c.supabase
+    .from("clinic_templates")
+    .select("id, name, specialty, parts, is_active, patient_facing")
+    .eq("tenant_id", c.tenantId)
+    .is("deleted_at", null)
+    .order("name");
+  if (error) {
+    console.error("[templates admin list]", error.message);
+    return fail("The clinic templates couldn’t be loaded — try again.");
+  }
+  return {
+    ok: true,
+    data: (data ?? []).flatMap((t) => {
+      const parts = sanitiseParts(t.parts);
+      return parts
+        ? [{ id: t.id, name: t.name, specialty: t.specialty, parts,
+             is_active: t.is_active, patient_facing: t.patient_facing }]
+        : [];
+    }),
+  };
+}
+
+/** Activate/retire + patient-facing eligibility — Caretaker only. Retiring
+ *  removes a template from the picker; history is safe (the snapshot law). */
+export async function setTemplateFlags(input: {
+  id: string;
+  is_active?: boolean;
+  patient_facing?: boolean;
+}): Promise<ActionResult> {
+  const c = await requireClinic();
+  if (!c) return fail("No clinic context for this user.");
+  if (c.role !== "caretaker")
+    return fail("Clinic templates are governed by the Caretaker.");
+  const patch: { is_active?: boolean; patient_facing?: boolean; updated_at: string } = {
+    updated_at: new Date().toISOString(),
+  };
+  if (typeof input.is_active === "boolean") patch.is_active = input.is_active;
+  if (typeof input.patient_facing === "boolean") patch.patient_facing = input.patient_facing;
+  const { data: updated, error } = await c.supabase
+    .from("clinic_templates")
+    .update(patch)
+    .eq("id", input.id)
+    .eq("tenant_id", c.tenantId)
+    .is("deleted_at", null)
+    .select("id, is_active, patient_facing")
+    .maybeSingle();
+  if (error || !updated) {
+    if (error) console.error("[template flags]", error.message);
+    return fail(error ? "That didn’t save — try again." : "That template wasn’t found.");
+  }
+  await logAudit({
+    tenantId: c.tenantId,
+    actorUserId: c.userId,
+    action: "template.flags",
+    resourceType: "clinic_template",
+    resourceId: input.id,
+    summary:
+      typeof input.is_active === "boolean"
+        ? input.is_active
+          ? "Reactivated a clinic Scribe template"
+          : "Retired a clinic Scribe template"
+        : input.patient_facing
+          ? "Marked a template patient-facing eligible"
+          : "Removed a template’s patient-facing eligibility",
+  });
+  return { ok: true };
+}
+
+// ── The clinic's body-map colour legend (Roland approved 2026-07-13) ──────
+
+export type BodymapLegend = Record<string, string>;
+
+export async function getBodymapLegend(): Promise<
+  { ok: true; data: BodymapLegend } | { ok: false; error: string }
+> {
+  const c = await requireClinic();
+  if (!c) return fail("No clinic context for this user.");
+  const { data, error } = await c.supabase
+    .from("clinic_bodymap_legend")
+    .select("labels")
+    .eq("tenant_id", c.tenantId)
+    .maybeSingle();
+  if (error) {
+    console.error("[legend read]", error.message);
+    return fail("The colour legend couldn’t be loaded — try again.");
+  }
+  const raw = (data?.labels ?? {}) as Record<string, unknown>;
+  const out: BodymapLegend = {};
+  for (const [k, v] of Object.entries(raw))
+    if (typeof v === "string" && v.trim()) out[k] = v.trim().slice(0, 40);
+  return { ok: true, data: out };
+}
+
+/** The Caretaker names the clinic's colours — the names print on the record. */
+export async function saveBodymapLegend(labels: BodymapLegend): Promise<ActionResult> {
+  const c = await requireClinic();
+  if (!c) return fail("No clinic context for this user.");
+  if (c.role !== "caretaker")
+    return fail("The colour legend is governed by the Caretaker.");
+  const TONES = ["coral", "amber", "sage", "lavender", "sky"];
+  const clean: BodymapLegend = {};
+  for (const t of TONES) {
+    const v = String(labels?.[t] ?? "").trim().slice(0, 40);
+    if (v) clean[t] = v;
+  }
+  const { error } = await c.supabase
+    .from("clinic_bodymap_legend")
+    .upsert({ tenant_id: c.tenantId, labels: clean, updated_at: new Date().toISOString() });
+  if (error) {
+    console.error("[legend save]", error.message);
+    return fail("That didn’t save — try again.");
+  }
+  await logAudit({
+    tenantId: c.tenantId,
+    actorUserId: c.userId,
+    action: "template.legend",
+    resourceType: "clinic_template",
+    summary: "Updated the body-map colour legend",
+  });
   return { ok: true };
 }

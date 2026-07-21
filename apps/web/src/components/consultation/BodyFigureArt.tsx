@@ -1,25 +1,72 @@
-import { BODY_PATH, BODY_VIEWBOX, FACE_VIEWBOX } from "./bodyFigure";
-import { type BodyMapView } from "@/lib/bodyMap";
+import { BODY_PATH } from "./bodyFigure";
+import { type BodyMapView, type BodyMapFigure } from "@/lib/bodyMap";
 
 /**
- * The figure artwork, one component for every renderer (annotator, tile
- * thumbnail, template part) — so the body and the face always draw
- * identically. Body = the PD silhouette (its source transform preserved —
- * the blank-map lesson); Face = RolDe's own serene front-face (v2.1).
+ * The figure artwork resolver — ONE authority for every renderer (annotator,
+ * tile thumbnail, template part).
+ *
+ * v3 (2026-07-21): Roland's OWN rights-owned figure set — professional
+ * medical-illustration WebP images (face · body · back, woman + man), served
+ * self-hosted from /public/bodymap. Every NEW map names its figure.
+ *
+ * THE RECORDS LAW: maps saved BEFORE the figure era carry no `figure` — they
+ * render on the ORIGINAL artwork (the PD silhouette / the v7 face portrait)
+ * because their pin coordinates belong to that geometry. A clinical record is
+ * never re-projected onto new art.
  */
-export const VIEW_DIMS: Record<BodyMapView, { w: number; h: number; viewBox: string }> = {
-  anterior: { w: 970, h: 2200, viewBox: BODY_VIEWBOX },
-  face: { w: 970, h: 1200, viewBox: FACE_VIEWBOX },
+export type FigureArtKey = `${BodyMapView}-${BodyMapFigure}`;
+
+/** Real pixel dimensions of each asset — the viewBox IS the image space. */
+export const FIGURE_ASSETS: Record<FigureArtKey, { w: number; h: number; href: string }> = {
+  "face-woman": { w: 1301, h: 2000, href: "/bodymap/face-woman.webp" },
+  "face-man": { w: 1321, h: 2000, href: "/bodymap/face-man.webp" },
+  "anterior-woman": { w: 648, h: 2000, href: "/bodymap/body-woman.webp" },
+  "anterior-man": { w: 649, h: 2000, href: "/bodymap/body-man.webp" },
+  "posterior-woman": { w: 650, h: 2000, href: "/bodymap/back-woman.webp" },
+  "posterior-man": { w: 650, h: 2000, href: "/bodymap/back-man.webp" },
 };
 
-export function BodyFigureArt({ view }: { view: BodyMapView }) {
-  if (view === "face") {
-    // The v3-line portrait (Roland 2026-07-13: v2 was "bland crap" — this one
-    // is drawn to facial canon with hair swept over the shoulders, lash lines,
-    // iris arcs and rose lips; every seam killed by construction). Iterated
-    // v3→v7 against rendered screenshots before shipping.
-    return (
-      <>
+const LEGACY_DIMS: Record<"anterior" | "face", { w: number; h: number }> = {
+  anterior: { w: 970, h: 2200 },
+  face: { w: 970, h: 1200 },
+};
+
+export type FigureArt = {
+  /** Pre-figure map → original artwork (coordinates belong to it). */
+  legacy: boolean;
+  w: number;
+  h: number;
+  viewBox: string;
+  href?: string;
+};
+
+export function resolveFigureArt(data: { view: BodyMapView; figure?: BodyMapFigure }): FigureArt {
+  if (data.figure) {
+    const key: FigureArtKey = `${data.view}-${data.figure}`;
+    const a = FIGURE_ASSETS[key] ?? FIGURE_ASSETS["anterior-woman"];
+    return { legacy: false, w: a.w, h: a.h, viewBox: `0 0 ${a.w} ${a.h}`, href: a.href };
+  }
+  const d = LEGACY_DIMS[data.view === "face" ? "face" : "anterior"];
+  return { legacy: true, w: d.w, h: d.h, viewBox: `0 0 ${d.w} ${d.h}` };
+}
+
+export function BodyFigureArt({ art, view }: { art: FigureArt; view: BodyMapView }) {
+  if (!art.legacy && art.href) {
+    return <image href={art.href} x={0} y={0} width={art.w} height={art.h} />;
+  }
+  if (view === "face") return <LegacyFacePortrait />;
+  return (
+    <g transform="translate(41.500029,630.92312)">
+      <path d={BODY_PATH} fill="#E7E2D6" stroke="#C9C2B0" strokeWidth={4} />
+    </g>
+  );
+}
+
+/** The v7 hand-crafted portrait — kept verbatim so pre-figure face maps
+ *  render exactly as they were recorded. */
+function LegacyFacePortrait() {
+  return (
+    <>
         <path d="M 312 660 L 658 660 L 665 1200 L 305 1200 Z" fill="#EAE4D6"/>
         <path d="M 512 1080 C 556 1062 610 1056 655 1066" fill="none" stroke="#A6997C" strokeWidth="5" strokeLinecap="round" opacity="0.65"/>
         <path d="M 458 1080 C 414 1062 360 1056 315 1066" fill="none" stroke="#A6997C" strokeWidth="5" strokeLinecap="round" opacity="0.65"/>
@@ -47,12 +94,6 @@ export function BodyFigureArt({ view }: { view: BodyMapView }) {
         <path d="M 468 615 C 463 620 456 622 449 619" fill="none" stroke="#A6997C" strokeWidth="4.5" strokeLinecap="round"/>
         <path d="M 408 712 C 436 692 462 688 477 699 C 480 701 490 701 493 699 C 508 688 534 692 562 712 C 538 745 510 760 485 760 C 460 760 432 745 408 712 Z" fill="#D9A79B" stroke="#C08A7D" strokeWidth="4" strokeLinejoin="round"/>
         <path d="M 408 712 C 446 726 524 726 562 712" fill="none" stroke="#C08A7D" strokeWidth="4" strokeLinecap="round"/>
-      </>
-    );
-  }
-  return (
-    <g transform="translate(41.500029,630.92312)">
-      <path d={BODY_PATH} fill="#E7E2D6" stroke="#C9C2B0" strokeWidth={4} />
-    </g>
+    </>
   );
 }

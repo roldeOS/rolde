@@ -14,6 +14,7 @@ import {
   Coins,
   Plug,
   Globe,
+  LayoutTemplate,
 } from "lucide-react";
 import type { CardIconTone } from "@/components/ui/CardIcon";
 
@@ -124,6 +125,17 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: Send,
     tone: "accent",
     source: "Bible 4.8 §15.7c (Courier C2)",
+    status: "ready",
+    group: "Clinical & Services",
+  },
+  {
+    key: "templates",
+    title: "Scribe Templates",
+    blurb:
+      "The clinic's documentation library — the templates your team fills (only the Caretaker designs them), what's active, and the body-map colour legend that names each pin colour on the record.",
+    icon: LayoutTemplate,
+    tone: "periwinkle",
+    source: "Bible 4.8 §15.7 (Scribe T3)",
     status: "ready",
     group: "Clinical & Services",
   },
