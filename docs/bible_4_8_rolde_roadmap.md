@@ -1608,6 +1608,84 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     · transcripts-never-audio default (Kiroku stance) · edit-learning loop (Lyrebird) ·
     Heidi's compliance paperwork spine · SNOMED-coded suggestions deferred to a Class-2a
     era. Phase F (NHS/EPR giants) remains the last sweep, on Roland's word.
+    **✅ PHASE F SWEPT 2026-07-21 (NHS & hospital EPR giants; Roland "Go for Phase F… deep dive
+    and then integrate into our Waves"). Roland's framing held: "horrible softwares… clunky and
+    very 1990's… but we can perhaps take some features and reimagine in our own image" — this
+    sweep hunts the CAPABILITY under the clunk and, above all, THE INTEROP RolDe must SPEAK, not
+    feature-envy.** The finds:
+    **EMIS Web** (England's #1 GP system, ~55%, ~40M records) — template-driven consultations +
+    a separate prescribing module + document management; the Ardens ecosystem layers SNOMED-coded
+    templates/safety-alerts/searches on top → validates RolDe's parts model AND registers a
+    future **template-pack marketplace** (curated + third-party packs over our T1/T2 engine, the
+    Ardens pattern in our image).
+    **SystmOne (TPP)** (~34%) — the "one patient, one record" SHARED record across 25+ care
+    settings → validates the Confer/record-sharing direction; the cross-setting shared record is
+    a far-era capability (a patient's record followed across organisations) noted for the
+    group-practice/ICS era.
+    **Vision (Cegedim, now OneAdvanced)** (~9%; NHS Scotland's national single-cloud GP system) →
+    the national single-tenant-cloud deployment model, noted for a nation-scale tenancy era.
+    **Docman (GP Document Workflow, OneAdvanced; ~6,000 practices)** — the INBOUND-DOCUMENT SPINE,
+    Phase F's cleanest operational steal: a letter/result arrives via CDA messaging → matched to
+    the patient → routed through a configurable workflow to the right person → coded against
+    SNOMED → filed to the record, with an AI workflow assistant that reviews/summarises/codes →
+    registered for **W3 (the results & correspondence inbox)** + **W5 (AI-assisted coding)**: the
+    closed loop RolDe's Courier already opened from the SEND side, now completing the RECEIVE side.
+    **Epic** (US acute-care leader; +77 hospitals 2025) — MyChart is the patient-portal gold
+    standard → the **W6 portal spec anchor**; and Epic's "Pals"/Haiku/Hyperdrive third-party
+    embedding (how Abridge lives inside Epic) → the far-era **app-platform** model (RolDe as a
+    platform others embed into).
+    **Oracle Health (Cerner)** — a rebuilt EHR centred on VOICE + AGENTIC AI on Oracle Cloud →
+    validates W5's ambient-AI direction and the agentic-assistant horizon (RolDe's own, self-hosted).
+    **TrakCare (InterSystems)** — a unified international EPR on the IRIS data platform → the
+    unified-data-platform pattern for international/hospital markets (thin public detail; noted,
+    not mined).
+    **THE NHS INTEROP SPINE (Phase F's flagship — what RolDe must SPEAK for NHS/mixed tenancy):**
+    a dedicated integration era, registered as **W-Interop (NHS)**, all on HL7 FHIR (UK Core; GP
+    Connect is STU3 today, uplifting to R4) over the national stack: **GP Connect** (read/structured
+    + HTML view of the GP record) · **PDS** Personal Demographics Service (verify patient + NHS
+    number via FHIR — the trustworthy spine of our national-ID field) · **e-RS** e-Referral Service
+    (the NHS referral rail — Courier's NHS-grade sibling) · **EPS** electronic prescriptions (W3
+    prescribing's NHS path) · **MESH / ITK3** (the secure messaging/transport under it all) ·
+    **CDA** for inbound documents (the Docman pipeline). This is the GATE for NHS tenancy vs
+    pure-private, and it is deliberately its own wave — procurement-locked rails, not features.
+    **THE WORLD SWEEP PROGRAMME IS COMPLETE (Phases A–F, 2026-07-04 → 2026-07-21):** UK direct
+    rivals · UK specialty · world giants · specialty/spa · AI scribes · NHS/EPR giants — every
+    steal registered across §15.7. Nothing further queued; new entrants get swept ad hoc.
+    **THE STEALS REGISTER (Roland 2026-07-21: "confirm all phases are detailed… no ambiguity when
+    we build") — every registered steal → its target wave → the acceptance line that makes it
+    build-ready. Full implementation spec lives in each wave's Build Register (§15.7) + the
+    specialty packs (§15.7c); this is the unambiguous index.**
+    | # | Steal (source) | Wave | Acceptance — "done" means… |
+    |---|---|---|---|
+    | S1 | Specimen-label printing (Semble/TDL, A) | W3 Lab spine | A lab request prints a barcoded specimen label (patient + test + accession) |
+    | S2 | Treatment-anchored recall rules (Pabau/WriteUpp, A) | W2 Cadence | A service defines its recall interval; checkout seeds the recall automatically |
+    | S3 | Personal autotext shortcuts (Carebit, A) | ✅ Scribe T2.5 | SHIPPED — `.shortcut` expands; menu inserts at caret |
+    | S4 | Self-Book controlled-slot links (Accurx, B) | W2 Cadence | A patient link books only into a clinic-defined slot set |
+    | S5 | Structured questionnaires as secure links (Accurx Floreys, B) | ✅ Courier T4 | SHIPPED — forms ride the token viewer; responses land in the feed |
+    | S6 | Consent auto-triggered on booking (Consentz, B) | W2 × T4.2 | Booking a consented treatment type auto-sends its consent pre-visit |
+    | S7 | Curated per-treatment consent library (Faces, B) | T4.2 | A ready-made consent per treatment (Botox/filler/PDO…), Caretaker-curated |
+    | S8 | Templates that learn from edits (Kiroku/Lyrebird, B/E) | W5 | The scribe proposes template tweaks from how clinicians fill them |
+    | S9 | Care pathway + outcome-score trend charts (iaptus/ChiroTouch, B/D) | Specialty packs | PHQ-9/GAD-7/Oswestry captured at check-in, scored, graphed over time |
+    | S10 | AI drafts INTO a template's parts (Jane, C) | W5 | The ambient scribe fills a chosen template's parts (parts = the AI's output contract) |
+    | S11 | Questionnaire analytics (IntakeQ, C) | Reports | Aggregate intake/outcome answers across patients into a report |
+    | S12 | Patient-logged metrics + wearable sync (Healthie, C) | W6 portal | Apple Health/Fitbit values pull into the record on our canonical vitals keys |
+    | S13 | Programme builder — multi-session packages (Practice Better, C) | W4/W6 | Sell a multi-session programme with scheduled content drops + milestones |
+    | S14 | **The Photo Spine** (Aesthetic Record/RxPhoto/Nextech, D) | Body-Map v2.2 | Capture (ghost-overlay guide) → store → side-by-side + overlay compare → annotate-on-photo → watermarked export |
+    | S15 | **The GFE hard-stop gate** (US medspa law, D) | Aesthetics pack | A treatment type flagged "requires clearance" BLOCKS note finalisation until a prescriber clearance is linked |
+    | S16 | Gap-aware self-book ranking (Boulevard, D) | W2 Cadence | Patient self-book ranks slots to minimise calendar gaps |
+    | S17 | **Spa commerce** — series · wallet · gift cards · tiered memberships (Zenoti/Boulevard, D) | W4 Money | The right session auto-deducts at checkout; benefits auto-apply; a transferred credit never transfers clinical clearance |
+    | S18 | AI receptionist / lead lifecycle (Zenoti, D) | W6 Growth | An AI answers calls + books 24/7; leads scored + nurtured (RolDe's own AI) |
+    | S19 | **Linked evidence per note part** (Abridge, E) | W5 | Each AI-filled part links to the transcript segment that produced it; verify-before-sign in one tap |
+    | S20 | Class-1-summariser compliance spine (Heidi + NHSE AVT, E) | W5 | Named CSO · DCB0129 safety case · a hazard-log + safety-case PACK shipped per clinic; human check-and-correct gate before the record |
+    | S21 | **The NHS interop spine** — GP Connect · PDS · e-RS · EPS · MESH/ITK3 · CDA (F) | W-Interop (NHS) | RolDe verifies a patient via PDS, reads the GP record via GP Connect, refers via e-RS, prescribes via EPS — all FHIR UK Core |
+    | S22 | **Inbound document pipeline** (Docman, F) | W3 inbox | An inbound letter/result matches to a patient → workflow → SNOMED-coded → filed; AI summarises/codes (W5) |
+    | S23 | SNOMED-coded template-pack marketplace (EMIS/Ardens, F) | W-future | Curated + third-party template packs over the T1/T2 engine |
+    | S24 | MyChart-grade patient portal (Epic, F) | W6 portal | The portal spec anchors to MyChart's capability set |
+    **Honest scope note:** S1–S24 are the SWEEP's registered captures, each mapped to a wave with an
+    acceptance line — unambiguous about WHAT and WHERE. The line-by-line UI/data/RLS spec for each
+    is authored in its wave's Build Register when that wave is built (that is where field names,
+    migrations and screens are pinned); the sweep does not pre-author screens for waves years out,
+    by design (priors are wrong by default — we spec against the live app at build time).
     **POPOVER ANATOMY — LOCKED INTO THE URDS (Roland 2026-07-13: "Lock it in the URDS"):** the
     PopoverHeader roster row + tone map are law (§8); the audit found every remaining floating
     surface belongs to a DIFFERENT standardised species (SectionExplainer · ConfirmDialog · ⌘K ·
