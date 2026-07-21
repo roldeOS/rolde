@@ -51,11 +51,26 @@ export function NotePhotoGallery({ photos }: { photos: NotePhoto[] }) {
   const after = photos.filter((p) => p.phase === "after");
   const other = photos.filter((p) => p.phase !== "before" && p.phase !== "after");
   const open = (list: NotePhoto[], index: number) => setViewer({ list, index });
+  // Roland 2026-07-22: Before and After sit SIDE BY SIDE (two columns) when a
+  // note has both — the natural way to read a before/after set. Only one phase →
+  // full width. A subtle divider separates the columns.
+  const bothBA = before.length > 0 && after.length > 0;
 
   return (
     <div className="mt-2 space-y-2">
-      <PhaseGroup label="Before" list={before} onOpen={open} />
-      <PhaseGroup label="After" list={after} onOpen={open} />
+      {bothBA ? (
+        <div className="grid grid-cols-2 gap-3">
+          <PhaseGroup label="Before" list={before} onOpen={open} />
+          <div className="border-l border-border/50 pl-3">
+            <PhaseGroup label="After" list={after} onOpen={open} />
+          </div>
+        </div>
+      ) : (
+        <>
+          <PhaseGroup label="Before" list={before} onOpen={open} />
+          <PhaseGroup label="After" list={after} onOpen={open} />
+        </>
+      )}
       <PhaseGroup label="Photos" list={other} onOpen={open} />
       {viewer && (
         <PhotoViewer

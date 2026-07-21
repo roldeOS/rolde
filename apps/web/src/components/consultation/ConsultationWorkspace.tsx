@@ -529,6 +529,9 @@ export function ConsultationWorkspace({
           );
         else fd.set("marks", JSON.stringify(draftMarks));
         await editNote(fd);
+        // Photo M2 — new photos added while editing attach to THIS note.
+        if (stagedPhotos.length)
+          await attachPhotosToEntry(stagedPhotos.map((p) => p.id), editTarget!.id, patient.id);
       } else {
         // Amendment (own, locked) may strike the original; an ADDENDUM never
         // touches someone else's original (author-only, RLS-enforced too).
@@ -542,7 +545,11 @@ export function ConsultationWorkspace({
         fd.set("parent_id", editTarget!.id);
         fd.set("text", draft);
         if (draftMarks.length) fd.set("marks", JSON.stringify(draftMarks));
-        await amendNote(fd);
+        fd.set("photo_count", String(stagedPhotos.length));
+        const res = await amendNote(fd);
+        // Photos added while amending ride on the amendment entry.
+        if (res?.id && stagedPhotos.length)
+          await attachPhotosToEntry(stagedPhotos.map((p) => p.id), res.id, patient.id);
       }
       // Photos are already attached above — reset WITHOUT soft-deleting them.
       resetComposer();
@@ -827,8 +834,11 @@ export function ConsultationWorkspace({
                   </div>
                 )}
                 {/* Photo M2 (Roland 2026-07-22): the camera lives next to
-                    Templates; captures STAGE for this note and attach on Save. */}
-                {mode === "new" && !bodyMap && (
+                    Templates; captures STAGE for this note and attach on Save.
+                    Shown in every note-composing mode (new · edit · amend ·
+                    addendum) so photos can be added to any note — hidden only in
+                    the body-map annotator. */}
+                {!bodyMap && (
                   <PhotoCaptureButton
                     patientId={patient.id}
                     staged={stagedPhotos}

@@ -281,13 +281,15 @@ export async function strikeNote(formData: FormData) {
  * How you correct the record once the edit window has closed; the original
  * stays put.
  */
-export async function amendNote(formData: FormData) {
+export async function amendNote(formData: FormData): Promise<{ id: string } | undefined> {
   const parentId = String(formData.get("parent_id") ?? "");
   const patientId = String(formData.get("patient_id") ?? "");
   // CRLF from browser form posts normalises to LF at the door (the
   // invisible-\r lesson, 2026-07-21) — stored records are clean text.
   const text = String(formData.get("text") ?? "").replace(/\r\n?/g, "\n").trim();
-  if (!parentId || !patientId || !text) return;
+  // Photo M2 — an amendment may carry only photos (empty text is fine then).
+  const photoCount = Number(formData.get("photo_count")) || 0;
+  if (!parentId || !patientId || (!text && photoCount === 0)) return undefined;
 
   const ctx = await getSessionContext();
   const tenantId = ctx?.membership?.tenant_id;
@@ -304,18 +306,22 @@ export async function amendNote(formData: FormData) {
   const isAddendum = !!parent && parent.created_by !== (ctx?.user.id ?? null);
 
   const marks = parseMarks(formData, text.length);
-  const { error } = await supabase.from("patient_feed_entries").insert({
-    tenant_id: tenantId,
-    patient_id: patientId,
-    entry_type: "clinical_note",
-    payload: {
-      text,
-      word_count: text.split(/\s+/).filter(Boolean).length,
-      ...(marks !== undefined ? { format_marks: marks } : {}),
-    },
-    related_entry_id: parentId,
-    created_by: ctx?.user.id ?? null,
-  });
+  const { data: row, error } = await supabase
+    .from("patient_feed_entries")
+    .insert({
+      tenant_id: tenantId,
+      patient_id: patientId,
+      entry_type: "clinical_note",
+      payload: {
+        text,
+        word_count: text.split(/\s+/).filter(Boolean).length,
+        ...(marks !== undefined ? { format_marks: marks } : {}),
+      },
+      related_entry_id: parentId,
+      created_by: ctx?.user.id ?? null,
+    })
+    .select("id")
+    .single();
   if (error) throw new Error(error.message);
 
   await logAudit({
@@ -330,6 +336,7 @@ export async function amendNote(formData: FormData) {
   });
 
   revalidatePath(`/patients/${patientId}`);
+  return row ? { id: row.id } : undefined;
 }
 
 /**
