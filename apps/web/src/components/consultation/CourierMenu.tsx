@@ -55,6 +55,7 @@ export function CourierMenu({
   onSendForm,
   unsentLetters,
   onSendLetter,
+  showLabel = true,
 }: {
   /** Opens the Send-A-Form sheet (T4) anchored to the Courier chip. */
   onSendForm: (anchor: HTMLElement) => void;
@@ -62,6 +63,8 @@ export function CourierMenu({
   unsentLetters: UnsentLetter[];
   /** Opens the letter Send sheet (C3) for the picked entry. */
   onSendLetter: (entryId: string, anchor: HTMLElement) => void;
+  /** false → icon only (the Scribe header collapses chips when narrow). */
+  showLabel?: boolean;
 }) {
   const [btn, setBtn] = useState<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
@@ -79,7 +82,7 @@ export function CourierMenu({
         className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
       >
         <Send className={cn("size-3.5", CARD_ICON_TEXT.warning)} />
-        <span className="hidden lg:inline">Courier</span>
+        {showLabel && <span>Courier</span>}
       </button>
       <AnchoredPopover
         anchor={btn}

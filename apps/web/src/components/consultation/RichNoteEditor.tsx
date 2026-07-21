@@ -421,10 +421,12 @@ export const RichNoteEditor = forwardRef<
     /** Enter-to-continue-lists: given text + caret, the next value (or null). */
     continueList?: (text: string, caret: number) => { value: string; caret: number } | null;
     onFocusCapture?: () => void;
+    /** Suppress the floating bubble (e.g. while the header Format panel is open). */
+    bubbleHidden?: boolean;
     className?: string;
   }
 >(function RichNoteEditor(
-  { initialText, initialMarks, docKey, placeholder, onChange, expand, continueList, onFocusCapture, className },
+  { initialText, initialMarks, docKey, placeholder, onChange, expand, continueList, onFocusCapture, bubbleHidden, className },
   ref,
 ) {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -672,6 +674,7 @@ export const RichNoteEditor = forwardRef<
           highlight (default colour); the full palette is the header panel. */}
       {mounted &&
         bubble &&
+        !bubbleHidden &&
         createPortal(
           <div
             className="fixed z-[80] flex -translate-x-1/2 -translate-y-full items-center gap-0.5 rounded-lg border border-border/50 bg-card p-0.5 shadow-overlay"

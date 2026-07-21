@@ -231,6 +231,22 @@ export function ConsultationWorkspace({
   // B6.2 — the Format panel (one header chip → the full rich-text palette).
   const [formatBtn, setFormatBtn] = useState<HTMLElement | null>(null);
   const [formatOpen, setFormatOpen] = useState(false);
+  // Chips collapse to ICONS when the Scribe header is narrow (Roland 2026-07-21)
+  // — measured on the CARD, not the viewport (a ResizeObserver, since Turbopack
+  // wasn't emitting the container-query utilities here).
+  const scribeHeaderRef = useRef<HTMLDivElement | null>(null);
+  const [chipsWide, setChipsWide] = useState(true);
+  useEffect(() => {
+    const el = scribeHeaderRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((entries) => {
+      // Five labelled chips + title + expand need ~660px to sit on one line;
+      // below that, collapse to icons so the header never wraps.
+      for (const e of entries) setChipsWide(e.contentRect.width >= 660);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const lastTextRef = useRef<HTMLTextAreaElement | HTMLInputElement | null>(null);
   // B6 — the free-note editor (contentEditable). A snippet insert routes here
   // when the rich editor was the last-focused Scribe surface, else to the
@@ -597,7 +613,13 @@ export function ConsultationWorkspace({
                 dur,
               )}
             >
-              <div className="glass sticky top-0 z-10 flex flex-wrap items-center gap-x-2 gap-y-1 px-4 py-2.5">
+              {/* Chips collapse to ICONS when the CARD is narrow (measured by
+                  ResizeObserver, Roland 2026-07-21); `order` puts Format first
+                  (his ask), the spacer right-aligns the whole cluster. */}
+              <div
+                ref={scribeHeaderRef}
+                className="glass sticky top-0 z-10 flex flex-wrap items-center gap-x-2 gap-y-1 px-4 py-2.5"
+              >
                 <CardIcon icon={PenLine} tone="brand" variant="badge" size="sm" />
                 <span className="min-w-0 truncate text-sm font-semibold">{composerTitle}</span>
                 <SectionExplainer
@@ -609,10 +631,12 @@ export function ConsultationWorkspace({
                     { term: "Amend", definition: "After an hour the note locks; add an amendment and optionally strike the original (it's never deleted)." },
                   ]}
                 />
+                {/* Spacer: right-aligns the chip cluster (replaces per-chip ml-auto). */}
+                <div aria-hidden className="ml-auto" />
                 {/* RolDe Scribe Templates (T1): the picker lives IN Scribe's
                     header — never a separate page (Roland 2026-07-04). */}
                 {mode === "new" && !bodyMap && (
-                  <div className="ml-auto">
+                  <div className="order-2">
                     <button
                       ref={setPickerBtn}
                       onClick={() => setPickerOpen((v) => !v)}
@@ -621,7 +645,7 @@ export function ConsultationWorkspace({
                       {/* B3 (Roland 2026-07-21): chip icons wear their popover's
                           Earth & Bloom tone — the colour teaches the feature. */}
                       <LayoutTemplate className={cn("size-3.5", CARD_ICON_TEXT.periwinkle)} />
-                      <span className={cn(!template && "hidden sm:inline")}>
+                      <span className={cn(!chipsWide && "hidden")}>
                         {template ? template.name : "Templates"}
                       </span>
                       <ChevronDown className={cn("size-3 transition-transform", pickerOpen && "rotate-180")} />
@@ -765,14 +789,14 @@ export function ConsultationWorkspace({
                       }
                     }}
                     className={cn(
-                      "flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:shadow",
+                      "order-2 flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:shadow",
                       bodyMap
                         ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground",
                     )}
                   >
                     <PersonStanding className={cn("size-3.5", CARD_ICON_TEXT.peach)} />
-                    <span className={cn(!bodyMap && "hidden sm:inline")}>
+                    <span className={cn(!chipsWide && "hidden")}>
                       {bodyMap ? "Close Anatomy" : "Anatomy"}
                     </span>
                   </button>
@@ -783,10 +807,10 @@ export function ConsultationWorkspace({
                       ref={setSnippetBtn}
                       onClick={() => setSnippetsMenuOpen((v) => !v)}
                       title="Insert A Shortcut"
-                      className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
+                      className="order-2 flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                     >
                       <Zap className={cn("size-3.5", CARD_ICON_TEXT.teal)} />
-                      <span className="hidden lg:inline">Snips</span>
+                      <span className={cn(!chipsWide && "hidden")}>Snips</span>
                     </button>
                     <AnchoredPopover
                       anchor={snippetBtn}
@@ -834,13 +858,16 @@ export function ConsultationWorkspace({
                     </AnchoredPopover>
                     {/* B2 (Roland 2026-07-21 "Go"): the COURIER door — one
                         branded menu for everything that leaves the clinic. */}
-                    <CourierMenu
-                      onSendForm={(el) => setFormSheet({ open: true, anchor: el })}
-                      unsentLetters={unsentLetters}
-                      onSendLetter={(entryId, el) =>
-                        setLetterSheet({ open: true, anchor: el, entryId })
-                      }
-                    />
+                    <span className="order-2 flex items-center">
+                      <CourierMenu
+                        onSendForm={(el) => setFormSheet({ open: true, anchor: el })}
+                        unsentLetters={unsentLetters}
+                        onSendLetter={(entryId, el) =>
+                          setLetterSheet({ open: true, anchor: el, entryId })
+                        }
+                        showLabel={chipsWide}
+                      />
+                    </span>
                     {/* B6.2 (Roland 2026-07-21 "Go"): the FORMAT panel — one chip
                         opens the full palette (B/I/U/S · highlight colours ·
                         lists · indent · clear). The quick bubble handles inline
@@ -852,10 +879,10 @@ export function ConsultationWorkspace({
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => setFormatOpen((v) => !v)}
                           title="Format The Text"
-                          className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
+                          className="order-1 flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                         >
                           <Type className={cn("size-3.5", CARD_ICON_TEXT.rose)} />
-                          <span className="hidden lg:inline">Format</span>
+                          <span className={cn(!chipsWide && "hidden")}>Format</span>
                         </button>
                         <AnchoredPopover
                           anchor={formatBtn}
@@ -949,8 +976,7 @@ export function ConsultationWorkspace({
                   }
                   title={leftMode === "bottom" ? "Restore" : "Expand"}
                   className={cn(
-                    "flex size-7 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow",
-                    mode !== "new" && "ml-auto",
+                    "order-2 flex size-7 items-center justify-center rounded-lg bg-card text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow",
                   )}
                 >
                   {leftMode === "bottom" ? (
@@ -961,7 +987,7 @@ export function ConsultationWorkspace({
                 </button>
               </div>
 
-              <div className="flex min-h-0 flex-1 flex-col px-4 pb-3">
+              <div className="flex min-h-0 flex-1 flex-col px-4 pb-2.5">
                 {(mode === "amend" || mode === "addendum") && (
                   <div className="mb-2 rounded-lg bg-muted/50 p-2.5">
                     <div className="flex items-center justify-between">
@@ -1024,6 +1050,7 @@ export function ConsultationWorkspace({
                     onFocusCapture={() => {
                       lastWasRichRef.current = true;
                     }}
+                    bubbleHidden={formatOpen}
                     placeholder={
                       mode === "amend"
                         ? "Amendment…"
@@ -1033,7 +1060,9 @@ export function ConsultationWorkspace({
                     }
                   />
                 )}
-                <div className="flex shrink-0 items-center justify-end gap-2 pt-1">
+                {/* Symmetric breathing room above and below the buttons
+                    (Roland 2026-07-21): footer pt matches the card's pb-2.5. */}
+                <div className="flex shrink-0 items-center justify-end gap-2 pt-2.5">
                   {(editTarget || draft || template || bodyMap) && (
                     <Button variant="ghost" size="sm" onClick={discard}>
                       Discard
