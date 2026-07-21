@@ -1571,6 +1571,43 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     reminders · and the compliance nuance that a TRANSFERRED credit never transfers clinical
     clearance (every treated person needs their own GFE/consent). Registered as the W4
     spa-commerce blueprint. Phase E (AI scribes) next on Roland's word.
+    **✅ PHASE E SWEPT 2026-07-21 (AI scribes, feeds W5; Roland "Go for Phase E…quality
+    matters…do a real deep dive"):** the finds:
+    **Heidi** — the UK-COMPLIANCE BLUEPRINT: UK data hosting · DTAC + DCB0129 alignment · a
+    NAMED Clinical Safety Officer · a maintained Clinical Safety Case · listed on the NHSE
+    AVT registry — this is the exact paperwork spine RolDe's own scribe must wear (and we
+    already build to DCB0129/0160 by law) · deep field-by-field template customisation +
+    "Ask Heidi" inline assistant → validates drafting into TEMPLATE PARTS, not free text.
+    **Lyrebird** — ~20-second structured note after the consult ends · the LEARNING LOOP:
+    it improves from the clinician's own EDITS and uploaded templates (the Kiroku
+    template-learning steal, confirmed at scale) · deep in-EHR embedding (Bp integration)
+    as its moat — RolDe's advantage: our scribe is BORN inside the EHR.
+    **Nabla** — EHR-NATIVE via SMART on FHIR (the interop standard our W5 respects even
+    in-house) · ~5-second drafts · coded suggestions (ICD-10/HCC; RolDe's UK frame =
+    SNOMED CT) · the EVIDENCE CULTURE steal: a randomised trial across 72,000 encounters
+    (9.5% documentation-time reduction vs control) — RolDe's W5 claims get measured the
+    same way, never marketing numbers · clinician-review-required draft language.
+    **Abridge** (Best in KLAS ambient AI 2025 + 2026) — the FLAGSHIP STEAL: **LINKED
+    EVIDENCE** — every sentence of the draft links to the exact transcript/audio segment
+    that produced it, so the clinician verifies any claim in one tap without replaying
+    the encounter. This is the trust mechanism for W5: each filled TEMPLATE PART carries
+    its source-segment reference; verify-before-sign becomes one glance · real-time
+    progressive drafting during the consult · UpToDate reference embedding (a far-era
+    idea for our knowledge layer).
+    **THE NHSE AVT GUIDANCE (April 2026) — W5's regulatory spine, quoted not improvised:**
+    ambient scribing products that SUMMARISE need at least **MHRA Class 1 medical-device
+    status**; anything generating diagnoses or management plans needs **Class 2a** ·
+    deploying organisations owe a **DCB0160 clinical-safety risk assessment + DPIA** (so
+    RolDe ships each clinic a ready hazard-log + safety-case PACK — the Caretaker doesn't
+    write these from scratch) · outputs MUST be checked and corrected by the clinician
+    before entering the record (our Blocking sign-gate law, now regulator-worded) ·
+    consent/objection routes required; RCPsych mental-health AVT guidance lands ~Sept 2026
+    — the therapy pack waits for it. **W5 BUILD SPINE LOCKED BY THIS SWEEP:** RolDe's
+    scribe launches as a Class-1 SUMMARISER only (no auto-diagnosis/plans — stays Class 1)
+    · drafts INTO template parts (the Jane marriage) · linked evidence per part (Abridge)
+    · transcripts-never-audio default (Kiroku stance) · edit-learning loop (Lyrebird) ·
+    Heidi's compliance paperwork spine · SNOMED-coded suggestions deferred to a Class-2a
+    era. Phase F (NHS/EPR giants) remains the last sweep, on Roland's word.
     **POPOVER ANATOMY — LOCKED INTO THE URDS (Roland 2026-07-13: "Lock it in the URDS"):** the
     PopoverHeader roster row + tone map are law (§8); the audit found every remaining floating
     surface belongs to a DIFFERENT standardised species (SectionExplainer · ConfirmDialog · ⌘K ·
