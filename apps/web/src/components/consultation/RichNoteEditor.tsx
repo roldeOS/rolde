@@ -13,9 +13,13 @@ import { Highlighter } from "lucide-react";
 import {
   mergeMarks,
   toSegments,
+  highlightBg,
+  DEFAULT_HIGHLIGHT,
   type MarkKind,
   type NoteMark,
 } from "@/lib/richText";
+
+export type LineOp = "bullet" | "number" | "indent" | "outdent";
 import { cn } from "@/lib/utils";
 
 /**
@@ -37,6 +41,14 @@ export type RichNoteHandle = {
   insertText: (s: string) => void;
   focus: () => void;
   isActive: () => boolean;
+  /** Toggle bold/italic/underline/strikethrough on the selection. */
+  format: (k: MarkKind) => void;
+  /** Set (or toggle off) a highlight colour on the selection. */
+  highlight: (colour: string) => void;
+  /** Strip all formatting from the selection. */
+  clearFormat: () => void;
+  /** Bullet/number/indent/outdent the selected lines. */
+  lineOp: (op: LineOp) => void;
 };
 
 const TAG_KIND: Record<string, MarkKind> = {
@@ -45,6 +57,9 @@ const TAG_KIND: Record<string, MarkKind> = {
   EM: "i",
   I: "i",
   U: "u",
+  S: "s",
+  STRIKE: "s",
+  DEL: "s",
   MARK: "h",
 };
 
@@ -67,7 +82,9 @@ function toHtml(text: string, marks: NoteMark[]): string {
       if (i > 0) html += "<br>";
       if (!part) return;
       let h = escapeHtml(part);
-      if (seg.h) h = `<mark>${h}</mark>`;
+      if (seg.h)
+        h = `<mark data-c="${seg.hc ?? DEFAULT_HIGHLIGHT}" style="background-color:${highlightBg(seg.hc)}">${h}</mark>`;
+      if (seg.s) h = `<s>${h}</s>`;
       if (seg.u) h = `<u>${h}</u>`;
       if (seg.i) h = `<em>${h}</em>`;
       if (seg.b) h = `<strong>${h}</strong>`;
@@ -77,18 +94,20 @@ function toHtml(text: string, marks: NoteMark[]): string {
   return html + "<br>"; // trailing filler
 }
 
-/** Raw walk: text length + each <br> as one "\n". No filler stripping. */
+/** Raw walk: text length + each <br> as one "\n". No filler stripping. The
+ *  nearest <mark>'s data-c colour rides along so highlights keep their colour. */
 function rawFromDom(root: Node): { text: string; marks: NoteMark[] } {
   let text = "";
   const marks: NoteMark[] = [];
-  const walk = (node: Node, active: MarkKind[]) => {
+  const walk = (node: Node, active: MarkKind[], hColour: string) => {
     node.childNodes.forEach((child) => {
       if (child.nodeType === Node.TEXT_NODE) {
         const t = child.textContent ?? "";
         if (!t) return;
         const start = text.length;
         text += t;
-        for (const k of active) marks.push({ s: start, e: text.length, k });
+        for (const k of active)
+          marks.push(k === "h" ? { s: start, e: text.length, k, c: hColour } : { s: start, e: text.length, k });
       } else if (child.nodeType === Node.ELEMENT_NODE) {
         const el = child as HTMLElement;
         if (el.tagName === "BR") {
@@ -96,11 +115,12 @@ function rawFromDom(root: Node): { text: string; marks: NoteMark[] } {
           return;
         }
         const kind = TAG_KIND[el.tagName];
-        walk(el, kind ? [...active, kind] : active);
+        const nextColour = el.tagName === "MARK" ? el.getAttribute("data-c") || DEFAULT_HIGHLIGHT : hColour;
+        walk(el, kind ? [...active, kind] : active, nextColour);
       }
     });
   };
-  walk(root, []);
+  walk(root, [], DEFAULT_HIGHLIGHT);
   return { text, marks };
 }
 
@@ -109,9 +129,14 @@ function fromDom(root: HTMLElement): { text: string; marks: NoteMark[] } {
   const raw = rawFromDom(root);
   let text = raw.text;
   if (text.endsWith("\n")) text = text.slice(0, -1);
-  // Clamp marks to the (possibly shortened) text and merge.
+  // Clamp marks to the (possibly shortened) text and merge (colour preserved).
   const marks = raw.marks
-    .map((m) => ({ s: Math.min(m.s, text.length), e: Math.min(m.e, text.length), k: m.k }))
+    .map((m) => ({
+      s: Math.min(m.s, text.length),
+      e: Math.min(m.e, text.length),
+      k: m.k,
+      ...(m.c ? { c: m.c } : {}),
+    }))
     .filter((m) => m.e > m.s);
   return { text, marks: mergeMarks(marks) };
 }
@@ -215,22 +240,139 @@ function toggleMark(marks: NoteMark[], start: number, end: number, k: MarkKind):
   return mergeMarks([...others, ...same, { s: start, e: end, k }]);
 }
 
-/** Shift marks for a text splice [start, oldEnd) → newLen chars. */
+/** Shift marks for a text splice [start, oldEnd) → newLen chars (colour kept). */
 function spliceMarks(marks: NoteMark[], start: number, oldEnd: number, newLen: number): NoteMark[] {
   const delta = newLen - (oldEnd - start);
   const out: NoteMark[] = [];
   for (const m of marks) {
+    const c = m.c ? { c: m.c } : {};
     if (m.e <= start) out.push(m);
-    else if (m.s >= oldEnd) out.push({ s: m.s + delta, e: m.e + delta, k: m.k });
+    else if (m.s >= oldEnd) out.push({ s: m.s + delta, e: m.e + delta, k: m.k, ...c });
     else {
       // Overlaps the edit — keep the part before the splice (edits happen in
       // unformatted regions in practice; this never grows a mark over new text).
       const s = Math.min(m.s, start);
       const e = m.e > oldEnd ? m.e + delta : start;
-      if (e > s) out.push({ s, e, k: m.k });
+      if (e > s) out.push({ s, e, k: m.k, ...c });
     }
   }
   return mergeMarks(out);
+}
+
+/** Is [start,end) fully covered by highlight of THIS colour? */
+function fullyCoveredHighlight(marks: NoteMark[], start: number, end: number, colour: string): boolean {
+  if (end <= start) return false;
+  let pos = start;
+  const runs = marks
+    .filter((m) => m.k === "h" && (m.c ?? DEFAULT_HIGHLIGHT) === colour && m.e > start && m.s < end)
+    .sort((a, b) => a.s - b.s);
+  for (const m of runs) {
+    if (m.s > pos) return false;
+    pos = Math.max(pos, m.e);
+    if (pos >= end) return true;
+  }
+  return pos >= end;
+}
+
+/** Set (or toggle off) a highlight COLOUR over [start,end): removes any other
+ *  highlight in the range first, so a range never carries two colours. */
+function setHighlight(marks: NoteMark[], start: number, end: number, colour: string): NoteMark[] {
+  if (end <= start) return marks;
+  const others = marks.filter((m) => m.k !== "h");
+  const hs = marks.filter((m) => m.k === "h");
+  const covered = fullyCoveredHighlight(hs, start, end, colour);
+  const kept: NoteMark[] = [];
+  for (const m of hs) {
+    const c = m.c ?? DEFAULT_HIGHLIGHT;
+    if (m.e <= start || m.s >= end) kept.push(m);
+    else {
+      if (m.s < start) kept.push({ s: m.s, e: start, k: "h", c });
+      if (m.e > end) kept.push({ s: end, e: m.e, k: "h", c });
+    }
+  }
+  if (!covered) kept.push({ s: start, e: end, k: "h", c: colour });
+  return mergeMarks([...others, ...kept]);
+}
+
+/** Remove every mark overlapping [start,end) (clear formatting). */
+function clearMarks(marks: NoteMark[], start: number, end: number): NoteMark[] {
+  if (end <= start) return marks;
+  const out: NoteMark[] = [];
+  for (const m of marks) {
+    if (m.e <= start || m.s >= end) out.push(m);
+    else {
+      const c = m.c ? { c: m.c } : {};
+      if (m.s < start) out.push({ s: m.s, e: start, k: m.k, ...c });
+      if (m.e > end) out.push({ s: end, e: m.e, k: m.k, ...c });
+    }
+  }
+  return mergeMarks(out);
+}
+
+/** Bullet/number/indent/outdent the lines overlapping [selStart,selEnd].
+ *  Returns the new text + the shifted marks + the new selection. Operates on
+ *  the PLAIN text (line prefixes) — bullets/numbers render as real lists via
+ *  Calm Formatting B; indent is two leading spaces. */
+function applyLineOp(
+  text: string,
+  marks: NoteMark[],
+  selStart: number,
+  selEnd: number,
+  op: LineOp,
+): { text: string; marks: NoteMark[]; selStart: number; selEnd: number } {
+  // Line spans of the whole note.
+  const lines: { start: number; end: number; text: string }[] = [];
+  let pos = 0;
+  for (const part of text.split("\n")) {
+    lines.push({ start: pos, end: pos + part.length, text: part });
+    pos += part.length + 1;
+  }
+  const touched = lines.filter((l) => l.start <= selEnd && l.end >= selStart);
+  if (touched.length === 0) return { text, marks, selStart, selEnd };
+
+  let outText = text;
+  let outMarks = marks;
+  let dSel = 0; // net shift applied at/before selStart
+  let dSelEnd = 0;
+  // Edit from LAST line to FIRST so earlier offsets stay valid as we splice.
+  for (let idx = touched.length - 1; idx >= 0; idx--) {
+    const l = touched[idx];
+    const num = idx + 1; // 1-based for numbered lists
+    const cur = l.text;
+    let removeLen = 0;
+    let insert = "";
+    if (op === "bullet") {
+      const m = /^(\s*)([-•]\s|(\d{1,3})\.\s)?/.exec(cur);
+      removeLen = m?.[2] ? m[2].length : 0; // strip an existing marker
+      const already = /^\s*[-•]\s/.test(cur);
+      insert = already ? "" : "- ";
+      // toggle off if every line was already a bullet
+    } else if (op === "number") {
+      const m = /^(\s*)([-•]\s|(\d{1,3})\.\s)?/.exec(cur);
+      removeLen = m?.[2] ? m[2].length : 0;
+      const already = /^\s*\d{1,3}\.\s/.test(cur);
+      insert = already ? "" : `${num}. `;
+    } else if (op === "indent") {
+      insert = "  ";
+    } else {
+      // outdent: remove up to 2 leading spaces (or a bullet/number marker)
+      const sp = /^(\s{1,2})/.exec(cur);
+      removeLen = sp ? sp[1].length : 0;
+    }
+    const at = l.start;
+    // splice: replace [at, at+removeLen) with insert
+    outText = outText.slice(0, at) + insert + outText.slice(at + removeLen);
+    outMarks = spliceMarks(outMarks, at, at + removeLen, insert.length);
+    const delta = insert.length - removeLen;
+    if (at < selStart) dSel += delta;
+    if (at < selEnd) dSelEnd += delta;
+  }
+  return {
+    text: outText,
+    marks: outMarks,
+    selStart: Math.max(0, selStart + dSel),
+    selEnd: Math.max(0, selEnd + dSelEnd),
+  };
 }
 
 /** Longest-common-prefix/suffix diff → the single changed span. */
@@ -255,12 +397,13 @@ const BUBBLE: { k: MarkKind; label: string; sc: string }[] = [
 ];
 
 /** The button face — crisp typographic letters in the app's own font (Inter)
- *  for B/I/U (Roland 2026-07-21: the chunky icon glyphs "looked like Comic
+ *  for B/I/U/S (Roland 2026-07-21: the chunky icon glyphs "looked like Comic
  *  Sans"), a marker icon for Highlight (the word-processor convention). */
-function MarkGlyph({ k }: { k: MarkKind }) {
+export function MarkGlyph({ k }: { k: MarkKind }) {
   if (k === "b") return <span className="text-[15px] leading-none font-bold">B</span>;
   if (k === "i") return <span className="text-[15px] leading-none italic">I</span>;
   if (k === "u") return <span className="text-[15px] leading-none underline underline-offset-[3px]">U</span>;
+  if (k === "s") return <span className="text-[15px] leading-none line-through">S</span>;
   return <Highlighter className="size-4" />;
 }
 
@@ -371,6 +514,44 @@ export const RichNoteEditor = forwardRef<
     [render, refreshBubble],
   );
 
+  const applyHighlight = useCallback(
+    (colour: string) => {
+      const el = editorRef.current;
+      if (!el) return;
+      const off = getSelectionOffsets(el);
+      if (!off || off.start === off.end) return;
+      const { text, marks } = fromDom(el);
+      render(text, setHighlight(marks, off.start, off.end, colour));
+      restoreSelection(el, off.start, off.end);
+      refreshBubble();
+    },
+    [render, refreshBubble],
+  );
+
+  const clearFormat = useCallback(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    const off = getSelectionOffsets(el);
+    if (!off || off.start === off.end) return;
+    const { text, marks } = fromDom(el);
+    render(text, clearMarks(marks, off.start, off.end));
+    restoreSelection(el, off.start, off.end);
+    refreshBubble();
+  }, [render, refreshBubble]);
+
+  const doLineOp = useCallback(
+    (op: LineOp) => {
+      const el = editorRef.current;
+      if (!el) return;
+      const { text, marks } = fromDom(el);
+      const off = getSelectionOffsets(el) ?? { start: text.length, end: text.length };
+      const r = applyLineOp(text, marks, off.start, off.end, op);
+      render(r.text, r.marks);
+      restoreSelection(el, r.selStart, r.selEnd);
+    },
+    [render],
+  );
+
   const insertPlain = useCallback(
     (s: string) => {
       const el = editorRef.current;
@@ -390,6 +571,10 @@ export const RichNoteEditor = forwardRef<
     insertText: insertPlain,
     focus: () => editorRef.current?.focus(),
     isActive: () => activeRef.current,
+    format: applyKind,
+    highlight: applyHighlight,
+    clearFormat,
+    lineOp: doLineOp,
   }));
 
   useEffect(() => {
@@ -412,7 +597,7 @@ export const RichNoteEditor = forwardRef<
       }
       if (mod && e.shiftKey && (e.key === "h" || e.key === "H")) {
         e.preventDefault();
-        applyKind("h");
+        applyHighlight(DEFAULT_HIGHLIGHT);
         return;
       }
       if (e.key === "Enter" && !e.shiftKey) {
@@ -435,7 +620,7 @@ export const RichNoteEditor = forwardRef<
         }
       }
     },
-    [applyKind, continueList, render],
+    [applyKind, applyHighlight, continueList, render],
   );
 
   // Paste as PLAIN text only (no foreign formatting into the record).
@@ -449,63 +634,42 @@ export const RichNoteEditor = forwardRef<
   );
 
   return (
-    <div className={cn("relative flex min-h-0 flex-1 flex-row gap-2", className)}>
-      {/* The writing surface. */}
-      {/* The text SCROLLS inside its own box (min-h-0 + overflow) so long notes
-          never spill under the Save/Discard footer — the caret stays reachable
-          in a short card (Roland 2026-07-21: "cursor blinking behind Save"). */}
-      <div className="relative min-h-0 flex-1 overflow-y-auto pb-1">
-        {empty && (
-          <p className="pointer-events-none absolute left-0 top-0 text-sm text-muted-foreground">
-            {placeholder}
-          </p>
-        )}
-        <div
-          ref={editorRef}
-          contentEditable
-          suppressContentEditableWarning
-          role="textbox"
-          aria-multiline="true"
-          aria-label="Note"
-          spellCheck
-          onInput={handleInput}
-          onKeyDown={onKeyDown}
-          onPaste={onPaste}
-          onFocus={() => {
-            activeRef.current = true;
-            onFocusCapture?.();
-          }}
-          onBlur={() => {
-            activeRef.current = false;
-            // Let a bubble click land before it vanishes.
-            setTimeout(() => setBubble(null), 150);
-          }}
-          className="min-h-full w-full flex-1 text-sm whitespace-pre-wrap outline-none"
-        />
-      </div>
-
-      {/* The formatting rail — VERTICAL, on the RIGHT (Roland's screenshot,
-          2026-07-21): B I U + Highlight stacked in the sparse right margin, so
-          the note's own vertical space is never eaten. */}
-      <div className="flex shrink-0 flex-col items-center gap-0.5 border-l border-border/40 pl-1.5">
-        {BUBBLE.map((b) => (
-          <button
-            key={b.k}
-            type="button"
-            title={`${b.label} · ${b.sc}`}
-            aria-label={b.label}
-            // Keep the selection: prevent the button stealing focus.
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => applyKind(b.k)}
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-          >
-            <MarkGlyph k={b.k} />
-          </button>
-        ))}
-      </div>
+    // The whole editor is the writing surface now — the formatting lives in the
+    // Scribe header's Format panel (Roland 2026-07-21); the quick bubble stays.
+    // The text SCROLLS in its own box so long notes never slide under the
+    // Save/Discard footer (the caret stays reachable in a short card).
+    <div className={cn("relative min-h-0 flex-1 overflow-y-auto pb-1", className)}>
+      {empty && (
+        <p className="pointer-events-none absolute left-0 top-0 text-sm text-muted-foreground">
+          {placeholder}
+        </p>
+      )}
+      <div
+        ref={editorRef}
+        contentEditable
+        suppressContentEditableWarning
+        role="textbox"
+        aria-multiline="true"
+        aria-label="Note"
+        spellCheck
+        onInput={handleInput}
+        onKeyDown={onKeyDown}
+        onPaste={onPaste}
+        onFocus={() => {
+          activeRef.current = true;
+          onFocusCapture?.();
+        }}
+        onBlur={() => {
+          activeRef.current = false;
+          // Let a bubble click land before it vanishes.
+          setTimeout(() => setBubble(null), 150);
+        }}
+        className="min-h-full w-full text-sm whitespace-pre-wrap outline-none"
+      />
 
       {/* The selection bubble — PORTALED to <body>, viewport-fixed + clamped, so
-          the card edge can never clip it (Roland 2026-07-21). */}
+          the card edge can never clip it (Roland 2026-07-21). Quick B/I/U +
+          highlight (default colour); the full palette is the header panel. */}
       {mounted &&
         bubble &&
         createPortal(
@@ -520,7 +684,7 @@ export const RichNoteEditor = forwardRef<
                 title={`${b.label} · ${b.sc}`}
                 aria-label={b.label}
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={() => applyKind(b.k)}
+                onClick={() => (b.k === "h" ? applyHighlight(DEFAULT_HIGHLIGHT) : applyKind(b.k))}
                 className={cn(
                   "flex size-7 items-center justify-center rounded-md transition-colors",
                   bubble.active.has(b.k)

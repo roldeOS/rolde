@@ -1,10 +1,10 @@
-import { toSegments, type NoteMark } from "@/lib/richText";
+import { toSegments, highlightBg, type NoteMark } from "@/lib/richText";
 
 /**
  * InlineText (B6) — renders a run of plain text with its sidecar formatting
- * marks: bold · italic · underline · highlight. Highlight wears Earth & Bloom
- * honey (never a fluorescent marker). No marks → the bare string, so callers
- * pay nothing when a note is unformatted.
+ * marks: bold · italic · underline · strikethrough · highlight (in its chosen
+ * Earth & Bloom colour). No marks → the bare string, so callers pay nothing
+ * when a note is unformatted.
  */
 export function InlineText({ text, marks }: { text: string; marks?: NoteMark[] }) {
   if (!marks || marks.length === 0) return <>{text}</>;
@@ -16,9 +16,15 @@ export function InlineText({ text, marks }: { text: string; marks?: NoteMark[] }
         if (s.b) node = <strong className="font-semibold">{node}</strong>;
         if (s.i) node = <em>{node}</em>;
         if (s.u) node = <u>{node}</u>;
+        if (s.s) node = <s>{node}</s>;
         if (s.h)
           node = (
-            <mark className="rounded-[3px] bg-honey/40 px-0.5 text-inherit">{node}</mark>
+            <mark
+              className="rounded-[3px] px-0.5 text-inherit"
+              style={{ backgroundColor: highlightBg(s.hc) }}
+            >
+              {node}
+            </mark>
           );
         return <span key={i}>{node}</span>;
       })}

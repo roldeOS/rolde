@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap } from "lucide-react";
+import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap, Type, List, ListOrdered, IndentIncrease, IndentDecrease, RemoveFormatting } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { CARD_ICON_TEXT } from "@/lib/cardTones";
@@ -56,8 +56,8 @@ import { CourierSendSheet } from "@/components/consultation/CourierSendSheet";
 import { formatDay } from "@/lib/dates";
 import { expandAutotext } from "@/lib/autotext";
 import { continueListOnEnter } from "@/lib/calmFormatting";
-import { RichNoteEditor, type RichNoteHandle } from "@/components/consultation/RichNoteEditor";
-import { sanitizeMarks, type NoteMark } from "@/lib/richText";
+import { RichNoteEditor, MarkGlyph, type RichNoteHandle, type LineOp } from "@/components/consultation/RichNoteEditor";
+import { sanitizeMarks, HIGHLIGHT_COLOURS, type NoteMark, type MarkKind } from "@/lib/richText";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { BodyMapPanel } from "@/components/consultation/BodyMapPanel";
 import {
@@ -228,6 +228,9 @@ export function ConsultationWorkspace({
   // works with zero per-field wiring.
   const [snippetBtn, setSnippetBtn] = useState<HTMLElement | null>(null);
   const [snippetsMenuOpen, setSnippetsMenuOpen] = useState(false);
+  // B6.2 — the Format panel (one header chip → the full rich-text palette).
+  const [formatBtn, setFormatBtn] = useState<HTMLElement | null>(null);
+  const [formatOpen, setFormatOpen] = useState(false);
   const lastTextRef = useRef<HTMLTextAreaElement | HTMLInputElement | null>(null);
   // B6 — the free-note editor (contentEditable). A snippet insert routes here
   // when the rich editor was the last-focused Scribe surface, else to the
@@ -838,6 +841,106 @@ export function ConsultationWorkspace({
                         setLetterSheet({ open: true, anchor: el, entryId })
                       }
                     />
+                    {/* B6.2 (Roland 2026-07-21 "Go"): the FORMAT panel — one chip
+                        opens the full palette (B/I/U/S · highlight colours ·
+                        lists · indent · clear). The quick bubble handles inline
+                        select-to-format. Only when the rich editor is live. */}
+                    {!template && (
+                      <>
+                        <button
+                          ref={setFormatBtn}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => setFormatOpen((v) => !v)}
+                          title="Format The Text"
+                          className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
+                        >
+                          <Type className={cn("size-3.5", CARD_ICON_TEXT.rose)} />
+                          <span className="hidden lg:inline">Format</span>
+                        </button>
+                        <AnchoredPopover
+                          anchor={formatBtn}
+                          open={formatOpen}
+                          onClose={() => setFormatOpen(false)}
+                          width={248}
+                          icon={Type}
+                          title="Format"
+                          subtitle="Style the selected text"
+                          tone="rose"
+                          className="space-y-2 p-2"
+                        >
+                          <div className="flex gap-1">
+                            {(["b", "i", "u", "s"] as MarkKind[]).map((k) => (
+                              <button
+                                key={k}
+                                type="button"
+                                aria-label={
+                                  k === "b" ? "Bold" : k === "i" ? "Italic" : k === "u" ? "Underline" : "Strikethrough"
+                                }
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => richRef.current?.format(k)}
+                                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                              >
+                                <MarkGlyph k={k} />
+                              </button>
+                            ))}
+                          </div>
+                          <div>
+                            <p className="pb-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                              Highlight
+                            </p>
+                            <div className="flex items-center gap-1.5">
+                              {HIGHLIGHT_COLOURS.map((c) => (
+                                <button
+                                  key={c.key}
+                                  type="button"
+                                  title={c.label}
+                                  aria-label={`Highlight ${c.label}`}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => richRef.current?.highlight(c.key)}
+                                  className="size-6 rounded-full ring-1 ring-black/10 transition-transform hover:scale-110"
+                                  style={{ backgroundColor: c.bg }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <p className="pb-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                              Lists
+                            </p>
+                            <div className="flex gap-1">
+                              {(
+                                [
+                                  { op: "bullet", icon: List, label: "Bullet List" },
+                                  { op: "number", icon: ListOrdered, label: "Numbered List" },
+                                  { op: "outdent", icon: IndentDecrease, label: "Outdent" },
+                                  { op: "indent", icon: IndentIncrease, label: "Indent" },
+                                ] as { op: LineOp; icon: typeof List; label: string }[]
+                              ).map(({ op, icon: Icon, label }) => (
+                                <button
+                                  key={op}
+                                  type="button"
+                                  title={label}
+                                  aria-label={label}
+                                  onMouseDown={(e) => e.preventDefault()}
+                                  onClick={() => richRef.current?.lineOp(op)}
+                                  className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                                >
+                                  <Icon className="size-4" />
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => richRef.current?.clearFormat()}
+                            className="mt-1 flex w-full items-center gap-1.5 rounded-lg border-t border-border/60 px-2 pt-2 pb-1 text-left text-xs text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                          >
+                            <RemoveFormatting className="size-3.5" /> Clear Formatting
+                          </button>
+                        </AnchoredPopover>
+                      </>
+                    )}
                   </>
                 ) : null}
                 <button
