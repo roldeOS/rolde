@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Undo2, Eraser, Shrink } from "lucide-react";
 import { Segmented } from "@/components/ui/Segmented";
 import { Button } from "@/components/ui/button";
@@ -24,11 +24,16 @@ import { cn } from "@/lib/utils";
  *  everything scales by art.w and looks identical across figures. */
 const REL = { minDist: 0.0124, pin: 0.031, stroke: 0.0104 };
 
-type Tool = "pin" | "draw" | "zoom";
+type Tool = "pin" | "draw";
 
-/** Region zoom (v2.1) — one tap frames a close-up at 1/ZOOM_FACTOR of the
- *  figure, centred on the tap; taps while zoomed re-centre; Fit returns. */
-const ZOOM_FACTOR = 3;
+/** Zoom v2 (Roland 2026-07-21, B4 "Go") — the standard map model, no armed
+ *  tool: trackpad/wheel scroll and pinch (touch two-finger AND Safari's
+ *  gesture events) zoom toward the gesture point, progressively; double-tap
+ *  steps in ×2; while zoomed, a drag PANS. A clean tap still drops a pin —
+ *  pins place on RELEASE (tap slop 6px), so panning never mis-pins. */
+const MAX_ZOOM = 6;
+const TAP_SLOP = 6; // client px — beyond this a press is a pan/draw, never a tap
+const DOUBLE_TAP_MS = 300;
 
 /**
  * The Body-Map annotator (v2 2026-07-04 · v2.1 zoom/colours · v3 2026-07-21:
@@ -76,71 +81,226 @@ export function BodyMapPanel({
   const [liveStroke, setLiveStroke] = useState<number[][] | null>(null);
   // One undo history across tools: what got added last comes off first.
   const history = useRef<("pin" | "stroke")[]>([]);
+  // Zoom-v2 gesture bookkeeping: every active pointer + what the press became.
+  const pointers = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const gesture = useRef<{
+    mode: "idle" | "tap" | "pan" | "pinch" | "draw";
+    start: { x: number; y: number };
+    lastDist: number;
+    lastMid: { x: number; y: number } | null;
+    lastTap: { t: number; x: number; y: number; pinned: boolean } | null;
+  }>({ mode: "idle", start: { x: 0, y: 0 }, lastDist: 0, lastMid: null, lastTap: null });
 
   // A view change resets the window to Fit for THAT figure.
   useEffect(() => {
     setVb({ x: 0, y: 0, w: dims.w, h: dims.h });
   }, [dims.w, dims.h]);
 
-  const toViewBox = (e: React.PointerEvent): [number, number] | null => {
+  // Through the CURRENT window (zoom-aware) — coordinates always land in
+  // full-figure space, so marks placed in a close-up render right at Fit.
+  const clientToVb = (cx: number, cy: number): [number, number] | null => {
     const svg = svgRef.current;
     if (!svg) return null;
     const r = svg.getBoundingClientRect();
     if (!r.width || !r.height) return null;
-    // Through the CURRENT window (zoom-aware) — coordinates always land in
-    // full-figure space, so marks placed in a close-up render right at Fit.
     return [
-      Math.round(vb.x + ((e.clientX - r.left) / r.width) * vb.w),
-      Math.round(vb.y + ((e.clientY - r.top) / r.height) * vb.h),
+      Math.round(vb.x + ((cx - r.left) / r.width) * vb.w),
+      Math.round(vb.y + ((cy - r.top) / r.height) * vb.h),
     ];
   };
 
-  function zoomTo(pt: [number, number]) {
-    const w = dims.w / ZOOM_FACTOR;
-    const h = dims.h / ZOOM_FACTOR;
-    setVb({
-      x: Math.max(0, Math.min(pt[0] - w / 2, dims.w - w)),
-      y: Math.max(0, Math.min(pt[1] - h / 2, dims.h - h)),
-      w,
-      h,
-    });
-  }
+  /** Multiplicative zoom anchored on a client point (the point under the
+   *  cursor/fingers stays put) — functional update, so gesture streams never
+   *  read a stale window. */
+  const applyZoom = useCallback(
+    (factor: number, clientX: number, clientY: number) => {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const r = svg.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      setVb((prev) => {
+        const px = prev.x + ((clientX - r.left) / r.width) * prev.w;
+        const py = prev.y + ((clientY - r.top) / r.height) * prev.h;
+        const w = Math.min(dims.w, Math.max(dims.w / MAX_ZOOM, prev.w / factor));
+        if (w === prev.w) return prev;
+        const h = (w / dims.w) * dims.h;
+        return {
+          x: Math.max(0, Math.min(px - ((px - prev.x) * w) / prev.w, dims.w - w)),
+          y: Math.max(0, Math.min(py - ((py - prev.y) * h) / prev.h, dims.h - h)),
+          w,
+          h,
+        };
+      });
+    },
+    [dims.w, dims.h],
+  );
+
+  const applyPan = useCallback(
+    (dxClient: number, dyClient: number) => {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const r = svg.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      setVb((prev) => {
+        if (prev.w >= dims.w) return prev;
+        return {
+          ...prev,
+          x: Math.max(0, Math.min(prev.x - (dxClient / r.width) * prev.w, dims.w - prev.w)),
+          y: Math.max(0, Math.min(prev.y - (dyClient / r.height) * prev.h, dims.h - prev.h)),
+        };
+      });
+    },
+    [dims.w, dims.h],
+  );
+
+  // React registers root wheel listeners PASSIVELY — preventDefault would be
+  // ignored and the page would scroll while the figure zooms. Native
+  // non-passive listeners own the gestures completely. Safari's trackpad
+  // pinch arrives as gesturestart/gesturechange (a scale), NOT ctrl+wheel —
+  // both roads lead to applyZoom.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      applyZoom(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0022)), e.clientX, e.clientY);
+    };
+    let lastScale = 1;
+    const onGestureStart = (e: Event) => {
+      e.preventDefault();
+      lastScale = 1;
+    };
+    const onGestureChange = (e: Event) => {
+      e.preventDefault();
+      const ge = e as Event & { scale?: number; clientX?: number; clientY?: number };
+      if (!ge.scale) return;
+      applyZoom(ge.scale / lastScale, ge.clientX ?? 0, ge.clientY ?? 0);
+      lastScale = ge.scale;
+    };
+    svg.addEventListener("wheel", onWheel, { passive: false });
+    svg.addEventListener("gesturestart", onGestureStart, { passive: false });
+    svg.addEventListener("gesturechange", onGestureChange, { passive: false });
+    return () => {
+      svg.removeEventListener("wheel", onWheel);
+      svg.removeEventListener("gesturestart", onGestureStart);
+      svg.removeEventListener("gesturechange", onGestureChange);
+    };
+  }, [applyZoom]);
 
   function onPointerDown(e: React.PointerEvent) {
-    const pt = toViewBox(e);
-    if (!pt) return;
-    if (tool === "zoom") {
-      zoomTo(pt);
-    } else if (tool === "pin") {
-      history.current.push("pin");
-      onChange({
-        ...data,
-        pins: [...data.pins, { x: pt[0], y: pt[1], site: "", note: "", tone: activeTone }],
-      });
-    } else {
+    const g = gesture.current;
+    try {
       e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // A pointer that lifted mid-dispatch (or a synthetic one) can't be
+      // captured — that must never kill the gesture handler.
+    }
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 2) {
+      // A second finger: whatever was happening becomes a PINCH — an
+      // in-flight stroke is abandoned, no tap will land.
+      drawing.current = null;
+      setLiveStroke(null);
+      const [a, b] = [...pointers.current.values()];
+      g.mode = "pinch";
+      g.lastDist = Math.hypot(a.x - b.x, a.y - b.y);
+      g.lastMid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      return;
+    }
+    g.start = { x: e.clientX, y: e.clientY };
+    if (tool === "draw") {
+      const pt = clientToVb(e.clientX, e.clientY);
+      if (!pt) return;
+      g.mode = "draw";
       drawing.current = [pt];
       setLiveStroke([pt]);
+    } else {
+      g.mode = "tap"; // becomes a pan if it travels past the slop
     }
   }
   function onPointerMove(e: React.PointerEvent) {
-    if (tool !== "draw" || !drawing.current) return;
-    const pt = toViewBox(e);
-    if (!pt) return;
-    const last = drawing.current[drawing.current.length - 1];
-    // Thinning follows the zoom — close-up work keeps finer detail.
-    if (Math.hypot(pt[0] - last[0], pt[1] - last[1]) < dims.w * REL.minDist * scale) return;
-    drawing.current = [...drawing.current, pt];
-    setLiveStroke(drawing.current);
-  }
-  function onPointerUp() {
-    if (tool !== "draw" || !drawing.current) return;
-    if (drawing.current.length > 1) {
-      history.current.push("stroke");
-      onChange({ ...data, strokes: [...data.strokes, drawing.current] });
+    const g = gesture.current;
+    const prev = pointers.current.get(e.pointerId);
+    if (!prev) return;
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (g.mode === "pinch") {
+      if (pointers.current.size < 2) return;
+      const [a, b] = [...pointers.current.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      if (g.lastDist > 0) applyZoom(dist / g.lastDist, mid.x, mid.y);
+      if (g.lastMid) applyPan(mid.x - g.lastMid.x, mid.y - g.lastMid.y);
+      g.lastDist = dist;
+      g.lastMid = mid;
+      return;
     }
+    if (g.mode === "draw") {
+      if (!drawing.current) return;
+      const pt = clientToVb(e.clientX, e.clientY);
+      if (!pt) return;
+      const last = drawing.current[drawing.current.length - 1];
+      // Thinning follows the zoom — close-up work keeps finer detail.
+      if (Math.hypot(pt[0] - last[0], pt[1] - last[1]) < dims.w * REL.minDist * scale) return;
+      drawing.current = [...drawing.current, pt];
+      setLiveStroke(drawing.current);
+      return;
+    }
+    if (g.mode === "tap") {
+      if (Math.hypot(e.clientX - g.start.x, e.clientY - g.start.y) > TAP_SLOP) g.mode = "pan";
+    }
+    if (g.mode === "pan") applyPan(e.clientX - prev.x, e.clientY - prev.y);
+  }
+  function onPointerUp(e: React.PointerEvent) {
+    const g = gesture.current;
+    pointers.current.delete(e.pointerId);
+    if (g.mode === "pinch") {
+      if (pointers.current.size < 2) g.mode = pointers.current.size === 1 ? "pan" : "idle";
+      return;
+    }
+    if (g.mode === "draw") {
+      if (drawing.current && drawing.current.length > 1) {
+        history.current.push("stroke");
+        onChange({ ...data, strokes: [...data.strokes, drawing.current] });
+      }
+      drawing.current = null;
+      setLiveStroke(null);
+      g.mode = "idle";
+      return;
+    }
+    if (g.mode === "tap") {
+      const now = performance.now();
+      const lt = g.lastTap;
+      if (lt && now - lt.t < DOUBLE_TAP_MS && Math.hypot(e.clientX - lt.x, e.clientY - lt.y) < 24) {
+        // Double-tap: the first tap's pin (if any) makes way for the zoom.
+        g.lastTap = null;
+        if (lt.pinned && data.pins.length > 0) {
+          history.current.pop();
+          onChange({ ...data, pins: data.pins.slice(0, -1) });
+        }
+        applyZoom(2, e.clientX, e.clientY);
+      } else {
+        let pinned = false;
+        if (tool === "pin") {
+          const pt = clientToVb(e.clientX, e.clientY);
+          if (pt) {
+            pinned = true;
+            history.current.push("pin");
+            onChange({
+              ...data,
+              pins: [...data.pins, { x: pt[0], y: pt[1], site: "", note: "", tone: activeTone }],
+            });
+          }
+        }
+        g.lastTap = { t: now, x: e.clientX, y: e.clientY, pinned };
+      }
+    }
+    g.mode = "idle";
+  }
+  function onPointerCancel(e: React.PointerEvent) {
+    pointers.current.delete(e.pointerId);
     drawing.current = null;
     setLiveStroke(null);
+    gesture.current.mode = "idle";
   }
 
   function undo() {
@@ -218,11 +378,10 @@ export function BodyMapPanel({
               options={[
                 { value: "pin", label: "Pin" },
                 { value: "draw", label: "Draw" },
-                { value: "zoom", label: "Zoom" },
               ]}
               value={tool}
               onChange={setTool}
-              className="w-44"
+              className="w-32"
             />
             {/* The pin palette — treatment families in colour (v2.1). */}
             {tool === "pin" && (
@@ -323,12 +482,12 @@ export function BodyMapPanel({
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
+            onPointerCancel={onPointerCancel}
             style={{ aspectRatio: `${dims.w} / ${dims.h}` }}
             className={cn(
               embedded ? (view === "face" ? "h-[400px]" : "h-[480px]") : "h-full",
               "touch-none select-none",
-              tool === "pin" ? "cursor-crosshair" : tool === "draw" ? "cursor-cell" : "cursor-zoom-in",
+              tool === "pin" ? "cursor-crosshair" : "cursor-cell",
             )}
             aria-label={view === "face" ? "Face map — tap to mark" : "Body map — tap to mark"}
           >
@@ -387,9 +546,10 @@ export function BodyMapPanel({
         {data.pins.length === 0 && (
           <p className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
             Tap the figure to drop a numbered pin — each pin carries a site, a
-            note and a colour (pick one per treatment family). Switch to Draw
-            for freehand marking, or Zoom for close-up work — and flip Body ⇄
-            Face for facial treatments.
+            note and a colour (pick one per treatment family). Pinch, scroll
+            or double-tap to zoom close; drag moves around while zoomed.
+            Switch to Draw for freehand marking, and flip Body ⇄ Face for
+            facial treatments.
           </p>
         )}
         {data.pins.map((p, i) => (
