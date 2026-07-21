@@ -253,7 +253,7 @@ export function sanitiseParts(raw: unknown): TemplatePart[] | null {
         out.push({ kind: "vitals", label: label || "Vital Signs" });
         break;
       case "body_map":
-        out.push({ kind: "body_map", label: label || "Body Map" });
+        out.push({ kind: "body_map", label: label || "Anatomy" });
         break;
       case "checkboxes":
       case "dropdown": {

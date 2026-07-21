@@ -69,14 +69,14 @@ const KIND_META: {
   { kind: "checkboxes", label: "Checkboxes", icon: ListChecks },
   { kind: "dropdown", label: "Dropdown", icon: ChevronsUpDown },
   { kind: "range", label: "Scale", icon: SlidersHorizontal },
-  { kind: "body_map", label: "Body Map", icon: PersonStanding, hint: "The annotator embeds here — Body ⇄ Face, pins in colour" },
+  { kind: "body_map", label: "Anatomy", icon: PersonStanding, hint: "The annotator embeds here — Body ⇄ Face, pins in colour" },
 ];
 const kindMeta = (k: TemplatePart["kind"]) => KIND_META.find((m) => m.kind === k)!;
 
 const blank = (kind: TemplatePart["kind"]): DraftPart => ({
   kind,
   label:
-    kind === "vitals" ? "Vital Signs" : kind === "body_map" ? "Body Map" : "",
+    kind === "vitals" ? "Vital Signs" : kind === "body_map" ? "Anatomy" : "",
   text: "",
   placeholder: "",
   options: "",
@@ -236,8 +236,8 @@ export function TemplateBuilder({
           {parts.length === 0 && (
             <p className="rounded-xl bg-muted/40 p-4 text-xs text-muted-foreground">
               Stack the parts your note needs — headings to structure it, fields
-              to fill, a Body Map to mark. The finished note reads top to bottom
-              in this order.
+              to fill, an Anatomy figure to mark. The finished note reads top to
+              bottom in this order.
             </p>
           )}
           {parts.map((d, i) => {

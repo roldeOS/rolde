@@ -119,7 +119,7 @@ const RECORD_KINDS: Record<string, { label: string; tone: CardIconTone; icon: Ic
   alert_recorded: { label: "Alert", tone: "warning", icon: OctagonAlert },
   problem_recorded: { label: "Problem", tone: "peach", icon: ClipboardList },
   medication_recorded: { label: "Medication", tone: "warning", icon: Pill },
-  body_map: { label: "Body Map", tone: "peach", icon: PersonStanding },
+  body_map: { label: "Anatomy", tone: "peach", icon: PersonStanding },
   form_response: { label: "Form Response", tone: "teal", icon: ClipboardCheck },
 };
 function noteKind(

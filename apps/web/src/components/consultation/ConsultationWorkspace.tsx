@@ -495,7 +495,7 @@ export function ConsultationWorkspace({
         : mode === "amend"
           ? "Amending note"
         : bodyMap
-          ? `${COMPOSER_NAME} · Body Map`
+          ? `${COMPOSER_NAME} · Anatomy`
           : template
             ? `${COMPOSER_NAME} · ${template.name}`
             : COMPOSER_NAME;
@@ -770,7 +770,7 @@ export function ConsultationWorkspace({
                   >
                     <PersonStanding className={cn("size-3.5", CARD_ICON_TEXT.peach)} />
                     <span className={cn(!bodyMap && "hidden sm:inline")}>
-                      {bodyMap ? "Close Body Map" : "Body Map"}
+                      {bodyMap ? "Close Anatomy" : "Anatomy"}
                     </span>
                   </button>
                 )}
@@ -783,7 +783,7 @@ export function ConsultationWorkspace({
                       className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                     >
                       <Zap className={cn("size-3.5", CARD_ICON_TEXT.teal)} />
-                      <span className="hidden lg:inline">Snippets</span>
+                      <span className="hidden lg:inline">Snips</span>
                     </button>
                     <AnchoredPopover
                       anchor={snippetBtn}
