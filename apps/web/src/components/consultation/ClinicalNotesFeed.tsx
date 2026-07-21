@@ -34,6 +34,7 @@ import {
   PersonStanding,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
+import { formatDayTime, formatDayShort } from "@/lib/dates";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
 import { useClickAway } from "@/lib/useClickAway";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
@@ -100,8 +101,10 @@ export type CourierDispatchTrail = {
 
 type Icon = React.ComponentType<{ className?: string }>;
 /** Letters live in the FEED, not Workup (Roland 2026-07-01) — labelled by their
- *  entry type so the type filter finds them; notes stay labelled by author role. */
-const LETTER_KINDS: Record<string, string> = {
+ *  entry type so the type filter finds them; notes stay labelled by author role.
+ *  Exported for the Courier door (B2): the Scribe-header menu lists the feed's
+ *  unsent letters from this ONE registry. */
+export const LETTER_KINDS: Record<string, string> = {
   referral_letter: "Referral Letter",
   discharge_summary: "Discharge Summary",
   sick_note: "Sick Note",
@@ -147,15 +150,9 @@ const TONE_BADGE: Record<CardIconTone, string> = {
   periwinkle: "bg-periwinkle/30 text-indigo-600",
 };
 
-function fmtTime(ts: string) {
-  return new Date(ts).toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+// Deterministic (lib/dates) — toLocaleString varied by ICU build and failed
+// hydration ("at" vs ","); same bytes on every runtime now.
+const fmtTime = (ts: string) => formatDayTime(ts);
 
 /**
  * The episode separator (Roland 2026-07-01 — "the user knows when the current
@@ -164,11 +161,16 @@ function fmtTime(ts: string) {
  * scheduling model lands. Rendered at the boundary in either sort order.
  */
 function EpisodeMarker() {
-  const label = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const label = formatDayShort(new Date());
   return (
     <div className="flex items-center gap-3 py-1" aria-label="Start of today's entries">
       <div className="h-px flex-1 bg-accent/40" />
-      <span className="rounded-full bg-accent/15 px-3 py-0.5 text-xs font-medium text-accent">
+      {/* suppressHydrationWarning: "today" is legitimately the viewer's local
+          day — the client's word wins over the server's timezone. */}
+      <span
+        suppressHydrationWarning
+        className="rounded-full bg-accent/15 px-3 py-0.5 text-xs font-medium text-accent"
+      >
         Today · {label}
       </span>
       <div className="h-px flex-1 bg-accent/40" />
@@ -194,7 +196,6 @@ export function ClinicalNotesFeed({
   maximized,
   onToggleMaximize,
   onEditNote,
-  onSendForm,
   activeId,
 }: {
   entries: FeedEntry[];
@@ -207,10 +208,6 @@ export function ClinicalNotesFeed({
   maximized: boolean;
   onToggleMaximize: () => void;
   onEditNote: (e: FeedEntry) => void;
-  /** T4 — opens the Send-A-Form sheet (lives in the workspace), anchored to
-   *  the feed-header button: responses land in THIS feed, so the send lives
-   *  here too (Roland 2026-07-21: it was buried in the compose menu). */
-  onSendForm?: (anchor: HTMLElement) => void;
   activeId: string | null;
 }) {
   const [sortDesc, setSortDesc] = useState(false);
@@ -466,17 +463,9 @@ export function ClinicalNotesFeed({
             { term: "Expand", definition: "Give the record more room; the latest note stays in view." },
           ]}
         />
+        {/* The send-a-form button moved into the Scribe header's COURIER door
+            (B2, Roland 2026-07-21) — sends live where authored content lives. */}
         <div className="ml-auto flex items-center gap-1.5">
-          {onSendForm && (
-            <button
-              onClick={(ev) => onSendForm(ev.currentTarget)}
-              title="Send A Form To The Patient"
-              className="flex h-7 items-center gap-1 rounded-lg bg-card px-1.5 text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
-            >
-              <ClipboardCheck className="size-4" />
-              <span className="hidden text-xs font-medium xl:inline">Send A Form</span>
-            </button>
-          )}
           <button
             onClick={() => setSortDesc((v) => !v)}
             title={sortDesc ? "Newest first" : "Oldest first"}
@@ -985,7 +974,13 @@ export function ClinicalNotesFeed({
                   <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
                     {e.payload?.patient_submitted ? "The Patient" : (author?.name ?? "—")}
                   </span>
-                  <span className="shrink-0 text-center text-xs text-muted-foreground">
+                  {/* suppressHydrationWarning: the stamp is the viewer's local
+                      clock — a BST client legitimately disagrees with a UTC
+                      server; the client's rendering wins (clinic tz: W1.1.x). */}
+                  <span
+                    suppressHydrationWarning
+                    className="shrink-0 text-center text-xs text-muted-foreground"
+                  >
                     {fmtTime(e.created_at)}
                     {e.edited_at && <span className="ml-1 italic">· edited</span>}
                     {struck && (

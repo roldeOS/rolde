@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDay2 } from "@/lib/dates";
 import {
   ROLDE_TEMPLATE_LIBRARY,
   VITALS_FIELDS,
@@ -80,9 +81,7 @@ export function StructuredNoteBody({
           const d = new Date(a);
           labelled(
             p.label,
-            Number.isFinite(d.getTime())
-              ? d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-              : a,
+            Number.isFinite(d.getTime()) ? formatDay2(d) : a,
           );
         }
         break;

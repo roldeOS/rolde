@@ -14,6 +14,7 @@
  * Product dropdowns become DATA-BOUND (the clinic's own stock list) when W6.1
  * Inventory lands — options here are the sane starting set.
  */
+import { formatDay2 } from "@/lib/dates";
 import {
   isBodyMapData,
   bodyMapHasContent,
@@ -141,11 +142,12 @@ export function templateAnswersValid(t: ScribeTemplate, answers: TemplateAnswers
   });
 }
 
+// Deterministic (lib/dates) — this text becomes part of the RECORD, and it
+// renders on both the server (Courier submissions) and the client (Scribe):
+// the bytes must never depend on the runtime's ICU build.
 const fmtDate = (iso: string) => {
   const t = new Date(iso);
-  return Number.isFinite(t.getTime())
-    ? t.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
-    : iso;
+  return Number.isFinite(t.getTime()) ? formatDay2(t) : iso;
 };
 
 /** Compose the note TEXT from a filled template — plain, readable, verbatim.

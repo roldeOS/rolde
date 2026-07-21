@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
@@ -10,6 +10,7 @@ import { WorkupPanel } from "@/components/WorkupPanel";
 import { AiPanel } from "@/components/AiPanel";
 import {
   ClinicalNotesFeed,
+  LETTER_KINDS,
   type FeedEntry,
   type Author,
   type CourierDispatchTrail,
@@ -50,6 +51,9 @@ import {
 } from "@/app/(app)/patients/templateActions";
 import { ShortcutsManager } from "@/components/consultation/ShortcutsManager";
 import { FormSendSheet } from "@/components/consultation/FormSendSheet";
+import { CourierMenu, type UnsentLetter } from "@/components/consultation/CourierMenu";
+import { CourierSendSheet } from "@/components/consultation/CourierSendSheet";
+import { formatDay } from "@/lib/dates";
 import { expandAutotext } from "@/lib/autotext";
 import { continueListOnEnter } from "@/lib/calmFormatting";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
@@ -155,12 +159,34 @@ export function ConsultationWorkspace({
   // sentence). Loaded once on mount; the manager hands back fresh lists.
   const [shortcuts, setShortcuts] = useState<AutotextShortcut[]>([]);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  // T4 — Send A Form (patient-facing templates via Courier secure links);
-  // triggered from the FEED header, anchored to its button.
+  // B2 — the COURIER door (Scribe header): both send sheets anchor to it.
+  // T4 form sends ride the library rail; C3 letter sends ride the authored rail.
   const [formSheet, setFormSheet] = useState<{ open: boolean; anchor: HTMLElement | null }>({
     open: false,
     anchor: null,
   });
+  const [letterSheet, setLetterSheet] = useState<{
+    open: boolean;
+    anchor: HTMLElement | null;
+    entryId: string | null;
+  }>({ open: false, anchor: null, entryId: null });
+  // The authored rail's queue: letters in this feed with no dispatch yet.
+  const unsentLetters = useMemo<UnsentLetter[]>(
+    () =>
+      feedEntries
+        .filter(
+          (e) =>
+            e.entry_type in LETTER_KINDS &&
+            !dispatches.some((d) => d.entry_id === e.id),
+        )
+        .map((e) => ({
+          id: e.id,
+          label: LETTER_KINDS[e.entry_type],
+          when: formatDay(e.created_at),
+        }))
+        .reverse(),
+    [feedEntries, dispatches],
+  );
   // T3 — the clinic's colour legend: names print on the record + label the
   // annotator's swatches.
   const [legend, setLegend] = useState<BodymapLegendNames>({});
@@ -504,7 +530,6 @@ export function ConsultationWorkspace({
                 currentUserId={currentUserId}
                 reads={reads}
                 dispatches={dispatches}
-                onSendForm={(el) => setFormSheet({ open: true, anchor: el })}
                 maximized={leftMode === "top"}
                 onToggleMaximize={() =>
                   setLeftMode((m) => (m === "top" ? "split" : "top"))
@@ -775,6 +800,15 @@ export function ConsultationWorkspace({
                         Manage Shortcuts…
                       </button>
                     </AnchoredPopover>
+                    {/* B2 (Roland 2026-07-21 "Go"): the COURIER door — one
+                        branded menu for everything that leaves the clinic. */}
+                    <CourierMenu
+                      onSendForm={(el) => setFormSheet({ open: true, anchor: el })}
+                      unsentLetters={unsentLetters}
+                      onSendLetter={(entryId, el) =>
+                        setLetterSheet({ open: true, anchor: el, entryId })
+                      }
+                    />
                   </>
                 ) : null}
                 <button
@@ -963,6 +997,16 @@ export function ConsultationWorkspace({
         open={formSheet.open}
         onClose={() => setFormSheet({ open: false, anchor: null })}
       />
+      {/* B2 — the Courier door's letter rail: the C3 Send sheet, anchored to
+          the Courier chip for the letter picked in the menu. */}
+      {letterSheet.entryId && (
+        <CourierSendSheet
+          entryId={letterSheet.entryId}
+          anchor={letterSheet.anchor}
+          open={letterSheet.open}
+          onClose={() => setLetterSheet({ open: false, anchor: null, entryId: null })}
+        />
+      )}
       {shortcutsOpen && (
         <ShortcutsManager
           onClose={() => setShortcutsOpen(false)}
