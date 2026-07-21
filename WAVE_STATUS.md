@@ -116,4 +116,4 @@
 
 ---
 
-*Last updated: 2026-07-21 v2 (Roland's verdicts: B's no-render ROOT-CAUSED — the invisible \r in browser form posts; fixed both ends + proven on his exact note; Key Findings (C) removed root-and-branch; A stays quietly; send-to-patient rename/relocation + Scribe-chip arrangement = OPTIONS with Roland; then Phase D.)*
+*Last updated: 2026-07-21 v3 (**✅ Phase D SWEPT** — nine specialty/spa apps, steals registered in Bible 4.8 §15.7: the Photo Spine (ghost-overlay capture → compare → annotate, defines Body-Map v2.2) · GFE hard-stop gate (aesthetics pack) · Boulevard gap-aware self-book (Cadence) · ChiroTouch check-in outcome scoring · Zenoti/W4 spa-commerce blueprint. **Body-map zoom** verified working in Chromium + real WebKit (bare + app CSS) via standalone harness — mechanism sound; interaction-model upgrade (pinch/scroll/double-tap, no armed tool) PROPOSED to Roland. **Consult round open with Roland:** Courier menu in Scribe (name+contents+location), rich-text B/I/U/highlight + bubble-vs-rail placement, icon-only search+Layouts for the truncated patient name, Workup squircle change, chip colours; builds await his go. Phase E on his word.)*

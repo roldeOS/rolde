@@ -1506,6 +1506,71 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     (20+ specialty EHR) = specialty packs validated · **Noterro** = nothing we lack · **Coreplus**
     = AU claiming (Medicare/DVA/NDIS), noted for international claiming (W7+). Phase D next on
     Roland's word.
+    **✅ PHASE D SWEPT 2026-07-21 (world specialty/spa-crossover; Roland "go for Phase D…do it
+    extensively…no compromise on quality"):** the finds, app by app:
+    **Aesthetic Record** (the US medspa EMR benchmark) — procedure charting ON the photograph:
+    injection points + units marked directly on the patient's image → marries Body-Map v2.2's
+    photo-underlay plan EXACTLY (pins-on-photos with per-point dosage is the aesthetics pack's
+    charting surface, now validated by the category leader) · ChartSmart AI (dictate during the
+    procedure, auto-structured into the compliant note) → W5 validated · "predictive note
+    snippets" → T2.5 autotext validated · consent/questionnaire STATUS shown on the appointment
+    card before the visit → T4 × Cadence (the booking knows what paperwork is outstanding —
+    sibling of the Consentz pre-appointment steal, now with a status-at-a-glance face).
+    **PatientNow + RxPhoto** — the STANDARDISED-CAPTURE workflow, Phase D's cleanest steal:
+    on-screen positioning guides + GHOSTING OVERLAY (the previous photo rendered
+    semi-transparent over the live camera so today's angle matches last visit's exactly) +
+    auto-upload to the record with watermark/filters → registered for the Photo Spine (below).
+    **Nextech + TouchMD** — the consult as THEATRE: touchscreen visual consultation (mark up
+    the patient's own photos live, 3D anatomy, education videos), Snap Pro AI camera-positioning
+    guidance, "smart stamping" onto 3D anatomical models pre-populating exam + billing codes →
+    validates the body-map-as-charting-surface direction root-and-branch; the consult-room
+    iPad-presentation experience noted as a far-era aesthetics-pack aspiration.
+    **Symplast** (Best in KLAS 2026, ambulatory plastic surgery) — mobile-FIRST EHR, built
+    iOS-first by a plastic surgeon → our tablet-first law validated by the specialty's
+    KLAS-topper · patient app (secure messaging · photo sharing · e-sign · payments) → W6
+    portal feature set · recorded virtual consults with AI summarisation → W5 × Connect.
+    **ChiroTouch** — the 15-SECOND SOAP: preloaded per-technique/per-case macro libraries
+    (EasyTouch for cash practices; BulletTouch built "audit-proof" against E&M/insurance
+    scrutiny) → the T1-curated-library-per-pack law validated (macros = our parts + autotext
+    marriage, tuned per specialty) · outcome measures filled at patient SELF-CHECK-IN,
+    auto-scored with a % -change narrative → joins the iaptus PHQ-9 steal: the chiro pack gets
+    Oswestry/NDI trend charts, captured at check-in, scored by the system.
+    **OptiMantra** — the integrative-pack blueprint: supplement/herbal e-prescribing beside
+    drugs, supplement PLANS carried forward visit-to-visit, supplement inventory → the
+    prescribing-beyond-drugs seam (a nutraceutical formulary as a pack option, W4-era
+    inventory tie-in) registered for the integrative/functional pack.
+    **Zenoti** — the AI WORKFORCE named by a giant: AI receptionist answering real phone calls
+    + booking 24/7, AI lead scoring/nurture, autonomous lifecycle marketing → W6 Growth's
+    ambitions confirmed as the industry's direction (our AI-receptionist roadmap line is the
+    right bet) · injectable tracking BY SYRINGE AND BATCH → Body-Map v2.2 batch/lot pins
+    validated · memberships/series/wallet = the commerce blueprint (below).
+    **Boulevard** — Precision Scheduling™: self-booking that RANKS the offered slots to kill
+    calendar gaps (books back-to-back or leaves gaps big enough to sell) → Cadence W2 steal:
+    gap-aware slot ranking in patient self-book, registered beside Accurx Self-Book.
+    **Mindbody** — the MARKETPLACE flywheel (a 3M-user consumer app discovering + booking
+    across 40k+ venues; 700-partner API) → strategic W7+ note only: a patient-side discovery
+    surface is a business decision for Roland, never a casual build.
+    **THE PHOTO SPINE (Phase D's flagship cross-cutting find):** every serious aesthetics
+    platform converges on one anatomy — standardised capture (positioning guides + ghost
+    overlay) → secure storage ON the record → side-by-side AND overlay comparison → markup on
+    the photo → watermarked export. That defines Body-Map v2.2's photo work properly: capture
+    → compare → annotate as ONE spine hanging off the body-map component (photo underlay for
+    pins was already the plan; ghost-overlay capture and the comparison viewer join it).
+    **THE GFE HARD-STOP (compliance steal):** US medspa law requires a Good Faith Exam — and
+    the recognised software pattern is a HARD gate: the treatment note cannot be finalised
+    unless a prescriber-clearance record is linked to the patient. That is exactly RolDe's
+    Blocking Modal + verify-the-negative-case law wearing aesthetics clothes. Registered as an
+    aesthetics-pack GATE: a treatment type flagged "requires clinician clearance" BLOCKS the
+    note until a clearance exists (UK frame: remote-prescribing rules for POM cosmetics —
+    prescriber assesses face-to-face per GMC/NMC/GPhC guidance). The companion audit
+    expectation — produce the single patient record (marketing → consent → GFE → treatment)
+    within 72h — validates our export + audit-trail law.
+    **COMMERCE MECHANICS (→ W4 Money's spa chapter):** series/packages (five facials; the
+    right session auto-deducts at checkout) · wallet credits + gift cards applied at checkout
+    with live balances · tiered memberships whose benefits auto-apply at checkout + renewal
+    reminders · and the compliance nuance that a TRANSFERRED credit never transfers clinical
+    clearance (every treated person needs their own GFE/consent). Registered as the W4
+    spa-commerce blueprint. Phase E (AI scribes) next on Roland's word.
     **POPOVER ANATOMY — LOCKED INTO THE URDS (Roland 2026-07-13: "Lock it in the URDS"):** the
     PopoverHeader roster row + tone map are law (§8); the audit found every remaining floating
     surface belongs to a DIFFERENT standardised species (SectionExplainer · ConfirmDialog · ⌘K ·
