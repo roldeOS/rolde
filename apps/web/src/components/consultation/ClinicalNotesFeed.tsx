@@ -53,8 +53,6 @@ export type FeedEntry = {
     text?: string;
     /** T4 — a patient's own submission via a Courier secure form. */
     patient_submitted?: boolean;
-    /** Calm Formatting C — phrases the author marked as Key Findings. */
-    key_findings?: string[];
     /** Scribe Templates round-trip: the structured answers behind the text
      *  (v2.1: a body_map PART's marks ride here like any other answer;
      *  T2: name + parts SNAPSHOT so personal-template notes render forever). */
@@ -942,17 +940,12 @@ export function ClinicalNotesFeed({
                     <SmartNoteBody
                       text={text}
                       struck={struck}
-                      highlights={e.payload?.key_findings ?? []}
                       className="mt-0 min-w-0 flex-1"
                     />
                   </div>
                 ) : (
                   /* Calm Formatting B — free-text notes dress themselves. */
-                  <SmartNoteBody
-                    text={text}
-                    struck={struck}
-                    highlights={e.payload?.key_findings ?? []}
-                  />
+                  <SmartNoteBody text={text} struck={struck} />
                 )}
 
                 {/* Amendment shows a truncated, chevron-expandable preview of the

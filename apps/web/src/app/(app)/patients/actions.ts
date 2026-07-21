@@ -8,25 +8,6 @@ import { logAudit } from "@/lib/audit";
 import type { Json } from "@rolde/db";
 import { emailOk, phonePlausible, dobOk, nationalIdOk, asCountry } from "@/lib/validation";
 
-/** Calm Formatting C — the author's Key Finding phrases, sanitised: strings
- *  only, trimmed, capped (20 × 120 chars), deduped. */
-function parseKeyFindings(fd: FormData): string[] | undefined {
-  const raw = String(fd.get("key_findings") ?? "");
-  if (!raw) return undefined;
-  try {
-    const arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) return undefined;
-    const clean = [...new Set(
-      arr.filter((v): v is string => typeof v === "string")
-         .map((v) => v.trim().slice(0, 120))
-         .filter(Boolean),
-    )].slice(0, 20);
-    return clean.length ? clean : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
 /**
  * Create a patient in the caller's clinic. The clinic (tenant) comes from the
  * caller's own membership — never from the form — and RLS independently enforces
@@ -111,7 +92,9 @@ export async function createPatient(formData: FormData) {
  */
 export async function saveNote(formData: FormData) {
   const patientId = String(formData.get("patient_id") ?? "");
-  const text = String(formData.get("text") ?? "").trim();
+  // CRLF from browser form posts normalises to LF at the door (the
+  // invisible-\r lesson, 2026-07-21) — stored records are clean text.
+  const text = String(formData.get("text") ?? "").replace(/\r\n?/g, "\n").trim();
   if (!patientId || !text) return;
 
   const ctx = await getSessionContext();
@@ -130,7 +113,6 @@ export async function saveNote(formData: FormData) {
     }
   }
 
-  const keyFindings = parseKeyFindings(formData);
   const supabase = await createClient();
   const { error } = await supabase.from("patient_feed_entries").insert({
     tenant_id: tenantId,
@@ -140,7 +122,6 @@ export async function saveNote(formData: FormData) {
       text,
       word_count: text.split(/\s+/).filter(Boolean).length,
       ...(template !== undefined ? { template } : {}),
-      ...(keyFindings ? { key_findings: keyFindings } : {}),
     },
     created_by: ctx?.user.id ?? null,
   });
@@ -171,7 +152,9 @@ const EDIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour (Roland 2026-06-10)
 export async function editNote(formData: FormData) {
   const entryId = String(formData.get("entry_id") ?? "");
   const patientId = String(formData.get("patient_id") ?? "");
-  const text = String(formData.get("text") ?? "").trim();
+  // CRLF from browser form posts normalises to LF at the door (the
+  // invisible-\r lesson, 2026-07-21) — stored records are clean text.
+  const text = String(formData.get("text") ?? "").replace(/\r\n?/g, "\n").trim();
   if (!entryId || !text) return;
 
   const ctx = await getSessionContext();
@@ -204,7 +187,6 @@ export async function editNote(formData: FormData) {
     }
   }
 
-  const keyFindings = parseKeyFindings(formData);
   const { error } = await supabase
     .from("patient_feed_entries")
     .update({
@@ -212,8 +194,7 @@ export async function editNote(formData: FormData) {
         text,
         word_count: text.split(/\s+/).filter(Boolean).length,
         ...(template !== undefined ? { template } : {}),
-        ...(keyFindings ? { key_findings: keyFindings } : {}),
-      },
+        },
       edited_at: new Date().toISOString(),
       updated_by: userId,
     })
@@ -273,7 +254,9 @@ export async function strikeNote(formData: FormData) {
 export async function amendNote(formData: FormData) {
   const parentId = String(formData.get("parent_id") ?? "");
   const patientId = String(formData.get("patient_id") ?? "");
-  const text = String(formData.get("text") ?? "").trim();
+  // CRLF from browser form posts normalises to LF at the door (the
+  // invisible-\r lesson, 2026-07-21) — stored records are clean text.
+  const text = String(formData.get("text") ?? "").replace(/\r\n?/g, "\n").trim();
   if (!parentId || !patientId || !text) return;
 
   const ctx = await getSessionContext();
@@ -322,7 +305,9 @@ export async function amendNote(formData: FormData) {
  */
 export async function saveBodyMap(formData: FormData) {
   const patientId = String(formData.get("patient_id") ?? "");
-  const text = String(formData.get("text") ?? "").trim();
+  // CRLF from browser form posts normalises to LF at the door (the
+  // invisible-\r lesson, 2026-07-21) — stored records are clean text.
+  const text = String(formData.get("text") ?? "").replace(/\r\n?/g, "\n").trim();
   const raw = String(formData.get("body_map") ?? "");
   if (!patientId || !text || !raw) return;
 

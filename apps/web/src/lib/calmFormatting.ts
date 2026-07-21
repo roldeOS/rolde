@@ -63,7 +63,12 @@ export type SmartLine =
 const HEADER_RE = /^[A-Z][A-Z0-9 &/()'-]{2,}$/;
 const LABEL_RE = /^([A-Za-z][A-Za-z0-9 ()/&'-]{0,31}):\s+(\S.*)$/;
 
-export function classifyLine(line: string): SmartLine {
+export function classifyLine(raw: string): SmartLine {
+  // Browsers post textarea content with CRLF line endings, and `.` in a JS
+  // regex refuses to match \r — the invisible character that made Roland's
+  // numbered lines fall through as plain text (2026-07-21). Strip it first;
+  // notes already stored with CRLF stay fully readable.
+  const line = raw.replace(/\r$/, "");
   if (line.trim() === "") return { kind: "blank" };
   const bullet = /^\s*[-•]\s+(.*)$/.exec(line);
   if (bullet) return { kind: "bullet", text: bullet[1] };
@@ -78,4 +83,4 @@ export function classifyLine(line: string): SmartLine {
 }
 
 export const classifyNote = (text: string): SmartLine[] =>
-  text.split("\n").map(classifyLine);
+  text.split(/\r?\n/).map(classifyLine);

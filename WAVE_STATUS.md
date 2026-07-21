@@ -116,4 +116,4 @@
 
 ---
 
-*Last updated: 2026-07-21 late night (T4.1 submission EVIDENCE [IP+agent at open+submit, E2E-proven]; Form Response tile teal; "Compose" killed → Templates ▾ + Body Map chip RESTORED + Send A Form moved to the Clinical Notes header; CALM FORMATTING A+B+C shipped [self-continuing lists · notes dress themselves retroactively · Key Findings amber phrases] — engine unit-tested ×9; git-history purge declined by Roland; next: Phase D on his word → T4.2.)*
+*Last updated: 2026-07-21 v2 (Roland's verdicts: B's no-render ROOT-CAUSED — the invisible \r in browser form posts; fixed both ends + proven on his exact note; Key Findings (C) removed root-and-branch; A stays quietly; send-to-patient rename/relocation + Scribe-chip arrangement = OPTIONS with Roland; then Phase D.)*

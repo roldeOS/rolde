@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap, Highlighter } from "lucide-react";
+import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -227,11 +227,6 @@ export function ConsultationWorkspace({
   // Body-Map v2 (greenlit 2026-07-04) — a Scribe MODE (APPROVALS §4.3: the
   // one sanctioned automatic move is Scribe expanding for the map).
   const [bodyMap, setBodyMap] = useState<BodyMapData | null>(null);
-  // Calm Formatting C — Key Findings: select words in the draft → the amber
-  // chip appears → the PHRASE is stored (payload.key_findings) and the tile
-  // emphasises it. No symbols, no ranges — records-safe.
-  const [keyFindings, setKeyFindings] = useState<string[]>([]);
-  const [draftSel, setDraftSel] = useState<{ start: number; end: number } | null>(null);
   const [strikeOriginal, setStrikeOriginal] = useState(false);
   const [pending, setPending] = useState(false);
   // Conversational "saved" flash lives in the provider so it survives the
@@ -338,7 +333,6 @@ export function ConsultationWorkspace({
       setDraft("");
     } else {
       setDraft(locked ? "" : original);
-      if (!locked && !foreign) setKeyFindings(e.payload?.key_findings ?? []);
     }
   }
 
@@ -349,8 +343,6 @@ export function ConsultationWorkspace({
     setTemplate(null);
     setAnswers({});
     setBodyMap(null);
-    setKeyFindings([]);
-    setDraftSel(null);
     setLeftMode("split");
   }
 
@@ -398,8 +390,6 @@ export function ConsultationWorkspace({
         await saveBodyMap(fd);
       } else if (mode === "new") {
         fd.set("text", usingTemplate ? renderTemplate(template, answers, legend) : draft);
-        if (!usingTemplate && keyFindings.length)
-          fd.set("key_findings", JSON.stringify(keyFindings));
         // T2: the template's NAME + PARTS ride the payload as a snapshot — the
         // note renders structured forever, even if the template is later
         // edited or removed (a clinical record never depends on a live lookup).
@@ -412,8 +402,6 @@ export function ConsultationWorkspace({
       } else if (mode === "edit") {
         fd.set("entry_id", editTarget!.id);
         fd.set("text", usingTemplate ? renderTemplate(template, answers, legend) : draft);
-        if (!usingTemplate && keyFindings.length)
-          fd.set("key_findings", JSON.stringify(keyFindings));
         if (usingTemplate)
           fd.set(
             "template_meta",
@@ -729,20 +717,6 @@ export function ConsultationWorkspace({
                     </span>
                   </button>
                 )}
-                {draftSel && !template && !bodyMap && (mode === "new" || mode === "edit") && (
-                  <button
-                    onClick={() => {
-                      const phrase = draft.slice(draftSel.start, draftSel.end).trim();
-                      if (phrase && !keyFindings.includes(phrase))
-                        setKeyFindings((k) => [...k, phrase].slice(0, 20));
-                      setDraftSel(null);
-                    }}
-                    className="flex h-7 items-center gap-1 rounded-lg bg-warning/15 px-2 text-xs font-semibold text-warning shadow-sm ring-1 ring-warning/20 transition-shadow hover:shadow"
-                  >
-                    <Highlighter className="size-3.5" />
-                    Mark Key Finding
-                  </button>
-                )}
                 {mode !== "new" || !bodyMap ? (
                   <>
                     <button
@@ -868,12 +842,6 @@ export function ConsultationWorkspace({
                   ref={draftRef}
                   value={draft}
                   onChange={(e) => withAutotext(e.target, setDraft)}
-                  onSelect={(e) => {
-                    const el = e.currentTarget;
-                    const start = el.selectionStart ?? 0;
-                    const end = el.selectionEnd ?? 0;
-                    setDraftSel(end > start ? { start, end } : null);
-                  }}
                   onKeyDown={(e) => {
                     // Calm Formatting A — lists that carry themselves on.
                     if (e.key !== "Enter" || e.shiftKey) return;
@@ -893,26 +861,6 @@ export function ConsultationWorkspace({
                   }
                   className="min-h-0 w-full flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 />
-                )}
-                {keyFindings.length > 0 && !template && !bodyMap && (
-                  <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
-                    {keyFindings.map((k) => (
-                      <span
-                        key={k}
-                        className="flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning"
-                      >
-                        <Highlighter className="size-3" />
-                        <span className="max-w-[180px] truncate">{k}</span>
-                        <button
-                          onClick={() => setKeyFindings((ks) => ks.filter((x) => x !== k))}
-                          aria-label={`Remove key finding ${k}`}
-                          className="transition-opacity hover:opacity-70"
-                        >
-                          <X className="size-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
                 )}
                 <div className="flex shrink-0 items-center justify-end gap-2 pt-1">
                   {(editTarget || draft || template || bodyMap) && (

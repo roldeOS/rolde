@@ -1562,6 +1562,19 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     tablet-first, every new surface verified at 393px + 768px before "done". If the real-device
     askew persists post-deploy, ONE screenshot from the device pins the remaining offender.
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
+    **✅ THE CRLF TRUTH + C REMOVED (2026-07-21, Roland's verdicts):** (1) **"B never
+    happened" — he was right.** Browsers post textarea content with CRLF endings and `.` in a JS
+    regex refuses to match \r — the invisible character made his numbered lines classify as
+    plain. My unit tests had only ever fed clean \n (the lesson: test with the browser's real
+    bytes). Fixed BOTH ends: the classifier splits /\r?\n/ + strips \r (history stays
+    readable), and every note intake now normalises CRLF→LF at the door. Proven on Roland's
+    exact stored note (now `<ol><li value="1">…` in the SSR markup) + screenshot ("Pharmacy
+    called:" self-dressed on an old nurse note). (2) **Key Findings (C) REMOVED root-and-branch**
+    (Roland: "tag like thing… YUCK") — state, chip, chips row, payload plumbing, renderer
+    highlights, feed types: all gone, no lurking code. A (self-continuing lists) remains —
+    invisible until a dash is typed; one word removes it too. (3) Send-to-patient
+    NAME + LOCATION and the Templates/Body-Map/Snippets arrangement: OPTIONS presented,
+    awaiting Roland's pick (his call; no movement without it).
     **✅ T4.1 EVIDENCE + CALM FORMATTING + THE HEADER RENAMED (2026-07-21, Roland's round):**
     (1) **SUBMISSION EVIDENCE (Roland: "do we store the patient entry as a log? IP and so on?")**
     — the e-consent standard now holds: IP + user agent captured at OPEN and at SUBMIT on
