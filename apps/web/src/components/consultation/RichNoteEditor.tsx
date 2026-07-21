@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { Bold, Italic, Underline, Highlighter } from "lucide-react";
 import {
   mergeMarks,
@@ -275,7 +276,11 @@ export const RichNoteEditor = forwardRef<
 ) {
   const editorRef = useRef<HTMLDivElement>(null);
   const [empty, setEmpty] = useState(!initialText);
-  const [bubble, setBubble] = useState<{ x: number; y: number; active: Set<MarkKind> } | null>(null);
+  // Bubble coords are VIEWPORT (client) coords — it renders in a body portal so
+  // the card edge can never clip it (Roland 2026-07-21: "B gets cut off").
+  const [bubble, setBubble] = useState<{ cx: number; top: number; active: Set<MarkKind> } | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const activeRef = useRef(false);
 
   // Render the DOM from a model + report up + optionally place the caret.
@@ -311,15 +316,13 @@ export const RichNoteEditor = forwardRef<
       return;
     }
     const rect = sel.getRangeAt(0).getBoundingClientRect();
-    const box = el.getBoundingClientRect();
     const { marks } = fromDom(el);
     const active = new Set<MarkKind>();
     for (const b of BUBBLE) if (fullyCovered(marks, off.start, off.end, b.k)) active.add(b.k);
-    setBubble({
-      x: rect.left - box.left + rect.width / 2,
-      y: rect.top - box.top,
-      active,
-    });
+    // Clamp the centre so the ~150px bubble stays fully on-screen (never clipped).
+    const HALF = 80;
+    const cx = Math.max(HALF + 4, Math.min(rect.left + rect.width / 2, window.innerWidth - HALF - 4));
+    setBubble({ cx, top: rect.top, active });
   }, []);
 
   const handleInput = useCallback(() => {
@@ -436,24 +439,8 @@ export const RichNoteEditor = forwardRef<
   );
 
   return (
-    <div className={cn("relative flex min-h-0 flex-1 flex-col", className)}>
-      {/* Slim, always-there toolbar — B I U + Highlight, our chip lingo. */}
-      <div className="mb-1.5 flex shrink-0 items-center gap-0.5">
-        {BUBBLE.map((b) => (
-          <button
-            key={b.k}
-            type="button"
-            title={`${b.label} · ${b.sc}`}
-            aria-label={b.label}
-            // Keep the selection: prevent the button stealing focus.
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => applyKind(b.k)}
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-          >
-            <b.icon className="size-4" />
-          </button>
-        ))}
-      </div>
+    <div className={cn("relative flex min-h-0 flex-1 flex-row gap-2", className)}>
+      {/* The writing surface. */}
       <div className="relative min-h-0 flex-1">
         {empty && (
           <p className="pointer-events-none absolute left-0 top-0 text-sm text-muted-foreground">
@@ -482,10 +469,36 @@ export const RichNoteEditor = forwardRef<
           }}
           className="min-h-full w-full flex-1 text-sm whitespace-pre-wrap outline-none"
         />
-        {bubble && (
+      </div>
+
+      {/* The formatting rail — VERTICAL, on the RIGHT (Roland's screenshot,
+          2026-07-21): B I U + Highlight stacked in the sparse right margin, so
+          the note's own vertical space is never eaten. */}
+      <div className="flex shrink-0 flex-col items-center gap-0.5 border-l border-border/40 pl-1.5">
+        {BUBBLE.map((b) => (
+          <button
+            key={b.k}
+            type="button"
+            title={`${b.label} · ${b.sc}`}
+            aria-label={b.label}
+            // Keep the selection: prevent the button stealing focus.
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => applyKind(b.k)}
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+          >
+            <b.icon className="size-4" />
+          </button>
+        ))}
+      </div>
+
+      {/* The selection bubble — PORTALED to <body>, viewport-fixed + clamped, so
+          the card edge can never clip it (Roland 2026-07-21). */}
+      {mounted &&
+        bubble &&
+        createPortal(
           <div
-            className="absolute z-30 flex -translate-x-1/2 -translate-y-full items-center gap-0.5 rounded-lg border border-border/50 bg-card p-0.5 shadow-overlay"
-            style={{ left: bubble.x, top: bubble.y - 8 }}
+            className="fixed z-[80] flex -translate-x-1/2 -translate-y-full items-center gap-0.5 rounded-lg border border-border/50 bg-card p-0.5 shadow-overlay"
+            style={{ left: bubble.cx, top: bubble.top - 8 }}
           >
             {BUBBLE.map((b) => (
               <button
@@ -505,9 +518,9 @@ export const RichNoteEditor = forwardRef<
                 <b.icon className="size-4" />
               </button>
             ))}
-          </div>
+          </div>,
+          document.body,
         )}
-      </div>
     </div>
   );
 });
