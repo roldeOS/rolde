@@ -116,4 +116,4 @@
 
 ---
 
-*Last updated: 2026-07-21 night (Compose ▾ split SHIPPED [modes vs inserts — Roland's pick]; dead-Safari-link ROOT-CAUSED + fixed as a class [dev emails now carry prod links; fresh form email in Roland's inbox, link verified live]; artwork masters out of git; TWO memory laws written [clinicians-are-not-coders · email-links-need-prod-base-url]; Calm Formatting proposals awaiting Roland; next: his formatting pick → T4.2 → Phase D.)*
+*Last updated: 2026-07-21 late night (T4.1 submission EVIDENCE [IP+agent at open+submit, E2E-proven]; Form Response tile teal; "Compose" killed → Templates ▾ + Body Map chip RESTORED + Send A Form moved to the Clinical Notes header; CALM FORMATTING A+B+C shipped [self-continuing lists · notes dress themselves retroactively · Key Findings amber phrases] — engine unit-tested ×9; git-history purge declined by Roland; next: Phase D on his word → T4.2.)*

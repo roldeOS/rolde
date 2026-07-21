@@ -13,6 +13,7 @@ import {
 } from "@/lib/scribeTemplates";
 import { BodyMapPanel } from "@/components/consultation/BodyMapPanel";
 import { isBodyMapData, EMPTY_BODY_MAP, type BodyMapData, type BodymapLegendNames } from "@/lib/bodyMap";
+import { continueListOnEnter } from "@/lib/calmFormatting";
 import { cn } from "@/lib/utils";
 
 /**
@@ -170,6 +171,15 @@ export function ScribeTemplateForm({
                   placeholder={p.placeholder}
                   rows={3}
                   onChange={(e) => writeText(e.target, (v) => onChange(i, v))}
+                  onKeyDown={(e) => {
+                    if (e.key !== "Enter" || e.shiftKey) return;
+                    const el = e.currentTarget;
+                    const hit = continueListOnEnter(el.value, el.selectionStart ?? el.value.length);
+                    if (!hit) return;
+                    e.preventDefault();
+                    onChange(i, hit.value);
+                    requestAnimationFrame(() => el.setSelectionRange(hit.caret, hit.caret));
+                  }}
                   className="w-full resize-y rounded-lg bg-muted/40 px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:bg-muted/60"
                 />
               </Field>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap, ClipboardList } from "lucide-react";
+import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap, Highlighter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
@@ -50,6 +50,7 @@ import {
 import { ShortcutsManager } from "@/components/consultation/ShortcutsManager";
 import { FormSendSheet } from "@/components/consultation/FormSendSheet";
 import { expandAutotext } from "@/lib/autotext";
+import { continueListOnEnter } from "@/lib/calmFormatting";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { BodyMapPanel } from "@/components/consultation/BodyMapPanel";
 import {
@@ -153,8 +154,12 @@ export function ConsultationWorkspace({
   // sentence). Loaded once on mount; the manager hands back fresh lists.
   const [shortcuts, setShortcuts] = useState<AutotextShortcut[]>([]);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  // T4 — Send A Form (patient-facing templates via Courier secure links).
-  const [formSheetOpen, setFormSheetOpen] = useState(false);
+  // T4 — Send A Form (patient-facing templates via Courier secure links);
+  // triggered from the FEED header, anchored to its button.
+  const [formSheet, setFormSheet] = useState<{ open: boolean; anchor: HTMLElement | null }>({
+    open: false,
+    anchor: null,
+  });
   // T3 — the clinic's colour legend: names print on the record + label the
   // annotator's swatches.
   const [legend, setLegend] = useState<BodymapLegendNames>({});
@@ -222,6 +227,11 @@ export function ConsultationWorkspace({
   // Body-Map v2 (greenlit 2026-07-04) — a Scribe MODE (APPROVALS §4.3: the
   // one sanctioned automatic move is Scribe expanding for the map).
   const [bodyMap, setBodyMap] = useState<BodyMapData | null>(null);
+  // Calm Formatting C — Key Findings: select words in the draft → the amber
+  // chip appears → the PHRASE is stored (payload.key_findings) and the tile
+  // emphasises it. No symbols, no ranges — records-safe.
+  const [keyFindings, setKeyFindings] = useState<string[]>([]);
+  const [draftSel, setDraftSel] = useState<{ start: number; end: number } | null>(null);
   const [strikeOriginal, setStrikeOriginal] = useState(false);
   const [pending, setPending] = useState(false);
   // Conversational "saved" flash lives in the provider so it survives the
@@ -328,6 +338,7 @@ export function ConsultationWorkspace({
       setDraft("");
     } else {
       setDraft(locked ? "" : original);
+      if (!locked && !foreign) setKeyFindings(e.payload?.key_findings ?? []);
     }
   }
 
@@ -338,6 +349,8 @@ export function ConsultationWorkspace({
     setTemplate(null);
     setAnswers({});
     setBodyMap(null);
+    setKeyFindings([]);
+    setDraftSel(null);
     setLeftMode("split");
   }
 
@@ -385,6 +398,8 @@ export function ConsultationWorkspace({
         await saveBodyMap(fd);
       } else if (mode === "new") {
         fd.set("text", usingTemplate ? renderTemplate(template, answers, legend) : draft);
+        if (!usingTemplate && keyFindings.length)
+          fd.set("key_findings", JSON.stringify(keyFindings));
         // T2: the template's NAME + PARTS ride the payload as a snapshot — the
         // note renders structured forever, even if the template is later
         // edited or removed (a clinical record never depends on a live lookup).
@@ -397,6 +412,8 @@ export function ConsultationWorkspace({
       } else if (mode === "edit") {
         fd.set("entry_id", editTarget!.id);
         fd.set("text", usingTemplate ? renderTemplate(template, answers, legend) : draft);
+        if (!usingTemplate && keyFindings.length)
+          fd.set("key_findings", JSON.stringify(keyFindings));
         if (usingTemplate)
           fd.set(
             "template_meta",
@@ -498,6 +515,7 @@ export function ConsultationWorkspace({
                 currentUserId={currentUserId}
                 reads={reads}
                 dispatches={dispatches}
+                onSendForm={(el) => setFormSheet({ open: true, anchor: el })}
                 maximized={leftMode === "top"}
                 onToggleMaximize={() =>
                   setLeftMode((m) => (m === "top" ? "split" : "top"))
@@ -554,13 +572,9 @@ export function ConsultationWorkspace({
                       onClick={() => setPickerOpen((v) => !v)}
                       className="flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
                     >
-                      {bodyMap ? (
-                        <PersonStanding className="size-3.5" />
-                      ) : (
-                        <LayoutTemplate className="size-3.5" />
-                      )}
-                      <span className={cn(!template && !bodyMap && "hidden sm:inline")}>
-                        {bodyMap ? "Body Map" : template ? template.name : "Compose"}
+                      <LayoutTemplate className="size-3.5" />
+                      <span className={cn(!template && "hidden sm:inline")}>
+                        {template ? template.name : "Templates"}
                       </span>
                       <ChevronDown className={cn("size-3 transition-transform", pickerOpen && "rotate-180")} />
                     </button>
@@ -571,9 +585,9 @@ export function ConsultationWorkspace({
                       open={pickerOpen}
                       onClose={() => setPickerOpen(false)}
                       width={264}
-                      icon={PenLine}
-                      title="Compose"
-                      subtitle="Blank note · templates · body map"
+                      icon={LayoutTemplate}
+                      title="Templates"
+                      subtitle="The curated library + your clinic's own"
                       tone="periwinkle"
                     >
                         <button
@@ -593,33 +607,6 @@ export function ConsultationWorkspace({
                         >
                           <X className="size-3.5" /> Blank Note
                         </button>
-                        {/* Body Map is a MODE, so it lives with the modes
-                            (Roland 2026-07-21: split by nature). Entering it
-                            auto-expands Scribe — the ONE sanctioned automatic
-                            move (APPROVALS §4.2). */}
-                        {mode === "new" && (
-                          <button
-                            onClick={() => {
-                              if (bodyMap) {
-                                setBodyMap(null);
-                                setLeftMode("split");
-                              } else {
-                                setTemplate(null);
-                                setAnswers({});
-                                setBodyMap({ view: "anterior", figure: "woman", pins: [], strokes: [] });
-                                setLeftMode("bottom");
-                              }
-                              setPickerOpen(false);
-                            }}
-                            className={cn(
-                              "flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-hover",
-                              bodyMap ? "font-medium text-foreground" : "text-muted-foreground",
-                            )}
-                          >
-                            <PersonStanding className="size-3.5" />
-                            {bodyMap ? "Close Body Map" : "Body Map"}
-                          </button>
-                        )}
                         {[...new Set(ROLDE_TEMPLATE_LIBRARY.map((t) => t.specialty))].map(
                           (spec) => (
                             <div key={spec}>
@@ -711,29 +698,50 @@ export function ConsultationWorkspace({
                             <Plus className="size-3.5" /> New Template…
                           </button>
                         )}
-                        <button
-                          onClick={() => {
-                            setShortcutsOpen(true);
-                            setPickerOpen(false);
-                          }}
-                          className={cn(
-                            "flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-hover hover:text-foreground",
-                            !canManageTemplates && "mt-1 border-t border-border/60 pt-2",
-                          )}
-                        >
-                          <Zap className="size-3.5" /> My Shortcuts…
-                        </button>
-                        <button
-                          onClick={() => {
-                            setPickerOpen(false);
-                            setFormSheetOpen(true);
-                          }}
-                          className="flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-                        >
-                          <ClipboardList className="size-3.5" /> Send A Form…
-                        </button>
                     </AnchoredPopover>
                   </div>
+                )}
+                {mode === "new" && (
+                  <button
+                    onClick={() => {
+                      if (bodyMap) {
+                        setBodyMap(null);
+                        setLeftMode("split");
+                      } else {
+                        setTemplate(null);
+                        setAnswers({});
+                        setBodyMap({ view: "anterior", figure: "woman", pins: [], strokes: [] });
+                        // The ONE sanctioned automatic move (APPROVALS §4.2):
+                        // opening the Body-Map expands Scribe — user-initiated.
+                        setLeftMode("bottom");
+                      }
+                    }}
+                    className={cn(
+                      "flex h-7 items-center gap-1 rounded-lg bg-card px-2 text-xs font-medium shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:shadow",
+                      bodyMap
+                        ? "text-foreground"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <PersonStanding className="size-3.5" />
+                    <span className={cn(!bodyMap && "hidden sm:inline")}>
+                      {bodyMap ? "Close Body Map" : "Body Map"}
+                    </span>
+                  </button>
+                )}
+                {draftSel && !template && !bodyMap && (mode === "new" || mode === "edit") && (
+                  <button
+                    onClick={() => {
+                      const phrase = draft.slice(draftSel.start, draftSel.end).trim();
+                      if (phrase && !keyFindings.includes(phrase))
+                        setKeyFindings((k) => [...k, phrase].slice(0, 20));
+                      setDraftSel(null);
+                    }}
+                    className="flex h-7 items-center gap-1 rounded-lg bg-warning/15 px-2 text-xs font-semibold text-warning shadow-sm ring-1 ring-warning/20 transition-shadow hover:shadow"
+                  >
+                    <Highlighter className="size-3.5" />
+                    Mark Key Finding
+                  </button>
                 )}
                 {mode !== "new" || !bodyMap ? (
                   <>
@@ -860,6 +868,22 @@ export function ConsultationWorkspace({
                   ref={draftRef}
                   value={draft}
                   onChange={(e) => withAutotext(e.target, setDraft)}
+                  onSelect={(e) => {
+                    const el = e.currentTarget;
+                    const start = el.selectionStart ?? 0;
+                    const end = el.selectionEnd ?? 0;
+                    setDraftSel(end > start ? { start, end } : null);
+                  }}
+                  onKeyDown={(e) => {
+                    // Calm Formatting A — lists that carry themselves on.
+                    if (e.key !== "Enter" || e.shiftKey) return;
+                    const el = e.currentTarget;
+                    const hit = continueListOnEnter(el.value, el.selectionStart ?? el.value.length);
+                    if (!hit) return;
+                    e.preventDefault();
+                    setDraft(hit.value);
+                    requestAnimationFrame(() => el.setSelectionRange(hit.caret, hit.caret));
+                  }}
                   placeholder={
                     mode === "amend"
                       ? "Amendment…"
@@ -869,6 +893,26 @@ export function ConsultationWorkspace({
                   }
                   className="min-h-0 w-full flex-1 resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 />
+                )}
+                {keyFindings.length > 0 && !template && !bodyMap && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1.5">
+                    {keyFindings.map((k) => (
+                      <span
+                        key={k}
+                        className="flex items-center gap-1 rounded-full bg-warning/15 px-2 py-0.5 text-xs font-medium text-warning"
+                      >
+                        <Highlighter className="size-3" />
+                        <span className="max-w-[180px] truncate">{k}</span>
+                        <button
+                          onClick={() => setKeyFindings((ks) => ks.filter((x) => x !== k))}
+                          aria-label={`Remove key finding ${k}`}
+                          className="transition-opacity hover:opacity-70"
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 )}
                 <div className="flex shrink-0 items-center justify-end gap-2 pt-1">
                   {(editTarget || draft || template || bodyMap) && (
@@ -964,9 +1008,9 @@ export function ConsultationWorkspace({
           picks up its new shape (answers reset — honest, never misaligned). */}
       <FormSendSheet
         patientId={patient.id}
-        anchor={pickerBtn}
-        open={formSheetOpen}
-        onClose={() => setFormSheetOpen(false)}
+        anchor={formSheet.anchor}
+        open={formSheet.open}
+        onClose={() => setFormSheet({ open: false, anchor: null })}
       />
       {shortcutsOpen && (
         <ShortcutsManager

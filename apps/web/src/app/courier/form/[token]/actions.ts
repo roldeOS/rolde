@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { logAudit } from "@/lib/audit";
 import {
@@ -10,6 +11,17 @@ import {
   templateHasAnswers,
 } from "@/lib/scribeTemplates";
 import type { Json } from "@rolde/db";
+
+/** WHO-WHEN-WHERE evidence (T4.1, the e-consent standard): IP + user agent
+ *  captured at open and at submit, held on the request row. */
+async function requestEvidence(): Promise<{ ip: string | null; ua: string | null }> {
+  const h = await headers();
+  const fwd = h.get("x-forwarded-for");
+  return {
+    ip: (fwd ? fwd.split(",")[0].trim() : h.get("x-real-ip")) || null,
+    ua: h.get("user-agent")?.slice(0, 300) || null,
+  };
+}
 
 /**
  * The Courier FORM viewer's actions (T4) — token possession is the
@@ -31,9 +43,16 @@ export async function openFormRequest(token: string): Promise<void> {
     return;
   }
   if (new Date(r.token_expires_at) < new Date()) return;
+  const ev = await requestEvidence();
   await admin
     .from("form_requests")
-    .update({ status: "opened", opened_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .update({
+      status: "opened",
+      opened_at: new Date().toISOString(),
+      opened_ip: ev.ip,
+      opened_user_agent: ev.ua,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", r.id);
   revalidatePath(`/courier/form/${token}`);
 }
@@ -87,11 +106,14 @@ export async function submitFormResponse(
     return { ok: false, error: "That didn’t save — please try again." };
   }
 
+  const ev = await requestEvidence();
   await admin
     .from("form_requests")
     .update({
       status: "submitted",
       submitted_at: new Date().toISOString(),
+      submitted_ip: ev.ip,
+      submitted_user_agent: ev.ua,
       response_entry_id: entry.id,
       updated_at: new Date().toISOString(),
     })
@@ -103,7 +125,7 @@ export async function submitFormResponse(
     resourceType: "patient",
     resourceId: r.patient_id,
     summary: `The patient submitted the “${template.name}” form`,
-    metadata: { form_request_id: r.id, entry_id: entry.id },
+    metadata: { form_request_id: r.id, entry_id: entry.id, submitted_ip: ev.ip },
   });
   revalidatePath(`/courier/form/${token}`);
   return { ok: true };

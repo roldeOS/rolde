@@ -610,6 +610,8 @@ export type Database = {
           failed_reason: string | null
           id: string
           opened_at: string | null
+          opened_ip: string | null
+          opened_user_agent: string | null
           patient_id: string
           recipient_email: string
           recipient_name: string
@@ -618,6 +620,8 @@ export type Database = {
           sent_by: string | null
           status: string
           submitted_at: string | null
+          submitted_ip: string | null
+          submitted_user_agent: string | null
           template_id: string
           template_snapshot: Json
           tenant_id: string
@@ -630,6 +634,8 @@ export type Database = {
           failed_reason?: string | null
           id?: string
           opened_at?: string | null
+          opened_ip?: string | null
+          opened_user_agent?: string | null
           patient_id: string
           recipient_email: string
           recipient_name: string
@@ -638,6 +644,8 @@ export type Database = {
           sent_by?: string | null
           status?: string
           submitted_at?: string | null
+          submitted_ip?: string | null
+          submitted_user_agent?: string | null
           template_id: string
           template_snapshot: Json
           tenant_id: string
@@ -650,6 +658,8 @@ export type Database = {
           failed_reason?: string | null
           id?: string
           opened_at?: string | null
+          opened_ip?: string | null
+          opened_user_agent?: string | null
           patient_id?: string
           recipient_email?: string
           recipient_name?: string
@@ -658,6 +668,8 @@ export type Database = {
           sent_by?: string | null
           status?: string
           submitted_at?: string | null
+          submitted_ip?: string | null
+          submitted_user_agent?: string | null
           template_id?: string
           template_snapshot?: Json
           tenant_id?: string

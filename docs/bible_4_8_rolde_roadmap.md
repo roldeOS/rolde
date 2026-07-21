@@ -1562,6 +1562,28 @@ Roles screen.)* · W1.1.8 Services & pricing **(v1 ✅ flat list; v2 ✅ 2026-06
     tablet-first, every new surface verified at 393px + 768px before "done". If the real-device
     askew persists post-deploy, ONE screenshot from the device pins the remaining offender.
     **COURIER C2 BUILT 2026-07-04** — see the Courier module line + WAVE_STATUS.
+    **✅ T4.1 EVIDENCE + CALM FORMATTING + THE HEADER RENAMED (2026-07-21, Roland's round):**
+    (1) **SUBMISSION EVIDENCE (Roland: "do we store the patient entry as a log? IP and so on?")**
+    — the e-consent standard now holds: IP + user agent captured at OPEN and at SUBMIT on
+    form_requests (x-forwarded-for on Vercel), submitted_ip echoed into the Activity-Log
+    metadata; E2E-proven with spoofed headers (203.0.113.77 + agent stored at both hops). IPs
+    are personal data — purpose: record integrity / defence of legal claims; team-RLS row.
+    (2) **Form Response tile → TEAL** (Roland: "needs a different colour") — unused by any other
+    feed kind. (3) **"Compose" KILLED (Roland: "beckons the user… like compose email")** → the
+    chip is honest "Templates ▾" again (menu slimmed: shortcuts live only under ⚡ → Manage);
+    **Body Map is BACK as its own visible chip** (Roland: "almost hidden in that mumbo-jumbo");
+    **Send A Form moved to the Clinical Notes header** (a labelled chip beside sort/filter —
+    responses land in that feed, so the send lives there; also answers "how do I trigger this
+    as a doctor"). (4) **CALM FORMATTING A+B+C SHIPPED (Roland's pick; clinicians-are-not-coders
+    law):** A — self-continuing lists in the draft AND template textareas (dash or "1." lines
+    carry on by themselves; Enter on an empty item ends the list); B — SmartNoteBody: free-text
+    notes DRESS THEMSELVES at display time ("Plan:" → semibold label · dashes → real bullets ·
+    numbered lines → numbered lists · UPPERCASE line → section header) — retroactive on every
+    existing note, stored record stays plain text; C — KEY FINDINGS: select words in the draft →
+    the amber "Mark Key Finding" chip appears → the PHRASE rides payload.key_findings (server-
+    sanitised: 20 × 120 chars, deduped) and the tile emphasises it with a soft amber wash;
+    chips-with-✕ under the composer; edit round-trip carries them. Engine unit-tested ×9 (incl.
+    "Dear Dr Matthews," and "BP was 128/82" must-stay-plain).
     **✅ COMPOSE SPLIT + THE LOCALHOST-LINK FIX + MASTERS OUT OF GIT (2026-07-21, Roland's
     round):** (1) **Scribe de-cluttered by NATURE (Roland approved "split by nature")**: ONE
     "Compose ▾" control (Blank Note · Body Map · the template library · Clinic Templates · New

@@ -41,6 +41,7 @@ import {
   StructuredNoteBody,
   BodyMapThumbnail,
 } from "@/components/consultation/StructuredNoteBody";
+import { SmartNoteBody } from "@/components/consultation/SmartNoteBody";
 import { markEntrySeen } from "@/app/(app)/patients/actions";
 import { CourierSendSheet } from "@/components/consultation/CourierSendSheet";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,8 @@ export type FeedEntry = {
     text?: string;
     /** T4 — a patient's own submission via a Courier secure form. */
     patient_submitted?: boolean;
+    /** Calm Formatting C — phrases the author marked as Key Findings. */
+    key_findings?: string[];
     /** Scribe Templates round-trip: the structured answers behind the text
      *  (v2.1: a body_map PART's marks ride here like any other answer;
      *  T2: name + parts SNAPSHOT so personal-template notes render forever). */
@@ -114,7 +117,7 @@ const RECORD_KINDS: Record<string, { label: string; tone: CardIconTone; icon: Ic
   problem_recorded: { label: "Problem", tone: "peach", icon: ClipboardList },
   medication_recorded: { label: "Medication", tone: "warning", icon: Pill },
   body_map: { label: "Body Map", tone: "peach", icon: PersonStanding },
-  form_response: { label: "Form Response", tone: "sky", icon: ClipboardCheck },
+  form_response: { label: "Form Response", tone: "teal", icon: ClipboardCheck },
 };
 function noteKind(
   role: string | undefined,
@@ -193,6 +196,7 @@ export function ClinicalNotesFeed({
   maximized,
   onToggleMaximize,
   onEditNote,
+  onSendForm,
   activeId,
 }: {
   entries: FeedEntry[];
@@ -205,6 +209,10 @@ export function ClinicalNotesFeed({
   maximized: boolean;
   onToggleMaximize: () => void;
   onEditNote: (e: FeedEntry) => void;
+  /** T4 — opens the Send-A-Form sheet (lives in the workspace), anchored to
+   *  the feed-header button: responses land in THIS feed, so the send lives
+   *  here too (Roland 2026-07-21: it was buried in the compose menu). */
+  onSendForm?: (anchor: HTMLElement) => void;
   activeId: string | null;
 }) {
   const [sortDesc, setSortDesc] = useState(false);
@@ -461,6 +469,16 @@ export function ClinicalNotesFeed({
           ]}
         />
         <div className="ml-auto flex items-center gap-1.5">
+          {onSendForm && (
+            <button
+              onClick={(ev) => onSendForm(ev.currentTarget)}
+              title="Send A Form To The Patient"
+              className="flex h-7 items-center gap-1 rounded-lg bg-card px-1.5 text-muted-foreground shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:text-foreground hover:shadow"
+            >
+              <ClipboardCheck className="size-4" />
+              <span className="hidden text-xs font-medium xl:inline">Send A Form</span>
+            </button>
+          )}
           <button
             onClick={() => setSortDesc((v) => !v)}
             title={sortDesc ? "Newest first" : "Oldest first"}
@@ -921,24 +939,20 @@ export function ClinicalNotesFeed({
                 ) : e.entry_type === "body_map" && e.payload?.body_map ? (
                   <div className="mt-2 flex flex-wrap items-start gap-3">
                     <BodyMapThumbnail data={e.payload.body_map} />
-                    <p
-                      className={cn(
-                        "min-w-0 flex-1 text-sm whitespace-pre-wrap",
-                        struck && "text-muted-foreground line-through",
-                      )}
-                    >
-                      {text}
-                    </p>
+                    <SmartNoteBody
+                      text={text}
+                      struck={struck}
+                      highlights={e.payload?.key_findings ?? []}
+                      className="mt-0 min-w-0 flex-1"
+                    />
                   </div>
                 ) : (
-                <p
-                  className={cn(
-                    "mt-2 text-sm whitespace-pre-wrap",
-                    struck && "text-muted-foreground line-through",
-                  )}
-                >
-                  {text}
-                </p>
+                  /* Calm Formatting B — free-text notes dress themselves. */
+                  <SmartNoteBody
+                    text={text}
+                    struck={struck}
+                    highlights={e.payload?.key_findings ?? []}
+                  />
                 )}
 
                 {/* Amendment shows a truncated, chevron-expandable preview of the
