@@ -489,20 +489,22 @@ export function Topbar({
           })}
         </nav>
 
-        {/* Right — view-selector · search · clock · recents · bell · profile.
-            Search lives in this cluster, not on the left (the left belongs to the
-            JOURNEY breadcrumb); the clock sits AFTER the search (Roland 2026-06-16). */}
+        {/* Right — date/time · search · layouts · recents · bell · profile.
+            Roland 2026-07-21 (B7): the live date/time LEADS the cluster, the
+            SEARCH icon sits next to the seconds, and LAYOUTS sits to the right of
+            search — his exact arrangement. The left belongs to the JOURNEY
+            breadcrumb; every utility trigger is an icon (B1). */}
         <div className="flex shrink-0 items-center gap-1.5">
-          {onConsult && <LayoutsMenu modules={modules} />}
-          <CommandMenu modules={modules} />
           {/* Phones keep the essentials only: search · bell · profile —
-              clock/recents/glossary return from md up (Roland 2026-07-04,
-              the skewed-topbar screenshot). */}
-          {/* Live date + time to the second — sits just AFTER the search bar
-              (Roland 2026-06-16). timeZone defaults to the viewer's local clock;
-              the Caretaker clinic-timezone setting will feed it later (W1.1.x). */}
+              clock/layouts/recents/glossary return from md up (Roland 2026-07-04,
+              the skewed-topbar screenshot). timeZone defaults to the viewer's
+              local clock; the Caretaker clinic-timezone setting feeds it later. */}
           <span className="hidden md:contents">
             <Clock />
+          </span>
+          <CommandMenu modules={modules} />
+          {onConsult && <LayoutsMenu modules={modules} />}
+          <span className="hidden md:contents">
             <Recents />
           </span>
           <NotificationsBell />
