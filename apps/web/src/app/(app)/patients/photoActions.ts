@@ -7,7 +7,7 @@ import { logAudit } from "@/lib/audit";
 
 /**
  * Photo tool, Milestone 1 (Roland 2026-07-22) — the server side of patient
- * photos. The bytes are shrunk to WebP CLIENT-side before they ever reach us
+ * photos. The bytes are shrunk to JPEG CLIENT-side before they ever reach us
  * (fast, tiny, keeps the DB + this action well under its body limit); here we
  * only validate, store in the private bucket via the caller's own session
  * (storage RLS tenant-scopes it), record the metadata row, and audit. Images

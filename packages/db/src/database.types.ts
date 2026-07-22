@@ -2034,6 +2034,7 @@ export type Database = {
       is_custodian: { Args: never; Returns: boolean }
       mirror_auth_audit: { Args: never; Returns: undefined }
       next_patient_number: { Args: { p_tenant: string }; Returns: string }
+      photo_capacity_overview: { Args: never; Returns: Json }
       publish_legal_draft: { Args: { p_doc_key: string }; Returns: undefined }
       user_id_for_email: { Args: { p_email: string }; Returns: string }
     }

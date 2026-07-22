@@ -9,6 +9,7 @@ import {
   ScrollText,
   ShieldCheck,
   UserCog,
+  HardDrive,
 } from "lucide-react";
 import type { CardIconTone } from "@/components/ui/CardIcon";
 
@@ -83,6 +84,16 @@ export const CONTROL_NAV: ControlSection[] = [
     href: "/custodian/logs",
     icon: ScrollText,
     tone: "neutral",
+    status: "ready",
+  },
+  {
+    key: "capacity",
+    label: "Capacity",
+    blurb:
+      "Platform photo storage across every clinic — and the cue for when to move object storage to Cloudflare R2 as you grow.",
+    href: "/custodian/capacity",
+    icon: HardDrive,
+    tone: "teal",
     status: "ready",
   },
   {
