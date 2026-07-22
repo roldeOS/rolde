@@ -17,6 +17,7 @@ import { logAudit } from "@/lib/audit";
 export type PatientPhoto = {
   id: string;
   phase: string;
+  view: string | null;
   caption: string | null;
   thumbUrl: string;
   url: string;
@@ -35,7 +36,7 @@ export async function listPatientPhotos(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("patient_photo")
-    .select("id, phase, caption, storage_path, thumb_path, created_at")
+    .select("id, phase, view, caption, storage_path, thumb_path, created_at")
     .eq("patient_id", patientId)
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
@@ -50,6 +51,7 @@ export async function listPatientPhotos(
     out.push({
       id: r.id,
       phase: r.phase,
+      view: r.view,
       caption: r.caption,
       thumbUrl: t?.signedUrl ?? "",
       url: m?.signedUrl ?? "",
@@ -65,6 +67,10 @@ export async function uploadPatientPhoto(
   const patientId = String(formData.get("patient_id") ?? "");
   const phaseRaw = String(formData.get("phase") ?? "other");
   const phase = phaseRaw === "before" || phaseRaw === "after" ? phaseRaw : "other";
+  // Multi-angle Step A — the standardised view/angle (e.g. "Front", "Left 45").
+  // Free text, capped; empty = untagged.
+  const viewRaw = String(formData.get("view") ?? "").trim();
+  const view = viewRaw ? viewRaw.slice(0, 40) : null;
   const master = formData.get("master");
   const thumb = formData.get("thumb");
   const width = Number(formData.get("width")) || null;
@@ -121,9 +127,10 @@ export async function uploadPatientPhoto(
       bytes: master.size,
       mime: "image/jpeg",
       phase,
+      view,
       created_by: userId ?? null,
     })
-    .select("id, phase, caption, created_at")
+    .select("id, phase, view, caption, created_at")
     .single();
   if (error || !row) {
     // Never leave orphaned bytes if the record didn't land.
@@ -150,6 +157,7 @@ export async function uploadPatientPhoto(
     photo: {
       id: row.id,
       phase: row.phase,
+      view: row.view,
       caption: row.caption,
       thumbUrl: t?.signedUrl ?? "",
       url: m?.signedUrl ?? "",

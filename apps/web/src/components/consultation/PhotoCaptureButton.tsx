@@ -13,6 +13,9 @@ import {
 } from "@/app/(app)/patients/photoActions";
 import { cn } from "@/lib/utils";
 
+// Step A default protocol (Caretaker-editable in Step B). A 5-view facial sweep.
+const DEFAULT_VIEWS = ["Front", "Left 45", "Left", "Right 45", "Right"];
+
 /**
  * PhotoCaptureButton (Photo M2, Roland 2026-07-22) — a camera chip in the
  * Scribe header (beside Templates). It STAGES photos for the note being
@@ -36,6 +39,9 @@ export function PhotoCaptureButton({
   const [btn, setBtn] = useState<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<"before" | "after" | "other">("before");
+  // Multi-angle Step A — the view/angle this shot is (before/after pair BY view).
+  // Default set for now; the per-clinic protocol editor (Caretaker) is Step B.
+  const [view, setView] = useState("");
   const [busy, setBusy] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -50,6 +56,7 @@ export function PhotoCaptureButton({
         const fd = new FormData();
         fd.append("patient_id", patientId);
         fd.append("phase", phase);
+        fd.append("view", view.trim());
         fd.append("master", master, "master.jpg");
         fd.append("thumb", thumb, "thumb.jpg");
         fd.append("width", String(width));
@@ -122,6 +129,32 @@ export function PhotoCaptureButton({
           onChange={(v) => setPhase(v as "before" | "after" | "other")}
           className="w-full"
         />
+        {/* Multi-angle Step A — tag the view/angle so Before/After pair by view. */}
+        <div className="space-y-1">
+          <input
+            value={view}
+            onChange={(e) => setView(e.target.value.slice(0, 40))}
+            placeholder="View / angle — optional (e.g. Front)"
+            className="w-full rounded-md border border-border bg-card px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-sky-400"
+          />
+          <div className="flex flex-wrap gap-1">
+            {DEFAULT_VIEWS.map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setView((cur) => (cur === v ? "" : v))}
+                className={cn(
+                  "rounded-md px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+                  view === v
+                    ? "bg-sky/40 text-sky-900"
+                    : "bg-muted text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
         <input
           ref={inputRef}
           type="file"
@@ -146,6 +179,11 @@ export function PhotoCaptureButton({
               <span className="absolute top-0.5 left-0.5 rounded bg-foreground/70 px-1 text-[8px] font-semibold text-background capitalize">
                 {p.phase}
               </span>
+              {p.view && (
+                <span className="absolute right-0.5 bottom-0.5 max-w-[52px] truncate rounded bg-sky-600/85 px-1 text-[8px] font-semibold text-white">
+                  {p.view}
+                </span>
+              )}
               <button
                 type="button"
                 onClick={() => unstage(p)}

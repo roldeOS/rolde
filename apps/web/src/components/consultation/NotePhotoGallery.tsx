@@ -13,7 +13,13 @@ import { CARD_ICON_TEXT } from "@/lib/cardTones";
  * splash reads as "progress"). Framed square thumbnails; tap any for the full
  * viewer, and a single Compare control opens the drag-slider overlay.
  */
-export type NotePhoto = { id: string; phase: string; thumbUrl: string; url: string };
+export type NotePhoto = {
+  id: string;
+  phase: string;
+  view?: string | null;
+  thumbUrl: string;
+  url: string;
+};
 
 const PHASE: Record<string, { label: string; dot: string; text: string }> = {
   // Before = a calm sky pastel (baseline); After = sage (the "progress" splash).
@@ -21,6 +27,30 @@ const PHASE: Record<string, { label: string; dot: string; text: string }> = {
   after: { label: "After", dot: "bg-success", text: "text-success" },
   other: { label: "Photos", dot: "bg-lavender", text: "text-indigo-500" },
 };
+
+// Multi-angle Step A — pair Before↔After BY VIEW (any count). Untagged photos
+// collapse to one pair (first of each), the pre-multi-angle behaviour.
+type ViewPair = { view: string | null; beforeUrl: string; afterUrl: string };
+function computeViewPairs(before: NotePhoto[], after: NotePhoto[]): ViewPair[] {
+  const norm = (v?: string | null) => (v ?? "").trim().toLowerCase();
+  const afterByView = new Map<string, NotePhoto>();
+  for (const p of after) {
+    const k = norm(p.view);
+    if (!afterByView.has(k)) afterByView.set(k, p);
+  }
+  const pairs: ViewPair[] = [];
+  const used = new Set<string>();
+  for (const p of before) {
+    const k = norm(p.view);
+    if (used.has(k)) continue;
+    const a = afterByView.get(k);
+    if (a) {
+      pairs.push({ view: p.view ?? null, beforeUrl: p.url, afterUrl: a.url });
+      used.add(k);
+    }
+  }
+  return pairs;
+}
 
 function PhaseColumn({
   phase,
@@ -50,9 +80,14 @@ function PhaseColumn({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={p.thumbUrl}
-              alt={`${s.label} photo`}
+              alt={`${s.label}${p.view ? ` · ${p.view}` : ""} photo`}
               className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
             />
+            {p.view && (
+              <span className="absolute inset-x-0 bottom-0 truncate bg-foreground/55 px-1 py-0.5 text-center text-[9px] font-semibold text-background">
+                {p.view}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -73,6 +108,8 @@ export function NotePhotoGallery({ photos }: { photos: NotePhoto[] }) {
   const other = photos.filter((p) => p.phase !== "before" && p.phase !== "after");
   const bothBA = before.length > 0 && after.length > 0;
   const hasBA = before.length > 0 || after.length > 0;
+  const viewPairs = computeViewPairs(before, after);
+  const canCompare = viewPairs.length > 0;
   const open = (list: NotePhoto[], index: number, mode: "single" | "compare" = "single") =>
     setViewer({ list, index, mode });
 
@@ -82,7 +119,7 @@ export function NotePhotoGallery({ photos }: { photos: NotePhoto[] }) {
         {/* Compare = a Scribe-style icon chip in the corner (Roland: match the
             header icons + give it colour). The split icon reflects the
             before/after slider; tap opens the drag-slider. */}
-        {bothBA && (
+        {canCompare && (
           <button
             type="button"
             onClick={() => open([...before, ...after], 0, "compare")}
@@ -117,9 +154,8 @@ export function NotePhotoGallery({ photos }: { photos: NotePhoto[] }) {
       {viewer && (
         <PhotoViewer
           start={viewer}
-          canCompare={bothBA}
-          beforeUrl={before[0]?.url}
-          afterUrl={after[0]?.url}
+          canCompare={canCompare}
+          pairs={viewPairs}
           onClose={() => setViewer(null)}
         />
       )}
@@ -130,20 +166,20 @@ export function NotePhotoGallery({ photos }: { photos: NotePhoto[] }) {
 function PhotoViewer({
   start,
   canCompare,
-  beforeUrl,
-  afterUrl,
+  pairs,
   onClose,
 }: {
   start: { list: NotePhoto[]; index: number; mode: "single" | "compare" };
   canCompare: boolean;
-  beforeUrl?: string;
-  afterUrl?: string;
+  pairs: ViewPair[];
   onClose: () => void;
 }) {
   const [index, setIndex] = useState(start.index);
   const [mode, setMode] = useState<"single" | "compare">(start.mode);
+  const [pairIndex, setPairIndex] = useState(0);
   const list = start.list;
   const current = list[index];
+  const pair = pairs[Math.min(pairIndex, Math.max(0, pairs.length - 1))];
 
   return (
     <div
@@ -204,11 +240,42 @@ function PhotoViewer({
           )}
         </div>
       ) : (
-        <CompareSlider
-          beforeUrl={beforeUrl}
-          afterUrl={afterUrl}
+        <div
+          className="flex w-full max-w-3xl flex-col items-center gap-3"
           onClick={(e) => e.stopPropagation()}
-        />
+        >
+          {pairs.length > 1 && (
+            <div className="flex items-center gap-2 rounded-lg bg-background/90 px-1.5 py-1 shadow-float">
+              <button
+                type="button"
+                onClick={() => setPairIndex((i) => (i - 1 + pairs.length) % pairs.length)}
+                className="flex size-7 items-center justify-center rounded-md text-foreground transition-colors hover:bg-muted"
+                aria-label="Previous view"
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <span className="min-w-28 text-center text-xs font-medium text-foreground">
+                {pair?.view || `View ${pairIndex + 1}`}{" "}
+                <span className="text-muted-foreground">
+                  · {pairIndex + 1}/{pairs.length}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setPairIndex((i) => (i + 1) % pairs.length)}
+                className="flex size-7 items-center justify-center rounded-md text-foreground transition-colors hover:bg-muted"
+                aria-label="Next view"
+              >
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
+          )}
+          <CompareSlider
+            beforeUrl={pair?.beforeUrl}
+            afterUrl={pair?.afterUrl}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       )}
 
       <button

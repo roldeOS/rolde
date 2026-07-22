@@ -410,5 +410,30 @@ live config are.
 
 ---
 
+## 15. Blanket-deleted a patient's photos with a whole-patient cleanup query — 2026-07-22
+
+During photo crash-testing I ran, several times, `update patient_photo set deleted_at=now() where
+patient_id='<Sarah>' and deleted_at is null` to "clean up test data." That predicate matches
+EVERY photo on the patient — so it soft-deleted Roland's REAL uploads too, not just my test rows.
+He noticed his photos vanishing between sessions and asked, rightly, *"why are all photos deleted
+from the clinical record now… are you deleting it? Why would you ever delete something from a
+clinical record."* The app itself never hard-deletes a clinical record (soft-delete only;
+`storage.remove` is upload-rollback only — audited + verified this pass); the damage was entirely
+my manual cleanup SQL being far too broad.
+
+**Fix:** NEVER scope a test-cleanup delete by `patient_id` (or any whole-entity predicate). Only
+ever remove rows I created, by their SPECIFIC ids or a unique test marker (e.g. a `'ZZTEST-'`
+text prefix, or the exact returned ids). Prefer inserting test data with an unmistakable marker so
+cleanup can target it precisely. When unsure which rows are mine, DON'T delete — ask.
+
+**Trigger:** any `delete`/`set deleted_at` I run for cleanup. The WHERE clause must name specific
+test ids or a test-only marker — never a real column like `patient_id`, `tenant_id`, or a text
+`like 'Filler%'` that could match real records. Doubly true on any table holding clinical data.
+
+**Lesson:** a clinical record is sacred — even a *soft* delete of someone's real data is a breach
+of trust. Cleanup must be surgical, targeting only what I made. See [[photo-tool-architecture]].
+
+---
+
 *Append new mistakes to the bottom with the next sequential number on **"Add to Mistakes"**, or
 when a diagnosed regression is worth locking and Roland approves the entry.*

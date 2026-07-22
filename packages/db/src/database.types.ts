@@ -621,6 +621,7 @@ export type Database = {
           taken_at: string | null
           tenant_id: string
           thumb_path: string
+          view: string | null
           width: number | null
         }
         Insert: {
@@ -639,6 +640,7 @@ export type Database = {
           taken_at?: string | null
           tenant_id: string
           thumb_path: string
+          view?: string | null
           width?: number | null
         }
         Update: {
@@ -657,6 +659,7 @@ export type Database = {
           taken_at?: string | null
           tenant_id?: string
           thumb_path?: string
+          view?: string | null
           width?: number | null
         }
         Relationships: []

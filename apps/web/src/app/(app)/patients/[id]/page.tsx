@@ -176,12 +176,12 @@ export default async function ConsultationPage({
   // set, with short-lived signed URLs (the bucket is private). Batched.
   const photosByEntry: Record<
     string,
-    { id: string; phase: string; thumbUrl: string; url: string }[]
+    { id: string; phase: string; view: string | null; thumbUrl: string; url: string }[]
   > = {};
   if (entryIds.length) {
     const { data: photos } = await supabase
       .from("patient_photo")
-      .select("id, feed_entry_id, phase, storage_path, thumb_path, created_at")
+      .select("id, feed_entry_id, phase, view, storage_path, thumb_path, created_at")
       .in("feed_entry_id", entryIds)
       .is("deleted_at", null)
       .order("created_at", { ascending: true });
@@ -196,6 +196,7 @@ export default async function ConsultationPage({
         (photosByEntry[p.feed_entry_id] ??= []).push({
           id: p.id,
           phase: p.phase,
+          view: p.view,
           thumbUrl: urlOf.get(p.thumb_path) ?? "",
           url: urlOf.get(p.storage_path) ?? "",
         });
