@@ -410,3 +410,37 @@ export async function markEntrySeen(entryId: string) {
     console.error("[courier seen]", error.message);
   }
 }
+
+/**
+ * Patient Portal P1 — share (or un-share) a note with the patient. A shared note
+ * becomes visible on the patient's portal; off by default. The note's AUTHOR or a
+ * CARETAKER may set it (enforced by the `set_note_shared` definer fn); a portal
+ * patient cannot. Audited both ways.
+ */
+export async function setNoteSharedWithPatient(
+  entryId: string,
+  shared: boolean,
+  patientId: string,
+): Promise<{ ok: boolean; error?: string }> {
+  const ctx = await getSessionContext();
+  const tenantId = ctx?.membership?.tenant_id;
+  if (!ctx || !tenantId) return { ok: false, error: "No clinic context for this user." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_note_shared", {
+    p_entry: entryId,
+    p_shared: shared,
+  });
+  if (error) return { ok: false, error: error.message };
+
+  await logAudit({
+    tenantId,
+    actorUserId: ctx.user.id,
+    action: shared ? "note.share" : "note.unshare",
+    resourceType: "patient",
+    resourceId: patientId,
+    summary: shared ? "Shared a note with the patient" : "Stopped sharing a note with the patient",
+  });
+  revalidatePath(`/patients/${patientId}`);
+  return { ok: true };
+}

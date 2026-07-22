@@ -1,13 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { MonitorSmartphone } from "lucide-react";
+import { MonitorSmartphone, MailPlus, UserPlus, Check } from "lucide-react";
 import { ToggleCard } from "@/components/ui/ToggleCard";
-import { Segmented } from "@/components/ui/Segmented";
+import { cn } from "@/lib/utils";
 import { usePageActionBar, useSavedFlash } from "@/components/ui/PageActionBar";
 import { savePatientPortalSettings } from "./actions";
 
 type Mode = "invite_only" | "open";
+
+const ACCESS_MODES: {
+  value: Mode;
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  desc: string;
+}[] = [
+  {
+    value: "invite_only",
+    title: "Invite Only",
+    icon: MailPlus,
+    desc: "Your team invites a patient from their record; they claim the link and set a password. You verify who they are first — the safe default for clinical records.",
+  },
+  {
+    value: "open",
+    title: "Open Sign-up",
+    icon: UserPlus,
+    desc: "Patients register themselves and enter their own details — for clinics like Doc For Skin or Doc For Drivers. Your team confirms them at first contact.",
+  },
+];
 
 /**
  * The clinic's Patient Portal control (P1): a ToggleCard to switch it on, and —
@@ -72,28 +92,38 @@ export function PatientPortalForm({
       >
         <div className="space-y-3">
           <p className="text-sm font-medium text-foreground">How patients get access</p>
-          <Segmented
-            options={[
-              { value: "invite_only", label: "Invite Only" },
-              { value: "open", label: "Open Sign-up" },
-            ]}
-            value={mode}
-            onChange={(v) => setMode(v as Mode)}
-          />
-          <div className="rounded-lg bg-muted/40 p-3 text-sm text-muted-foreground">
-            {mode === "invite_only" ? (
-              <p>
-                <span className="font-medium text-foreground">Invite only.</span> Your team invites a
-                patient from their record; the patient claims the link and sets a password. You
-                verify who they are first — the safe default for clinical records.
-              </p>
-            ) : (
-              <p>
-                <span className="font-medium text-foreground">Open sign-up.</span> Patients register
-                themselves and enter their own details — for clinics like Doc For Skin or Doc For
-                Drivers. Your team confirms them at first contact.
-              </p>
-            )}
+          <div className="grid gap-3 sm:grid-cols-2">
+            {ACCESS_MODES.map((o) => {
+              const active = mode === o.value;
+              return (
+                <button
+                  key={o.value}
+                  type="button"
+                  onClick={() => setMode(o.value)}
+                  aria-pressed={active}
+                  className={cn(
+                    "flex flex-col rounded-xl border p-4 text-left transition-all",
+                    active
+                      ? "border-info/60 bg-info/[0.06] ring-1 ring-info/25"
+                      : "border-border bg-card hover:border-foreground/20 hover:bg-muted/30",
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <o.icon className={cn("size-4", active ? "text-info" : "text-muted-foreground")} />
+                    <span className="flex-1 text-sm font-semibold text-foreground">{o.title}</span>
+                    <span
+                      className={cn(
+                        "flex size-4 shrink-0 items-center justify-center rounded-full border transition-colors",
+                        active ? "border-info bg-info text-white" : "border-border",
+                      )}
+                    >
+                      {active && <Check className="size-3" />}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">{o.desc}</p>
+                </button>
+              );
+            })}
           </div>
         </div>
       </ToggleCard>

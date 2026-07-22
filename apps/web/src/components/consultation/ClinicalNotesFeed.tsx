@@ -8,6 +8,7 @@ import {
   useLayoutEffect,
   useMemo,
   useCallback,
+  useTransition,
 } from "react";
 import {
   FileText,
@@ -32,6 +33,8 @@ import {
   ClipboardList,
   ClipboardCheck,
   PersonStanding,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { formatDayTime, formatDayShort } from "@/lib/dates";
@@ -44,7 +47,7 @@ import {
   BodyMapThumbnail,
 } from "@/components/consultation/StructuredNoteBody";
 import { SmartNoteBody } from "@/components/consultation/SmartNoteBody";
-import { markEntrySeen } from "@/app/(app)/patients/actions";
+import { markEntrySeen, setNoteSharedWithPatient } from "@/app/(app)/patients/actions";
 import { CourierSendSheet } from "@/components/consultation/CourierSendSheet";
 import { cn } from "@/lib/utils";
 
@@ -91,6 +94,7 @@ export type FeedEntry = {
   edited_at: string | null;
   struck_at: string | null;
   related_entry_id: string | null;
+  shared_with_patient?: boolean;
 };
 export type Author = { name: string; role: string };
 /** Courier C3 — one letter dispatch + its journey, for the Status Trail. */
@@ -192,17 +196,21 @@ const PAGE = 25;
  */
 export function ClinicalNotesFeed({
   entries,
+  patientId,
   authors,
   currentUserId,
   reads,
   dispatches = [],
   photosByEntry = {},
+  portalEnabled = false,
+  isCaretaker = false,
   maximized,
   onToggleMaximize,
   onEditNote,
   activeId,
 }: {
   entries: FeedEntry[];
+  patientId: string;
   authors: Record<string, Author>;
   currentUserId: string;
   /** Courier C1 — every read receipt on this patient's entries. */
@@ -211,12 +219,31 @@ export function ClinicalNotesFeed({
   dispatches?: CourierDispatchTrail[];
   /** Photo M2 — a note's attached before/after photos, keyed by entry id. */
   photosByEntry?: Record<string, NotePhoto[]>;
+  /** Patient Portal P1 — portal on (show the "share with patient" control) +
+   *  whether the viewer is a Caretaker (may share any note). */
+  portalEnabled?: boolean;
+  isCaretaker?: boolean;
   maximized: boolean;
   onToggleMaximize: () => void;
   onEditNote: (e: FeedEntry) => void;
   activeId: string | null;
 }) {
   const [sortDesc, setSortDesc] = useState(false);
+  // Patient Portal P1 — optimistic "shared with patient" toggle (author/caretaker
+  // only; the server fn re-checks). Override wins over the entry's stored value
+  // until the RSC refresh lands; reverts on failure.
+  const [, startShare] = useTransition();
+  const [shareOverride, setShareOverride] = useState<Record<string, boolean>>({});
+  const toggleShare = useCallback(
+    (id: string, next: boolean) => {
+      setShareOverride((m) => ({ ...m, [id]: next }));
+      startShare(async () => {
+        const res = await setNoteSharedWithPatient(id, next, patientId);
+        if (!res.ok) setShareOverride((m) => ({ ...m, [id]: !next }));
+      });
+    },
+    [patientId],
+  );
   // Courier C1 — TEAM-level unseen (Roland 2026-07-03): a tile is "Unseen" until
   // ANY team member other than its author opens it once — then it's reviewed for
   // the whole clinic (a physio isn't nagged about a referral the GP-liaison
@@ -1028,6 +1055,31 @@ export function ClinicalNotesFeed({
                         Send
                       </button>
                     )}
+                    {/* Patient Portal P1 — share this note with the patient
+                        (author/caretaker only; shown when the clinic portal is
+                        on). A shared note wears a sage "Shared" eye pill. */}
+                    {portalEnabled && !struck && (mine || isCaretaker) &&
+                      (() => {
+                        const shared = shareOverride[e.id] ?? e.shared_with_patient ?? false;
+                        return shared ? (
+                          <button
+                            onClick={() => toggleShare(e.id, false)}
+                            title="Shared with the patient — tap to stop sharing"
+                            className="flex h-6 items-center gap-1 rounded-md bg-success/10 px-1.5 text-xs font-medium text-success transition-colors hover:bg-success/20"
+                          >
+                            <Eye className="size-3.5" />
+                            Shared
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => toggleShare(e.id, true)}
+                            title="Share this note with the patient"
+                            className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                          >
+                            <EyeOff className="size-3.5" />
+                          </button>
+                        );
+                      })()}
                     <button
                       onClick={() => onEditNote(e)}
                       title={

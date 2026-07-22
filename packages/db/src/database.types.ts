@@ -1309,6 +1309,7 @@ export type Database = {
           patient_id: string
           payload: Json
           related_entry_id: string | null
+          shared_with_patient: boolean
           status: string
           struck_at: string | null
           struck_by: string | null
@@ -1330,6 +1331,7 @@ export type Database = {
           patient_id: string
           payload: Json
           related_entry_id?: string | null
+          shared_with_patient?: boolean
           status?: string
           struck_at?: string | null
           struck_by?: string | null
@@ -1351,6 +1353,7 @@ export type Database = {
           patient_id?: string
           payload?: Json
           related_entry_id?: string | null
+          shared_with_patient?: boolean
           status?: string
           struck_at?: string | null
           struck_by?: string | null
@@ -2042,6 +2045,7 @@ export type Database = {
       next_patient_number: { Args: { p_tenant: string }; Returns: string }
       photo_capacity_overview: { Args: never; Returns: Json }
       publish_legal_draft: { Args: { p_doc_key: string }; Returns: undefined }
+      set_note_shared: { Args: { p_entry: string; p_shared: boolean }; Returns: undefined }
       set_patient_portal: { Args: { p_enabled: boolean; p_mode: string }; Returns: undefined }
       user_id_for_email: { Args: { p_email: string }; Returns: string }
     }

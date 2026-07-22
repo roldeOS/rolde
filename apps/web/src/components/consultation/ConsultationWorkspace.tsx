@@ -130,6 +130,8 @@ export function ConsultationWorkspace({
   dispatches = [],
   photosByEntry = {},
   canManageTemplates = false,
+  portalEnabled = false,
+  isCaretaker = false,
   modules = ALL_MODULES_ON,
 }: {
   patient: { id: string; firstName: string };
@@ -147,6 +149,11 @@ export function ConsultationWorkspace({
   /** Roland's governance ruling (2026-07-13): only the Caretaker designs
    *  clinic templates — gates the builder's entry points (server re-checks). */
   canManageTemplates?: boolean;
+  /** Patient Portal P1 — the clinic's portal is on (gates the note "share with
+   *  patient" control) and whether this user is a Caretaker (may share any note;
+   *  authors may always share their own). */
+  portalEnabled?: boolean;
+  isCaretaker?: boolean;
   /** Clinical Modules (W1.1, APPROVALS §4.2) — the CLINIC's switches; the grid
    *  reflows 4/3/2. Sits OVER the user's Layouts card toggles. */
   modules?: ClinicalModules;
@@ -662,11 +669,14 @@ export function ConsultationWorkspace({
             >
               <ClinicalNotesFeed
                 entries={feedEntries}
+                patientId={patient.id}
                 authors={authors}
                 currentUserId={currentUserId}
                 reads={reads}
                 dispatches={dispatches}
                 photosByEntry={photosByEntry}
+                portalEnabled={portalEnabled}
+                isCaretaker={isCaretaker}
                 maximized={leftMode === "top"}
                 onToggleMaximize={() =>
                   setLeftMode((m) => (m === "top" ? "split" : "top"))

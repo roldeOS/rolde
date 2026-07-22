@@ -66,7 +66,7 @@ export default async function ConsultationPage({
   const { data: entries } = await supabase
     .from("patient_feed_entries")
     .select(
-      "id, entry_type, payload, created_at, created_by, edited_at, struck_at, related_entry_id",
+      "id, entry_type, payload, created_at, created_by, edited_at, struck_at, related_entry_id, shared_with_patient",
     )
     .eq("patient_id", id)
     .is("deleted_at", null)
@@ -120,11 +120,12 @@ export default async function ConsultationPage({
           .eq("tenant_id", ctx.membership.tenant_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
-    // The clinic's country — drives phone/postcode validation in the overlay.
+    // The clinic's country — drives phone/postcode validation in the overlay;
+    // portal_enabled gates the note "share with patient" control.
     ctx?.membership?.tenant_id
       ? supabase
           .from("tenants")
-          .select("country")
+          .select("country, portal_enabled")
           .eq("id", ctx.membership.tenant_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
@@ -232,6 +233,8 @@ export default async function ConsultationPage({
       dispatches={dispatches ?? []}
       photosByEntry={photosByEntry}
       canManageTemplates={ctx?.membership?.role === "caretaker"}
+      portalEnabled={tenantRow?.portal_enabled ?? false}
+      isCaretaker={ctx?.membership?.role === "caretaker"}
       modules={modules}
     />
   );

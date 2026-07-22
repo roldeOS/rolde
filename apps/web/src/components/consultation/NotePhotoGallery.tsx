@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight, ArrowLeftRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, SquareSplitHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CARD_ICON_TEXT } from "@/lib/cardTones";
 
 /**
  * NotePhotoGallery (Photo M2, refined M3 — Roland 2026-07-22) — a saved Clinical
@@ -15,9 +16,10 @@ import { cn } from "@/lib/utils";
 export type NotePhoto = { id: string; phase: string; thumbUrl: string; url: string };
 
 const PHASE: Record<string, { label: string; dot: string; text: string }> = {
-  before: { label: "Before", dot: "bg-slate-400", text: "text-slate-600" },
+  // Before = a calm sky pastel (baseline); After = sage (the "progress" splash).
+  before: { label: "Before", dot: "bg-sky-400", text: "text-sky-700" },
   after: { label: "After", dot: "bg-success", text: "text-success" },
-  other: { label: "Photos", dot: "bg-slate-300", text: "text-muted-foreground" },
+  other: { label: "Photos", dot: "bg-lavender", text: "text-indigo-500" },
 };
 
 function PhaseColumn({
@@ -77,17 +79,18 @@ export function NotePhotoGallery({ photos }: { photos: NotePhoto[] }) {
   return (
     <div className="mt-3">
       <div className="relative rounded-2xl border border-border/60 bg-muted/25 p-3">
-        {/* Compare lives as a quiet corner control (Roland disliked the pill):
-            drag-slider on tap, out of the way. */}
+        {/* Compare = a Scribe-style icon chip in the corner (Roland: match the
+            header icons + give it colour). The split icon reflects the
+            before/after slider; tap opens the drag-slider. */}
         {bothBA && (
           <button
             type="button"
             onClick={() => open([...before, ...after], 0, "compare")}
             title="Compare before & after"
             aria-label="Compare before & after"
-            className="absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+            className="group/cmp absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-lg bg-card shadow-sm ring-1 ring-black/[0.05] transition-shadow hover:shadow"
           >
-            <ArrowLeftRight className="size-4" />
+            <SquareSplitHorizontal className={cn("size-4", CARD_ICON_TEXT.teal)} />
           </button>
         )}
         {bothBA ? (
