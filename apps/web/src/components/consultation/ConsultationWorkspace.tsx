@@ -886,6 +886,9 @@ export function ConsultationWorkspace({
                     onStage={(p) => setStagedPhotos((s) => [...s, p])}
                     onUnstage={(id) => setStagedPhotos((s) => s.filter((x) => x.id !== id))}
                     showLabel={chipsWide}
+                    refBefores={notePhotos
+                      .filter((p) => p.phase === "before")
+                      .map((p) => ({ view: p.view ?? null, thumbUrl: p.thumbUrl }))}
                   />
                 )}
                 {mode === "new" && (

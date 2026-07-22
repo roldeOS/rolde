@@ -368,6 +368,39 @@ export type Database = {
           },
         ]
       }
+      clinic_photo_protocol: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          name: string
+          sort_order: number
+          tenant_id: string
+          updated_at: string
+          views: string[]
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          name: string
+          sort_order?: number
+          tenant_id: string
+          updated_at?: string
+          views?: string[]
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          name?: string
+          sort_order?: number
+          tenant_id?: string
+          updated_at?: string
+          views?: string[]
+        }
+        Relationships: []
+      }
       courier_dispatches: {
         Row: {
           address_book_id: string | null

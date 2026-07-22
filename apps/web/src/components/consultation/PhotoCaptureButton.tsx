@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, Plus, X, Loader2 } from "lucide-react";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { Segmented } from "@/components/ui/Segmented";
@@ -11,9 +11,13 @@ import {
   removePatientPhoto,
   type PatientPhoto,
 } from "@/app/(app)/patients/photoActions";
+import {
+  listPhotoProtocols,
+  type PhotoProtocol,
+} from "@/app/(app)/settings/photo-protocols/actions";
 import { cn } from "@/lib/utils";
 
-// Step A default protocol (Caretaker-editable in Step B). A 5-view facial sweep.
+// Fallback when a clinic hasn't defined its own protocols yet (Step B, Caretaker).
 const DEFAULT_VIEWS = ["Front", "Left 45", "Left", "Right 45", "Right"];
 
 /**
@@ -29,22 +33,51 @@ export function PhotoCaptureButton({
   onStage,
   onUnstage,
   showLabel,
+  refBefores = [],
 }: {
   patientId: string;
   staged: PatientPhoto[];
   onStage: (p: PatientPhoto) => void;
   onUnstage: (id: string) => void;
   showLabel: boolean;
+  /** Ghosting — the note's existing BEFORE photos (by view) to show as a
+   *  "match this angle" reference when shooting the matching After. */
+  refBefores?: { view: string | null; thumbUrl: string }[];
 }) {
   const [btn, setBtn] = useState<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<"before" | "after" | "other">("before");
-  // Multi-angle Step A — the view/angle this shot is (before/after pair BY view).
-  // Default set for now; the per-clinic protocol editor (Caretaker) is Step B.
+  // Multi-angle — the view/angle this shot is (before/after pair BY view).
   const [view, setView] = useState("");
+  // Step B — the clinic's photo protocols drive the view chips (loaded on open).
+  const [protocols, setProtocols] = useState<PhotoProtocol[]>([]);
+  const [protoId, setProtoId] = useState<string>("");
+  const [protoLoaded, setProtoLoaded] = useState(false);
   const [busy, setBusy] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Load the clinic's photo protocols the first time the popover opens.
+  useEffect(() => {
+    if (!open || protoLoaded) return;
+    setProtoLoaded(true);
+    listPhotoProtocols()
+      .then((ps) => {
+        setProtocols(ps);
+        if (ps.length) setProtoId((cur) => cur || ps[0].id);
+      })
+      .catch(() => {});
+  }, [open, protoLoaded]);
+
+  const activeViews = protocols.find((p) => p.id === protoId)?.views ?? DEFAULT_VIEWS;
+
+  // Ghosting — when shooting an AFTER at a view that already has a BEFORE on the
+  // note, surface that Before as a "match this angle" reference.
+  const norm = (v?: string | null) => (v ?? "").trim().toLowerCase();
+  const ghostRef =
+    phase === "after" && view.trim()
+      ? refBefores.find((bfr) => norm(bfr.view) === norm(view))
+      : undefined;
 
   async function onFiles(files: FileList | null) {
     if (!files || !files.length) return;
@@ -129,8 +162,28 @@ export function PhotoCaptureButton({
           onChange={(v) => setPhase(v as "before" | "after" | "other")}
           className="w-full"
         />
-        {/* Multi-angle Step A — tag the view/angle so Before/After pair by view. */}
+        {/* Multi-angle — tag the view/angle so Before/After pair by view. The
+            chips come from the clinic's photo protocol (Settings, Caretaker). */}
         <div className="space-y-1">
+          {protocols.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {protocols.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setProtoId(p.id)}
+                  className={cn(
+                    "rounded-md px-1.5 py-0.5 text-[10px] font-medium transition-colors",
+                    protoId === p.id
+                      ? "bg-teal/30 text-teal-800"
+                      : "bg-muted text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
+          )}
           <input
             value={view}
             onChange={(e) => setView(e.target.value.slice(0, 40))}
@@ -138,7 +191,7 @@ export function PhotoCaptureButton({
             className="w-full rounded-md border border-border bg-card px-2 py-1 text-xs outline-none focus:ring-1 focus:ring-sky-400"
           />
           <div className="flex flex-wrap gap-1">
-            {DEFAULT_VIEWS.map((v) => (
+            {activeViews.map((v) => (
               <button
                 key={v}
                 type="button"
@@ -155,6 +208,20 @@ export function PhotoCaptureButton({
             ))}
           </div>
         </div>
+        {ghostRef && (
+          <div className="flex items-center gap-2 rounded-lg bg-sky/15 p-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ghostRef.thumbUrl}
+              alt="Before, for reference"
+              className="size-12 rounded-md object-cover opacity-70 ring-1 ring-sky-400/50"
+            />
+            <p className="text-[11px] leading-tight text-sky-900">
+              <span className="font-semibold">Match this angle.</span> The{" "}
+              {view.trim() || "Before"} “Before” is on this note — line the After up to it.
+            </p>
+          </div>
+        )}
         <input
           ref={inputRef}
           type="file"

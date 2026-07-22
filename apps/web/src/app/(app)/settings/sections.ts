@@ -16,6 +16,7 @@ import {
   Globe,
   LayoutTemplate,
   MonitorSmartphone,
+  Images,
 } from "lucide-react";
 import type { CardIconTone } from "@/components/ui/CardIcon";
 
@@ -126,6 +127,17 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: Send,
     tone: "accent",
     source: "Bible 4.8 §15.7c (Courier C2)",
+    status: "ready",
+    group: "Clinical & Services",
+  },
+  {
+    key: "photo-protocols",
+    title: "Photo Protocols",
+    blurb:
+      "The angle sets your clinic shoots for before/after photos — name them and list the views (any count). They drive the capture grid and how photos pair up.",
+    icon: Images,
+    tone: "teal",
+    source: "Bible 4.8 §15.5 (Photo tool, multi-angle B)",
     status: "ready",
     group: "Clinical & Services",
   },
