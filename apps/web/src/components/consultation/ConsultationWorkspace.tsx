@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap, Type, List, ListOrdered, IndentIncrease, IndentDecrease, RemoveFormatting } from "lucide-react";
+import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap, Type, List, ListOrdered, IndentIncrease, IndentDecrease, RemoveFormatting, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { CARD_ICON_TEXT } from "@/lib/cardTones";
@@ -58,6 +58,7 @@ import { type NotePhoto } from "@/components/consultation/NotePhotoGallery";
 import {
   attachPhotosToEntry,
   discardStagedPhotos,
+  removePatientPhoto,
   type PatientPhoto,
 } from "@/app/(app)/patients/photoActions";
 import { formatDay } from "@/lib/dates";
@@ -170,6 +171,11 @@ export function ConsultationWorkspace({
   // Photo M2 — photos captured for the note being written; attached to the
   // Clinical Note on Save, discarded (soft-deleted) if the draft is dropped.
   const [stagedPhotos, setStagedPhotos] = useState<PatientPhoto[]>([]);
+  // Photo M3 — EDITING an existing note's photos (Roland, 3rd ask): the note's
+  // current photos load in so they can be SEEN and removed, not just added to.
+  // Removals are marked here and applied (soft-deleted) on Save.
+  const [notePhotos, setNotePhotos] = useState<NotePhoto[]>([]);
+  const [removedPhotoIds, setRemovedPhotoIds] = useState<Set<string>>(new Set());
   // RolDe Scribe Templates T1 (GREENLIT 2026-07-04): pick from the curated
   // library → Scribe MORPHS into the structured form in place; Save renders
   // the answers into a clean readable note. New notes only (edit/amend stay
@@ -412,6 +418,10 @@ export function ConsultationWorkspace({
     const original = e.payload?.text ?? "";
     setEditTarget({ id: e.id, original, locked, foreign });
     setStrikeOriginal(false);
+    // Photo M3 — load THIS note's photos so they can be managed while editing
+    // (add more OR remove existing), not just added to.
+    setNotePhotos(photosByEntry[e.id] ?? []);
+    setRemovedPhotoIds(new Set());
     // A template-authored note restores its FORM within the edit window
     // (Roland 2026-07-04: "it did not load back the SOAP for me to edit") —
     // the saved answers ride the payload. T2: the payload's parts SNAPSHOT is
@@ -442,6 +452,8 @@ export function ConsultationWorkspace({
     setDraft("");
     setDraftMarks([]);
     setStagedPhotos([]);
+    setNotePhotos([]);
+    setRemovedPhotoIds(new Set());
     setEditTarget(null);
     setStrikeOriginal(false);
     setTemplate(null);
@@ -480,6 +492,10 @@ export function ConsultationWorkspace({
     return seeded;
   }
 
+  // Photo M3 — a change to the note's photos: adding new ones OR removing any
+  // that are already on it. Either makes the composer dirty and saveable.
+  const photoChange = stagedPhotos.length > 0 || removedPhotoIds.size > 0;
+
   async function submit() {
     const usingTemplate = (mode === "new" || mode === "edit") && !!template;
     const usingMap = mode === "new" && !!bodyMap;
@@ -488,8 +504,8 @@ export function ConsultationWorkspace({
         ? !mapDirty
         : usingTemplate
           ? !templateDirty || !templateValid
-          : // a free note saves with text OR with staged photos (a photo note)
-            !draft.trim() && stagedPhotos.length === 0) ||
+          : // a free note saves with text OR with a photo change (add/remove)
+            !draft.trim() && !photoChange) ||
       pending
     )
       return;
@@ -497,6 +513,13 @@ export function ConsultationWorkspace({
     try {
       const fd = new FormData();
       fd.set("patient_id", patient.id);
+      // The entry the photos belong to: a NEW note's freshly-created id, else
+      // the note being edited/amended. Photos are record items in their own
+      // right (each authored + timestamped + audited) — so add AND remove always
+      // act on the note you opened, never on a spawned amendment. Text edits and
+      // amendments are a separate, independent trail below.
+      let photoTarget: string | undefined;
+
       if (usingMap) {
         fd.set("text", renderBodyMapText(bodyMap, legend));
         fd.set("body_map", JSON.stringify(bodyMap));
@@ -513,12 +536,10 @@ export function ConsultationWorkspace({
           );
         // B6 — a free note's inline formatting (sidecar marks over the text).
         else if (draftMarks.length) fd.set("marks", JSON.stringify(draftMarks));
-        // Photo M2 — let a photos-only note save (empty text is fine) and
-        // attach the staged photos to it once it's created.
+        // Photo M2 — let a photos-only note save (empty text is fine).
         fd.set("photo_count", String(stagedPhotos.length));
         const res = await saveNote(fd);
-        if (res?.id && stagedPhotos.length)
-          await attachPhotosToEntry(stagedPhotos.map((p) => p.id), res.id, patient.id);
+        photoTarget = res?.id;
       } else if (mode === "edit") {
         fd.set("entry_id", editTarget!.id);
         fd.set("text", usingTemplate ? renderTemplate(template, answers, legend) : draft);
@@ -529,37 +550,38 @@ export function ConsultationWorkspace({
           );
         else fd.set("marks", JSON.stringify(draftMarks));
         await editNote(fd);
-        // Photo M2 — new photos added while editing attach to THIS note.
-        if (stagedPhotos.length)
-          await attachPhotosToEntry(stagedPhotos.map((p) => p.id), editTarget!.id, patient.id);
-      } else if (mode === "amend" && !draft.trim() && stagedPhotos.length) {
-        // Photos-only on your OWN locked note (Roland 2026-07-22): adding
-        // pictures to an existing note should land them ON that note — not
-        // spawn a blank text amendment. So when there's no amendment text, the
-        // staged photos attach straight to the original entry. Each photo is
-        // independently authored + timestamped + audited (photo.add), so the
-        // record stays truthful without rewriting the locked note.
-        await attachPhotosToEntry(stagedPhotos.map((p) => p.id), editTarget!.id, patient.id);
+        photoTarget = editTarget!.id;
       } else {
-        // A written amendment (own, locked) — may strike the original — or an
-        // ADDENDUM to a colleague's note (author-only, RLS-enforced). Here the
-        // addition is a visibly-attributed authored entry, so any staged photos
-        // ride WITH it on the new amendment/addendum entry.
-        if (strikeOriginal && mode === "amend") {
-          const sf = new FormData();
-          sf.set("entry_id", editTarget!.id);
-          sf.set("patient_id", patient.id);
-          sf.set("strike", "true");
-          await strikeNote(sf);
+        // Amend (own, locked) or addendum (colleague's). Photos act on the
+        // ORIGINAL note (photoTarget below); a written amendment/addendum is a
+        // separate authored text entry, created ONLY when there's text.
+        photoTarget = editTarget!.id;
+        if (draft.trim()) {
+          if (strikeOriginal && mode === "amend") {
+            const sf = new FormData();
+            sf.set("entry_id", editTarget!.id);
+            sf.set("patient_id", patient.id);
+            sf.set("strike", "true");
+            await strikeNote(sf);
+          }
+          fd.set("parent_id", editTarget!.id);
+          fd.set("text", draft);
+          if (draftMarks.length) fd.set("marks", JSON.stringify(draftMarks));
+          // Photos ride the original note, not this text amendment.
+          fd.set("photo_count", "0");
+          await amendNote(fd);
         }
-        fd.set("parent_id", editTarget!.id);
-        fd.set("text", draft);
-        if (draftMarks.length) fd.set("marks", JSON.stringify(draftMarks));
-        fd.set("photo_count", String(stagedPhotos.length));
-        const res = await amendNote(fd);
-        if (res?.id && stagedPhotos.length)
-          await attachPhotosToEntry(stagedPhotos.map((p) => p.id), res.id, patient.id);
       }
+
+      // Apply the photo changes to the target note: soft-delete the ones marked
+      // for removal, then attach the newly staged ones.
+      if (removedPhotoIds.size)
+        await Promise.all(
+          [...removedPhotoIds].map((id) => removePatientPhoto(id, patient.id)),
+        );
+      if (photoTarget && stagedPhotos.length)
+        await attachPhotosToEntry(stagedPhotos.map((p) => p.id), photoTarget, patient.id);
+
       // Photos are already attached above — reset WITHOUT soft-deleting them.
       resetComposer();
       flashSaved(`RolDe saved this to ${who}’s record.`);
@@ -597,7 +619,7 @@ export function ConsultationWorkspace({
   // a note ready for Sarah's record" → "RolDe saved this to Sarah's record."
   usePageActionBar({
     dirty:
-      (bodyMap ? mapDirty : template ? templateDirty : !!draft.trim() || stagedPhotos.length > 0) &&
+      (bodyMap ? mapDirty : template ? templateDirty : !!draft.trim() || photoChange) &&
       !pending,
     saving: pending,
     message:
@@ -614,7 +636,7 @@ export function ConsultationWorkspace({
               : `RolDe has a note ready for ${who}’s record.`,
     saveLabel,
     onSave: submit,
-    onDiscard: editTarget || draft || stagedPhotos.length ? discard : undefined,
+    onDiscard: editTarget || draft || photoChange ? discard : undefined,
     // Scribe owns its in-card Save/Discard buttons; the bar keeps only the
     // nav guard + the conversational confirmation (no pinned Save).
     pinned: false,
@@ -1146,10 +1168,88 @@ export function ConsultationWorkspace({
                     }
                   />
                 )}
+                {/* Photo M3 (Roland's 3rd ask) — EDIT a note's photos: the ones
+                    already on it show here so they can be removed, and any newly
+                    added show as "New". Changes apply on Save. */}
+                {editTarget && (notePhotos.length > 0 || stagedPhotos.length > 0) && (
+                  <div className="mt-3 rounded-xl border border-border/60 bg-muted/25 p-3">
+                    <p className="mb-2 text-xs font-semibold text-muted-foreground">
+                      Photos on this note
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {notePhotos.map((p) => {
+                        const removing = removedPhotoIds.has(p.id);
+                        return (
+                          <div key={p.id} className="relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={p.thumbUrl}
+                              alt={`${p.phase} photo`}
+                              className={cn(
+                                "size-16 rounded-lg object-cover ring-1 ring-black/[0.06] transition-opacity",
+                                removing && "opacity-30",
+                              )}
+                            />
+                            <span className="absolute top-1 left-1 rounded bg-foreground/70 px-1 py-0.5 text-[9px] font-semibold text-background uppercase">
+                              {p.phase}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setRemovedPhotoIds((s) => {
+                                  const n = new Set(s);
+                                  if (n.has(p.id)) n.delete(p.id);
+                                  else n.add(p.id);
+                                  return n;
+                                })
+                              }
+                              className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-background text-foreground shadow ring-1 ring-black/10"
+                              title={removing ? "Keep this photo" : "Remove this photo"}
+                              aria-label={removing ? "Keep this photo" : "Remove this photo"}
+                            >
+                              {removing ? <RotateCcw className="size-3" /> : <X className="size-3" />}
+                            </button>
+                          </div>
+                        );
+                      })}
+                      {stagedPhotos.map((p) => (
+                        <div key={p.id} className="relative">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={p.thumbUrl}
+                            alt={`new ${p.phase} photo`}
+                            className="size-16 rounded-lg object-cover ring-1 ring-success/50"
+                          />
+                          <span className="absolute top-1 left-1 rounded bg-success/90 px-1 py-0.5 text-[9px] font-semibold text-white uppercase">
+                            New
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void discardStagedPhotos([p.id], patient.id);
+                              setStagedPhotos((s) => s.filter((x) => x.id !== p.id));
+                            }}
+                            className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-background text-foreground shadow ring-1 ring-black/10"
+                            title="Remove this photo"
+                            aria-label="Remove this photo"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    {removedPhotoIds.size > 0 && (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {removedPhotoIds.size} photo{removedPhotoIds.size > 1 ? "s" : ""} will be
+                        removed when you save.
+                      </p>
+                    )}
+                  </div>
+                )}
                 {/* Symmetric breathing room above and below the buttons
                     (Roland 2026-07-21): footer pt matches the card's pb-2.5. */}
                 <div className="flex shrink-0 items-center justify-end gap-2 pt-2.5">
-                  {(editTarget || draft || template || bodyMap || stagedPhotos.length > 0) && (
+                  {(editTarget || draft || template || bodyMap || photoChange) && (
                     <Button variant="ghost" size="sm" onClick={discard}>
                       Discard
                     </Button>
@@ -1163,7 +1263,7 @@ export function ConsultationWorkspace({
                         ? !mapDirty
                         : template
                           ? !templateDirty || !templateValid
-                          : !draft.trim() && stagedPhotos.length === 0)
+                          : !draft.trim() && !photoChange)
                     }
                   >
                     {saveLabel}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { X, ChevronLeft, ChevronRight, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -97,14 +97,16 @@ export function NotePhotoGallery({ photos }: { photos: NotePhoto[] }) {
         )}
 
         {bothBA && (
-          <button
-            type="button"
-            onClick={() => open([...before, ...after], 0, "compare")}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
-          >
-            <ArrowLeftRight className="size-3.5" />
-            Compare
-          </button>
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => open([...before, ...after], 0, "compare")}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground shadow-float transition-all hover:-translate-y-px hover:bg-muted/40"
+            >
+              <ArrowLeftRight className="size-3.5 text-muted-foreground" />
+              Compare
+            </button>
+          </div>
         )}
       </div>
 
@@ -227,40 +229,79 @@ function CompareSlider({
   onClick: (e: React.MouseEvent) => void;
 }) {
   const [pos, setPos] = useState(50);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
   if (!beforeUrl || !afterUrl) return null;
+
+  const setFromClientX = (clientX: number) => {
+    const el = frameRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setPos(Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100)));
+  };
+
   return (
-    <div className="flex w-full max-w-3xl flex-col items-center gap-3" onClick={onClick}>
-      <div className="relative w-full select-none overflow-hidden rounded-2xl shadow-overlay">
+    <div className="w-full max-w-3xl" onClick={onClick}>
+      {/* Drag anywhere on the image — the handle rides the split (no separate
+          slider control). Elegant + direct, the RolDe way. */}
+      <div
+        ref={frameRef}
+        className="relative w-full cursor-ew-resize touch-none overflow-hidden rounded-2xl shadow-overlay select-none"
+        onPointerDown={(e) => {
+          dragging.current = true;
+          frameRef.current?.setPointerCapture(e.pointerId);
+          setFromClientX(e.clientX);
+        }}
+        onPointerMove={(e) => {
+          if (dragging.current) setFromClientX(e.clientX);
+        }}
+        onPointerUp={(e) => {
+          dragging.current = false;
+          frameRef.current?.releasePointerCapture(e.pointerId);
+        }}
+      >
         {/* AFTER is the base; BEFORE is clipped from the right to reveal it. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={afterUrl} alt="After" className="block max-h-[72vh] w-full object-contain" />
+        <img
+          src={afterUrl}
+          alt="After"
+          className="pointer-events-none block max-h-[72vh] w-full object-contain"
+        />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={beforeUrl}
           alt="Before"
-          className="absolute inset-0 h-full w-full object-contain"
+          className="pointer-events-none absolute inset-0 h-full w-full object-contain"
           style={{ clipPath: `inset(0 ${100 - pos}% 0 0)` }}
         />
         <div
-          className="pointer-events-none absolute inset-y-0 w-0.5 bg-white shadow"
+          className="pointer-events-none absolute inset-y-0 w-0.5 bg-white/90 shadow-[0_0_8px_rgba(0,0,0,0.35)]"
           style={{ left: `${pos}%` }}
         />
-        <span className="absolute top-2 left-2 rounded-md bg-foreground/70 px-1.5 py-0.5 text-[10px] font-semibold text-background">
+        <div
+          role="slider"
+          tabIndex={0}
+          aria-label="Reveal before or after"
+          aria-valuenow={Math.round(pos)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowLeft") setPos((p) => Math.max(0, p - 2));
+            if (e.key === "ArrowRight") setPos((p) => Math.min(100, p + 2));
+          }}
+          className="absolute top-1/2 flex size-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-foreground shadow-lg ring-1 ring-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
+          style={{ left: `${pos}%` }}
+        >
+          <ChevronLeft className="-mr-1 size-4" />
+          <ChevronRight className="-ml-1 size-4" />
+        </div>
+        <span className="pointer-events-none absolute top-3 left-3 rounded-md bg-foreground/70 px-2 py-0.5 text-[11px] font-semibold text-background">
           Before
         </span>
-        <span className="absolute top-2 right-2 rounded-md bg-foreground/70 px-1.5 py-0.5 text-[10px] font-semibold text-background">
+        <span className="pointer-events-none absolute top-3 right-3 rounded-md bg-foreground/70 px-2 py-0.5 text-[11px] font-semibold text-background">
           After
         </span>
       </div>
-      <input
-        type="range"
-        min={0}
-        max={100}
-        value={pos}
-        onChange={(e) => setPos(Number(e.target.value))}
-        aria-label="Compare slider"
-        className="w-full max-w-md accent-foreground"
-      />
     </div>
   );
 }
