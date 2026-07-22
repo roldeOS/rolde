@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PageHeaderRow } from "@/components/ui/PageHeaderRow";
 import { StatTile } from "@/components/ui/StatTile";
 import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
+import { Meter, type MeterTone } from "@/components/ui/Meter";
 
 /**
  * Custodian → Capacity (Photo tool M3, Roland "Go for Milestone 3", 2026-07-22).
@@ -106,8 +107,7 @@ export default async function CapacityPage() {
         />
       </div>
 
-      {/* Headroom — the plain-English R2 trigger (no invented gauge; a visual
-          meter is a proposal pending Roland + a URDS standard). */}
+      {/* Headroom — the R2 trigger, with a visual meter (URDS Meter). */}
       <div className="rounded-2xl bg-card p-6 shadow-float">
         <div className="flex items-start gap-4">
           <CardIcon icon={Cloud} tone={tone} variant="badge" />
@@ -118,7 +118,13 @@ export default async function CapacityPage() {
                 {formatBytes(o.total_bytes)} of ~{COMFORT_GB} GB comfort line
               </span>
             </div>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <Meter
+              value={pct}
+              tone={tone as MeterTone}
+              label={`Photo storage: ${pct}% of the ${COMFORT_GB} GB comfort line`}
+              className="mt-3"
+            />
+            <p className="mt-2 text-sm text-muted-foreground">
               You&rsquo;re at{" "}
               <span className="font-semibold tabular-nums text-foreground">{pct}%</span> of the
               comfort line. {cue}
