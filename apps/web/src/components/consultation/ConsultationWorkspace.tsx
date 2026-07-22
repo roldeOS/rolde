@@ -532,9 +532,19 @@ export function ConsultationWorkspace({
         // Photo M2 — new photos added while editing attach to THIS note.
         if (stagedPhotos.length)
           await attachPhotosToEntry(stagedPhotos.map((p) => p.id), editTarget!.id, patient.id);
+      } else if (mode === "amend" && !draft.trim() && stagedPhotos.length) {
+        // Photos-only on your OWN locked note (Roland 2026-07-22): adding
+        // pictures to an existing note should land them ON that note — not
+        // spawn a blank text amendment. So when there's no amendment text, the
+        // staged photos attach straight to the original entry. Each photo is
+        // independently authored + timestamped + audited (photo.add), so the
+        // record stays truthful without rewriting the locked note.
+        await attachPhotosToEntry(stagedPhotos.map((p) => p.id), editTarget!.id, patient.id);
       } else {
-        // Amendment (own, locked) may strike the original; an ADDENDUM never
-        // touches someone else's original (author-only, RLS-enforced too).
+        // A written amendment (own, locked) — may strike the original — or an
+        // ADDENDUM to a colleague's note (author-only, RLS-enforced). Here the
+        // addition is a visibly-attributed authored entry, so any staged photos
+        // ride WITH it on the new amendment/addendum entry.
         if (strikeOriginal && mode === "amend") {
           const sf = new FormData();
           sf.set("entry_id", editTarget!.id);
@@ -547,7 +557,6 @@ export function ConsultationWorkspace({
         if (draftMarks.length) fd.set("marks", JSON.stringify(draftMarks));
         fd.set("photo_count", String(stagedPhotos.length));
         const res = await amendNote(fd);
-        // Photos added while amending ride on the amendment entry.
         if (res?.id && stagedPhotos.length)
           await attachPhotosToEntry(stagedPhotos.map((p) => p.id), res.id, patient.id);
       }
