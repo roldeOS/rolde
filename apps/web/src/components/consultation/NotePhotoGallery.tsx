@@ -76,7 +76,20 @@ export function NotePhotoGallery({ photos }: { photos: NotePhoto[] }) {
 
   return (
     <div className="mt-3">
-      <div className="rounded-2xl border border-border/60 bg-muted/25 p-3">
+      <div className="relative rounded-2xl border border-border/60 bg-muted/25 p-3">
+        {/* Compare lives as a quiet corner control (Roland disliked the pill):
+            drag-slider on tap, out of the way. */}
+        {bothBA && (
+          <button
+            type="button"
+            onClick={() => open([...before, ...after], 0, "compare")}
+            title="Compare before & after"
+            aria-label="Compare before & after"
+            className="absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+          >
+            <ArrowLeftRight className="size-4" />
+          </button>
+        )}
         {bothBA ? (
           <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
             <PhaseColumn phase="before" list={before} onOpen={open} />
@@ -96,18 +109,6 @@ export function NotePhotoGallery({ photos }: { photos: NotePhoto[] }) {
           </div>
         )}
 
-        {bothBA && (
-          <div className="mt-3">
-            <button
-              type="button"
-              onClick={() => open([...before, ...after], 0, "compare")}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground shadow-float transition-all hover:-translate-y-px hover:bg-muted/40"
-            >
-              <ArrowLeftRight className="size-3.5 text-muted-foreground" />
-              Compare
-            </button>
-          </div>
-        )}
       </div>
 
       {viewer && (

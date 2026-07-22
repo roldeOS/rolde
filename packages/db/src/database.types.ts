@@ -1779,6 +1779,8 @@ export type Database = {
           onboarding_step: string | null
           patient_number_next: number
           patient_number_prefix: string | null
+          portal_enabled: boolean
+          portal_registration: string
           postcode: string | null
           slug: string
           status: string
@@ -1811,6 +1813,8 @@ export type Database = {
           onboarding_step?: string | null
           patient_number_next?: number
           patient_number_prefix?: string | null
+          portal_enabled?: boolean
+          portal_registration?: string
           postcode?: string | null
           slug: string
           status?: string
@@ -1843,6 +1847,8 @@ export type Database = {
           onboarding_step?: string | null
           patient_number_next?: number
           patient_number_prefix?: string | null
+          portal_enabled?: boolean
+          portal_registration?: string
           postcode?: string | null
           slug?: string
           status?: string
@@ -2036,6 +2042,7 @@ export type Database = {
       next_patient_number: { Args: { p_tenant: string }; Returns: string }
       photo_capacity_overview: { Args: never; Returns: Json }
       publish_legal_draft: { Args: { p_doc_key: string }; Returns: undefined }
+      set_patient_portal: { Args: { p_enabled: boolean; p_mode: string }; Returns: undefined }
       user_id_for_email: { Args: { p_email: string }; Returns: string }
     }
     Enums: {

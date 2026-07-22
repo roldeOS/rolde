@@ -15,6 +15,7 @@ import {
   Plug,
   Globe,
   LayoutTemplate,
+  MonitorSmartphone,
 } from "lucide-react";
 import type { CardIconTone } from "@/components/ui/CardIcon";
 
@@ -125,6 +126,17 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     icon: Send,
     tone: "accent",
     source: "Bible 4.8 §15.7c (Courier C2)",
+    status: "ready",
+    group: "Clinical & Services",
+  },
+  {
+    key: "patient-portal",
+    title: "Patient Portal",
+    blurb:
+      "Let patients see their own record — approved notes, photos and profile — on a secure page. Switch it on per clinic and choose how patients get access.",
+    icon: MonitorSmartphone,
+    tone: "info",
+    source: "Bible 4.8 §15.5 (Patient Portal P1)",
     status: "ready",
     group: "Clinical & Services",
   },
