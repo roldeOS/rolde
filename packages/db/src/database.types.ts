@@ -2031,6 +2031,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           expansion: string
+          expansion_marks: Json
           id: string
           shortcut: string
           tenant_id: string
@@ -2041,6 +2042,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           expansion: string
+          expansion_marks?: Json
           id?: string
           shortcut: string
           tenant_id: string
@@ -2051,6 +2053,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           expansion?: string
+          expansion_marks?: Json
           id?: string
           shortcut?: string
           tenant_id?: string

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionContext } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import { sanitiseParts, type TemplatePart } from "@/lib/scribeTemplates";
+import { sanitizeMarks, type NoteMark } from "@/lib/richText";
 import type { Json } from "@rolde/db";
 
 /**
@@ -30,7 +31,12 @@ export type ClinicTemplate = {
   parts: TemplatePart[];
 };
 
-export type AutotextShortcut = { id: string; shortcut: string; expansion: string };
+export type AutotextShortcut = {
+  id: string;
+  shortcut: string;
+  expansion: string;
+  expansionMarks: NoteMark[];
+};
 
 async function requireClinic() {
   const ctx = await getSessionContext();
@@ -178,7 +184,7 @@ export async function listMyShortcuts(): Promise<
   if (!c) return fail("No clinic context for this user.");
   const { data, error } = await c.supabase
     .from("user_autotext")
-    .select("id, shortcut, expansion")
+    .select("id, shortcut, expansion, expansion_marks")
     .eq("user_id", c.userId)
     .eq("tenant_id", c.tenantId)
     .is("deleted_at", null)
@@ -187,12 +193,21 @@ export async function listMyShortcuts(): Promise<
     console.error("[autotext list]", error.message);
     return fail("Your shortcuts couldn’t be loaded — try again.");
   }
-  return { ok: true, data: data ?? [] };
+  return {
+    ok: true,
+    data: (data ?? []).map((r) => ({
+      id: r.id,
+      shortcut: r.shortcut,
+      expansion: r.expansion,
+      expansionMarks: sanitizeMarks(r.expansion_marks, r.expansion.length),
+    })),
+  };
 }
 
 export async function saveMyShortcut(input: {
   shortcut: string;
   expansion: string;
+  marks?: NoteMark[];
 }): Promise<{ ok: true; data: AutotextShortcut } | { ok: false; error: string }> {
   const c = await requireClinic();
   if (!c) return fail("No clinic context for this user.");
@@ -201,11 +216,18 @@ export async function saveMyShortcut(input: {
   if (!SHORTCUT_RE.test(shortcut))
     return fail("Shortcuts start with a letter (1–24 letters, numbers or dashes) — e.g. “r” or “sn”.");
   if (!expansion) return fail("The shortcut needs its expansion text.");
+  const marks = sanitizeMarks(input.marks ?? [], expansion.length);
 
   const { data: created, error } = await c.supabase
     .from("user_autotext")
-    .insert({ tenant_id: c.tenantId, user_id: c.userId, shortcut, expansion })
-    .select("id, shortcut, expansion")
+    .insert({
+      tenant_id: c.tenantId,
+      user_id: c.userId,
+      shortcut,
+      expansion,
+      expansion_marks: marks as unknown as Json,
+    })
+    .select("id, shortcut, expansion, expansion_marks")
     .single();
   if (error || !created) {
     if (error) console.error("[autotext save]", error.message);
@@ -215,7 +237,15 @@ export async function saveMyShortcut(input: {
         : "That didn’t save — try again.",
     );
   }
-  return { ok: true, data: created };
+  return {
+    ok: true,
+    data: {
+      id: created.id,
+      shortcut: created.shortcut,
+      expansion: created.expansion,
+      expansionMarks: sanitizeMarks(created.expansion_marks, created.expansion.length),
+    },
+  };
 }
 
 export async function deleteMyShortcut(id: string): Promise<ActionResult> {

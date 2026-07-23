@@ -39,6 +39,8 @@ import { cn } from "@/lib/utils";
 
 export type RichNoteHandle = {
   insertText: (s: string) => void;
+  /** Insert text AND its inline marks at the caret (rich Snips). */
+  insertRich: (s: string, marks: NoteMark[]) => void;
   focus: () => void;
   isActive: () => boolean;
   /** Toggle bold/italic/underline/strikethrough on the selection. */
@@ -417,7 +419,10 @@ export const RichNoteEditor = forwardRef<
     placeholder?: string;
     onChange: (text: string, marks: NoteMark[]) => void;
     /** Autotext: given the plain text + caret, the expansion (or null). */
-    expand?: (text: string, caret: number) => { value: string; caret: number } | null;
+    expand?: (
+      text: string,
+      caret: number,
+    ) => { value: string; caret: number; marks?: NoteMark[] } | null;
     /** Enter-to-continue-lists: given text + caret, the next value (or null). */
     continueList?: (text: string, caret: number) => { value: string; caret: number } | null;
     onFocusCapture?: () => void;
@@ -492,7 +497,12 @@ export const RichNoteEditor = forwardRef<
         if (hit) {
           const d = diffSplice(text, hit.value);
           const shifted = spliceMarks(marks, d.start, d.oldEnd, d.newLen);
-          render(hit.value, shifted, hit.caret);
+          // Rich Snips — merge the expansion's own marks (already offset to the
+          // new text by expandAutotext).
+          const withSnip = hit.marks?.length
+            ? mergeMarks([...shifted, ...hit.marks])
+            : shifted;
+          render(hit.value, withSnip, hit.caret);
           return;
         }
       }
@@ -569,8 +579,33 @@ export const RichNoteEditor = forwardRef<
     [render],
   );
 
+  const insertRichAt = useCallback(
+    (s: string, snipMarks: NoteMark[]) => {
+      const el = editorRef.current;
+      if (!el) return;
+      el.focus();
+      const end = fromDom(el).text.length;
+      const off = getSelectionOffsets(el) ?? { start: end, end };
+      const { text, marks } = fromDom(el);
+      const value = text.slice(0, off.start) + s + text.slice(off.end);
+      // Shift the note's own marks for the splice, then add the snip's marks
+      // offset to where they landed.
+      const shifted = spliceMarks(marks, off.start, off.end, s.length);
+      const added = (snipMarks ?? [])
+        .filter((m) => m.e > m.s)
+        .map((m) => ({
+          ...m,
+          s: Math.min(off.start + m.s, off.start + s.length),
+          e: Math.min(off.start + m.e, off.start + s.length),
+        }));
+      render(value, mergeMarks([...shifted, ...added]), off.start + s.length);
+    },
+    [render],
+  );
+
   useImperativeHandle(ref, () => ({
     insertText: insertPlain,
+    insertRich: insertRichAt,
     focus: () => editorRef.current?.focus(),
     isActive: () => activeRef.current,
     format: applyKind,

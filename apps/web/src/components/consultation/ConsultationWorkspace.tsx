@@ -218,6 +218,12 @@ export function ConsultationWorkspace({
   // Scribe T2.5 — the writer's PERSONAL autotext (".sn" + space → their
   // sentence). Loaded once on mount; the manager hands back fresh lists.
   const [shortcuts, setShortcuts] = useState<AutotextShortcut[]>([]);
+  // Rich Snips — autotext entries carry their marks so a typed ".sn" expands
+  // WITH its formatting (not just the dropdown insert).
+  const autotextEntries = useMemo(
+    () => shortcuts.map((s) => ({ shortcut: s.shortcut, expansion: s.expansion, marks: s.expansionMarks })),
+    [shortcuts],
+  );
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   // B2 — the COURIER door (Scribe header): both send sheets anchor to it.
   // T4 form sends ride the library rail; C3 letter sends ride the authored rail.
@@ -262,7 +268,7 @@ export function ConsultationWorkspace({
    *  restores the caret after React re-renders. */
   const withAutotext = useCallback(
     (el: HTMLTextAreaElement | HTMLInputElement, apply: (v: string) => void) => {
-      const hit = expandAutotext(el.value, el.selectionStart ?? el.value.length, shortcuts);
+      const hit = expandAutotext(el.value, el.selectionStart ?? el.value.length, autotextEntries);
       if (!hit) {
         apply(el.value);
         return;
@@ -315,10 +321,11 @@ export function ConsultationWorkspace({
       lastWasRichRef.current = false;
     }
   }, []);
-  const insertSnippet = useCallback((expansion: string) => {
+  const insertSnippet = useCallback((expansion: string, marks?: NoteMark[]) => {
     // Prefer the rich note editor when it was last active; else a template input.
     if (lastWasRichRef.current && richRef.current) {
-      richRef.current.insertText(expansion);
+      if (marks && marks.length) richRef.current.insertRich(expansion, marks);
+      else richRef.current.insertText(expansion);
       return;
     }
     const el = lastTextRef.current;
@@ -1006,7 +1013,7 @@ export function ConsultationWorkspace({
                         <button
                           key={sc.id}
                           onClick={() => {
-                            insertSnippet(sc.expansion);
+                            insertSnippet(sc.expansion, sc.expansionMarks);
                             setSnippetsMenuOpen(false);
                           }}
                           className="flex w-full items-start gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-hover"
@@ -1218,7 +1225,7 @@ export function ConsultationWorkspace({
                       setDraft(text);
                       setDraftMarks(marks);
                     }}
-                    expand={(text, caret) => expandAutotext(text, caret, shortcuts)}
+                    expand={(text, caret) => expandAutotext(text, caret, autotextEntries)}
                     continueList={continueListOnEnter}
                     onFocusCapture={() => {
                       lastWasRichRef.current = true;

@@ -166,7 +166,7 @@ export function PhotoCaptureButton({
           options={[
             { value: "before", label: beforeN ? `Before (${beforeN})` : "Before" },
             { value: "after", label: afterN ? `After (${afterN})` : "After" },
-            { value: "other", label: "Other" },
+            { value: "other", label: "General" },
           ]}
           value={phase}
           onChange={(v) => setPhase(v as "before" | "after" | "other")}

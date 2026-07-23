@@ -5,7 +5,9 @@
  * the caller owns state and caret restoration. A dot-word with no matching
  * shortcut is left exactly as typed — never guess, never mangle.
  */
-export type AutotextEntry = { shortcut: string; expansion: string };
+import type { NoteMark } from "@/lib/richText";
+
+export type AutotextEntry = { shortcut: string; expansion: string; marks?: NoteMark[] };
 
 /** Matches "…(start or whitespace/bracket) .shortcut" right before the caret. */
 const TRIGGER = /(^|[\s([{])\.([a-z][a-z0-9-]{0,23})$/i;
@@ -14,7 +16,7 @@ export function expandAutotext(
   value: string,
   caret: number,
   shortcuts: AutotextEntry[],
-): { value: string; caret: number } | null {
+): { value: string; caret: number; marks?: NoteMark[] } | null {
   if (!shortcuts.length || caret < 3) return null;
   const typed = value[caret - 1];
   if (typed !== " " && typed !== "\n") return null;
@@ -25,5 +27,9 @@ export function expandAutotext(
   if (!hit) return null;
   const start = caret - 1 - (m[2].length + 1); // the "." position
   const next = value.slice(0, start) + hit.expansion + typed + value.slice(caret);
-  return { value: next, caret: start + hit.expansion.length + 1 };
+  // Rich Snips — the expansion's marks land at `start` in the new text.
+  const marks = (hit.marks ?? [])
+    .filter((mk) => mk.e > mk.s)
+    .map((mk) => ({ ...mk, s: start + mk.s, e: start + mk.e }));
+  return { value: next, caret: start + hit.expansion.length + 1, marks };
 }
