@@ -65,8 +65,8 @@ export async function uploadPatientPhoto(
   formData: FormData,
 ): Promise<{ ok: true; photo: PatientPhoto } | { ok: false; error: string }> {
   const patientId = String(formData.get("patient_id") ?? "");
-  const phaseRaw = String(formData.get("phase") ?? "other");
-  const phase = phaseRaw === "before" || phaseRaw === "after" ? phaseRaw : "other";
+  const phaseRaw = String(formData.get("phase") ?? "general");
+  const phase = phaseRaw === "before" || phaseRaw === "after" ? phaseRaw : "general";
   // Multi-angle Step A — the standardised view/angle (e.g. "Front", "Left 45").
   // Free text, capped; empty = untagged.
   const viewRaw = String(formData.get("view") ?? "").trim();

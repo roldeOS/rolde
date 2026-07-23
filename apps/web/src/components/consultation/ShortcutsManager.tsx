@@ -1,14 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { X, Zap, Trash2, Plus } from "lucide-react";
+import {
+  X,
+  Zap,
+  Trash2,
+  Plus,
+  List,
+  ListOrdered,
+  IndentIncrease,
+  IndentDecrease,
+  RemoveFormatting,
+} from "lucide-react";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { Input } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { RichNoteEditor } from "@/components/consultation/RichNoteEditor";
+import {
+  RichNoteEditor,
+  MarkGlyph,
+  type RichNoteHandle,
+  type LineOp,
+} from "@/components/consultation/RichNoteEditor";
 import { SmartNoteBody } from "@/components/consultation/SmartNoteBody";
-import type { NoteMark } from "@/lib/richText";
+import { HIGHLIGHT_COLOURS, type MarkKind, type NoteMark } from "@/lib/richText";
 import {
   listMyShortcuts,
   saveMyShortcut,
@@ -38,6 +53,13 @@ export function ShortcutsManager({
   const [snipNonce, setSnipNonce] = useState(0); // remounts the editor to clear it
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const richRef = useRef<RichNoteHandle | null>(null);
+  const LISTS: { op: LineOp; icon: typeof List; label: string }[] = [
+    { op: "bullet", icon: List, label: "Bullet List" },
+    { op: "number", icon: ListOrdered, label: "Numbered List" },
+    { op: "outdent", icon: IndentDecrease, label: "Outdent" },
+    { op: "indent", icon: IndentIncrease, label: "Indent" },
+  ];
 
   useEffect(() => {
     void listMyShortcuts().then((r) => {
@@ -132,29 +154,91 @@ export function ShortcutsManager({
 
         <div className="shrink-0 space-y-2 border-t border-black/5 p-4">
           {error && <p className="rounded-lg bg-critical/10 p-2 text-xs text-critical">{error}</p>}
-          <div className="flex items-start gap-2">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-sm font-semibold text-muted-foreground">.</span>
             <Input
               value={shortcut}
-              placeholder="sn"
+              placeholder="shortcut (e.g. sn)"
               onChange={(e) => setShortcut(e.target.value)}
-              className="w-24"
+              className="w-40"
             />
-            <div className="min-w-0 flex-1 rounded-lg bg-muted/40 px-3 py-2 text-sm focus-within:bg-muted/60">
-              <RichNoteEditor
-                docKey={`snip-${snipNonce}`}
-                initialText=""
-                initialMarks={[]}
-                placeholder="Safety-netting advice given; return or call if symptoms worsen. (Select text to format.)"
-                onChange={(text, marks) => {
-                  setExpansion(text);
-                  setExpansionMarks(marks);
-                }}
-              />
-            </div>
-            <Button size="sm" onClick={add} disabled={pending || !shortcut.trim() || !expansion.trim()}>
-              <Plus className="size-3.5" /> Add
-            </Button>
           </div>
+          {/* Full format toolbar (the Scribe palette) — write a whole formatted
+              standard letter here, not just quick marks. */}
+          <div className="flex flex-wrap items-center gap-0.5 rounded-lg bg-muted/40 p-1">
+            {(["b", "i", "u", "s"] as MarkKind[]).map((k) => (
+              <button
+                key={k}
+                type="button"
+                aria-label={k === "b" ? "Bold" : k === "i" ? "Italic" : k === "u" ? "Underline" : "Strikethrough"}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => richRef.current?.format(k)}
+                className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+              >
+                <MarkGlyph k={k} />
+              </button>
+            ))}
+            <span className="mx-1 h-5 w-px bg-border" />
+            {HIGHLIGHT_COLOURS.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                title={c.label}
+                aria-label={`Highlight ${c.label}`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => richRef.current?.highlight(c.key)}
+                className="size-5 rounded-full ring-1 ring-black/10 transition-transform hover:scale-110"
+                style={{ backgroundColor: c.bg }}
+              />
+            ))}
+            <span className="mx-1 h-5 w-px bg-border" />
+            {LISTS.map(({ op, icon: Icon, label }) => (
+              <button
+                key={op}
+                type="button"
+                title={label}
+                aria-label={label}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => richRef.current?.lineOp(op)}
+                className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+              >
+                <Icon className="size-4" />
+              </button>
+            ))}
+            <span className="mx-1 h-5 w-px bg-border" />
+            <button
+              type="button"
+              title="Clear Formatting"
+              aria-label="Clear Formatting"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => richRef.current?.clearFormat()}
+              className="flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+            >
+              <RemoveFormatting className="size-4" />
+            </button>
+          </div>
+          {/* A big editor — room for a full multi-paragraph letter. */}
+          <div className="max-h-[42vh] min-h-[180px] overflow-y-auto rounded-lg bg-muted/40 px-3 py-2 text-sm focus-within:bg-muted/60">
+            <RichNoteEditor
+              ref={richRef}
+              docKey={`snip-${snipNonce}`}
+              initialText=""
+              initialMarks={[]}
+              placeholder="Write the sentence — or a whole formatted letter — you insert every day. Select text, then use the toolbar above."
+              onChange={(text, marks) => {
+                setExpansion(text);
+                setExpansionMarks(marks);
+              }}
+            />
+          </div>
+          <Button
+            size="sm"
+            onClick={add}
+            disabled={pending || !shortcut.trim() || !expansion.trim()}
+            className="w-full"
+          >
+            <Plus className="size-3.5" /> Add shortcut
+          </Button>
         </div>
       </div>
     </div>,

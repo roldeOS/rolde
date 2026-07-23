@@ -47,7 +47,7 @@ export function PhotoCaptureButton({
 }) {
   const [btn, setBtn] = useState<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
-  const [phase, setPhase] = useState<"before" | "after" | "other">("before");
+  const [phase, setPhase] = useState<"before" | "after" | "general">("before");
   // Multi-angle — the view/angle this shot is (before/after pair BY view).
   const [view, setView] = useState("");
   // Step B — the clinic's photo protocols drive the view chips (loaded on open).
@@ -166,10 +166,10 @@ export function PhotoCaptureButton({
           options={[
             { value: "before", label: beforeN ? `Before (${beforeN})` : "Before" },
             { value: "after", label: afterN ? `After (${afterN})` : "After" },
-            { value: "other", label: "General" },
+            { value: "general", label: "General" },
           ]}
           value={phase}
-          onChange={(v) => setPhase(v as "before" | "after" | "other")}
+          onChange={(v) => setPhase(v as "before" | "after" | "general")}
           className="w-full"
         />
         {/* Multi-angle — tag the view/angle so Before/After pair by view. The

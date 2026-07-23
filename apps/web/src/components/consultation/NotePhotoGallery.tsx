@@ -25,7 +25,7 @@ const PHASE: Record<string, { label: string; dot: string; text: string }> = {
   // Before = a calm sky pastel (baseline); After = sage (the "progress" splash).
   before: { label: "Before", dot: "bg-sky-400", text: "text-sky-700" },
   after: { label: "After", dot: "bg-success", text: "text-success" },
-  other: { label: "Photos", dot: "bg-lavender", text: "text-indigo-500" },
+  general: { label: "Photos", dot: "bg-lavender", text: "text-indigo-500" },
 };
 
 // Multi-angle Step A — pair Before↔After BY VIEW (any count). Untagged photos
@@ -62,7 +62,7 @@ function PhaseColumn({
   onOpen: (list: NotePhoto[], index: number) => void;
 }) {
   if (!list.length) return null;
-  const s = PHASE[phase] ?? PHASE.other;
+  const s = PHASE[phase] ?? PHASE.general;
   return (
     <div className="min-w-0">
       <div className="mb-2 flex items-center gap-1.5">
@@ -105,7 +105,7 @@ export function NotePhotoGallery({ photos }: { photos: NotePhoto[] }) {
 
   const before = photos.filter((p) => p.phase === "before");
   const after = photos.filter((p) => p.phase === "after");
-  const other = photos.filter((p) => p.phase !== "before" && p.phase !== "after");
+  const general = photos.filter((p) => p.phase !== "before" && p.phase !== "after");
   const bothBA = before.length > 0 && after.length > 0;
   const hasBA = before.length > 0 || after.length > 0;
   const viewPairs = computeViewPairs(before, after);
@@ -143,9 +143,9 @@ export function NotePhotoGallery({ photos }: { photos: NotePhoto[] }) {
           </div>
         )}
 
-        {other.length > 0 && (
+        {general.length > 0 && (
           <div className={cn(hasBA && "mt-3 border-t border-border/60 pt-3")}>
-            <PhaseColumn phase="other" list={other} onOpen={open} />
+            <PhaseColumn phase="general" list={general} onOpen={open} />
           </div>
         )}
 
