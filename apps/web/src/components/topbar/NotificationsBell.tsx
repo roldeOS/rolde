@@ -31,7 +31,7 @@ export function NotificationsBell() {
           <PopoverHeader
             icon={Bell}
             title="Notifications"
-            subtitle="Results, messages and reminders land here"
+            subtitle="Results, messages and reminders"
             tone="warning"
           />
           <p className="px-2.5 py-6 text-center text-xs text-muted-foreground">

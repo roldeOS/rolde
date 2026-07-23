@@ -40,7 +40,6 @@ import { CardIcon, type CardIconTone } from "@/components/ui/CardIcon";
 import { formatDayTime, formatDayShort } from "@/lib/dates";
 import { NotePhotoGallery, type NotePhoto } from "@/components/consultation/NotePhotoGallery";
 import { SectionExplainer } from "@/components/ui/SectionExplainer";
-import { useClickAway } from "@/lib/useClickAway";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import {
   StructuredNoteBody,
@@ -307,9 +306,10 @@ export function ClinicalNotesFeed({
   const [filterOpen, setFilterOpen] = useState(false);
   const [filterBtn, setFilterBtn] = useState<HTMLElement | null>(null);
   const [expandedOrig, setExpandedOrig] = useState<Set<string>>(new Set());
-  const filterRef = useClickAway<HTMLDivElement>(
-    useCallback(() => setFilterOpen(false), []),
-  );
+  // NB: no separate useClickAway here — the AnchoredPopover owns its own
+  // outside-close. A second click-away on the (non-portaled) trigger wrapper
+  // used to swallow option clicks (it closed the popover on mousedown before the
+  // option's click fired — the "Filter does nothing" bug, Roland 2026-07-23).
   const scrollRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const prevH = useRef(0);
@@ -506,7 +506,7 @@ export function ClinicalNotesFeed({
           >
             <ArrowDownUp className="size-4" />
           </button>
-          <div ref={filterRef} className="relative">
+          <div className="relative">
             <button
               ref={setFilterBtn}
               onClick={() => setFilterOpen((v) => !v)}
@@ -528,7 +528,7 @@ export function ClinicalNotesFeed({
               width={230}
               icon={ListFilter}
               title="Filter"
-              subtitle="Triage the feed by status, type or author"
+              subtitle="By status, type or author"
               tone="sky"
               className="p-2"
             >

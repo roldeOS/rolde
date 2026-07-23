@@ -384,7 +384,7 @@ export function TableShell<T>({
               icon={SlidersHorizontal}
               tone="info"
               title={filterTitle ?? `Filter ${cap(label)}`}
-              subtitle="Narrow the table to the rows you want."
+              subtitle="Narrow to the rows you want"
               onClose={() => setFilterOpen(false)}
             />
             <div className="max-h-[60vh] space-y-4 overflow-y-auto px-6 py-4">

@@ -344,7 +344,7 @@ function ServiceModal({
           icon={Stethoscope}
           tone="success"
           title={service ? "Edit Service" : "Add Service"}
-          subtitle="A treatment your clinic offers, with its price."
+          subtitle="A treatment you offer, with its price"
           onClose={() => !busy && onClose()}
         />
 

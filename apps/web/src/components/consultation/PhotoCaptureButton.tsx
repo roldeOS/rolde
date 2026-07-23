@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Camera, Plus, X, Loader2 } from "lucide-react";
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { Segmented } from "@/components/ui/Segmented";
+import { Select } from "@/components/ui/Select";
 import { CARD_ICON_TEXT } from "@/lib/cardTones";
 import { shrinkImage } from "@/lib/imageShrink";
 import {
@@ -57,19 +58,28 @@ export function PhotoCaptureButton({
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load the clinic's photo protocols the first time the popover opens.
+  // Load the clinic's photo protocols the first time the popover opens. Default
+  // to the clinic's DEFAULT protocol if one is set — else start on "— None —"
+  // (a blank state, so you can shoot a hand without a face protocol).
   useEffect(() => {
     if (!open || protoLoaded) return;
     setProtoLoaded(true);
     listPhotoProtocols()
       .then((ps) => {
         setProtocols(ps);
-        if (ps.length) setProtoId((cur) => cur || ps[0].id);
+        const def = ps.find((p) => p.isDefault);
+        if (def) setProtoId((cur) => cur || def.id);
       })
       .catch(() => {});
   }, [open, protoLoaded]);
 
-  const activeViews = protocols.find((p) => p.id === protoId)?.views ?? DEFAULT_VIEWS;
+  // Protocol → its views; None (with protocols set up) → blank/free-text; a clinic
+  // with no protocols at all → the built-in default set.
+  const activeViews = protoId
+    ? (protocols.find((p) => p.id === protoId)?.views ?? [])
+    : protocols.length
+      ? []
+      : DEFAULT_VIEWS;
 
   // Ghosting — when shooting an AFTER at a view that already has a BEFORE on the
   // note, surface that Before as a "match this angle" reference.
@@ -166,23 +176,15 @@ export function PhotoCaptureButton({
             chips come from the clinic's photo protocol (Settings, Caretaker). */}
         <div className="space-y-1">
           {protocols.length > 0 && (
-            <div className="flex flex-wrap gap-1">
+            <Select value={protoId} onChange={setProtoId} className="w-full text-xs">
+              <option value="">— No protocol —</option>
               {protocols.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setProtoId(p.id)}
-                  className={cn(
-                    "rounded-md px-1.5 py-0.5 text-[10px] font-medium transition-colors",
-                    protoId === p.id
-                      ? "bg-teal/30 text-teal-800"
-                      : "bg-muted text-muted-foreground hover:text-foreground",
-                  )}
-                >
+                <option key={p.id} value={p.id}>
                   {p.name}
-                </button>
+                  {p.isDefault ? " (default)" : ""}
+                </option>
               ))}
-            </div>
+            </Select>
           )}
           <input
             value={view}

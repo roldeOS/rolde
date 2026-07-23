@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap, Type, List, ListOrdered, IndentIncrease, IndentDecrease, RemoveFormatting, RotateCcw } from "lucide-react";
+import { PenLine, Maximize2, Minimize2, Strikethrough, LayoutTemplate, ChevronDown, X, PersonStanding, Pencil, Plus, Zap, Type, List, ListOrdered, IndentIncrease, IndentDecrease, RemoveFormatting, RotateCcw, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardIcon } from "@/components/ui/CardIcon";
 import { CARD_ICON_TEXT } from "@/lib/cardTones";
@@ -190,6 +190,14 @@ export function ConsultationWorkspace({
   const [template, setTemplate] = useState<ScribeTemplate | null>(null);
   const [answers, setAnswers] = useState<TemplateAnswers>({});
   const [pickerOpen, setPickerOpen] = useState(false);
+  // Templates search (Roland 2026-07-23) — filter the library by name/specialty.
+  const [templateQuery, setTemplateQuery] = useState("");
+  const tq = templateQuery.trim().toLowerCase();
+  const matchT = (name: string, spec?: string) =>
+    !tq || name.toLowerCase().includes(tq) || (spec ?? "").toLowerCase().includes(tq);
+  useEffect(() => {
+    if (!pickerOpen) setTemplateQuery("");
+  }, [pickerOpen]);
   const [pickerBtn, setPickerBtn] = useState<HTMLElement | null>(null);
   // Scribe T2 — the CLINIC's templates (Caretaker-designed, team-filled) +
   // the builder sheet. Loaded the first time the picker opens; refreshed
@@ -756,13 +764,40 @@ export function ConsultationWorkspace({
                     <AnchoredPopover
                       anchor={pickerBtn}
                       open={pickerOpen}
-                      onClose={() => setPickerOpen(false)}
+                      onClose={() => {
+                        setPickerOpen(false);
+                        setTemplateQuery("");
+                      }}
                       width={264}
                       icon={LayoutTemplate}
                       title="Templates"
-                      subtitle="The curated library + your clinic's own"
+                      subtitle="Curated library + your own"
                       tone="periwinkle"
                     >
+                        {/* Search — with 70+ templates, scrolling is painful. */}
+                        <div className="sticky top-0 z-10 -mx-1.5 -mt-1.5 mb-1 bg-card px-1.5 pt-1.5 pb-1">
+                          <div className="flex items-center gap-1.5 rounded-lg bg-muted px-2 py-1.5">
+                            <Search className="size-3.5 shrink-0 text-muted-foreground" />
+                            <input
+                              autoFocus
+                              value={templateQuery}
+                              onChange={(e) => setTemplateQuery(e.target.value)}
+                              placeholder="Search templates…"
+                              className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                            />
+                            {templateQuery && (
+                              <button
+                                type="button"
+                                onClick={() => setTemplateQuery("")}
+                                aria-label="Clear search"
+                                className="shrink-0 text-muted-foreground hover:text-foreground"
+                              >
+                                <X className="size-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        {!tq && (
                         <button
                           onClick={() => {
                             setTemplate(null);
@@ -772,6 +807,7 @@ export function ConsultationWorkspace({
                               setLeftMode("split");
                             }
                             setPickerOpen(false);
+                            setTemplateQuery("");
                           }}
                           className={cn(
                             "flex w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-hover",
@@ -780,13 +816,22 @@ export function ConsultationWorkspace({
                         >
                           <X className="size-3.5" /> Blank Note
                         </button>
-                        {[...new Set(ROLDE_TEMPLATE_LIBRARY.map((t) => t.specialty))].map(
+                        )}
+                        {[...new Set(ROLDE_TEMPLATE_LIBRARY.map((t) => t.specialty))]
+                          .filter((spec) =>
+                            ROLDE_TEMPLATE_LIBRARY.some(
+                              (t) => t.specialty === spec && matchT(t.name, t.specialty),
+                            ),
+                          )
+                          .map(
                           (spec) => (
                             <div key={spec}>
                               <p className="px-2.5 pb-0.5 pt-2 text-xs font-semibold tracking-wide text-foreground uppercase">
                                 {spec}
                               </p>
-                              {ROLDE_TEMPLATE_LIBRARY.filter((t) => t.specialty === spec).map(
+                              {ROLDE_TEMPLATE_LIBRARY.filter(
+                                (t) => t.specialty === spec && matchT(t.name, t.specialty),
+                              ).map(
                                 (t) => (
                                   <button
                                     key={t.id}
@@ -816,12 +861,12 @@ export function ConsultationWorkspace({
                         )}
                         {/* T2 — the CLINIC's templates (Caretaker-designed,
                             team-filled); the builder is the Caretaker's. */}
-                        {clinicTemplates.length > 0 && (
+                        {clinicTemplates.some((t) => matchT(t.name)) && (
                           <p className="px-2.5 pb-0.5 pt-2 text-xs font-semibold tracking-wide text-foreground uppercase">
                             Clinic Templates
                           </p>
                         )}
-                        {clinicTemplates.map((t) => (
+                        {clinicTemplates.filter((t) => matchT(t.name)).map((t) => (
                           <div
                             key={t.id}
                             className="group flex w-full items-center rounded-lg transition-colors hover:bg-hover"
@@ -860,7 +905,14 @@ export function ConsultationWorkspace({
                             )}
                           </div>
                         ))}
-                        {canManageTemplates && (
+                        {!!tq &&
+                          !ROLDE_TEMPLATE_LIBRARY.some((t) => matchT(t.name, t.specialty)) &&
+                          !clinicTemplates.some((t) => matchT(t.name)) && (
+                            <p className="px-2.5 py-3 text-center text-sm text-muted-foreground">
+                              No templates match “{templateQuery}”.
+                            </p>
+                          )}
+                        {!tq && canManageTemplates && (
                           <button
                             onClick={() => {
                               setBuilder({ open: true, editing: null });
@@ -940,7 +992,7 @@ export function ConsultationWorkspace({
                       width={300}
                       icon={Zap}
                       title="My Shortcuts"
-                      subtitle="Click to insert where you were typing"
+                      subtitle="Slots in at your cursor"
                       tone="teal"
                       className="p-1.5"
                     >
@@ -1010,14 +1062,14 @@ export function ConsultationWorkspace({
                           anchor={formatBtn}
                           open={formatOpen}
                           onClose={() => setFormatOpen(false)}
-                          width={212}
+                          width={184}
                           icon={Type}
                           title="Format"
                           subtitle="Style the selected text"
                           tone="rose"
                           className="space-y-1.5 p-1.5"
                         >
-                          <div className="flex gap-0.5">
+                          <div className="flex justify-between">
                             {(["b", "i", "u", "s"] as MarkKind[]).map((k) => (
                               <button
                                 key={k}
@@ -1037,7 +1089,7 @@ export function ConsultationWorkspace({
                             <p className="pb-0.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
                               Highlight
                             </p>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center justify-between">
                               {HIGHLIGHT_COLOURS.map((c) => (
                                 <button
                                   key={c.key}
@@ -1056,7 +1108,7 @@ export function ConsultationWorkspace({
                             <p className="pb-0.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
                               Lists
                             </p>
-                            <div className="flex gap-0.5">
+                            <div className="flex justify-between">
                               {(
                                 [
                                   { op: "bullet", icon: List, label: "Bullet List" },

@@ -2,9 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { X, Trash2, Plus } from "lucide-react";
+import { X, Trash2, Plus, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { savePhotoProtocol, deletePhotoProtocol, type PhotoProtocol } from "./actions";
+import {
+  savePhotoProtocol,
+  deletePhotoProtocol,
+  setDefaultProtocol,
+  type PhotoProtocol,
+} from "./actions";
 
 function ViewEditor({ views, setViews }: { views: string[]; setViews: (v: string[]) => void }) {
   const [draft, setDraft] = useState("");
@@ -12,6 +17,13 @@ function ViewEditor({ views, setViews }: { views: string[]; setViews: (v: string
     const v = draft.trim().slice(0, 40);
     if (v && !views.includes(v)) setViews([...views, v]);
     setDraft("");
+  };
+  const move = (i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    if (j < 0 || j >= views.length) return;
+    const next = [...views];
+    [next[i], next[j]] = [next[j], next[i]];
+    setViews(next);
   };
   return (
     <div className="space-y-2">
@@ -22,13 +34,31 @@ function ViewEditor({ views, setViews }: { views: string[]; setViews: (v: string
         {views.map((v, i) => (
           <span
             key={`${v}-${i}`}
-            className="flex items-center gap-1 rounded-md bg-teal/25 py-0.5 pr-1 pl-2 text-xs font-medium text-teal-800"
+            className="flex items-center gap-0.5 rounded-md bg-teal/25 py-0.5 pr-1 pl-1.5 text-xs font-medium text-teal-800"
           >
+            <button
+              type="button"
+              onClick={() => move(i, -1)}
+              disabled={i === 0}
+              className="rounded p-0.5 hover:bg-black/5 disabled:opacity-30"
+              aria-label={`Move ${v} earlier`}
+            >
+              <ChevronLeft className="size-3" />
+            </button>
             {v}
             <button
               type="button"
+              onClick={() => move(i, 1)}
+              disabled={i === views.length - 1}
+              className="rounded p-0.5 hover:bg-black/5 disabled:opacity-30"
+              aria-label={`Move ${v} later`}
+            >
+              <ChevronRight className="size-3" />
+            </button>
+            <button
+              type="button"
               onClick={() => setViews(views.filter((_, j) => j !== i))}
-              className="rounded p-0.5 hover:bg-black/5"
+              className="ml-0.5 rounded p-0.5 hover:bg-black/5"
               aria-label={`Remove ${v}`}
             >
               <X className="size-3" />
@@ -87,6 +117,27 @@ function ProtocolCard({ p }: { p: PhotoProtocol }) {
           onChange={(e) => setName(e.target.value)}
           className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1 py-0.5 text-base font-semibold tracking-tight outline-none hover:border-border focus:border-border"
         />
+        <button
+          type="button"
+          onClick={() =>
+            start(async () => {
+              const res = await setDefaultProtocol(p.id, !p.isDefault);
+              if (res.ok) router.refresh();
+              else setError(res.error);
+            })
+          }
+          disabled={pending}
+          title={p.isDefault ? "This is the clinic default" : "Set as the clinic default"}
+          className={cn(
+            "flex h-8 items-center gap-1 rounded-lg px-2 text-xs font-medium transition-colors",
+            p.isDefault
+              ? "bg-honey/25 text-amber-800"
+              : "text-muted-foreground hover:bg-hover hover:text-foreground",
+          )}
+        >
+          <Star className={cn("size-3.5", p.isDefault && "fill-current")} />
+          {p.isDefault ? "Default" : "Set default"}
+        </button>
         <button
           type="button"
           onClick={del}

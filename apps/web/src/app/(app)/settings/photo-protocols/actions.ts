@@ -10,7 +10,7 @@ import { logAudit } from "@/lib/audit";
  * views (any count) a clinic shoots. Caretaker-owned; read by the whole clinic
  * (the capture grid uses them). RLS re-enforces the caretaker write-gate.
  */
-export type PhotoProtocol = { id: string; name: string; views: string[] };
+export type PhotoProtocol = { id: string; name: string; views: string[]; isDefault: boolean };
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 const isCaretaker = (ctx: Awaited<ReturnType<typeof getSessionContext>>) =>
@@ -22,11 +22,40 @@ export async function listPhotoProtocols(): Promise<PhotoProtocol[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("clinic_photo_protocol")
-    .select("id, name, views")
+    .select("id, name, views, is_default")
     .is("deleted_at", null)
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: true });
-  return (data ?? []).map((p) => ({ id: p.id, name: p.name, views: p.views ?? [] }));
+  return (data ?? []).map((p) => ({
+    id: p.id,
+    name: p.name,
+    views: p.views ?? [],
+    isDefault: p.is_default ?? false,
+  }));
+}
+
+export async function setDefaultProtocol(id: string, on: boolean): Promise<ActionResult> {
+  const ctx = await getSessionContext();
+  const tenantId = ctx?.membership?.tenant_id;
+  if (!ctx || !tenantId) return { ok: false, error: "No clinic context for this user." };
+  if (!isCaretaker(ctx))
+    return { ok: false, error: "Only your clinic’s Caretaker can edit photo protocols." };
+  const supabase = await createClient();
+  // At most one default per clinic — clear the rest first (also satisfies the
+  // partial-unique index), then set this one.
+  const { error: e1 } = await supabase
+    .from("clinic_photo_protocol")
+    .update({ is_default: false })
+    .eq("tenant_id", tenantId)
+    .neq("id", id);
+  if (e1) return { ok: false, error: e1.message };
+  const { error: e2 } = await supabase
+    .from("clinic_photo_protocol")
+    .update({ is_default: on })
+    .eq("id", id);
+  if (e2) return { ok: false, error: e2.message };
+  revalidatePath("/settings/photo-protocols");
+  return { ok: true };
 }
 
 export async function savePhotoProtocol(formData: FormData): Promise<ActionResult> {

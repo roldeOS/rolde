@@ -373,6 +373,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           id: string
+          is_default: boolean
           name: string
           sort_order: number
           tenant_id: string
@@ -383,6 +384,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          is_default?: boolean
           name: string
           sort_order?: number
           tenant_id: string
@@ -393,6 +395,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           id?: string
+          is_default?: boolean
           name?: string
           sort_order?: number
           tenant_id?: string

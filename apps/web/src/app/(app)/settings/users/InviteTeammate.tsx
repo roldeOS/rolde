@@ -105,7 +105,7 @@ export function InviteTeammate({ country }: { country: string }) {
                 icon={UserPlus}
                 tone="accent"
                 title="Invite Teammate"
-                subtitle="They'll set their own password from a single-use link."
+                subtitle="They set a password via a secure link"
                 onClose={close}
               />
 
