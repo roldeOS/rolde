@@ -213,7 +213,9 @@ export async function saveMyShortcut(input: {
   const c = await requireClinic();
   if (!c) return fail("No clinic context for this user.");
   const shortcut = String(input.shortcut ?? "").trim().toLowerCase().replace(/^\./, "");
-  const expansion = String(input.expansion ?? "").trim().slice(0, 4000);
+  // Generous ceiling — a Snip can be a whole multi-paragraph standard letter,
+  // not a one-liner (Roland 2026-07-23). This is a sanity guard, not a limit.
+  const expansion = String(input.expansion ?? "").trim().slice(0, 20000);
   if (!SHORTCUT_RE.test(shortcut))
     return fail("Shortcuts start with a letter (1–24 letters, numbers or dashes) — e.g. “r” or “sn”.");
   if (!expansion) return fail("The shortcut needs its expansion text.");

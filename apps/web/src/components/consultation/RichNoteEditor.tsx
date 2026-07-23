@@ -14,6 +14,7 @@ import {
   mergeMarks,
   toSegments,
   highlightBg,
+  sanitizeMarks,
   DEFAULT_HIGHLIGHT,
   type MarkKind,
   type NoteMark,
@@ -141,6 +142,56 @@ function fromDom(root: HTMLElement): { text: string; marks: NoteMark[] } {
     }))
     .filter((m) => m.e > m.s);
   return { text, marks: mergeMarks(marks) };
+}
+
+/** Pasted HTML → (text, marks): keeps PARAGRAPHS (block elements become real
+ *  newlines) AND inline formatting (bold/italic/underline/strike/highlight), so
+ *  a formatted standard letter drops in whole — not collapsed to one line
+ *  (Roland 2026-07-23). External marks map to the default highlight. */
+const PASTE_BLOCKS = new Set([
+  "P", "DIV", "LI", "H1", "H2", "H3", "H4", "H5", "H6",
+  "BLOCKQUOTE", "TR", "SECTION", "ARTICLE", "UL", "OL", "TABLE", "PRE",
+]);
+function htmlToRich(html: string): { text: string; marks: NoteMark[] } {
+  const root = document.createElement("div");
+  root.innerHTML = html;
+  let text = "";
+  const marks: NoteMark[] = [];
+  const nl = () => {
+    if (text && !text.endsWith("\n")) text += "\n";
+  };
+  const walk = (node: Node, active: MarkKind[], hColour: string) => {
+    node.childNodes.forEach((child) => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        const t = (child.textContent ?? "").replace(/[ \t\r\n]+/g, " ");
+        if (!t) return;
+        const start = text.length;
+        text += t;
+        for (const k of active)
+          marks.push(k === "h" ? { s: start, e: text.length, k, c: hColour } : { s: start, e: text.length, k });
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        const el = child as HTMLElement;
+        if (el.tagName === "BR") {
+          text += "\n";
+          return;
+        }
+        const block = PASTE_BLOCKS.has(el.tagName);
+        if (block) nl();
+        const kind = TAG_KIND[el.tagName];
+        const nextColour =
+          el.tagName === "MARK" ? el.getAttribute("data-c") || DEFAULT_HIGHLIGHT : hColour;
+        walk(el, kind ? [...active, kind] : active, nextColour);
+        if (block) nl();
+      }
+    });
+  };
+  walk(root, [], DEFAULT_HIGHLIGHT);
+  // Trim LEADING newlines and shift marks left by the same amount so they stay
+  // aligned; cap length (marks re-clamped by sanitizeMarks).
+  const lead = text.length - text.replace(/^\n+/, "").length;
+  text = text.slice(lead, lead + 20000);
+  const shifted = marks.map((m) => ({ ...m, s: m.s - lead, e: m.e - lead }));
+  return { text, marks: sanitizeMarks(shifted, text.length) };
 }
 
 /** A DOM (node, offset) → plain-text offset, measured with the SAME counting as
@@ -664,10 +715,19 @@ export const RichNoteEditor = forwardRef<
   const onPaste = useCallback(
     (e: React.ClipboardEvent) => {
       e.preventDefault();
+      // Rich paste — keep the pasted letter's paragraphs AND formatting.
+      const html = e.clipboardData.getData("text/html");
+      if (html) {
+        const { text, marks } = htmlToRich(html);
+        if (text) {
+          insertRichAt(text, marks);
+          return;
+        }
+      }
       const s = e.clipboardData.getData("text/plain");
       if (s) insertPlain(s);
     },
-    [insertPlain],
+    [insertPlain, insertRichAt],
   );
 
   return (
