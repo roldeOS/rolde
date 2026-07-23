@@ -7,6 +7,7 @@ import {
   FileCheck,
   ShieldQuestion,
   Pill,
+  Radio,
 } from "lucide-react";
 import type { HubSection } from "@/components/ui/SectionHubGrid";
 
@@ -53,6 +54,17 @@ export const LOG_SECTIONS: LogSection[] = [
     icon: ShieldCheck,
     tone: "info",
     source: "Bible 4.1 §5.4 / §13",
+    status: "ready",
+    group: "Activity & Security",
+  },
+  {
+    key: "realtime",
+    title: "Realtime",
+    blurb:
+      "Live-feed drop-outs in your clinic — when a clinician's real-time updates paused and fell back to refresh-on-focus.",
+    icon: Radio,
+    tone: "periwinkle",
+    source: "Live Feed 2026-07-23",
     status: "ready",
     group: "Activity & Security",
   },

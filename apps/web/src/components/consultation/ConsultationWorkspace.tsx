@@ -55,6 +55,8 @@ import { CourierMenu, type UnsentLetter } from "@/components/consultation/Courie
 import { CourierSendSheet } from "@/components/consultation/CourierSendSheet";
 import { PhotoCaptureButton } from "@/components/consultation/PhotoCaptureButton";
 import { type NotePhoto } from "@/components/consultation/NotePhotoGallery";
+import { useLiveFeed } from "@/components/consultation/useLiveFeed";
+import { type FeedDelta } from "@/app/(app)/patients/feedLiveActions";
 import {
   attachPhotosToEntry,
   discardStagedPhotos,
@@ -77,6 +79,56 @@ import {
 import { cn } from "@/lib/utils";
 
 type WorkupEntry = { id: string; entry_type: string };
+
+// ── Live Feed overlay helpers (Roland 2026-07-23) ───────────────────────────
+// Realtime-fetched entries overlay the server-rendered feed. The Scribe editor
+// is a DIFFERENT subtree, so this overlay never disturbs the clinician's typing.
+
+/** The newest of an entry's timestamps — its last-touched moment. */
+function entryTs(e: FeedEntry): number {
+  return Math.max(
+    Date.parse(e.created_at) || 0,
+    e.edited_at ? Date.parse(e.edited_at) || 0 : 0,
+    e.struck_at ? Date.parse(e.struck_at) || 0 : 0,
+  );
+}
+/** Newest last-touched ISO across a list — the live cursor's starting point. */
+function newestTs(list: FeedEntry[]): string {
+  let max = 0;
+  for (const e of list) max = Math.max(max, entryTs(e));
+  return max > 0 ? new Date(max).toISOString() : new Date(0).toISOString();
+}
+/** Union by id, keeping the FRESHER version (greater last-touched; ties → base,
+ *  the just-revalidated server prop). Sorted oldest→newest to match SSR order. */
+function mergeEntries(base: FeedEntry[], extra: FeedEntry[]): FeedEntry[] {
+  if (!extra.length) return base;
+  const byId = new Map<string, FeedEntry>();
+  for (const e of base) byId.set(e.id, e);
+  for (const e of extra) {
+    const cur = byId.get(e.id);
+    if (!cur || entryTs(e) > entryTs(cur)) byId.set(e.id, e);
+  }
+  return [...byId.values()].sort(
+    (a, b) => Date.parse(a.created_at) - Date.parse(b.created_at),
+  );
+}
+/** Union courier dispatch trails by entry_id, live winning (status advances). */
+function mergeDispatches(
+  base: CourierDispatchTrail[],
+  extra: CourierDispatchTrail[],
+): CourierDispatchTrail[] {
+  if (!extra.length) return base;
+  const liveIds = new Set(extra.map((d) => d.entry_id));
+  return [...base.filter((d) => !liveIds.has(d.entry_id)), ...extra];
+}
+/** Fold a freshly-fetched delta into the accumulated live overlay. */
+function mergeDelta(cur: FeedDelta, d: FeedDelta): FeedDelta {
+  return {
+    entries: mergeEntries(cur.entries, d.entries),
+    dispatches: mergeDispatches(cur.dispatches, d.dispatches),
+    photosByEntry: { ...cur.photosByEntry, ...d.photosByEntry },
+  };
+}
 
 /**
  * The consultation workspace (Roland 2026-06-10; Layouts 2026-07-03). The
@@ -122,13 +174,13 @@ type EditTarget = {
 
 export function ConsultationWorkspace({
   patient,
-  feedEntries,
+  feedEntries: feedEntriesProp,
   workupEntries,
   authors,
   currentUserId,
   reads,
-  dispatches = [],
-  photosByEntry = {},
+  dispatches: dispatchesProp = [],
+  photosByEntry: photosByEntryProp = {},
   canManageTemplates = false,
   portalEnabled = false,
   isCaretaker = false,
@@ -158,6 +210,72 @@ export function ConsultationWorkspace({
    *  reflows 4/3/2. Sits OVER the user's Layouts card toggles. */
   modules?: ClinicalModules;
 }) {
+  // Live Feed — realtime changes (a pharmacist's note, a courier response) OVERLAY
+  // the server-rendered feed. Merged by id with the freshest version winning, so
+  // local saves (revalidated props) and remote changes coexist without conflict.
+  const [live, setLive] = useState<FeedDelta>({
+    entries: [],
+    photosByEntry: {},
+    dispatches: [],
+  });
+  const [liveDown, setLiveDown] = useState(false);
+  const feedEntries = useMemo(
+    () => mergeEntries(feedEntriesProp, live.entries),
+    [feedEntriesProp, live.entries],
+  );
+  const dispatches = useMemo(
+    () => mergeDispatches(dispatchesProp, live.dispatches),
+    [dispatchesProp, live.dispatches],
+  );
+  const photosByEntry = useMemo(
+    () => ({ ...photosByEntryProp, ...live.photosByEntry }),
+    [photosByEntryProp, live.photosByEntry],
+  );
+  const initialSince = useMemo(() => newestTs(feedEntriesProp), [feedEntriesProp]);
+  // A brief highlight on entries that land via realtime (Roland 2026-07-23:
+  // "animate and load in"). Cleared per-id after a beat so the feed settles.
+  const [arrivedIds, setArrivedIds] = useState<Set<string>>(new Set());
+  const arrivedTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const handleDelta = useCallback((d: FeedDelta) => {
+    setLive((cur) => mergeDelta(cur, d));
+    if (!d.entries.length) return;
+    const ids = d.entries.map((e) => e.id);
+    setArrivedIds((prev) => {
+      const n = new Set(prev);
+      ids.forEach((i) => n.add(i));
+      return n;
+    });
+    for (const id of ids) {
+      const existing = arrivedTimers.current.get(id);
+      if (existing) clearTimeout(existing);
+      arrivedTimers.current.set(
+        id,
+        setTimeout(() => {
+          setArrivedIds((prev) => {
+            if (!prev.has(id)) return prev;
+            const n = new Set(prev);
+            n.delete(id);
+            return n;
+          });
+          arrivedTimers.current.delete(id);
+        }, 2600),
+      );
+    }
+  }, []);
+  useEffect(() => {
+    const timers = arrivedTimers.current;
+    return () => {
+      for (const t of timers.values()) clearTimeout(t);
+      timers.clear();
+    };
+  }, []);
+  useLiveFeed({
+    patientId: patient.id,
+    initialSince,
+    onDelta: handleDelta,
+    onStatus: setLiveDown,
+  });
+
   const { layout, setLayout, patient: topbarPatient } = useTopbar();
   const [leftMode, setLeftMode] = useState<Mode>("split");
   const [rightMode, setRightMode] = useState<Mode>("split");
@@ -698,6 +816,8 @@ export function ConsultationWorkspace({
                 }
                 onEditNote={handleEdit}
                 activeId={editTarget?.id ?? null}
+                liveDown={liveDown}
+                arrivedIds={arrivedIds}
               />
             </section>
             )}

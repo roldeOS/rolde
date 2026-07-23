@@ -15,6 +15,7 @@ import {
   toSegments,
   highlightBg,
   sanitizeMarks,
+  SNIP_MAX_CHARS,
   DEFAULT_HIGHLIGHT,
   type MarkKind,
   type NoteMark,
@@ -189,7 +190,7 @@ function htmlToRich(html: string): { text: string; marks: NoteMark[] } {
   // Trim LEADING newlines and shift marks left by the same amount so they stay
   // aligned; cap length (marks re-clamped by sanitizeMarks).
   const lead = text.length - text.replace(/^\n+/, "").length;
-  text = text.slice(lead, lead + 20000);
+  text = text.slice(lead, lead + SNIP_MAX_CHARS);
   const shifted = marks.map((m) => ({ ...m, s: m.s - lead, e: m.e - lead }));
   return { text, marks: sanitizeMarks(shifted, text.length) };
 }

@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          metadata: Json
+          resource_id: string | null
+          resource_type: string | null
+          summary: string | null
+          tenant_id: string
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          summary?: string | null
+          tenant_id: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json
+          resource_id?: string | null
+          resource_type?: string | null
+          summary?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auth_audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          created_at: string
+          id: string
+          ip_address: string | null
+          metadata: Json
+          source_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          source_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json
+          source_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       clinic_address_book: {
         Row: {
           address_line1: string | null
@@ -149,56 +229,6 @@ export type Database = {
           },
         ]
       }
-      clinic_courier_settings: {
-        Row: {
-          chase_after_days: number
-          countersign_required: boolean
-          created_at: string
-          delegated_sending: boolean
-          quiet_end: string
-          quiet_hours_enabled: boolean
-          quiet_start: string
-          secure_link_default: boolean
-          tenant_id: string
-          typo_guard: boolean
-          updated_at: string
-        }
-        Insert: {
-          chase_after_days?: number
-          countersign_required?: boolean
-          created_at?: string
-          delegated_sending?: boolean
-          quiet_end?: string
-          quiet_hours_enabled?: boolean
-          quiet_start?: string
-          secure_link_default?: boolean
-          tenant_id: string
-          typo_guard?: boolean
-          updated_at?: string
-        }
-        Update: {
-          chase_after_days?: number
-          countersign_required?: boolean
-          created_at?: string
-          delegated_sending?: boolean
-          quiet_end?: string
-          quiet_hours_enabled?: boolean
-          quiet_start?: string
-          secure_link_default?: boolean
-          tenant_id?: string
-          typo_guard?: boolean
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "clinic_courier_settings_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: true
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       clinic_commercial_settings: {
         Row: {
           consult_credit_enabled: boolean
@@ -256,6 +286,100 @@ export type Database = {
             foreignKeyName: "clinic_commercial_settings_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_courier_settings: {
+        Row: {
+          chase_after_days: number
+          countersign_required: boolean
+          created_at: string
+          delegated_sending: boolean
+          quiet_end: string
+          quiet_hours_enabled: boolean
+          quiet_start: string
+          secure_link_default: boolean
+          tenant_id: string
+          typo_guard: boolean
+          updated_at: string
+        }
+        Insert: {
+          chase_after_days?: number
+          countersign_required?: boolean
+          created_at?: string
+          delegated_sending?: boolean
+          quiet_end?: string
+          quiet_hours_enabled?: boolean
+          quiet_start?: string
+          secure_link_default?: boolean
+          tenant_id: string
+          typo_guard?: boolean
+          updated_at?: string
+        }
+        Update: {
+          chase_after_days?: number
+          countersign_required?: boolean
+          created_at?: string
+          delegated_sending?: boolean
+          quiet_end?: string
+          quiet_hours_enabled?: boolean
+          quiet_start?: string
+          secure_link_default?: boolean
+          tenant_id?: string
+          typo_guard?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_courier_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_photo_protocol: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          is_default: boolean
+          name: string
+          sort_order: number
+          tenant_id: string
+          updated_at: string
+          views: string[]
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          sort_order?: number
+          tenant_id: string
+          updated_at?: string
+          views?: string[]
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          sort_order?: number
+          tenant_id?: string
+          updated_at?: string
+          views?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_photo_protocol_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -326,6 +450,59 @@ export type Database = {
           },
         ]
       }
+      clinic_templates: {
+        Row: {
+          created_at: string
+          created_by: string
+          deleted_at: string | null
+          deleted_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          parts: Json
+          patient_facing: boolean
+          specialty: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          parts: Json
+          patient_facing?: boolean
+          specialty?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          parts?: Json
+          patient_facing?: boolean
+          specialty?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courier_dispatch_events: {
         Row: {
           created_at: string
@@ -367,42 +544,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      clinic_photo_protocol: {
-        Row: {
-          created_at: string
-          deleted_at: string | null
-          id: string
-          is_default: boolean
-          name: string
-          sort_order: number
-          tenant_id: string
-          updated_at: string
-          views: string[]
-        }
-        Insert: {
-          created_at?: string
-          deleted_at?: string | null
-          id?: string
-          is_default?: boolean
-          name: string
-          sort_order?: number
-          tenant_id: string
-          updated_at?: string
-          views?: string[]
-        }
-        Update: {
-          created_at?: string
-          deleted_at?: string | null
-          id?: string
-          is_default?: boolean
-          name?: string
-          sort_order?: number
-          tenant_id?: string
-          updated_at?: string
-          views?: string[]
-        }
-        Relationships: []
       }
       courier_dispatches: {
         Row: {
@@ -601,6 +742,74 @@ export type Database = {
           },
         ]
       }
+      export_log: {
+        Row: {
+          artifact_base64: string | null
+          byte_size: number
+          columns: Json
+          created_at: string
+          deleted_at: string | null
+          exporter_name: string | null
+          exporter_role: string | null
+          fingerprint: string
+          format: string
+          id: string
+          orientation: string | null
+          reference: string
+          row_count: number
+          scope: string | null
+          tenant_id: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          artifact_base64?: string | null
+          byte_size?: number
+          columns?: Json
+          created_at?: string
+          deleted_at?: string | null
+          exporter_name?: string | null
+          exporter_role?: string | null
+          fingerprint: string
+          format?: string
+          id?: string
+          orientation?: string | null
+          reference: string
+          row_count?: number
+          scope?: string | null
+          tenant_id: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          artifact_base64?: string | null
+          byte_size?: number
+          columns?: Json
+          created_at?: string
+          deleted_at?: string | null
+          exporter_name?: string | null
+          exporter_role?: string | null
+          fingerprint?: string
+          format?: string
+          id?: string
+          orientation?: string | null
+          reference?: string
+          row_count?: number
+          scope?: string | null
+          tenant_id?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "export_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feed_entry_reads: {
         Row: {
           entry_id: string
@@ -639,66 +848,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      patient_photo: {
-        Row: {
-          bytes: number | null
-          caption: string | null
-          created_at: string
-          created_by: string | null
-          deleted_at: string | null
-          feed_entry_id: string | null
-          height: number | null
-          id: string
-          mime: string
-          patient_id: string
-          phase: string
-          storage_path: string
-          taken_at: string | null
-          tenant_id: string
-          thumb_path: string
-          view: string | null
-          width: number | null
-        }
-        Insert: {
-          bytes?: number | null
-          caption?: string | null
-          created_at?: string
-          created_by?: string | null
-          deleted_at?: string | null
-          feed_entry_id?: string | null
-          height?: number | null
-          id?: string
-          mime?: string
-          patient_id: string
-          phase?: string
-          storage_path: string
-          taken_at?: string | null
-          tenant_id: string
-          thumb_path: string
-          view?: string | null
-          width?: number | null
-        }
-        Update: {
-          bytes?: number | null
-          caption?: string | null
-          created_at?: string
-          created_by?: string | null
-          deleted_at?: string | null
-          feed_entry_id?: string | null
-          height?: number | null
-          id?: string
-          mime?: string
-          patient_id?: string
-          phase?: string
-          storage_path?: string
-          taken_at?: string | null
-          tenant_id?: string
-          thumb_path?: string
-          view?: string | null
-          width?: number | null
-        }
-        Relationships: []
       }
       form_requests: {
         Row: {
@@ -842,154 +991,6 @@ export type Database = {
           version?: string
         }
         Relationships: []
-      }
-      audit_log: {
-        Row: {
-          action: string
-          actor_user_id: string | null
-          created_at: string
-          id: string
-          metadata: Json
-          resource_id: string | null
-          resource_type: string | null
-          summary: string | null
-          tenant_id: string
-        }
-        Insert: {
-          action: string
-          actor_user_id?: string | null
-          created_at?: string
-          id?: string
-          metadata?: Json
-          resource_id?: string | null
-          resource_type?: string | null
-          summary?: string | null
-          tenant_id: string
-        }
-        Update: {
-          action?: string
-          actor_user_id?: string | null
-          created_at?: string
-          id?: string
-          metadata?: Json
-          resource_id?: string | null
-          resource_type?: string | null
-          summary?: string | null
-          tenant_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "audit_log_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      auth_audit_log: {
-        Row: {
-          action: string
-          actor_email: string | null
-          created_at: string
-          id: string
-          ip_address: string | null
-          metadata: Json
-          source_id: string | null
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          actor_email?: string | null
-          created_at?: string
-          id?: string
-          ip_address?: string | null
-          metadata?: Json
-          source_id?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          actor_email?: string | null
-          created_at?: string
-          id?: string
-          ip_address?: string | null
-          metadata?: Json
-          source_id?: string | null
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      export_log: {
-        Row: {
-          byte_size: number
-          columns: Json
-          created_at: string
-          deleted_at: string | null
-          exporter_name: string | null
-          exporter_role: string | null
-          fingerprint: string
-          format: string
-          id: string
-          orientation: string | null
-          artifact_base64: string | null
-          reference: string
-          row_count: number
-          scope: string | null
-          tenant_id: string
-          title: string
-          user_id: string
-        }
-        Insert: {
-          byte_size?: number
-          columns?: Json
-          created_at?: string
-          deleted_at?: string | null
-          exporter_name?: string | null
-          exporter_role?: string | null
-          fingerprint: string
-          format?: string
-          id?: string
-          orientation?: string | null
-          artifact_base64?: string | null
-          reference: string
-          row_count?: number
-          scope?: string | null
-          tenant_id: string
-          title: string
-          user_id: string
-        }
-        Update: {
-          byte_size?: number
-          columns?: Json
-          created_at?: string
-          deleted_at?: string | null
-          exporter_name?: string | null
-          exporter_role?: string | null
-          fingerprint?: string
-          format?: string
-          id?: string
-          orientation?: string | null
-          artifact_base64?: string | null
-          reference?: string
-          row_count?: number
-          scope?: string | null
-          tenant_id?: string
-          title?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "export_log_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       patient_access_log: {
         Row: {
@@ -1499,6 +1500,130 @@ export type Database = {
           },
         ]
       }
+      patient_photo: {
+        Row: {
+          bytes: number | null
+          caption: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          feed_entry_id: string | null
+          height: number | null
+          id: string
+          mime: string
+          patient_id: string
+          phase: string
+          storage_path: string
+          taken_at: string | null
+          tenant_id: string
+          thumb_path: string
+          view: string | null
+          width: number | null
+        }
+        Insert: {
+          bytes?: number | null
+          caption?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          feed_entry_id?: string | null
+          height?: number | null
+          id?: string
+          mime?: string
+          patient_id: string
+          phase?: string
+          storage_path: string
+          taken_at?: string | null
+          tenant_id: string
+          thumb_path: string
+          view?: string | null
+          width?: number | null
+        }
+        Update: {
+          bytes?: number | null
+          caption?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          feed_entry_id?: string | null
+          height?: number | null
+          id?: string
+          mime?: string
+          patient_id?: string
+          phase?: string
+          storage_path?: string
+          taken_at?: string | null
+          tenant_id?: string
+          thumb_path?: string
+          view?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_photo_feed_entry_id_fkey"
+            columns: ["feed_entry_id"]
+            isOneToOne: false
+            referencedRelation: "patient_feed_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_photo_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_photo_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_portal_account: {
+        Row: {
+          created_at: string
+          id: string
+          patient_id: string
+          status: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          patient_id: string
+          status?: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          patient_id?: string
+          status?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_portal_account_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_portal_account_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_problems: {
         Row: {
           created_at: string
@@ -1568,6 +1693,8 @@ export type Database = {
           address_line2: string | null
           blood_group: string | null
           city: string | null
+          communication_needs: string | null
+          contact_preference: string | null
           country: string
           created_at: string
           created_by: string | null
@@ -1581,19 +1708,15 @@ export type Database = {
           emergency_relationship: string | null
           ethnicity: string | null
           first_name: string
-          communication_needs: string | null
-          contact_preference: string | null
-          interpreter_needed: boolean
-          known_as: string | null
-          middle_names: string | null
-          nominated_pharmacy: string | null
-          preferred_language: string | null
-          title: string | null
           gender_identity: string | null
           has_active_alerts: boolean
           id: string
+          interpreter_needed: boolean
+          known_as: string | null
           last_name: string
+          middle_names: string | null
           national_health_id: string | null
+          nominated_pharmacy: string | null
           occupation: string | null
           patient_number: string | null
           phone_landline: string | null
@@ -1601,11 +1724,12 @@ export type Database = {
           portal_activated_at: string | null
           portal_invited_at: string | null
           postcode: string | null
-          preferred_contact: string
+          preferred_language: string | null
           pronouns: string | null
           sex_at_birth: string
           status: string
           tenant_id: string
+          title: string | null
           updated_at: string
           updated_by: string | null
           user_id: string | null
@@ -1615,6 +1739,8 @@ export type Database = {
           address_line2?: string | null
           blood_group?: string | null
           city?: string | null
+          communication_needs?: string | null
+          contact_preference?: string | null
           country?: string
           created_at?: string
           created_by?: string | null
@@ -1628,19 +1754,15 @@ export type Database = {
           emergency_relationship?: string | null
           ethnicity?: string | null
           first_name: string
-          communication_needs?: string | null
-          contact_preference?: string | null
-          interpreter_needed?: boolean
-          known_as?: string | null
-          middle_names?: string | null
-          nominated_pharmacy?: string | null
-          preferred_language?: string | null
-          title?: string | null
           gender_identity?: string | null
           has_active_alerts?: boolean
           id?: string
+          interpreter_needed?: boolean
+          known_as?: string | null
           last_name: string
+          middle_names?: string | null
           national_health_id?: string | null
+          nominated_pharmacy?: string | null
           occupation?: string | null
           patient_number?: string | null
           phone_landline?: string | null
@@ -1648,11 +1770,12 @@ export type Database = {
           portal_activated_at?: string | null
           portal_invited_at?: string | null
           postcode?: string | null
-          preferred_contact?: string
+          preferred_language?: string | null
           pronouns?: string | null
           sex_at_birth: string
           status?: string
           tenant_id: string
+          title?: string | null
           updated_at?: string
           updated_by?: string | null
           user_id?: string | null
@@ -1662,6 +1785,8 @@ export type Database = {
           address_line2?: string | null
           blood_group?: string | null
           city?: string | null
+          communication_needs?: string | null
+          contact_preference?: string | null
           country?: string
           created_at?: string
           created_by?: string | null
@@ -1675,19 +1800,15 @@ export type Database = {
           emergency_relationship?: string | null
           ethnicity?: string | null
           first_name?: string
-          communication_needs?: string | null
-          contact_preference?: string | null
-          interpreter_needed?: boolean
-          known_as?: string | null
-          middle_names?: string | null
-          nominated_pharmacy?: string | null
-          preferred_language?: string | null
-          title?: string | null
           gender_identity?: string | null
           has_active_alerts?: boolean
           id?: string
+          interpreter_needed?: boolean
+          known_as?: string | null
           last_name?: string
+          middle_names?: string | null
           national_health_id?: string | null
+          nominated_pharmacy?: string | null
           occupation?: string | null
           patient_number?: string | null
           phone_landline?: string | null
@@ -1695,11 +1816,12 @@ export type Database = {
           portal_activated_at?: string | null
           portal_invited_at?: string | null
           postcode?: string | null
-          preferred_contact?: string
+          preferred_language?: string | null
           pronouns?: string | null
           sex_at_birth?: string
           status?: string
           tenant_id?: string
+          title?: string | null
           updated_at?: string
           updated_by?: string | null
           user_id?: string | null
@@ -1707,6 +1829,68 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "patients_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_maintenance_log: {
+        Row: {
+          detail: Json | null
+          id: string
+          job: string
+          ran_at: string
+          swept: number
+        }
+        Insert: {
+          detail?: Json | null
+          id?: string
+          job: string
+          ran_at?: string
+          swept?: number
+        }
+        Update: {
+          detail?: Json | null
+          id?: string
+          job?: string
+          ran_at?: string
+          swept?: number
+        }
+        Relationships: []
+      }
+      realtime_health: {
+        Row: {
+          id: string
+          occurred_at: string
+          patient_id: string | null
+          reason: string
+          tenant_id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          occurred_at?: string
+          patient_id?: string | null
+          reason: string
+          tenant_id: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          occurred_at?: string
+          patient_id?: string | null
+          reason?: string
+          tenant_id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "realtime_health_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1808,15 +1992,15 @@ export type Database = {
           contact_phone: string | null
           country: string
           cqc_registration: string | null
-          logo_svg: string | null
-          logo_svg_dark: string | null
-          logo_png: string | null
           created_at: string
           custom_domain: string | null
           his_registration: string | null
           ico_registration: string | null
           id: string
           legal_name: string
+          logo_png: string | null
+          logo_svg: string | null
+          logo_svg_dark: string | null
           name: string
           onboarding_step: string | null
           patient_number_next: number
@@ -1842,15 +2026,15 @@ export type Database = {
           contact_phone?: string | null
           country?: string
           cqc_registration?: string | null
-          logo_svg?: string | null
-          logo_svg_dark?: string | null
-          logo_png?: string | null
           created_at?: string
           custom_domain?: string | null
           his_registration?: string | null
           ico_registration?: string | null
           id?: string
           legal_name: string
+          logo_png?: string | null
+          logo_svg?: string | null
+          logo_svg_dark?: string | null
           name: string
           onboarding_step?: string | null
           patient_number_next?: number
@@ -1876,15 +2060,15 @@ export type Database = {
           contact_phone?: string | null
           country?: string
           cqc_registration?: string | null
-          logo_svg?: string | null
-          logo_svg_dark?: string | null
-          logo_png?: string | null
           created_at?: string
           custom_domain?: string | null
           his_registration?: string | null
           ico_registration?: string | null
           id?: string
           legal_name?: string
+          logo_png?: string | null
+          logo_svg?: string | null
+          logo_svg_dark?: string | null
           name?: string
           onboarding_step?: string | null
           patient_number_next?: number
@@ -1973,59 +2157,6 @@ export type Database = {
           },
         ]
       }
-      clinic_templates: {
-        Row: {
-          created_at: string
-          deleted_at: string | null
-          deleted_by: string | null
-          id: string
-          is_active: boolean
-          name: string
-          parts: Json
-          patient_facing: boolean
-          specialty: string
-          tenant_id: string
-          updated_at: string
-          created_by: string
-        }
-        Insert: {
-          created_at?: string
-          deleted_at?: string | null
-          deleted_by?: string | null
-          id?: string
-          is_active?: boolean
-          name: string
-          parts: Json
-          patient_facing?: boolean
-          specialty?: string
-          tenant_id: string
-          updated_at?: string
-          created_by: string
-        }
-        Update: {
-          created_at?: string
-          deleted_at?: string | null
-          deleted_by?: string | null
-          id?: string
-          is_active?: boolean
-          name?: string
-          parts?: Json
-          patient_facing?: boolean
-          specialty?: string
-          tenant_id?: string
-          updated_at?: string
-          created_by?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "clinic_templates_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_autotext: {
         Row: {
           created_at: string
@@ -2079,6 +2210,7 @@ export type Database = {
         Args: { p_patient: string; p_row: string }
         Returns: undefined
       }
+      current_portal_patient_id: { Args: never; Returns: string }
       current_user_tenant_ids: { Args: never; Returns: string[] }
       email_exists: { Args: { p_email: string }; Returns: boolean }
       is_caretaker_of: { Args: { p_tenant_id: string }; Returns: boolean }
@@ -2087,8 +2219,18 @@ export type Database = {
       next_patient_number: { Args: { p_tenant: string }; Returns: string }
       photo_capacity_overview: { Args: never; Returns: Json }
       publish_legal_draft: { Args: { p_doc_key: string }; Returns: undefined }
-      set_note_shared: { Args: { p_entry: string; p_shared: boolean }; Returns: undefined }
-      set_patient_portal: { Args: { p_enabled: boolean; p_mode: string }; Returns: undefined }
+      set_note_shared: {
+        Args: { p_entry: string; p_shared: boolean }
+        Returns: undefined
+      }
+      set_patient_portal: {
+        Args: { p_enabled: boolean; p_mode: string }
+        Returns: undefined
+      }
+      sweep_orphan_staged_photos: {
+        Args: { p_grace?: string }
+        Returns: number
+      }
       user_id_for_email: { Args: { p_email: string }; Returns: string }
     }
     Enums: {

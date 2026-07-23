@@ -207,6 +207,8 @@ export function ClinicalNotesFeed({
   onToggleMaximize,
   onEditNote,
   activeId,
+  liveDown = false,
+  arrivedIds,
 }: {
   entries: FeedEntry[];
   patientId: string;
@@ -226,6 +228,10 @@ export function ClinicalNotesFeed({
   onToggleMaximize: () => void;
   onEditNote: (e: FeedEntry) => void;
   activeId: string | null;
+  /** Live Feed — the realtime channel is down; we're refreshing on focus. */
+  liveDown?: boolean;
+  /** Live Feed — ids that just arrived via realtime, for a brief highlight. */
+  arrivedIds?: Set<string>;
 }) {
   const [sortDesc, setSortDesc] = useState(false);
   // Patient Portal P1 — optimistic "shared with patient" toggle (author/caretaker
@@ -633,6 +639,15 @@ export function ClinicalNotesFeed({
                 )}
             </AnchoredPopover>
           </div>
+          {liveDown && (
+            <span
+              title="Live updates paused — this feed refreshes when you return to the tab. The Custodian has been notified."
+              className="flex items-center gap-1 rounded-lg bg-amber-500/12 px-2 py-1 text-[11px] font-medium text-amber-700"
+            >
+              <span className="size-1.5 rounded-full bg-amber-500" />
+              Live paused
+            </span>
+          )}
           <button
             onClick={onToggleMaximize}
             title={maximized ? "Restore" : "Expand"}
@@ -655,6 +670,8 @@ export function ClinicalNotesFeed({
           windowed.map((e, idx) => {
             const text = e.payload?.text ?? "";
             const author = e.created_by ? authors[e.created_by] : undefined;
+            // Live Feed — a soft highlight that fades as the arrived set clears.
+            const arrived = arrivedIds?.has(e.id) ?? false;
 
             // The episode boundary — where "today" meets "older" in the current
             // sort order (asc: before the first today-entry; desc: before the
@@ -852,9 +869,10 @@ export function ClinicalNotesFeed({
               <article
                 data-eid={e.id}
                 className={cn(
-                  "rounded-xl bg-card p-3 shadow-raised transition-shadow",
+                  "rounded-xl bg-card p-3 shadow-raised transition-[box-shadow,background-color] duration-700",
                   unread && "ring-1 ring-warning/40",
                   activeId === e.id && "ring-2 ring-info/50",
+                  arrived && "bg-success/[0.06] ring-1 ring-success/40",
                 )}
               >
                 <div className="flex items-center justify-between gap-2">

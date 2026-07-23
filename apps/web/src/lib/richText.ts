@@ -38,6 +38,16 @@ const isHlColour = (c: unknown): c is string =>
 
 const MAX_MARKS = 400; // a hard ceiling — a note can't carry an abusive payload
 
+/**
+ * Invisible safety backstop on any single body of pasted / expanded text (a
+ * whole Snip, one paste into a note). NOT a product limit — a real standard
+ * letter is ~1 page (~3k chars); this is ~20 pages. It exists ONLY so a runaway
+ * paste or a hostile payload can't bloat a record or choke the editor. Clinical
+ * systems bound every free-text input (DCB0129); we just set the bound where no
+ * human writing reaches it. (Roland 2026-07-23: "why is there ANY restriction?")
+ */
+export const SNIP_MAX_CHARS = 100_000;
+
 /** Hostile-proof + tidy: clamp to the text, drop empties, merge touching runs
  *  of the same kind, cap the count. Used at the door (server) and on read. */
 export function sanitizeMarks(raw: unknown, textLen: number): NoteMark[] {

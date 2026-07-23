@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSessionContext } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import { sanitiseParts, type TemplatePart } from "@/lib/scribeTemplates";
-import { sanitizeMarks, type NoteMark } from "@/lib/richText";
+import { sanitizeMarks, SNIP_MAX_CHARS, type NoteMark } from "@/lib/richText";
 import type { Json } from "@rolde/db";
 
 /**
@@ -213,9 +213,9 @@ export async function saveMyShortcut(input: {
   const c = await requireClinic();
   if (!c) return fail("No clinic context for this user.");
   const shortcut = String(input.shortcut ?? "").trim().toLowerCase().replace(/^\./, "");
-  // Generous ceiling — a Snip can be a whole multi-paragraph standard letter,
-  // not a one-liner (Roland 2026-07-23). This is a sanity guard, not a limit.
-  const expansion = String(input.expansion ?? "").trim().slice(0, 20000);
+  // A Snip can be a whole multi-paragraph standard letter — SNIP_MAX_CHARS is an
+  // invisible safety backstop (~20 pages), not a limit on real writing.
+  const expansion = String(input.expansion ?? "").trim().slice(0, SNIP_MAX_CHARS);
   if (!SHORTCUT_RE.test(shortcut))
     return fail("Shortcuts start with a letter (1–24 letters, numbers or dashes) — e.g. “r” or “sn”.");
   if (!expansion) return fail("The shortcut needs its expansion text.");

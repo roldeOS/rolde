@@ -1,4 +1,4 @@
-import { Activity, ShieldCheck, FileSearch, Send, TriangleAlert, Webhook } from "lucide-react";
+import { Activity, ShieldCheck, FileSearch, Send, TriangleAlert, Webhook, Radio } from "lucide-react";
 import type { HubSection } from "@/components/ui/SectionHubGrid";
 
 /**
@@ -56,6 +56,16 @@ export const CUSTODIAN_LOG_SECTIONS: CustodianLogSection[] = [
     source: "Bible 4.4 §6",
     status: "ready",
     group: "Records & Access",
+  },
+  {
+    key: "realtime",
+    title: "Realtime",
+    blurb: "Live-feed drop-outs across every clinic — so you can see which clinic's real-time updates are flaky.",
+    icon: Radio,
+    tone: "periwinkle",
+    source: "Live Feed 2026-07-23",
+    status: "ready",
+    group: "Platform Health",
   },
   {
     key: "errors",
