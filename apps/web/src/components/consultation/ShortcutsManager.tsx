@@ -276,6 +276,20 @@ export function ShortcutsManager({
               }}
             />
           </div>
+          {/* A live length hint (Roland 2026-07-23) — so writers keep a shortcut
+              short. Not a hard limit; a whole letter is fine, so it only turns
+              amber past ~5k chars (well beyond a one-page letter). */}
+          <div className="flex justify-end px-0.5">
+            <span
+              className={cn(
+                "text-[11px] tabular-nums",
+                expansion.length > 5000 ? "text-amber-600" : "text-muted-foreground",
+              )}
+            >
+              {expansion.length.toLocaleString()} characters
+              {expansion.length > 5000 ? " · long — shortcuts are usually a line or two" : ""}
+            </span>
+          </div>
           <div className="flex gap-2">
             {editingId && (
               <Button variant="ghost" size="sm" onClick={resetForm} className="flex-1">

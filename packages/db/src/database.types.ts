@@ -853,6 +853,7 @@ export type Database = {
         Row: {
           created_at: string
           failed_reason: string | null
+          feed_entry_id: string | null
           id: string
           opened_at: string | null
           opened_ip: string | null
@@ -877,6 +878,7 @@ export type Database = {
         Insert: {
           created_at?: string
           failed_reason?: string | null
+          feed_entry_id?: string | null
           id?: string
           opened_at?: string | null
           opened_ip?: string | null
@@ -901,6 +903,7 @@ export type Database = {
         Update: {
           created_at?: string
           failed_reason?: string | null
+          feed_entry_id?: string | null
           id?: string
           opened_at?: string | null
           opened_ip?: string | null
@@ -923,6 +926,13 @@ export type Database = {
           view_token?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "form_requests_feed_entry_id_fkey"
+            columns: ["feed_entry_id"]
+            isOneToOne: false
+            referencedRelation: "patient_feed_entries"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "form_requests_patient_id_fkey"
             columns: ["patient_id"]
@@ -2260,6 +2270,7 @@ export type Database = {
         | "medication_recorded"
         | "body_map"
         | "form_response"
+        | "courier_form"
       user_role:
         | "custodian"
         | "caretaker"
@@ -2427,6 +2438,7 @@ export const Constants = {
         "medication_recorded",
         "body_map",
         "form_response",
+        "courier_form",
       ],
       user_role: [
         "custodian",

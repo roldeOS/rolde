@@ -28,6 +28,7 @@ import {
   FileDown,
   History,
   Send as SendIcon,
+  RotateCw,
   TriangleAlert,
   OctagonAlert,
   ClipboardList,
@@ -47,6 +48,7 @@ import {
 } from "@/components/consultation/StructuredNoteBody";
 import { SmartNoteBody } from "@/components/consultation/SmartNoteBody";
 import { markEntrySeen, setNoteSharedWithPatient } from "@/app/(app)/patients/actions";
+import { resendFormRequest } from "@/app/(app)/patients/formActions";
 import { CourierSendSheet } from "@/components/consultation/CourierSendSheet";
 import { cn } from "@/lib/utils";
 
@@ -87,6 +89,21 @@ export type FeedEntry = {
       pins: { x: number; y: number; site: string; note: string; tone?: string }[];
       strokes: number[][][];
     };
+    /** The tile's open status, when it carries one (drives the status pill). */
+    status?: string;
+    /** Courier form (evolving note) — the send → resend → opened → responded
+     *  journey that this ONE entry carries (Roland 2026-07-23). */
+    courier?: {
+      form_name: string;
+      recipient?: string;
+      status: "sent" | "responded";
+      request_id: string;
+      events: {
+        kind: "sent" | "resent" | "opened" | "responded";
+        at: string;
+        by?: string | null;
+      }[];
+    };
   } | null;
   created_at: string;
   created_by: string | null;
@@ -125,6 +142,7 @@ const RECORD_KINDS: Record<string, { label: string; tone: CardIconTone; icon: Ic
   medication_recorded: { label: "Medication", tone: "warning", icon: Pill },
   body_map: { label: "Anatomy", tone: "peach", icon: PersonStanding },
   form_response: { label: "Form Response", tone: "teal", icon: ClipboardCheck },
+  courier_form: { label: "Courier Form", tone: "accent", icon: SendIcon },
 };
 function noteKind(
   role: string | undefined,
@@ -239,6 +257,18 @@ export function ClinicalNotesFeed({
   // until the RSC refresh lands; reverts on failure.
   const [, startShare] = useTransition();
   const [shareOverride, setShareOverride] = useState<Record<string, boolean>>({});
+  // Courier — a resend in flight (per entry), so the button can show progress.
+  const [resendingId, setResendingId] = useState<string | null>(null);
+  async function doResend(entry: FeedEntry) {
+    const requestId = entry.payload?.courier?.request_id;
+    if (!requestId || resendingId) return;
+    setResendingId(entry.id);
+    try {
+      await resendFormRequest(requestId);
+    } finally {
+      setResendingId(null);
+    }
+  }
   const toggleShare = useCallback(
     (id: string, next: boolean) => {
       setShareOverride((m) => ({ ...m, [id]: next }));
@@ -701,6 +731,9 @@ export function ClinicalNotesFeed({
             const origOpen = expandedOrig.has(e.id);
 
             const isLetter = e.entry_type in LETTER_KINDS;
+            const isCourierForm = e.entry_type === "courier_form";
+            const awaitingResponse =
+              isCourierForm && e.payload?.courier?.status !== "responded";
             const unread = isUnread(e);
             const justSeen = seenNow.has(e.id);
 
@@ -714,7 +747,7 @@ export function ClinicalNotesFeed({
               (e.payload as { status?: string } | null)?.status ??
               (isLetter ? "Not Sent" : undefined);
             const settledSend =
-              !sendState || /deliver|opened|read|acknowledg|done/i.test(sendState);
+              !sendState || /deliver|opened|read|acknowledg|done|respond/i.test(sendState);
             const tileStatus = unread
               ? {
                   text: "Unread",
@@ -728,7 +761,7 @@ export function ClinicalNotesFeed({
                       pillCls: "bg-critical/10 text-critical hover:bg-critical/15",
                       dotCls: "bg-critical",
                     }
-                  : /not sent|draft|due|overdue|review/i.test(sendState)
+                  : /not sent|draft|due|overdue|review|awaiting/i.test(sendState)
                     ? {
                         text: sendState,
                         pillCls: "bg-warning/15 text-warning hover:bg-warning/25",
@@ -752,6 +785,26 @@ export function ClinicalNotesFeed({
              *  Sent/Delivered/Opened events to this same list. */
             const trailFor = (entry: FeedEntry) => {
               const rows: { label: string; who?: string; when?: string; dot: string }[] = [];
+              // Courier form (evolving note) — the trail IS its journey: sent →
+              // resent(s) → opened → responded, straight from the entry's own log.
+              const courier = entry.payload?.courier;
+              if (entry.entry_type === "courier_form" && courier) {
+                for (const ev of courier.events ?? []) {
+                  const when = fmtTime(ev.at);
+                  const who = ev.by ? authors[ev.by]?.name ?? "—" : undefined;
+                  if (ev.kind === "sent")
+                    rows.push({ label: `Sent to ${courier.recipient ?? "the patient"}`, who, when, dot: "bg-info" });
+                  else if (ev.kind === "resent")
+                    rows.push({ label: "Resent", who, when, dot: "bg-info" });
+                  else if (ev.kind === "opened")
+                    rows.push({ label: "Patient Opened", when, dot: "bg-info" });
+                  else if (ev.kind === "responded")
+                    rows.push({ label: "Patient Responded", when, dot: "bg-success" });
+                }
+                if (courier.status !== "responded")
+                  rows.push({ label: "Awaiting Response", dot: "bg-warning" });
+                return rows;
+              }
               // An amendment's story STARTS at its original (Roland 2026-07-04).
               const parent = entry.related_entry_id
                 ? byId.get(entry.related_entry_id)
@@ -1098,17 +1151,35 @@ export function ClinicalNotesFeed({
                           </button>
                         );
                       })()}
-                    <button
-                      onClick={() => onEditNote(e)}
-                      title={
-                        mine
-                          ? "Open in composer (edit or amend)"
-                          : "Add an addendum (a colleague's note)"
-                      }
-                      className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
-                    >
-                      <Pencil className="size-3.5" />
-                    </button>
+                    {/* Courier — resend the form while it's still awaiting a
+                        response; it appends a "Resent" line to this same entry. */}
+                    {isCourierForm && awaitingResponse && (
+                      <button
+                        onClick={() => doResend(e)}
+                        disabled={resendingId === e.id}
+                        title="Resend this Courier form to the patient"
+                        className="flex h-6 items-center gap-1 rounded-md px-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-hover hover:text-foreground disabled:opacity-50"
+                      >
+                        <RotateCw
+                          className={cn("size-3.5", resendingId === e.id && "animate-spin")}
+                        />
+                        {resendingId === e.id ? "Resending…" : "Resend"}
+                      </button>
+                    )}
+                    {/* A courier form is a system record — not composer-editable. */}
+                    {!isCourierForm && (
+                      <button
+                        onClick={() => onEditNote(e)}
+                        title={
+                          mine
+                            ? "Open in composer (edit or amend)"
+                            : "Add an addendum (a colleague's note)"
+                        }
+                        className="flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                      >
+                        <Pencil className="size-3.5" />
+                      </button>
+                    )}
                   </span>
                 </div>
               </article>

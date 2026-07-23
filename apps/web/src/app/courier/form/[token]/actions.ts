@@ -35,7 +35,7 @@ export async function openFormRequest(token: string): Promise<void> {
   const admin = createAdminClient();
   const { data: r } = await admin
     .from("form_requests")
-    .select("id, status, opened_at, token_expires_at")
+    .select("id, status, opened_at, token_expires_at, feed_entry_id")
     .eq("view_token", token)
     .maybeSingle();
   if (!r || r.opened_at || r.status === "submitted") {
@@ -44,16 +44,38 @@ export async function openFormRequest(token: string): Promise<void> {
   }
   if (new Date(r.token_expires_at) < new Date()) return;
   const ev = await requestEvidence();
+  const at = new Date().toISOString();
   await admin
     .from("form_requests")
     .update({
       status: "opened",
-      opened_at: new Date().toISOString(),
+      opened_at: at,
       opened_ip: ev.ip,
       opened_user_agent: ev.ua,
-      updated_at: new Date().toISOString(),
+      updated_at: at,
     })
     .eq("id", r.id);
+
+  // Append an "Opened" line to the evolving courier entry's Status Trail (once).
+  if (r.feed_entry_id) {
+    const { data: ent } = await admin
+      .from("patient_feed_entries")
+      .select("payload")
+      .eq("id", r.feed_entry_id)
+      .maybeSingle();
+    const payload = (ent?.payload ?? {}) as Record<string, unknown>;
+    const courier = payload.courier as Record<string, unknown> | undefined;
+    if (courier) {
+      const events = Array.isArray(courier.events) ? courier.events : [];
+      if (!events.some((x) => (x as { kind?: string }).kind === "opened")) {
+        courier.events = [...events, { kind: "opened", at }];
+        await admin
+          .from("patient_feed_entries")
+          .update({ payload: { ...payload, courier } as unknown as Json, edited_at: at })
+          .eq("id", r.feed_entry_id);
+      }
+    }
+  }
   revalidatePath(`/courier/form/${token}`);
 }
 
@@ -66,7 +88,7 @@ export async function submitFormResponse(
   const { data: r } = await admin
     .from("form_requests")
     .select(
-      "id, tenant_id, patient_id, template_snapshot, recipient_name, status, token_expires_at, sent_by",
+      "id, tenant_id, patient_id, template_snapshot, recipient_name, status, token_expires_at, sent_by, feed_entry_id",
     )
     .eq("view_token", token)
     .maybeSingle();
@@ -86,24 +108,65 @@ export async function submitFormResponse(
     return { ok: false, error: "Please answer at least one question before submitting." };
 
   const text = `${renderTemplate(template, answers)}\n\nSubmitted by ${r.recipient_name} via a secure RolDe Courier form.`;
-  const { data: entry, error: entryErr } = await admin
-    .from("patient_feed_entries")
-    .insert({
-      tenant_id: r.tenant_id,
-      patient_id: r.patient_id,
-      entry_type: "form_response",
-      created_by: r.sent_by,
-      payload: {
-        text,
-        patient_submitted: true,
-        template: { id: "form", name: template.name, parts, answers },
-      } as unknown as Json,
-    })
-    .select("id")
-    .single();
-  if (entryErr || !entry) {
-    console.error("[form submit] entry", entryErr?.message);
-    return { ok: false, error: "That didn’t save — please try again." };
+  const at = new Date().toISOString();
+  const responseTemplate = { id: "form", name: template.name, parts, answers };
+
+  // The Courier evolving note (Roland 2026-07-23): the response UPDATES the same
+  // entry the send created — advancing its Status Trail to Responded and rendering
+  // the filled form in place. Legacy requests (sent before this change) have no
+  // link, so they fall back to a standalone form_response entry as before.
+  let entryId = r.feed_entry_id as string | null;
+  if (entryId) {
+    const { data: ent } = await admin
+      .from("patient_feed_entries")
+      .select("payload")
+      .eq("id", entryId)
+      .maybeSingle();
+    const payload = (ent?.payload ?? {}) as Record<string, unknown>;
+    const courier = (payload.courier as Record<string, unknown>) ?? {};
+    const events = Array.isArray(courier.events) ? courier.events : [];
+    courier.events = [...events, { kind: "responded", at }];
+    courier.status = "responded";
+    const { error: upErr } = await admin
+      .from("patient_feed_entries")
+      .update({
+        payload: {
+          ...payload,
+          text,
+          status: "Responded",
+          patient_submitted: true,
+          courier,
+          template: responseTemplate,
+        } as unknown as Json,
+        edited_at: at,
+        updated_at: at,
+      })
+      .eq("id", entryId);
+    if (upErr) {
+      console.error("[form submit] update entry", upErr.message);
+      return { ok: false, error: "That didn’t save — please try again." };
+    }
+  } else {
+    const { data: entry, error: entryErr } = await admin
+      .from("patient_feed_entries")
+      .insert({
+        tenant_id: r.tenant_id,
+        patient_id: r.patient_id,
+        entry_type: "form_response",
+        created_by: r.sent_by,
+        payload: {
+          text,
+          patient_submitted: true,
+          template: responseTemplate,
+        } as unknown as Json,
+      })
+      .select("id")
+      .single();
+    if (entryErr || !entry) {
+      console.error("[form submit] entry", entryErr?.message);
+      return { ok: false, error: "That didn’t save — please try again." };
+    }
+    entryId = entry.id;
   }
 
   const ev = await requestEvidence();
@@ -111,11 +174,11 @@ export async function submitFormResponse(
     .from("form_requests")
     .update({
       status: "submitted",
-      submitted_at: new Date().toISOString(),
+      submitted_at: at,
       submitted_ip: ev.ip,
       submitted_user_agent: ev.ua,
-      response_entry_id: entry.id,
-      updated_at: new Date().toISOString(),
+      response_entry_id: entryId,
+      updated_at: at,
     })
     .eq("id", r.id);
   await logAudit({
@@ -125,7 +188,7 @@ export async function submitFormResponse(
     resourceType: "patient",
     resourceId: r.patient_id,
     summary: `The patient submitted the “${template.name}” form`,
-    metadata: { form_request_id: r.id, entry_id: entry.id, submitted_ip: ev.ip },
+    metadata: { form_request_id: r.id, entry_id: entryId, submitted_ip: ev.ip },
   });
   revalidatePath(`/courier/form/${token}`);
   return { ok: true };
