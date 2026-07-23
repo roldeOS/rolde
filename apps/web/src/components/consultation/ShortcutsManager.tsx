@@ -7,6 +7,7 @@ import {
   Zap,
   Trash2,
   Plus,
+  Pencil,
   List,
   ListOrdered,
   IndentIncrease,
@@ -22,8 +23,8 @@ import {
   type RichNoteHandle,
   type LineOp,
 } from "@/components/consultation/RichNoteEditor";
-import { SmartNoteBody } from "@/components/consultation/SmartNoteBody";
 import { HIGHLIGHT_COLOURS, type MarkKind, type NoteMark } from "@/lib/richText";
+import { cn } from "@/lib/utils";
 import {
   listMyShortcuts,
   saveMyShortcut,
@@ -47,10 +48,14 @@ export function ShortcutsManager({
 }) {
   const [items, setItems] = useState<AutotextShortcut[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [shortcut, setShortcut] = useState("");
   const [expansion, setExpansion] = useState("");
   const [expansionMarks, setExpansionMarks] = useState<NoteMark[]>([]);
-  const [snipNonce, setSnipNonce] = useState(0); // remounts the editor to clear it
+  // The editor is uncontrolled — it (re)mounts from these on nonce bump.
+  const [editText, setEditText] = useState("");
+  const [editMarks, setEditMarks] = useState<NoteMark[]>([]);
+  const [snipNonce, setSnipNonce] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const richRef = useRef<RichNoteHandle | null>(null);
@@ -80,23 +85,48 @@ export function ShortcutsManager({
     return () => document.removeEventListener("keydown", onKey, true);
   }, [onClose]);
 
+  function resetForm() {
+    setEditingId(null);
+    setShortcut("");
+    setExpansion("");
+    setExpansionMarks([]);
+    setEditText("");
+    setEditMarks([]);
+    setSnipNonce((n) => n + 1);
+  }
+
+  function edit(sc: AutotextShortcut) {
+    setEditingId(sc.id);
+    setShortcut(sc.shortcut);
+    setExpansion(sc.expansion);
+    setExpansionMarks(sc.expansionMarks);
+    setEditText(sc.expansion);
+    setEditMarks(sc.expansionMarks);
+    setSnipNonce((n) => n + 1); // remount the editor with this content loaded
+  }
+
   async function add() {
     if (pending || !shortcut.trim() || !expansion.trim()) return;
     setPending(true);
     setError(null);
-    const r = await saveMyShortcut({ shortcut, expansion, marks: expansionMarks });
+    const r = await saveMyShortcut({
+      id: editingId ?? undefined,
+      shortcut,
+      expansion,
+      marks: expansionMarks,
+    });
     setPending(false);
     if (!r.ok) return setError(r.error);
-    const next = [...items, r.data].sort((a, b) => a.shortcut.localeCompare(b.shortcut));
+    const next = [...items.filter((i) => i.id !== r.data.id), r.data].sort((a, b) =>
+      a.shortcut.localeCompare(b.shortcut),
+    );
     setItems(next);
     onChanged(next);
-    setShortcut("");
-    setExpansion("");
-    setExpansionMarks([]);
-    setSnipNonce((n) => n + 1);
+    resetForm();
   }
 
   async function remove(id: string) {
+    if (editingId === id) resetForm();
     const r = await deleteMyShortcut(id);
     if (!r.ok) return setError(r.error);
     const next = items.filter((i) => i.id !== id);
@@ -134,17 +164,32 @@ export function ShortcutsManager({
             </p>
           )}
           {items.map((i) => (
-            <div key={i.id} className="flex items-start gap-2 rounded-xl bg-muted/40 p-2.5">
+            <div
+              key={i.id}
+              className={cn(
+                "group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors",
+                editingId === i.id ? "bg-teal/20 ring-1 ring-teal/40" : "hover:bg-hover",
+              )}
+            >
               <span className="shrink-0 rounded-md bg-foreground/6 px-1.5 py-0.5 font-mono text-xs font-semibold text-foreground">
                 .{i.shortcut}
               </span>
-              <div className="min-w-0 flex-1 text-xs whitespace-pre-wrap text-muted-foreground">
-                <SmartNoteBody text={i.expansion} marks={i.expansionMarks} />
-              </div>
+              <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+                {i.expansion}
+              </p>
+              <button
+                onClick={() => edit(i)}
+                className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+                aria-label={`Edit .${i.shortcut}`}
+                title="Edit"
+              >
+                <Pencil className="size-3.5" />
+              </button>
               <button
                 onClick={() => remove(i.id)}
-                className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-hover hover:text-critical"
+                className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-card hover:text-critical"
                 aria-label={`Remove .${i.shortcut}`}
+                title="Remove"
               >
                 <Trash2 className="size-3.5" />
               </button>
@@ -165,7 +210,7 @@ export function ShortcutsManager({
           </div>
           {/* Full format toolbar (the Scribe palette) — write a whole formatted
               standard letter here, not just quick marks. */}
-          <div className="flex flex-wrap items-center gap-0.5 rounded-lg bg-muted/40 p-1">
+          <div className="flex items-center gap-0.5 overflow-x-auto rounded-lg bg-muted/40 p-1">
             {(["b", "i", "u", "s"] as MarkKind[]).map((k) => (
               <button
                 key={k}
@@ -222,8 +267,8 @@ export function ShortcutsManager({
             <RichNoteEditor
               ref={richRef}
               docKey={`snip-${snipNonce}`}
-              initialText=""
-              initialMarks={[]}
+              initialText={editText}
+              initialMarks={editMarks}
               placeholder="Write the sentence — or a whole formatted letter — you insert every day. Select text, then use the toolbar above."
               onChange={(text, marks) => {
                 setExpansion(text);
@@ -231,14 +276,27 @@ export function ShortcutsManager({
               }}
             />
           </div>
-          <Button
-            size="sm"
-            onClick={add}
-            disabled={pending || !shortcut.trim() || !expansion.trim()}
-            className="w-full"
-          >
-            <Plus className="size-3.5" /> Add shortcut
-          </Button>
+          <div className="flex gap-2">
+            {editingId && (
+              <Button variant="ghost" size="sm" onClick={resetForm} className="flex-1">
+                Cancel
+              </Button>
+            )}
+            <Button
+              size="sm"
+              onClick={add}
+              disabled={pending || !shortcut.trim() || !expansion.trim()}
+              className="flex-1"
+            >
+              {editingId ? (
+                <>Save changes</>
+              ) : (
+                <>
+                  <Plus className="size-3.5" /> Add shortcut
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>,

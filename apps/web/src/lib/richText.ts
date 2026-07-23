@@ -29,7 +29,6 @@ export const HIGHLIGHT_COLOURS: { key: string; label: string; bg: string }[] = [
   { key: "sage", label: "Sage", bg: "#D6E4CE" },
   { key: "sky", label: "Sky", bg: "#CFE0EF" },
   { key: "rose", label: "Rose", bg: "#F3D7DB" },
-  { key: "plum", label: "Plum", bg: "#E4D3E4" },
 ];
 export const DEFAULT_HIGHLIGHT = "honey";
 export const highlightBg = (c?: string): string =>

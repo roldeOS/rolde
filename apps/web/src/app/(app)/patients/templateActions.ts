@@ -205,6 +205,7 @@ export async function listMyShortcuts(): Promise<
 }
 
 export async function saveMyShortcut(input: {
+  id?: string;
   shortcut: string;
   expansion: string;
   marks?: NoteMark[];
@@ -212,21 +213,29 @@ export async function saveMyShortcut(input: {
   const c = await requireClinic();
   if (!c) return fail("No clinic context for this user.");
   const shortcut = String(input.shortcut ?? "").trim().toLowerCase().replace(/^\./, "");
-  const expansion = String(input.expansion ?? "").trim().slice(0, 500);
+  const expansion = String(input.expansion ?? "").trim().slice(0, 4000);
   if (!SHORTCUT_RE.test(shortcut))
     return fail("Shortcuts start with a letter (1–24 letters, numbers or dashes) — e.g. “r” or “sn”.");
   if (!expansion) return fail("The shortcut needs its expansion text.");
   const marks = sanitizeMarks(input.marks ?? [], expansion.length);
+  const fields = {
+    shortcut,
+    expansion,
+    expansion_marks: marks as unknown as Json,
+    updated_at: new Date().toISOString(),
+  };
 
-  const { data: created, error } = await c.supabase
-    .from("user_autotext")
-    .insert({
-      tenant_id: c.tenantId,
-      user_id: c.userId,
-      shortcut,
-      expansion,
-      expansion_marks: marks as unknown as Json,
-    })
+  // Edit an existing shortcut (own it) vs create a new one.
+  const q = input.id
+    ? c.supabase
+        .from("user_autotext")
+        .update(fields)
+        .eq("id", input.id)
+        .eq("user_id", c.userId)
+    : c.supabase
+        .from("user_autotext")
+        .insert({ tenant_id: c.tenantId, user_id: c.userId, ...fields });
+  const { data: created, error } = await q
     .select("id, shortcut, expansion, expansion_marks")
     .single();
   if (error || !created) {
