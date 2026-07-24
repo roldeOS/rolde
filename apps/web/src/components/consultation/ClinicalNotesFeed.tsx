@@ -96,6 +96,7 @@ export type FeedEntry = {
     courier?: {
       form_name: string;
       recipient?: string;
+      recipient_email?: string;
       status: "sent" | "responded";
       request_id: string;
       events: {
@@ -793,7 +794,12 @@ export function ClinicalNotesFeed({
                   const when = fmtTime(ev.at);
                   const who = ev.by ? authors[ev.by]?.name ?? "—" : undefined;
                   if (ev.kind === "sent")
-                    rows.push({ label: `Sent to ${courier.recipient ?? "the patient"}`, who, when, dot: "bg-info" });
+                    rows.push({
+                      label: `Sent to ${courier.recipient ?? "the patient"}${courier.recipient_email ? ` · ${courier.recipient_email}` : ""}`,
+                      who,
+                      when,
+                      dot: "bg-info",
+                    });
                   else if (ev.kind === "resent")
                     rows.push({ label: "Resent", who, when, dot: "bg-info" });
                   else if (ev.kind === "opened")

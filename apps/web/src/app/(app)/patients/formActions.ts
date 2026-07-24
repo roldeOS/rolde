@@ -41,17 +41,18 @@ const siteUrl = () =>
 export type FormSendContext = {
   patient: { name: string; email: string | null };
   templates: { id: string; name: string; specialty: string; partsCount: number }[];
-  requests: { templateName: string; status: string; sentAt: string | null }[];
 };
 
-/** What the Send-A-Form sheet needs: the patient's email, the PATIENT-FACING
- *  active templates (the Caretaker's T3 eligibility flag), recent requests. */
+/** What the Send-A-Form sheet needs: the patient's email + the PATIENT-FACING
+ *  active templates (the Caretaker's T3 eligibility flag). The send HISTORY used
+ *  to live here too, but every courier is now a note entry with its own Status
+ *  Trail (Roland 2026-07-24) — so the sheet is purely "pick a form to send". */
 export async function getFormSendContext(
   patientId: string,
 ): Promise<{ ok: true; data: FormSendContext } | { ok: false; error: string }> {
   const c = await requireClinic();
   if (!c) return fail("No clinic context for this user.");
-  const [{ data: patient }, { data: templates }, { data: requests }] = await Promise.all([
+  const [{ data: patient }, { data: templates }] = await Promise.all([
     c.supabase
       .from("patients")
       .select("first_name, last_name, email")
@@ -66,12 +67,6 @@ export async function getFormSendContext(
       .eq("patient_facing", true)
       .is("deleted_at", null)
       .order("name"),
-    c.supabase
-      .from("form_requests")
-      .select("template_snapshot, status, sent_at")
-      .eq("patient_id", patientId)
-      .order("created_at", { ascending: false })
-      .limit(5),
   ]);
   if (!patient) return fail("That patient wasn’t found.");
   return {
@@ -84,11 +79,6 @@ export async function getFormSendContext(
           ? [{ id: t.id, name: t.name, specialty: t.specialty, partsCount: parts.length }]
           : [];
       }),
-      requests: (requests ?? []).map((r) => ({
-        templateName: String((r.template_snapshot as { name?: string } | null)?.name ?? "Form"),
-        status: r.status,
-        sentAt: r.sent_at,
-      })),
     },
   };
 }
@@ -226,11 +216,12 @@ export async function sendFormRequest(input: {
       entry_type: "courier_form",
       created_by: c.userId,
       payload: {
-        text: `RolDe Courier — “${template.name}” sent to ${name}. Awaiting the patient's response.`,
+        text: `RolDe Courier — “${template.name}” sent to ${name} (${patient.email}). Awaiting the patient's response.`,
         status: "Awaiting Response",
         courier: {
           form_name: template.name,
           recipient: name,
+          recipient_email: patient.email,
           status: "sent",
           request_id: request.id,
           events: [{ kind: "sent", at: sentAt, by: c.userId }],
@@ -354,6 +345,7 @@ export async function resendFormRequest(requestId: string): Promise<ActionResult
     const courier = (payload.courier as Record<string, unknown>) ?? {
       form_name: formName,
       recipient: r.recipient_name,
+      recipient_email: r.recipient_email,
       request_id: r.id,
       events: [],
     };

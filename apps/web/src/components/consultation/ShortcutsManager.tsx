@@ -23,7 +23,7 @@ import {
   type RichNoteHandle,
   type LineOp,
 } from "@/components/consultation/RichNoteEditor";
-import { HIGHLIGHT_COLOURS, type MarkKind, type NoteMark } from "@/lib/richText";
+import { HIGHLIGHT_COLOURS, SNIP_MAX_CHARS, type MarkKind, type NoteMark } from "@/lib/richText";
 import { cn } from "@/lib/utils";
 import {
   listMyShortcuts,
@@ -276,18 +276,21 @@ export function ShortcutsManager({
               }}
             />
           </div>
-          {/* A live length hint (Roland 2026-07-23) — so writers keep a shortcut
-              short. Not a hard limit; a whole letter is fine, so it only turns
-              amber past ~5k chars (well beyond a one-page letter). */}
+          {/* Usage against the real cap (Roland 2026-07-23) — a Snip is a
+              template for loading a whole prefixed letter, so this is a plain
+              "used of max", never a nudge to keep it short. Amber ONLY when
+              genuinely near the ceiling (a real "approaching the limit"). */}
           <div className="flex justify-end px-0.5">
             <span
               className={cn(
                 "text-[11px] tabular-nums",
-                expansion.length > 5000 ? "text-amber-600" : "text-muted-foreground",
+                expansion.length > SNIP_MAX_CHARS * 0.9
+                  ? "text-amber-600"
+                  : "text-muted-foreground",
               )}
             >
-              {expansion.length.toLocaleString()} characters
-              {expansion.length > 5000 ? " · long — shortcuts are usually a line or two" : ""}
+              {expansion.length.toLocaleString()} of {SNIP_MAX_CHARS.toLocaleString()} characters
+              {expansion.length > SNIP_MAX_CHARS * 0.9 ? " — approaching the limit" : ""}
             </span>
           </div>
           <div className="flex gap-2">

@@ -12,10 +12,11 @@ import {
 
 /**
  * The Send-A-Form sheet (T4) — behind the Template picker's "Send A Form…":
- * the PATIENT-FACING templates the Caretaker blessed in T3, the patient's
- * email read back before anything leaves (the Typo-Guard spirit), and the
- * recent requests so nobody double-sends. The form travels as a Courier
- * secure link; the submission lands in this feed as a Form Response tile.
+ * the PATIENT-FACING templates the Caretaker blessed in T3, and the patient's
+ * email read back before anything leaves (the Typo-Guard spirit). The form
+ * travels as a Courier secure link; the send + response now live as ONE evolving
+ * Courier entry in the note (its own Status Trail), so the sheet is purely
+ * "pick a form to send" — no send history here (Roland 2026-07-24).
  */
 export function FormSendSheet({
   patientId,
@@ -84,8 +85,8 @@ export function FormSendSheet({
         <div className="p-2 text-center">
           <p className="text-sm font-semibold text-success">Form Sent ✓</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {ctx.patient.name} has the secure link — the response lands in this
-            feed as a Form Response.
+            {ctx.patient.name} has the secure link. A Courier entry is now in the
+            note — it updates itself when they respond.
           </p>
         </div>
       )}
@@ -97,17 +98,6 @@ export function FormSendSheet({
               No email on file for {ctx.patient.name} — add one in the Profile
               first.
             </p>
-          )}
-          {ctx.requests.length > 0 && (
-            <div className="mb-1.5 space-y-0.5 rounded-lg bg-muted/40 p-2">
-              {ctx.requests.slice(0, 3).map((r, i) => (
-                <p key={i} className="truncate text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">{r.templateName}</span>
-                  {" — "}
-                  <span className="capitalize">{r.status}</span>
-                </p>
-              ))}
-            </div>
           )}
           {ctx.templates.length === 0 && (
             <p className="p-2 text-xs text-muted-foreground">
