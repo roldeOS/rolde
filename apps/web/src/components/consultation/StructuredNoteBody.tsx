@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { ZoomIn, X } from "lucide-react";
 import { formatDay2 } from "@/lib/dates";
 import {
   ROLDE_TEMPLATE_LIBRARY,
@@ -163,56 +166,206 @@ export function StructuredNoteBody({
   );
 }
 
-/**
- * BodyMapThumbnail (Roland 2026-07-04: "the body map should show the body and
- * the markings on the tile") — a read-only mini render of the annotated
- * figure: same artwork, same coordinates, pins numbered, strokes drawn.
- */
-export function BodyMapThumbnail({ data }: { data: BodyMapData }) {
-  const view =
-    data.view === "face" ? "face" : data.view === "posterior" ? "posterior" : "anterior";
-  const art = resolveFigureArt(data);
-  const strokePath = (pts: number[][]) =>
-    pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
+const strokePathOf = (pts: number[][]) =>
+  pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
+
+type FigureArt = ReturnType<typeof resolveFigureArt>;
+
+/** The figure + its strokes + numbered pins in figure-space — shared by the tile
+ *  thumbnail and the zoom lightbox, so they can never drift. `scale` grows the
+ *  pin/stroke sizes when the view is cropped in close (#6.4 auto-frame). */
+function FigureMarks({
+  data,
+  view,
+  art,
+  scale = 1,
+}: {
+  data: BodyMapData;
+  view: "anterior" | "posterior" | "face";
+  art: FigureArt;
+  scale?: number;
+}) {
+  const r = art.w * 0.045 * scale;
   return (
-    <svg
-      viewBox={art.viewBox}
-      preserveAspectRatio="xMidYMid meet"
-      style={{ aspectRatio: `${art.w} / ${art.h}` }}
-      className={cn("shrink-0 rounded-lg bg-muted/30", view === "face" ? "h-40" : "h-48")}
-      aria-label={view === "face" ? "Face map thumbnail" : "Body map thumbnail"}
-    >
+    <>
       <BodyFigureArt art={art} view={view} />
       {data.strokes?.map((s, i) => (
         <path
           key={i}
-          d={strokePath(strokePoints(s))}
+          d={strokePathOf(strokePoints(s))}
           fill="none"
           stroke={pinFill(strokeTone(s))}
-          strokeWidth={art.w * 0.0145}
+          strokeWidth={art.w * 0.0145 * scale}
           strokeLinecap="round"
           strokeLinejoin="round"
           opacity={0.85}
         />
       ))}
-      {data.pins?.map((p, i) => {
-        const r = art.w * 0.045;
-        return (
-          <g key={i}>
-            <circle cx={p.x} cy={p.y} r={r} fill={pinFill(p.tone)} />
-            <text
-              x={p.x}
-              y={p.y + r * 0.39}
-              textAnchor="middle"
-              fontSize={r * 1.27}
-              fontWeight={600}
-              fill="#fff"
+      {data.pins?.map((p, i) => (
+        <g key={i}>
+          <circle cx={p.x} cy={p.y} r={r} fill={pinFill(p.tone)} />
+          <text
+            x={p.x}
+            y={p.y + r * 0.39}
+            textAnchor="middle"
+            fontSize={r * 1.27}
+            fontWeight={600}
+            fill="#fff"
+          >
+            {i + 1}
+          </text>
+        </g>
+      ))}
+    </>
+  );
+}
+
+/** #6.4 auto-frame — the viewBox cropped to the marks (with padding + a minimum
+ *  size so one small lesion doesn't over-zoom), clamped inside the figure. No
+ *  marks → the whole figure. Returns the viewBox, its aspect, and the zoom scale
+ *  (how much tighter than the full figure), so marks stay legibly sized. */
+function framing(data: BodyMapData, art: FigureArt) {
+  const [vx, vy, vw, vh] = art.viewBox.split(/\s+/).map(Number);
+  const pts: number[][] = [
+    ...(data.pins?.map((p) => [p.x, p.y]) ?? []),
+    ...(data.strokes?.flatMap((s) => strokePoints(s)) ?? []),
+  ];
+  if (!pts.length) return { viewBox: art.viewBox, aspect: `${art.w} / ${art.h}`, scale: 1 };
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const [x, y] of pts) {
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  minX -= art.w * 0.14; maxX += art.w * 0.14;
+  minY -= art.h * 0.08; maxY += art.h * 0.08;
+  // Minimum framed size — a single pin keeps useful surrounding context.
+  const minW = vw * 0.42, minH = vh * 0.42;
+  if (maxX - minX < minW) { const c = (minX + maxX) / 2; minX = c - minW / 2; maxX = c + minW / 2; }
+  if (maxY - minY < minH) { const c = (minY + maxY) / 2; minY = c - minH / 2; maxY = c + minH / 2; }
+  // Clamp inside the figure, preserving the box size where possible.
+  if (minX < vx) { maxX += vx - minX; minX = vx; }
+  if (minY < vy) { maxY += vy - minY; minY = vy; }
+  if (maxX > vx + vw) { minX -= maxX - (vx + vw); maxX = vx + vw; }
+  if (maxY > vy + vh) { minY -= maxY - (vy + vh); maxY = vy + vh; }
+  minX = Math.max(vx, minX); minY = Math.max(vy, minY);
+  const w = maxX - minX, h = maxY - minY;
+  return { viewBox: `${minX} ${minY} ${w} ${h}`, aspect: `${w} / ${h}`, scale: Math.min(vw / w, 2.2) };
+}
+
+/**
+ * BodyMapThumbnail (Roland 2026-07-04 "show the body and the markings on the
+ * tile"; #6.4 2026-07-24) — a read-only mini render of the annotated figure,
+ * AUTO-FRAMED to the marks so a small lesion is actually visible, and TAP-TO-ZOOM
+ * into a full-figure lightbox with a numbered legend.
+ */
+export function BodyMapThumbnail({ data }: { data: BodyMapData }) {
+  const [zoom, setZoom] = useState(false);
+  const view =
+    data.view === "face" ? "face" : data.view === "posterior" ? "posterior" : "anterior";
+  const art = resolveFigureArt(data);
+  const frame = framing(data, art);
+
+  useEffect(() => {
+    if (!zoom) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setZoom(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [zoom]);
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setZoom(true)}
+        title="Tap to zoom"
+        className={cn(
+          "group/bm relative shrink-0 overflow-hidden rounded-lg bg-muted/30 ring-1 ring-black/[0.04] transition-shadow hover:shadow",
+          view === "face" ? "h-40" : "h-48",
+        )}
+      >
+        <svg
+          viewBox={frame.viewBox}
+          preserveAspectRatio="xMidYMid meet"
+          style={{ aspectRatio: frame.aspect }}
+          className={cn("block", view === "face" ? "h-40" : "h-48")}
+          aria-label={view === "face" ? "Face map thumbnail" : "Body map thumbnail"}
+        >
+          <FigureMarks data={data} view={view} art={art} scale={frame.scale} />
+        </svg>
+        <span className="absolute right-1 bottom-1 flex size-5 items-center justify-center rounded-md bg-foreground/55 text-background opacity-0 transition-opacity group-hover/bm:opacity-100">
+          <ZoomIn className="size-3" />
+        </span>
+      </button>
+
+      {zoom &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 p-4"
+            onClick={() => setZoom(false)}
+          >
+            <div
+              className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-card shadow-overlay"
+              onClick={(e) => e.stopPropagation()}
             >
-              {i + 1}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
+              <div className="flex items-center justify-between border-b border-black/5 px-4 py-3">
+                <p className="text-sm font-semibold">
+                  {data.view === "face" ? "Face Map" : data.view === "posterior" ? "Body Map (Back)" : "Body Map"}
+                </p>
+                <button
+                  onClick={() => setZoom(false)}
+                  aria-label="Close"
+                  className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-hover hover:text-foreground"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+              <div className="flex min-h-0 flex-col gap-4 overflow-y-auto p-4 sm:flex-row">
+                <svg
+                  viewBox={art.viewBox}
+                  preserveAspectRatio="xMidYMid meet"
+                  style={{ aspectRatio: `${art.w} / ${art.h}` }}
+                  className="mx-auto max-h-[72vh] w-auto shrink-0 rounded-lg bg-muted/30"
+                  aria-label="Full body map"
+                >
+                  <FigureMarks data={data} view={view} art={art} />
+                </svg>
+                {(data.pins?.length ?? 0) + (data.strokes?.length ?? 0) > 0 && (
+                  <ul className="min-w-0 flex-1 space-y-1.5 text-sm sm:max-w-[16rem]">
+                    {data.pins?.map((p, i) => (
+                      <li key={`p${i}`} className="flex items-start gap-2">
+                        <span
+                          className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
+                          style={{ backgroundColor: pinFill(p.tone) }}
+                        >
+                          {i + 1}
+                        </span>
+                        <span className="min-w-0">
+                          {p.site && <span className="font-medium">{p.site}</span>}
+                          {p.site && p.note ? " — " : ""}
+                          {p.note && <span className="text-muted-foreground">{p.note}</span>}
+                        </span>
+                      </li>
+                    ))}
+                    {data.strokes?.map((s, i) => (
+                      <li key={`s${i}`} className="flex items-center gap-2 text-muted-foreground">
+                        <span
+                          className="h-1 w-4 shrink-0 rounded-full"
+                          style={{ backgroundColor: pinFill(strokeTone(s)) }}
+                        />
+                        {strokeLabel(s) || "Drawing"}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }

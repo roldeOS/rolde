@@ -661,8 +661,13 @@ export function ConsultationWorkspace({
       let photoTarget: string | undefined;
 
       if (usingMap) {
-        fd.set("text", renderBodyMapText(bodyMap, legend));
+        // #6a — ONE note carries the clinician's typed note AND the map findings.
+        // The typed note goes FIRST, so its inline marks stay aligned at offset 0.
+        const mapText = renderBodyMapText(bodyMap, legend);
+        const typed = draft.trim();
+        fd.set("text", [typed, mapText].filter(Boolean).join("\n\n"));
         fd.set("body_map", JSON.stringify(bodyMap));
+        if (typed && draftMarks.length) fd.set("marks", JSON.stringify(draftMarks));
         await saveBodyMap(fd);
       } else if (mode === "new") {
         fd.set("text", usingTemplate ? renderTemplate(template, answers, legend) : draft);
@@ -759,8 +764,11 @@ export function ConsultationWorkspace({
   // a note ready for Sarah's record" → "RolDe saved this to Sarah's record."
   usePageActionBar({
     dirty:
-      (bodyMap ? mapDirty : template ? templateDirty : !!draft.trim() || photoChange) &&
-      !pending,
+      (bodyMap
+        ? mapDirty || !!draft.trim()
+        : template
+          ? templateDirty
+          : !!draft.trim() || photoChange) && !pending,
     saving: pending,
     message:
       mode === "edit"
@@ -781,6 +789,37 @@ export function ConsultationWorkspace({
     // nav guard + the conversational confirmation (no pinned Save).
     pinned: false,
   });
+
+  // The free-note editor — shared by the plain-note path AND the body-map path
+  // (#6a: a body map and its written note live in ONE entry), so the two never
+  // drift. Placeholder adapts to what's being written.
+  const noteEditor = (
+    <RichNoteEditor
+      ref={richRef}
+      docKey={`${mode}-${editTarget?.id ?? "new"}-${editorNonce}`}
+      initialText={draft}
+      initialMarks={draftMarks}
+      onChange={(text, marks) => {
+        setDraft(text);
+        setDraftMarks(marks);
+      }}
+      expand={(text, caret) => expandAutotext(text, caret, autotextEntries)}
+      continueList={continueListOnEnter}
+      onFocusCapture={() => {
+        lastWasRichRef.current = true;
+      }}
+      bubbleHidden={formatOpen}
+      placeholder={
+        mode === "amend"
+          ? "Amendment…"
+          : mode === "addendum"
+            ? "Addendum…"
+            : bodyMap
+              ? `Note about these findings for ${patient.firstName}…`
+              : `Note for ${patient.firstName}…`
+      }
+    />
+  );
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -1322,7 +1361,12 @@ export function ConsultationWorkspace({
                 {/* No focus-grow: the layout NEVER moves on its own — typing
                     included (APPROVALS §4.2, Roland 2026-07-01). */}
                 {mode === "new" && bodyMap ? (
-                  <BodyMapPanel data={bodyMap} onChange={setBodyMap} legend={legend} />
+                  // #6a — the annotated figure AND the written note, together, as
+                  // ONE entry. The map draws above; the note is written below.
+                  <div className="space-y-3">
+                    <BodyMapPanel data={bodyMap} onChange={setBodyMap} legend={legend} />
+                    {noteEditor}
+                  </div>
                 ) : (mode === "new" || mode === "edit") && template ? (
                   <ScribeTemplateForm
                     template={template}
@@ -1336,29 +1380,7 @@ export function ConsultationWorkspace({
                   // B6 — the rich free-note editor (bold/italic/underline/
                   // highlight); Calm Formatting A (self-continuing lists) and
                   // autotext run through it, snippets insert at its caret.
-                  <RichNoteEditor
-                    ref={richRef}
-                    docKey={`${mode}-${editTarget?.id ?? "new"}-${editorNonce}`}
-                    initialText={draft}
-                    initialMarks={draftMarks}
-                    onChange={(text, marks) => {
-                      setDraft(text);
-                      setDraftMarks(marks);
-                    }}
-                    expand={(text, caret) => expandAutotext(text, caret, autotextEntries)}
-                    continueList={continueListOnEnter}
-                    onFocusCapture={() => {
-                      lastWasRichRef.current = true;
-                    }}
-                    bubbleHidden={formatOpen}
-                    placeholder={
-                      mode === "amend"
-                        ? "Amendment…"
-                        : mode === "addendum"
-                          ? "Addendum…"
-                          : `Note for ${patient.firstName}…`
-                    }
-                  />
+                  noteEditor
                 )}
                 {/* Photo M3 (Roland's 3rd ask) — EDIT a note's photos: the ones
                     already on it show here so they can be removed, and any newly

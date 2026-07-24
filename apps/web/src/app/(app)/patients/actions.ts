@@ -364,12 +364,16 @@ export async function saveBodyMap(formData: FormData) {
   const tenantId = ctx?.membership?.tenant_id;
   if (!tenantId) throw new Error("No clinic context for this user.");
 
+  // #6a — a body-map note now carries the clinician's TYPED note too (map + text
+  // in one entry), so its free-text formatting rides along like any free note.
+  const marks = parseMarks(formData, text.length);
+
   const supabase = await createClient();
   const { error } = await supabase.from("patient_feed_entries").insert({
     tenant_id: tenantId,
     patient_id: patientId,
     entry_type: "body_map",
-    payload: { text, body_map: bodyMap },
+    payload: { text, body_map: bodyMap, ...(marks !== undefined ? { format_marks: marks } : {}) },
     created_by: ctx?.user.id ?? null,
   });
   if (error) throw new Error(error.message);

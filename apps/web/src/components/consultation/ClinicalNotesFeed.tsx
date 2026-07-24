@@ -1038,6 +1038,7 @@ export function ClinicalNotesFeed({
                     <BodyMapThumbnail data={e.payload.body_map} />
                     <SmartNoteBody
                       text={text}
+                      marks={e.payload?.format_marks}
                       struck={struck}
                       className="mt-0 min-w-0 flex-1"
                     />
